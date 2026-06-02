@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>段階価格 編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+/* ───────────────────────────────────────────────────────────
+   deep_Admin — refined design system
+   Warm cream base, deep teal accent, Inter + Hiragino Sans.
+   ─────────────────────────────────────────────────────────── */
+
+:root {
+  --bg: #fbf7f0;
+  --bg-sunken: #f4efe5;
+  --surface: #ffffff;
+  --surface-warm: #fffdf8;
+  --surface-tint: #f7f3eb;
+  --ink: #1d1a17;
+  --ink-soft: #3d3833;
+  --muted: #756d63;
+  --muted-soft: #9a9389;
+  --line: #e8e0d3;
+  --line-strong: #d4cabb;
+  --line-soft: #efe9dc;
+  --side-bg: #0f2e2b;
+  --side-ink: #f3ebdb;
+  --side-ink-soft: #aac3bf;
+  --side-line: rgba(255, 255, 255, 0.12);
+  --accent: #0a5e5a;
+  --accent-strong: #064a47;
+  --accent-soft: #d6ebe8;
+  --accent-ink: #ffffff;
+  --blue: #2a5db0;
+  --blue-soft: #e1ebfa;
+  --coral: #ba4530;
+  --coral-soft: #f6dfd8;
+  --amber: #8e5b00;
+  --amber-soft: #f4e3bd;
+  --green: #1f6440;
+  --green-soft: #d6ecdd;
+  --violet: #614aa4;
+  --violet-soft: #e6dffa;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px;
+  --field-h: 38px;
+  --row-h: 44px;
+  --row-pad-x: 14px;
+  --row-pad-y: 11px;
+  --fs-base: 14px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-15: 15px;
+  --fs-18: 18px;
+  --fs-22: 22px;
+  --fs-28: 26px;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --radius-lg: 10px;
+  --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+  --shadow-2: 0 1px 2px rgba(45, 30, 12, 0.05), 0 6px 24px rgba(45, 30, 12, 0.06);
+  --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.10);
+  --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  font-feature-settings: "ss01", "cv11", "tnum" 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body[data-density="compact"] {
+  --sp-3: 8px; --sp-4: 12px; --sp-5: 14px; --sp-6: 18px;
+  --field-h: 32px; --row-h: 36px; --row-pad-x: 10px; --row-pad-y: 7px;
+  --fs-base: 13px; --fs-13: 12px;
+}
+body[data-density="comfortable"] {
+  --sp-4: 20px; --sp-5: 24px; --sp-6: 30px;
+  --field-h: 42px; --row-h: 50px; --row-pad-y: 14px;
+}
+body[data-side="light"] {
+  --side-bg: #f7f3eb;
+  --side-ink: #1d1a17;
+  --side-ink-soft: #756d63;
+  --side-line: rgba(0, 0, 0, 0.08);
+}
+body[data-side="mono"] {
+  --side-bg: #1a1916;
+  --side-ink: #f3ebdb;
+  --side-ink-soft: #9a948a;
+  --side-line: rgba(255, 255, 255, 0.10);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-size: var(--fs-base); line-height: 1.5; letter-spacing: -0.005em; min-width: 320px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+/* ─── Shell ─────────────────────────────────────────────── */
+.app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+.side-nav { background: var(--side-bg); color: var(--side-ink); padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-5); position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--side-line); }
+
+.brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: var(--sp-4); border-bottom: 1px solid var(--side-line); }
+.brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+.brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; letter-spacing: 0.02em; }
+
+.nav-group { display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+.nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; text-decoration: none; }
+.nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+body[data-side="light"] .nav-item:hover { background: rgba(0, 0, 0, 0.05); }
+.nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+body[data-side="light"] .nav-item.active { background: var(--surface); box-shadow: 0 1px 2px rgba(45, 30, 12, 0.05); }
+.nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+.nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); }
+.nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+body[data-side="light"] .nav-icon { background: rgba(0, 0, 0, 0.05); }
+.nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+body[data-side="light"] .nav-count { background: rgba(0, 0, 0, 0.06); }
+.side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: var(--sp-4); color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+.side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+/* ─── Workspace ─────────────────────────────────────────── */
+.workspace { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-4); padding: 0 4px; }
+.crumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.crumbs span.sep { color: var(--muted-soft); }
+.crumbs span.current { color: var(--ink); font-weight: 550; }
+
+h1, h2, h3, h4 { margin: 0; letter-spacing: -0.015em; font-weight: 650; }
+h1 { font-size: var(--fs-28); line-height: 1.2; }
+h2 { font-size: var(--fs-18); }
+h3 { font-size: var(--fs-15); }
+h4 { font-size: 13px; }
+
+/* Buttons */
+.btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); padding: 0 12px; height: 34px; font-size: 13px; font-weight: 550; transition: all 0.1s; white-space: nowrap; }
+.btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: var(--surface-tint); border-color: var(--line); }
+.btn.danger { color: var(--coral); border-color: var(--coral-soft); }
+.btn.danger:hover { background: var(--coral-soft); border-color: var(--coral); }
+.btn.sm { height: 28px; padding: 0 9px; font-size: 12px; }
+.btn.icon { width: 32px; padding: 0; }
+
+/* Inputs */
+input[type="text"], input[type="url"], input[type="number"], input:not([type]), select, textarea {
+  width: 100%; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 11px; height: var(--field-h); font-size: 13.5px; transition: border-color 0.1s, box-shadow 0.1s, background 0.1s;
+}
+select { appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23756d63' d='M0 0h10L5 6z'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+input::placeholder, textarea::placeholder { color: var(--muted-soft); }
+input:hover, select:hover, textarea:hover { border-color: var(--ink-soft); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); background: var(--surface); }
+input[readonly] { background: var(--surface-tint); color: var(--ink-soft); border-color: var(--line); cursor: default; }
+input[readonly]:hover { border-color: var(--line); }
+input[readonly]:focus { box-shadow: none; border-color: var(--line); }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+.card-header { padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.card-body { padding: var(--sp-5); }
+
+/* Section titles */
+.section-title { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-4); padding-bottom: var(--sp-3); border-bottom: 1px solid var(--line); margin-bottom: var(--sp-4); }
+.section-title h2 { display: flex; align-items: center; gap: 8px; }
+.section-title p { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+
+/* Toggle */
+.toggle-wrap { display: flex; align-items: center; gap: var(--sp-3); }
+.toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--line-strong); border-radius: 999px; transition: background 0.15s; cursor: pointer; }
+.toggle-slider::before { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform 0.15s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+input:checked + .toggle-slider { background: var(--accent); }
+input:checked + .toggle-slider::before { transform: translateX(20px); }
+.toggle-label { font-size: 13.5px; font-weight: 550; }
+.toggle-desc { font-size: 12px; color: var(--muted); }
+
+/* Info box */
+.info-box { background: var(--accent-soft); border: 1px solid #b5d9d5; border-radius: var(--radius); padding: var(--sp-3) var(--sp-4); font-size: 12.5px; color: var(--accent-strong); line-height: 1.6; }
+.info-box.amber { background: var(--amber-soft); border-color: #e0c98c; color: var(--amber); }
+.info-box.green { background: var(--green-soft); border-color: #a2d3b2; color: var(--green); }
+
+/* Tiered price table */
+.tier-table { width: 100%; border-collapse: collapse; }
+.tier-table th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--surface-warm); }
+.tier-table td { padding: 6px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+.tier-table tr:last-child td { border-bottom: 0; }
+.tier-table tr.dragging td { background: var(--accent-soft); opacity: 0.85; }
+.tier-table tr:hover td { background: var(--bg-sunken); }
+
+.drag-handle { color: var(--muted-soft); cursor: grab; font-size: 16px; line-height: 1; padding: 4px 2px; user-select: none; }
+.drag-handle:active { cursor: grabbing; }
+
+.tier-auto-limit { display: inline-block; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0 8px; height: 32px; line-height: 32px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.tier-auto-limit.open { background: var(--green-soft); border-color: #a2d3b2; color: var(--green); font-weight: 550; }
+
+.price-preview-box { background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--sp-4); display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
+.price-preview-result { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+.price-preview-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* TourOption info strip */
+.to-info-strip { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--sp-4) var(--sp-5); display: flex; align-items: center; gap: var(--sp-5); box-shadow: var(--shadow-1); }
+.to-info-strip .code { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 2px 8px; }
+.to-info-strip .base-price { margin-left: auto; font-size: 13px; color: var(--muted); }
+.to-info-strip .base-price strong { font-size: 16px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Number input narrow */
+input.narrow { width: 100px; }
+
+/* Topbar action area */
+.topbar-actions { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* Disabled state */
+.tier-table-wrap { transition: opacity 0.2s; }
+.tier-table-wrap.disabled { opacity: 0.45; pointer-events: none; }
+
+@media (max-width: 860px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .side-nav { height: auto; position: static; flex-direction: row; flex-wrap: wrap; padding: 12px; gap: 12px; overflow-x: auto; }
+  .brand-block { padding-bottom: 0; border-bottom: 0; }
+  .nav-group { flex-direction: row; gap: 6px; }
+  .nav-item.active::before { display: none; }
+  .workspace { padding: 12px; }
+  .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
+}
+    </style>
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+const { useState, useCallback, useRef } = React;
+
+// ── Initial data ─────────────────────────────────────────────────────────────
+
+const TOUR_OPTION = {
+  code: "G-KYO-003-1-PR",
+  name: "祇園夜の食べ歩きツアー 貸切3時間プラン",
+  basePrice: 18000,
+};
+
+const INITIAL_TIERS = [
+  { id: "tp-1", min: 1, price: 18000 },
+  { id: "tp-2", min: 3, price: 14000 },
+  { id: "tp-3", min: 6, price: 10000 },
+];
+
+let nextId = 10;
+function genId() { return `tp-${nextId++}`; }
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+function Sidebar() {
+  const items = [
+    { key: "tourOption",      href: "tour-options.html",    icon: "TO", label: "TourOption",             count: 24 },
+    { key: "product",         href: "products.html",        icon: "PP", label: "商品ページ",              count: 8  },
+    { key: "guideDoc",        href: "guide-materials.html", icon: "GD", label: "ガイド資料",              count: 16 },
+    { key: "cancelTemplate",  href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言",  count: 5  },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "tourOption" ? "active" : ""}`}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1, minWidth:0}}>
+                <div>{it.label}</div>
+              </span>
+              <span className="nav-count">{it.count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Tools</div>
+        <div className="nav-group">
+          <button className="nav-item"><span className="nav-icon" style={{fontSize:11}}>⌕</span><span>検索</span></button>
+          <button className="nav-item"><span className="nav-icon" style={{fontSize:11}}>≡</span><span>変更履歴</span></button>
+          <button className="nav-item"><span className="nav-icon" style={{fontSize:11}}>?</span><span>ヘルプ</span></button>
+        </div>
+      </div>
+      <div className="side-note">
+        <strong>Phase 1 設計原則</strong>
+        同じTourOptionを複数ページに紐付ける場合、全ページで同じ表示内容を使います。ページごとの見せ方変更は将来フェーズで設計します。
+      </div>
+    </aside>
+  );
+}
+
+// ── Auto upper limit label ────────────────────────────────────────────────────
+
+function UpperLimitLabel({ tiers, index }) {
+  const next = tiers[index + 1];
+  if (!next) {
+    return <span className="tier-auto-limit open">上限なし（○名以上）</span>;
+  }
+  return <span className="tier-auto-limit">{next.min - 1}名まで（自動）</span>;
+}
+
+// ── Tiered price row ──────────────────────────────────────────────────────────
+
+function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOver, onDrop }) {
+  const rowRef = useRef(null);
+
+  return (
+    <tr
+      ref={rowRef}
+      draggable
+      onDragStart={e => onDragStart(e, index)}
+      onDragOver={e => { e.preventDefault(); onDragOver(e, index); }}
+      onDrop={e => onDrop(e, index)}
+      style={{cursor: "grab"}}
+    >
+      <td style={{width: 32, textAlign: "center"}}>
+        <span className="drag-handle" title="ドラッグして並び替え">⠿</span>
+      </td>
+      <td style={{width: 140}}>
+        <div style={{display:"flex", alignItems:"center", gap:6}}>
+          <input
+            type="number"
+            className="narrow"
+            min={1}
+            value={tier.min}
+            onChange={e => onChange(tier.id, "min", parseInt(e.target.value, 10) || 1)}
+            style={{width: 80}}
+          />
+          <span style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>名から</span>
+        </div>
+      </td>
+      <td style={{width: 180}}>
+        <UpperLimitLabel tiers={tiers} index={index} />
+      </td>
+      <td>
+        <div style={{display:"flex", alignItems:"center", gap:6}}>
+          <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
+          <input
+            type="number"
+            min={0}
+            step={100}
+            value={tier.price}
+            onChange={e => onChange(tier.id, "price", parseInt(e.target.value, 10) || 0)}
+            style={{width: 120}}
+          />
+          <span style={{fontSize:12.5, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
+        </div>
+      </td>
+      <td style={{width: 60, textAlign:"center"}}>
+        <button
+          className="btn sm danger icon"
+          onClick={() => onDelete(tier.id)}
+          title="この段階を削除"
+          style={{width:28}}
+        >✕</button>
+      </td>
+    </tr>
+  );
+}
+
+// ── Preview calculator ────────────────────────────────────────────────────────
+
+function PricePreview({ tiers, enabled, basePrice }) {
+  const [pax, setPax] = useState(2);
+
+  let appliedTier = null;
+  let pricePerPerson = null;
+  let totalPrice = null;
+
+  if (enabled && tiers.length > 0) {
+    const sorted = [...tiers].sort((a, b) => a.min - b.min);
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (pax >= sorted[i].min) {
+        appliedTier = sorted[i];
+        break;
+      }
+    }
+    if (appliedTier) {
+      pricePerPerson = appliedTier.price;
+      totalPrice = pricePerPerson * pax;
+    }
+  } else if (!enabled) {
+    pricePerPerson = basePrice;
+    totalPrice = basePrice * pax;
+  }
+
+  return (
+    <div>
+      <div className="section-title">
+        <div>
+          <h2>計算プレビュー</h2>
+          <p>人数を入力すると、適用される1名あたり単価と合計額を確認できます。</p>
+        </div>
+      </div>
+      <div className="price-preview-box">
+        <div style={{display:"flex", alignItems:"center", gap:8}}>
+          <label style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>人数</label>
+          <input
+            type="number"
+            min={1}
+            value={pax}
+            onChange={e => setPax(Math.max(1, parseInt(e.target.value, 10) || 1))}
+            style={{width:80}}
+          />
+          <span style={{fontSize:13, color:"var(--muted)"}}>名</span>
+        </div>
+        <div style={{borderLeft:"1px solid var(--line)", height:40}} />
+        {totalPrice !== null ? (
+          <>
+            <div>
+              <div className="price-preview-result">
+                ¥{pricePerPerson.toLocaleString()}<span style={{fontSize:14, fontWeight:500, color:"var(--muted)"}}>/人</span>
+              </div>
+              <div className="price-preview-sub">
+                {enabled && appliedTier ? `${appliedTier.min}名から適用` : "基準販売価格が適用"}
+              </div>
+            </div>
+            <div style={{borderLeft:"1px solid var(--line)", height:40}} />
+            <div>
+              <div className="price-preview-result">
+                ¥{totalPrice.toLocaleString()}
+              </div>
+              <div className="price-preview-sub">{pax}名合計（税込）</div>
+            </div>
+          </>
+        ) : (
+          <div style={{color:"var(--muted)", fontSize:13}}>
+            {enabled ? "この人数に適用できる段階がありません。" : "段階価格が無効です。"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+
+function App() {
+  const [tiers, setTiers] = useState(INITIAL_TIERS);
+  const [enabled, setEnabled] = useState(true);
+  const [saved, setSaved] = useState(false);
+
+  const dragSrcIndex = useRef(null);
+
+  const handleChange = useCallback((id, field, value) => {
+    setTiers(prev => prev.map(t => t.id === id ? {...t, [field]: value} : t));
+  }, []);
+
+  const handleDelete = useCallback((id) => {
+    setTiers(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const handleAdd = useCallback(() => {
+    const maxMin = tiers.length > 0 ? Math.max(...tiers.map(t => t.min)) + 3 : 1;
+    setTiers(prev => [...prev, { id: genId(), min: maxMin, price: 10000 }]);
+  }, [tiers]);
+
+  const handleDragStart = useCallback((e, index) => {
+    dragSrcIndex.current = index;
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
+
+  const handleDragOver = useCallback((e, index) => {
+    e.preventDefault();
+  }, []);
+
+  const handleDrop = useCallback((e, dropIndex) => {
+    e.preventDefault();
+    const srcIndex = dragSrcIndex.current;
+    if (srcIndex === null || srcIndex === dropIndex) return;
+    setTiers(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(srcIndex, 1);
+      next.splice(dropIndex, 0, moved);
+      return next;
+    });
+    dragSrcIndex.current = null;
+  }, []);
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <main className="workspace">
+        {/* Topbar */}
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" style={{color:"inherit", textDecoration:"none"}}>deep_Admin</a>
+              <span className="sep">›</span>
+              <a href="tour-options.html" style={{color:"inherit", textDecoration:"none"}}>TourOption一覧</a>
+              <span className="sep">›</span>
+              <a href="tour-option-detail.html" style={{color:"inherit", textDecoration:"none"}}>TourOption編集</a>
+              <span className="sep">›</span>
+              <span className="current">段階価格</span>
+            </div>
+            <h1>段階価格 編集</h1>
+          </div>
+          <div className="topbar-actions">
+            <a href="tour-option-detail.html" className="btn ghost">
+              ← TourOption編集に戻る
+            </a>
+            <button className="btn primary" onClick={handleSave}>
+              {saved ? "✓ 保存しました" : "保存"}
+            </button>
+          </div>
+        </div>
+
+        {/* TourOption info strip */}
+        <div className="to-info-strip">
+          <div>
+            <div style={{fontSize:11, color:"var(--muted)", marginBottom:3, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:600}}>TourOption</div>
+            <div style={{fontSize:15, fontWeight:650}}>{TOUR_OPTION.name}</div>
+          </div>
+          <span className="code">{TOUR_OPTION.code}</span>
+          <div className="base-price">
+            基準販売価格：<strong>¥{TOUR_OPTION.basePrice.toLocaleString()}</strong><span style={{fontSize:12, color:"var(--muted)"}}> /人</span>
+          </div>
+        </div>
+
+        {/* Enable toggle card */}
+        <div className="card">
+          <div className="card-body">
+            <div className="toggle-wrap">
+              <label className="toggle">
+                <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />
+                <span className="toggle-slider" />
+              </label>
+              <div>
+                <div className="toggle-label">段階価格を有効にする</div>
+                <div className="toggle-desc">
+                  {enabled
+                    ? "有効：基準販売価格の代わりに、下記の段階価格が予約時に適用されます。"
+                    : "無効：基準販売価格（¥" + TOUR_OPTION.basePrice.toLocaleString() + "/人）が全人数に適用されます。"}
+                </div>
+              </div>
+            </div>
+            {!enabled && (
+              <div className="info-box amber" style={{marginTop: 12}}>
+                段階価格が無効のため、下記の設定は保存されますが予約には適用されません。基準販売価格 <strong>¥{TOUR_OPTION.basePrice.toLocaleString()}/人</strong> が使われます。
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Tiered pricing table card */}
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <h2>段階価格設定</h2>
+              <p style={{margin:"4px 0 0", color:"var(--muted)", fontSize:12.5, lineHeight:1.55}}>
+                下限のみを設定します。上限は次の行の下限から自動計算されます。最後の行は「上限なし」（○名以上）になります。
+              </p>
+            </div>
+            <button className="btn sm primary" onClick={handleAdd} disabled={!enabled} style={!enabled ? {opacity:0.45} : {}}>
+              ＋ 段階を追加
+            </button>
+          </div>
+          <div className={`tier-table-wrap${!enabled ? " disabled" : ""}`}>
+            {tiers.length === 0 ? (
+              <div style={{padding:"32px 20px", textAlign:"center", color:"var(--muted)", fontSize:13}}>
+                段階価格が設定されていません。「段階を追加」ボタンで追加してください。
+              </div>
+            ) : (
+              <table className="tier-table">
+                <thead>
+                  <tr>
+                    <th style={{width:32}}></th>
+                    <th>下限（人数）</th>
+                    <th>上限（自動計算）</th>
+                    <th>1名あたり単価</th>
+                    <th style={{width:60}}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tiers.map((tier, index) => (
+                    <TierRow
+                      key={tier.id}
+                      tier={tier}
+                      tiers={tiers}
+                      index={index}
+                      onChange={handleChange}
+                      onDelete={handleDelete}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          {tiers.length > 0 && (
+            <div style={{padding:"12px 20px", borderTop:"1px solid var(--line-soft)"}}>
+              <div className="info-box">
+                <strong>ドラッグ＆ドロップ</strong>で行を並び替えられます。上限は次の行の下限 − 1名として自動計算されます。最後の行は常に「上限なし」です。
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Preview calculator card */}
+        <div className="card">
+          <div className="card-body">
+            <PricePreview tiers={tiers} enabled={enabled} basePrice={TOUR_OPTION.basePrice} />
+          </div>
+        </div>
+
+        {/* Bottom actions */}
+        <div style={{display:"flex", justifyContent:"flex-end", gap:8, padding:"0 4px 16px"}}>
+          <a href="tour-option-detail.html" className="btn ghost">
+            ← TourOption編集に戻る
+          </a>
+          <button className="btn primary" onClick={handleSave}>
+            {saved ? "✓ 保存しました" : "保存"}
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

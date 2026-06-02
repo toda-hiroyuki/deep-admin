@@ -605,7 +605,7 @@ textarea {
 select {
   appearance: none;
   padding-right: 32px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23756d63' stroke-width='1.6' stroke-linecap='round' d='M1.5 1.5 6 6 10.5 1.5'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23756d63' d='M0 0h10L5 6z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 11px center;
 }
@@ -4062,36 +4062,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
 
         <div className="field-grid">
           <SelectField label="価格・原価確認" value={t.costCheck} onChange={x => update({ costCheck: x })} options={["未確認", "原価確認済み", "再確認が必要"]} readOnly={readonly} />
-
-          <div className="field-wide">
-            <div className="field-label"><span>販売ステータス</span></div>
-            <div className="sales-status-row">
-              <div className="status-readout">
-                <span className={`status-chip ${isDraft ? "is-draft" : isPublished ? "is-pub" : "is-priv"}`}>
-                  <span className="dot"/>{t.salesStatus || "下書き"}
-                </span>
-                <span className="muted tiny">ステータスはシステムが自動判定します（編集不可）</span>
-              </div>
-              <label className={`publish-toggle ${isDraft ? "disabled" : ""}`}>
-                <input
-                  type="checkbox"
-                  checked={isPublished}
-                  disabled={isDraft || readonly}
-                  onChange={e => update({ salesStatus: e.target.checked ? "掲載中" : "非公開" })}
-                />
-                <span className="tx">
-                  <strong>掲載する</strong>
-                  <span>ON → 掲載中 / OFF → 非公開</span>
-                </span>
-              </label>
-            </div>
-            <div className="field-help">
-              <Icon.info />
-              <span>公開前チェックが全項目通過すると掲載できます。</span>
-            </div>
-          </div>
-
-          <Field label="販売停止理由" value="" onChange={x => update({ pauseReason: x })} wide multiline readOnly={readonly} placeholder="一時停止時のみ入力" help="販売ステータスが「一時停止」のときのみ必須" />
         </div>
       </div>
     );
