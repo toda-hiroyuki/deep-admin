@@ -2658,7 +2658,6 @@ window.SEED = {
       ["pageBasic", "ページ基本"],
       ["pageContent", "共通コンテンツ"],
       ["links", "掲載TourOption"],
-      ["pagePreview", "表示確認"],
     ],
     guideDoc: [
       ["docList", "資料一覧"],
@@ -4373,6 +4372,45 @@ function DocTable({ docs }) {
   );
 }
 
+// ── PageContent Editor (multilingual) ──────────────────────────────────────
+
+function PageContentEditor({ page, updatePage, readonly }) {
+  const [lang, setLang] = React.useState("ja");
+  return (
+    <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
+      <SectionHead eyebrow="STEP 2" title="共通コンテンツ" desc="ページに紐付くTourOption群に共通する見せ方を管理します。" />
+      <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+        {[["ja","日本語"],["en","English"]].map(([code,label]) => (
+          <button key={code} type="button"
+            style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:lang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:lang===code?700:400,color:lang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+            onClick={() => setLang(code)}>{label}</button>
+        ))}
+      </div>
+      {lang === "ja" ? (
+        <div className="field-grid">
+          <Field label="共通紹介文 / リード文" required value={page.lead} onChange={x => updatePage({ lead: x })} wide multiline readOnly={readonly} maxLen={150} />
+          <Field label="共通の体験概要" value={page.overview} onChange={x => updatePage({ overview: x })} wide multiline readOnly={readonly} />
+          <Field label="共通のおすすめポイント" value={page.points} onChange={x => updatePage({ points: x })} wide multiline readOnly={readonly} />
+          <Field label="対象顧客" value={page.audience} onChange={x => updatePage({ audience: x })} wide multiline readOnly={readonly} />
+          <Field label="共通の注意事項" value={page.cautions} onChange={x => updatePage({ cautions: x })} wide multiline readOnly={readonly} />
+          <Field label="共通の含まれるもの補足" value={page.includedNote} onChange={x => updatePage({ includedNote: x })} readOnly={readonly} />
+          <Field label="共通の含まれないもの補足" value={page.excludedNote} onChange={x => updatePage({ excludedNote: x })} readOnly={readonly} />
+        </div>
+      ) : (
+        <div className="field-grid">
+          <Field label="Lead Text (EN)" value={page.leadEn||""} onChange={x => updatePage({ leadEn: x })} wide multiline readOnly={readonly} maxLen={150} />
+          <Field label="Overview (EN)" value={page.overviewEn||""} onChange={x => updatePage({ overviewEn: x })} wide multiline readOnly={readonly} />
+          <Field label="Highlights (EN)" value={page.pointsEn||""} onChange={x => updatePage({ pointsEn: x })} wide multiline readOnly={readonly} />
+          <Field label="Target Audience (EN)" value={page.audienceEn||""} onChange={x => updatePage({ audienceEn: x })} wide multiline readOnly={readonly} />
+          <Field label="Cautions (EN)" value={page.cautionsEn||""} onChange={x => updatePage({ cautionsEn: x })} wide multiline readOnly={readonly} />
+          <Field label="Included Note (EN)" value={page.includedNoteEn||""} onChange={x => updatePage({ includedNoteEn: x })} readOnly={readonly} />
+          <Field label="Excluded Note (EN)" value={page.excludedNoteEn||""} onChange={x => updatePage({ excludedNoteEn: x })} readOnly={readonly} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── ProductPage Editor ─────────────────────────────────────────────────────
 
 function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, selectedLinkId, selectLink, lookup }) {
@@ -4385,19 +4423,24 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
         <SectionHead eyebrow="STEP 1" title="商品ページ基本情報" desc="商品ページ全体の表示・検索・公開状態を管理します。" />
         <div className="field-grid">
           <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
-          <Field
-            label="URL"
-            required
-            value={(page.url || "").replace(/^\/tours\//, "")}
-            onChange={x => updatePage({ url: `/tours/${x.replace(/^\//, "")}` })}
-            affixLeft="/tours/"
-            placeholder="kyoto-night-food"
-            readOnly={readonly}
-            mono
-          />
           <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
           <SelectField label="ページ種別" value={page.pageType} onChange={x => updatePage({ pageType: x })} options={["通常商品ページ", "キャンペーンLP", "特集ページ", "その他"]} readOnly={readonly} />
-          <Field label="表示カテゴリ" value={page.category} onChange={x => updatePage({ category: x })} readOnly={readonly} />
+          <div className="field">
+            <label className="field-label"><span>表示カテゴリ</span></label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:10,paddingTop:4}}>
+              {["Food & Drink","Culture","Nature","Private Tour","Adventure","Art & Culture","Shopping","Photography"].map(opt => (
+                <label key={opt} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                  <input type="checkbox" disabled={readonly}
+                    checked={(page.categories||[]).includes(opt)}
+                    onChange={e => {
+                      const cur = page.categories||[];
+                      updatePage({ categories: e.target.checked ? [...cur,opt] : cur.filter(x=>x!==opt) });
+                    }} />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
           <Field label="商品ページ表示タイトル" required value={page.displayTitle} onChange={x => updatePage({ displayTitle: x })} wide readOnly={readonly} maxLen={50} />
           <Field label="サブタイトル" value={page.subtitle} onChange={x => updatePage({ subtitle: x })} wide readOnly={readonly} maxLen={80} />
           <SelectField label="テンプレート種別" value={page.template} onChange={x => updatePage({ template: x })} options={["標準商品ページ", "LP型", "特集型"]} readOnly={readonly} />
@@ -4409,20 +4452,7 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
   }
 
   if (tab === "pageContent") {
-    return (
-      <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-        <SectionHead eyebrow="STEP 2" title="共通コンテンツ" desc="ページに紐付くTourOption群に共通する見せ方を管理します。" />
-        <div className="field-grid">
-          <Field label="共通紹介文 / リード文" required value={page.lead} onChange={x => updatePage({ lead: x })} wide multiline readOnly={readonly} maxLen={150} />
-          <Field label="共通の体験概要" value={page.overview} onChange={x => updatePage({ overview: x })} wide multiline readOnly={readonly} />
-          <Field label="共通のおすすめポイント" value={page.points} onChange={x => updatePage({ points: x })} wide multiline readOnly={readonly} />
-          <Field label="対象顧客" value={page.audience} onChange={x => updatePage({ audience: x })} wide multiline readOnly={readonly} />
-          <Field label="共通の注意事項" value={page.cautions} onChange={x => updatePage({ cautions: x })} wide multiline readOnly={readonly} />
-          <Field label="共通の含まれるもの補足" value={page.includedNote} onChange={x => updatePage({ includedNote: x })} readOnly={readonly} />
-          <Field label="共通の含まれないもの補足" value={page.excludedNote} onChange={x => updatePage({ excludedNote: x })} readOnly={readonly} />
-        </div>
-      </div>
-    );
+    return <PageContentEditor page={page} updatePage={updatePage} readonly={readonly} />;
   }
 
   if (tab === "links") {
@@ -4437,10 +4467,18 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
           <strong>Phase 1：</strong>紐付けレコードは表示順・表示可否・販売可否のみ管理します。表示名・説明・画像等の表示内容はTourOption画面で編集します。
         </InfoNote>
 
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div>
+            <h3 style={{fontSize:14,fontWeight:600}}>掲載TourOptionの追加</h3>
+            <p style={{fontSize:12,color:'var(--muted)',marginTop:2}}>この商品ページに掲載するTourOptionを追加します。</p>
+          </div>
+          <a href="tour-option-detail.html" className="btn primary">＋ TourOptionを追加</a>
+        </div>
+
         <div className="section-title" style={{marginTop:4}}>
           <div>
             <h3>紐付け中のTourOption</h3>
-            <p style={{margin:'4px 0 0',color:'var(--muted)',fontSize:12.5}}>この商品ページで現在掲載しているTourOptionです。</p>
+            <p style={{margin:'4px 0 0',color:'var(--muted)',fontSize:12.5}}>この商品ページで現在掲載しているTourOptionです。ドラッグ&ドロップで表示順を変更できます。</p>
           </div>
           <span className="badge teal">{links.length}件</span>
         </div>
@@ -4492,44 +4530,11 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
             </table>
           </div>
         </div>
-
-        <LinkSettingsForm link={link} page={page} readonly={readonly} updateLinks={updateLinks} />
-
-        <div className="section-title" style={{marginTop:8}}>
-          <div>
-            <h3>TourOptionを追加</h3>
-            <p style={{margin:'4px 0 0',color:'var(--muted)',fontSize:12.5}}>登録済みのTourOptionから選んで、この商品ページに紐付けます。</p>
-          </div>
-          <div className="flex-row" style={{gap:6}}>
-            <input
-              type="text"
-              placeholder="コード・名称で検索"
-              style={{width:240,padding:'6px 10px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',background:'var(--surface)',fontSize:12.5}}
-            />
-          </div>
-        </div>
-
-        <TourOptionLookupList lookup={lookup} existingCodes={links.map(l => l.code)} />
       </div>
     );
   }
 
-  // pagePreview
-  const link2 = links.find(l => l.id === selectedLinkId) ?? links[0];
-  const info = lookup[link2.code] ?? {};
-  return (
-    <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-      <SectionHead title="表示確認" desc="商品ページの共通表示と、選択されたTourOption詳細を確認します。" />
-      <div className="summary-list">
-        <div className="summary-item"><span className="lbl">ページタイトル</span><strong>{page.displayTitle}</strong></div>
-        <div className="summary-item"><span className="lbl">URL</span><strong className="code-mono">{page.url}</strong></div>
-        <div className="summary-item"><span className="lbl">デフォルトOption</span><strong>{info.selectionName ?? link2.code}</strong></div>
-        <div className="summary-item"><span className="lbl">掲載中Option数</span><strong>{links.filter(x => x.visible).length}件</strong></div>
-        <div className="summary-item"><span className="lbl">販売ON</span><strong>{links.filter(x => x.sellable).length}件</strong></div>
-        <div className="summary-item"><span className="lbl">共通紹介文</span><p>{page.lead}</p></div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 function Switch({ checked, onChange }) {
@@ -6101,8 +6106,8 @@ function App() {
   // Header label
   const headerLabel = resource === "tourOption" ? "TourOption" : resource === "productPage" ? "商品ページ" : resource === "cancelTemplate" ? "キャンセルポリシー文言" : "ガイド向け資料";
 
-  // For productPage, preview pane is only shown on the 表示確認 tab
-  const previewHidden = (resource === "productPage" && tab !== "pagePreview") || resource === "cancelTemplate";
+  // For productPage, preview pane is not shown (表示確認タブ削除済み)
+  const previewHidden = resource === "productPage" || resource === "cancelTemplate";
 
   // ── Checks ────────────────────────────────────────────────────────────────
   const checks = useMemo(() => buildChecks(resource, { tourOption, productPage, guideDocs, selectedDoc, linkedOptions, validation, mode }), [resource, tourOption, productPage, guideDocs, selectedDoc, linkedOptions, validation, mode]);

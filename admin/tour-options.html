@@ -4903,7 +4903,7 @@ Object.assign(window, { TourOptionEditor, ProductPageEditor, GuideDocEditor, Can
 const { useState: useFState, useRef: useFRef, useEffect: useFEffect } = React;
 
 // ── SearchBar ────────────────────────────────────────────────────
-function SearchBar({ value, onChange, placeholder }) {
+function SearchBar({ value, onChange, placeholder, onKeyDown }) {
   return (
     <div className="lf-search">
       <span className="lf-search-ico" aria-hidden="true">⌕</span>
@@ -4912,6 +4912,7 @@ function SearchBar({ value, onChange, placeholder }) {
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        onKeyDown={onKeyDown}
       />
       {value && (
         <button className="lf-search-clear" onClick={() => onChange("")} aria-label="クリア">×</button>
@@ -5157,10 +5158,12 @@ const PRICE_RANGES = [
 ];
 
 function TourOptionList({ rows, onOpen, onCreate }) {
+  const [inputSearch, setInputSearch] = useLState("");
   const [search, setSearch] = useLState("");
   const [statuses, setStatuses] = useLState([]);
   const [priceRange, setPriceRange] = useLState("すべて");
   const [tags, setTags] = useLState([]);
+  const execSearch = () => setSearch(inputSearch);
 
   const allTags = useLMemo(() => {
     const s = new Set();
@@ -5194,7 +5197,7 @@ function TourOptionList({ rows, onOpen, onCreate }) {
 
   const hasFilter = !!search || statuses.length > 0 || priceRange !== "すべて" || tags.length > 0;
   const clearAll = () => {
-    setSearch(""); setStatuses([]); setPriceRange("すべて"); setTags([]);
+    setSearch(""); setInputSearch(""); setStatuses([]); setPriceRange("すべて"); setTags([]);
   };
 
   return (
@@ -5209,11 +5212,15 @@ function TourOptionList({ rows, onOpen, onCreate }) {
       />
 
       <div className="list-filters">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="TourOption名・テーマ・コードで検索..."
-        />
+        <div style={{display:'flex',gap:6,alignItems:'center'}}>
+          <SearchBar
+            value={inputSearch}
+            onChange={x => { setInputSearch(x); if (!x) setSearch(""); }}
+            placeholder="TourOption名・テーマ・コードで検索..."
+            onKeyDown={e => e.key === 'Enter' && execSearch()}
+          />
+          <button className="btn primary" style={{flexShrink:0}} onClick={execSearch}>検索</button>
+        </div>
         <div className="lf-controls">
           <MultiSelectDropdown
             label="販売ステータス"
@@ -5273,6 +5280,7 @@ function TourOptionList({ rows, onOpen, onCreate }) {
                   <td><span className="muted tiny">{r.updatedAt}</span></td>
                   <td className="actions" onClick={e => e.stopPropagation()}>
                     <a href="tour-option-detail.html" className="btn sm">編集</a>
+                    <a href="tour-schedules.html" className="btn sm" style={{marginLeft:4}}>ツアー行程</a>
                   </td>
                 </tr>
               ))}

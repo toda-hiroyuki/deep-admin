@@ -3529,6 +3529,45 @@ function TagField({ label, value = [], onChange, wide, help, readOnly }) {
   );
 }
 
+function TagMasterField({ label, value, onChange, readOnly, help }) {
+  const TAG_MASTER = ["貸切","夜","人気","少人数","グループ","朝","半日","日帰り","食体験","文化体験","英語対応","初心者向け","写真スポット","屋外","屋内"];
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+  useClickOutside(ref, () => setOpen(false));
+  const vals = value || [];
+  return (
+    <div className="field" ref={ref}>
+      <label className="field-label"><span>{label}</span></label>
+      {!readOnly && (
+        <div style={{position:'relative'}}>
+          <button type="button" className="btn" style={{width:'100%',textAlign:'left',justifyContent:'space-between',display:'flex'}}
+            onClick={() => setOpen(o => !o)}>
+            <span>{vals.length ? vals.join(', ') : 'タグを選択...'}</span>
+            <span>▾</span>
+          </button>
+          {open && (
+            <div style={{position:'absolute',top:'100%',left:0,right:0,background:'var(--surface)',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',boxShadow:'var(--shadow-2)',zIndex:200,padding:8,display:'flex',flexWrap:'wrap',gap:6}}>
+              {TAG_MASTER.map(tag => (
+                <label key={tag} style={{display:'flex',alignItems:'center',gap:4,cursor:'pointer',padding:'3px 6px',borderRadius:4,background:vals.includes(tag)?'var(--accent-soft)':'var(--surface-tint)',fontSize:12.5}}>
+                  <input type="checkbox" checked={vals.includes(tag)} onChange={e => onChange(e.target.checked ? [...vals,tag] : vals.filter(x=>x!==tag))} />
+                  {tag}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {readOnly && (
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,paddingTop:4}}>
+          {vals.map(t => <span key={t} className="tag-chip">{t}</span>)}
+          {!vals.length && <span style={{color:'var(--muted-soft)',fontSize:13}}>—</span>}
+        </div>
+      )}
+      {help && <div className="field-help"><span>{help}</span></div>}
+    </div>
+  );
+}
+
 function ToggleRow({ checked, onChange, title, desc }) {
   return (
     <label className={`toggle-row ${checked ? "on" : ""}`}>
@@ -3661,7 +3700,105 @@ function renderFilledTemplate(body, values) {
   });
 }
 
-// ── CancelConditionSection: structured cancellation policy fields ───────────
+// ── CancelPolicySection: new cancel policy UI ──────────────────────────────
+function CancelPolicySection({ t, update, readonly }) {
+  const bizType = t.bizType || "通常体験";
+  const isTravel = bizType === "募集型企画旅行";
+
+  const normalPolicies = [
+    "当日まで全額返金が可能",
+    "1日前まで全額返金が可能",
+    "2日前まで全額返金が可能",
+    "3日前まで全額返金が可能",
+    "7日前まで全額返金が可能",
+    "返金不可",
+  ];
+
+  return (
+    <div style={{marginTop:16}}>
+      <div className="field-grid">
+        <div className="field">
+          <label className="field-label"><span className="req"/><span>旅行業2種分類</span></label>
+          <div style={{display:'flex',gap:20,paddingTop:6}}>
+            {["通常体験","手配旅行","募集型企画旅行"].map(opt => (
+              <label key={opt} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                <input type="radio" name="bizType" value={opt} checked={bizType===opt} disabled={readonly}
+                  onChange={() => update({ bizType: opt })} />
+                {opt}
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {!isTravel ? (
+        <div className="field-grid" style={{marginTop:12}}>
+          <SelectField
+            label="キャンセルポリシー"
+            required
+            value={t.cancelPolicy || ""}
+            onChange={x => update({ cancelPolicy: x })}
+            options={normalPolicies}
+            readOnly={readonly}
+          />
+        </div>
+      ) : (
+        <div style={{marginTop:12}}>
+          <div className="field-grid" style={{marginBottom:8}}>
+            <div className="field">
+              <label className="field-label"><span className="req"/><span>日帰りor宿泊</span></label>
+              <div style={{display:'flex',gap:20,paddingTop:6}}>
+                {["日帰り","宿泊"].map(opt => (
+                  <label key={opt} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                    <input type="radio" name="stayType" value={opt} checked={(t.stayType||"日帰り")===opt} disabled={readonly}
+                      onChange={() => update({ stayType: opt })} />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </div>
+            {(t.stayType === "宿泊") && (
+              <div className="field">
+                <label className="field-label"><span className="req"/><span>宿泊数</span></label>
+                <div style={{display:'flex',alignItems:'center',gap:8,paddingTop:4}}>
+                  <input type="number" min={1} value={t.nights||""} onChange={e => update({nights:e.target.value})} readOnly={readonly}
+                    style={{width:80,padding:'6px 10px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:14}} />
+                  <span>泊</span>
+                </div>
+              </div>
+            )}
+          </div>
+          <div style={{border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden',fontSize:13}}>
+            <table style={{width:'100%',borderCollapse:'collapse'}}>
+              <thead>
+                <tr style={{background:'var(--bg-sunken)'}}>
+                  <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>区分</th>
+                  <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600,width:160}}>取消料</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["旅行開始日の前日から起算してさかのぼって二十日目（日帰り旅行にあっては十日目）に当たる日以降に解除する場合", "旅行代金の20%"],
+                  ["旅行開始日の前日から起算してさかのぼって七日目に当たる日以降に解除する場合", "旅行代金の30%"],
+                  ["旅行開始日の前日に解除する場合", "旅行代金の40%"],
+                  ["旅行開始当日に解除する場合", "旅行代金の50%"],
+                  ["旅行開始後の解除又は無連絡不参加の場合", "旅行代金の100%"],
+                ].map(([desc,fee],i) => (
+                  <tr key={i} style={{borderBottom:'1px solid var(--line)'}}>
+                    <td style={{padding:'8px 12px',lineHeight:1.5}}>{desc}</td>
+                    <td style={{padding:'8px 12px',fontWeight:600,color:'var(--coral)'}}>{fee}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── CancelConditionSection: structured cancellation policy fields (legacy) ──
 function CancelConditionSection({ t, update, readonly }) {
   const feeRate = Number(t.cancellationFeeRate ?? 0);
   const refundRate = Math.max(0, Math.min(100, 100 - feeRate));
@@ -3789,15 +3926,42 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           desc="IDは保存時に自動採番、コードは業務上の不変キーとして扱います。"
         />
         <div className="field-grid">
-          <Field label="TourOption ID" value={mode === "create" ? "TO-自動採番" : t.id} readOnly help="保存時に発番" mono />
           <Field label="TourOptionコード" required value={t.code} onChange={x => update({ code: x })} placeholder="G-XXX-000-0-XX" mono readOnly={readonly} error={v.code} help={!v.code ? "業務コード（不変）" : null} />
           <Field label="テーマタイトル" value={t.theme} onChange={x => update({ theme: x })} readOnly={readonly} />
-          <Field label="TourOption名" required value={t.name} onChange={x => update({ name: x })} readOnly={readonly} maxLen={60} />
+        </div>
+        {/* 多言語タブ */}
+        {(() => {
+          const [lang, setLang] = useLState("ja");
+          return (
+            <div style={{marginTop:16}}>
+              <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+                {[["ja","日本語"],["en","English"]].map(([code,label]) => (
+                  <button key={code} type="button"
+                    style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:lang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:lang===code?700:400,color:lang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+                    onClick={() => setLang(code)}>{label}</button>
+                ))}
+              </div>
+              {lang === "ja" ? (
+                <div className="field-grid">
+                  <Field label="TourOption名" required value={t.name} onChange={x => update({ name: x })} readOnly={readonly} maxLen={60} />
+                  <Field label="選択表示名" required value={t.selectionName} onChange={x => update({ selectionName: x })} readOnly={readonly} help="商品ページのオプション選択に表示されます" maxLen={30} />
+                  <Field label="短い説明" required value={t.shortDescription} onChange={x => update({ shortDescription: x })} wide multiline readOnly={readonly} maxLen={80} help="一覧・選択カードに表示される1〜2行" />
+                  <Field label="詳細説明" value={t.detailDescription} onChange={x => update({ detailDescription: x })} wide multiline readOnly={readonly} maxLen={400} />
+                </div>
+              ) : (
+                <div className="field-grid">
+                  <Field label="TourOption Name (EN)" value={t.nameEn} onChange={x => update({ nameEn: x })} readOnly={readonly} maxLen={60} />
+                  <Field label="Selection Display Name (EN)" value={t.selectionNameEn} onChange={x => update({ selectionNameEn: x })} readOnly={readonly} maxLen={30} />
+                  <Field label="Short Description (EN)" value={t.shortDescriptionEn} onChange={x => update({ shortDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={80} />
+                  <Field label="Detail Description (EN)" value={t.detailDescriptionEn} onChange={x => update({ detailDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={400} />
+                </div>
+              )}
+            </div>
+          );
+        })()}
+        <div className="field-grid">
           <Field label="正式名称（英）" value={t.officialName} onChange={x => update({ officialName: x })} wide readOnly={readonly} />
-          <Field label="選択表示名" required value={t.selectionName} onChange={x => update({ selectionName: x })} readOnly={readonly} help="商品ページのオプション選択に表示されます" maxLen={30} />
-          <TagField label="タグ / バッジ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
-          <Field label="短い説明" required value={t.shortDescription} onChange={x => update({ shortDescription: x })} wide multiline readOnly={readonly} maxLen={80} help="一覧・選択カードに表示される1〜2行" />
-          <Field label="詳細説明" value={t.detailDescription} onChange={x => update({ detailDescription: x })} wide multiline readOnly={readonly} maxLen={400} />
+          <TagMasterField label="タグ / バッジ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
         </div>
       </div>
     );
@@ -3813,9 +3977,24 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         />
         <div className="field-grid three">
           <SelectField label="商品種類" required value={t.type} onChange={x => update({ type: x })} options={["ガイドツアー", "施設体験", "移動付きツアー"]} readOnly={readonly} />
-          <SelectField label="カテゴリ" required value={t.category} onChange={x => update({ category: x })} options={["Food & Drink", "Culture", "Nature", "Private Tour"]} readOnly={readonly} />
-          <Field label="エリア名" value={t.area} onChange={x => update({ area: x })} readOnly={readonly} />
-          <Field label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} readOnly={readonly} />
+          <div className="field">
+            <label className="field-label"><span className="req"/><span>カテゴリ</span></label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:10,paddingTop:4}}>
+              {["Food & Drink","Culture","Nature","Private Tour","Adventure","Art & Culture","Shopping","Photography"].map(opt => (
+                <label key={opt} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                  <input type="checkbox" disabled={readonly}
+                    checked={(t.categories||[]).includes(opt)}
+                    onChange={e => {
+                      const cur = t.categories||[];
+                      update({ categories: e.target.checked ? [...cur,opt] : cur.filter(x=>x!==opt) });
+                    }} />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
+          <SelectField label="エリア名" value={t.area} onChange={x => update({ area: x })} options={["祇園・東山エリア","嵐山エリア","金閣寺・北野エリア","伏見稲荷エリア","大阪難波エリア","大阪梅田エリア","神戸元町エリア","奈良中心エリア"]} readOnly={readonly} />
+          <SelectField label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} options={["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"]} readOnly={readonly} />
           <Field label="市区町村" value={t.city} onChange={x => update({ city: x })} readOnly={readonly} />
           <DurationField label="所要時間" required value={t.duration} onChange={x => update({ duration: x })} readOnly={readonly} />
         </div>
@@ -3868,15 +4047,18 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           </div>
         </div>
 
-        <TieredPricingSection
-          enabled={tieredOn}
-          tiers={t.tieredPrices || []}
-          onToggle={v => update({ tieredPricingEnabled: v })}
-          onChange={tiers => update({ tieredPrices: tiers })}
-          readonly={readonly}
-        />
+        <div className="tiered-pricing is-on" style={{padding:16}}>
+          <div className="section-title" style={{borderBottom:'1px solid var(--line)',paddingBottom:12,marginBottom:12}}>
+            <div>
+              <h2>段階価格 <span className="muted" style={{fontWeight:500,fontSize:13}}>（Tiered Pricing）</span></h2>
+              <p>予約人数に応じて1名あたりの単価が変動する場合に設定します。</p>
+            </div>
+          </div>
+          <p style={{fontSize:13,color:'var(--muted)',marginBottom:12}}>現在 {t.tieredPrices?.length ?? 0} 件の段階価格が設定されています。</p>
+          <a href="tour-option-price.html" className="btn">段階価格を編集する →</a>
+        </div>
 
-        <CancelConditionSection t={t} update={update} readonly={readonly} />
+        <CancelPolicySection t={t} update={update} readonly={readonly} />
 
         <div className="field-grid">
           <SelectField label="価格・原価確認" value={t.costCheck} onChange={x => update({ costCheck: x })} options={["未確認", "原価確認済み", "再確認が必要"]} readOnly={readonly} />
@@ -3976,7 +4158,17 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
     );
   }
   if (tab === "channels") {
-    return <ChannelsTab data={t} update={update} readonly={readonly} />;
+    return (
+      <div className="form-section">
+        <SectionHead
+          eyebrow="チャネル別URL"
+          title="チャネル別URL"
+          desc="各OTA・自社サイトでの掲載URLは専用画面で管理します。"
+        />
+        <p style={{fontSize:13,color:'var(--muted)',marginBottom:16}}>チャネル別URLの登録・編集は別画面で行います。</p>
+        <a href="tour-option-detail.html" className="btn">チャネル別URL管理画面を開く →</a>
+      </div>
+    );
   }
   return null;
 }
