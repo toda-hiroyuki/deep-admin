@@ -2651,6 +2651,7 @@ window.SEED = {
       ["conditions", "提供条件"],
       ["sales", "販売条件"],
       ["content", "コンテンツ"],
+      ["schedule", "ツアー行程"],
       ["ops", "運営・確認"],
       ["channels", "チャネル別URL"],
     ],
@@ -2658,7 +2659,6 @@ window.SEED = {
       ["pageBasic", "ページ基本"],
       ["pageContent", "共通コンテンツ"],
       ["links", "掲載TourOption"],
-      ["pagePreview", "表示確認"],
     ],
     guideDoc: [
       ["docList", "資料一覧"],
@@ -3531,38 +3531,19 @@ function TagField({ label, value = [], onChange, wide, help, readOnly }) {
 
 function TagMasterField({ label, value, onChange, readOnly, help }) {
   const TAG_MASTER = ["貸切","夜","人気","少人数","グループ","朝","半日","日帰り","食体験","文化体験","英語対応","初心者向け","写真スポット","屋外","屋内"];
-  const [open, setOpen] = React.useState(false);
-  const ref = React.useRef(null);
-  useClickOutside(ref, () => setOpen(false));
   const vals = value || [];
   return (
-    <div className="field" ref={ref}>
+    <div className="field" style={{gridColumn:'1/-1'}}>
       <label className="field-label"><span>{label}</span></label>
-      {!readOnly && (
-        <div style={{position:'relative'}}>
-          <button type="button" className="btn" style={{width:'100%',textAlign:'left',justifyContent:'space-between',display:'flex'}}
-            onClick={() => setOpen(o => !o)}>
-            <span>{vals.length ? vals.join(', ') : 'タグを選択...'}</span>
-            <span>▾</span>
-          </button>
-          {open && (
-            <div style={{position:'absolute',top:'100%',left:0,right:0,background:'var(--surface)',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',boxShadow:'var(--shadow-2)',zIndex:200,padding:8,display:'flex',flexWrap:'wrap',gap:6}}>
-              {TAG_MASTER.map(tag => (
-                <label key={tag} style={{display:'flex',alignItems:'center',gap:4,cursor:'pointer',padding:'3px 6px',borderRadius:4,background:vals.includes(tag)?'var(--accent-soft)':'var(--surface-tint)',fontSize:12.5}}>
-                  <input type="checkbox" checked={vals.includes(tag)} onChange={e => onChange(e.target.checked ? [...vals,tag] : vals.filter(x=>x!==tag))} />
-                  {tag}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {readOnly && (
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,paddingTop:4}}>
-          {vals.map(t => <span key={t} className="tag-chip">{t}</span>)}
-          {!vals.length && <span style={{color:'var(--muted-soft)',fontSize:13}}>—</span>}
-        </div>
-      )}
+      <div style={{display:'flex',flexWrap:'wrap',gap:'6px 16px',paddingTop:4}}>
+        {TAG_MASTER.map(tag => (
+          <label key={tag} style={{display:'flex',alignItems:'center',gap:5,cursor:readOnly?'default':'pointer',fontSize:13,padding:'3px 0',borderRadius:4,background:vals.includes(tag)?'var(--accent-soft)':'transparent'}}>
+            <input type="checkbox" checked={vals.includes(tag)} disabled={readOnly}
+              onChange={e => !readOnly && onChange(e.target.checked ? [...vals,tag] : vals.filter(x=>x!==tag))} />
+            {tag}
+          </label>
+        ))}
+      </div>
       {help && <div className="field-help"><span>{help}</span></div>}
     </div>
   );
@@ -3931,29 +3912,29 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         </div>
         {/* 多言語タブ */}
         {(() => {
-          const [lang, setLang] = useLState("ja");
+          const [lang, setLang] = useLState("en");
           return (
-            <div style={{marginTop:16}}>
+            <div style={{marginTop:16,border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px'}}>
               <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
-                {[["ja","日本語"],["en","English"]].map(([code,label]) => (
+                {[["en","English"],["ja","日本語"]].map(([code,label]) => (
                   <button key={code} type="button"
                     style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:lang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:lang===code?700:400,color:lang===code?'var(--accent)':'var(--muted)',fontSize:13}}
                     onClick={() => setLang(code)}>{label}</button>
                 ))}
               </div>
-              {lang === "ja" ? (
-                <div className="field-grid">
-                  <Field label="TourOption名" required value={t.name} onChange={x => update({ name: x })} readOnly={readonly} maxLen={60} />
-                  <Field label="選択表示名" required value={t.selectionName} onChange={x => update({ selectionName: x })} readOnly={readonly} help="商品ページのオプション選択に表示されます" maxLen={30} />
-                  <Field label="短い説明" required value={t.shortDescription} onChange={x => update({ shortDescription: x })} wide multiline readOnly={readonly} maxLen={80} help="一覧・選択カードに表示される1〜2行" />
-                  <Field label="詳細説明" value={t.detailDescription} onChange={x => update({ detailDescription: x })} wide multiline readOnly={readonly} maxLen={400} />
-                </div>
-              ) : (
+              {lang === "en" ? (
                 <div className="field-grid">
                   <Field label="TourOption Name (EN)" value={t.nameEn} onChange={x => update({ nameEn: x })} readOnly={readonly} maxLen={60} />
                   <Field label="Selection Display Name (EN)" value={t.selectionNameEn} onChange={x => update({ selectionNameEn: x })} readOnly={readonly} maxLen={30} />
                   <Field label="Short Description (EN)" value={t.shortDescriptionEn} onChange={x => update({ shortDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={80} />
                   <Field label="Detail Description (EN)" value={t.detailDescriptionEn} onChange={x => update({ detailDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={400} />
+                </div>
+              ) : (
+                <div className="field-grid">
+                  <Field label="TourOption名" required value={t.name} onChange={x => update({ name: x })} readOnly={readonly} maxLen={60} />
+                  <Field label="選択表示名" required value={t.selectionName} onChange={x => update({ selectionName: x })} readOnly={readonly} help="商品ページのオプション選択に表示されます" maxLen={30} />
+                  <Field label="短い説明" required value={t.shortDescription} onChange={x => update({ shortDescription: x })} wide multiline readOnly={readonly} maxLen={80} help="一覧・選択カードに表示される1〜2行" />
+                  <Field label="詳細説明" value={t.detailDescription} onChange={x => update({ detailDescription: x })} wide multiline readOnly={readonly} maxLen={400} />
                 </div>
               )}
             </div>
@@ -3968,6 +3949,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "conditions") {
+    const [meetLang, setMeetLang] = useLState("en");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead
@@ -3977,38 +3959,57 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         />
         <div className="field-grid three">
           <SelectField label="商品種類" required value={t.type} onChange={x => update({ type: x })} options={["ガイドツアー", "施設体験", "移動付きツアー"]} readOnly={readonly} />
-          <div className="field">
-            <label className="field-label"><span className="req"/><span>カテゴリ</span></label>
-            <div style={{display:'flex',flexWrap:'wrap',gap:10,paddingTop:4}}>
-              {["Food & Drink","Culture","Nature","Private Tour","Adventure","Art & Culture","Shopping","Photography"].map(opt => (
-                <label key={opt} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
-                  <input type="checkbox" disabled={readonly}
-                    checked={(t.categories||[]).includes(opt)}
-                    onChange={e => {
-                      const cur = t.categories||[];
-                      update({ categories: e.target.checked ? [...cur,opt] : cur.filter(x=>x!==opt) });
-                    }} />
-                  {opt}
-                </label>
-              ))}
-            </div>
-          </div>
-          <SelectField label="エリア名" value={t.area} onChange={x => update({ area: x })} options={["祇園・東山エリア","嵐山エリア","金閣寺・北野エリア","伏見稲荷エリア","大阪難波エリア","大阪梅田エリア","神戸元町エリア","奈良中心エリア"]} readOnly={readonly} />
-          <SelectField label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} options={["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"]} readOnly={readonly} />
-          <Field label="市区町村" value={t.city} onChange={x => update({ city: x })} readOnly={readonly} />
           <DurationField label="所要時間" required value={t.duration} onChange={x => update({ duration: x })} readOnly={readonly} />
+        </div>
+        <div className="field-grid three">
+          <SelectField label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} options={["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"]} readOnly={readonly} />
+          <SelectField label="エリア名" value={t.area} onChange={x => update({ area: x })} options={["祇園・東山エリア","嵐山エリア","金閣寺・北野エリア","伏見稲荷エリア","大阪難波エリア","大阪梅田エリア","神戸元町エリア","奈良中心エリア"]} readOnly={readonly} />
+          <Field label="市区町村" value={t.city} onChange={x => update({ city: x })} readOnly={readonly} />
+        </div>
+        <div className="field" style={{marginBottom:16}}>
+          <label className="field-label"><span>カテゴリ</span></label>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'6px 14px',paddingTop:4}}>
+            {["Food & Drink","Culture","Nature","Private Tour","Adventure","Art & Culture","Shopping","Photography"].map(opt => (
+              <label key={opt} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                <input type="checkbox" disabled={readonly}
+                  checked={(t.categories||[]).includes(opt)}
+                  onChange={e => {
+                    const cur = t.categories||[];
+                    update({ categories: e.target.checked ? [...cur,opt] : cur.filter(x=>x!==opt) });
+                  }} />
+                {opt}
+              </label>
+            ))}
+          </div>
         </div>
         <div className="field-grid three">
           <Field label="1予約あたり最小人数" required value={t.minBooking} onChange={x => update({ minBooking: x })} readOnly={readonly} affixRight="名" type="number" />
           <Field label="1予約あたり最大人数" required value={t.maxBooking} onChange={x => update({ maxBooking: x })} readOnly={readonly} affixRight="名" type="number" />
           <Field label="1催行回あたり定員" value={t.capacity} onChange={x => update({ capacity: x })} readOnly={readonly} affixRight="名" type="number" />
         </div>
-        <div className="field-grid">
-          <Field label="集合場所" required value={t.meetingPlace} onChange={x => update({ meetingPlace: x })} wide readOnly={readonly} />
-          <Field label="集合場所英語名" value={t.meetingPlaceEn} onChange={x => update({ meetingPlaceEn: x })} wide readOnly={readonly} />
+        <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginBottom:12}}>
+          <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+            {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+              <button key={code} type="button"
+                style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:meetLang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:meetLang===code?700:400,color:meetLang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+                onClick={() => setMeetLang(code)}>{label}</button>
+            ))}
+          </div>
+          {meetLang === "en" ? (
+            <div className="field-grid">
+              <Field label="集合場所（英語）" value={t.meetingPlaceEn} onChange={x => update({ meetingPlaceEn: x })} wide readOnly={readonly} />
+              <Field label="解散場所（英語）" value={t.dropoffEn||""} onChange={x => update({ dropoffEn: x })} readOnly={readonly} />
+            </div>
+          ) : (
+            <div className="field-grid">
+              <Field label="集合場所（日本語）" required value={t.meetingPlace} onChange={x => update({ meetingPlace: x })} wide readOnly={readonly} />
+              <Field label="解散場所（日本語）" value={t.dropoff} onChange={x => update({ dropoff: x })} readOnly={readonly} />
+            </div>
+          )}
+          <div className="field-grid three" style={{marginTop:8}}>
+            <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
+          </div>
           <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
-          <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
-          <Field label="解散場所" value={t.dropoff} onChange={x => update({ dropoff: x })} readOnly={readonly} />
         </div>
       </div>
     );
@@ -4047,16 +4048,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           </div>
         </div>
 
-        <div className="tiered-pricing is-on" style={{padding:16}}>
-          <div className="section-title" style={{borderBottom:'1px solid var(--line)',paddingBottom:12,marginBottom:12}}>
-            <div>
-              <h2>段階価格 <span className="muted" style={{fontWeight:500,fontSize:13}}>（Tiered Pricing）</span></h2>
-              <p>予約人数に応じて1名あたりの単価が変動する場合に設定します。</p>
-            </div>
-          </div>
-          <p style={{fontSize:13,color:'var(--muted)',marginBottom:12}}>現在 {t.tieredPrices?.length ?? 0} 件の段階価格が設定されています。</p>
-          <a href="tour-option-price.html" className="btn">段階価格を編集する →</a>
-        </div>
+        <TieredPricingSection enabled={tieredOn} tiers={t.tieredPrices||[]} onToggle={v => update({tieredPricingEnabled:v})} onChange={v => update({tieredPrices:v})} readonly={readonly} />
 
         <CancelPolicySection t={t} update={update} readonly={readonly} />
 
@@ -4068,22 +4060,87 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "content") {
+    const [incLang, setIncLang] = useLState("en");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead
           eyebrow="STEP 4"
           title="コンテンツ"
-          desc="ゲスト向けの表示内容を管理します。ガイド向け行程は「ガイド資料」で管理します。"
+          desc="ゲスト向けの表示内容を管理します。ツアー行程は「ツアー行程」タブで管理します。"
         />
-        <InfoNote>
-          <strong>注意:</strong> ガイド向け行程（詳細オペレーション手順）は「ガイド資料」画面の資料種別「行程」として管理します。このタブのスケジュールはゲストに表示する概要です。
-        </InfoNote>
-        <div className="field-grid">
-          <Field label="ゲスト向けスケジュール" required value={t.guestSchedule} onChange={x => update({ guestSchedule: x })} wide multiline readOnly={readonly} maxLen={300} />
-          <Field label="含まれるもの (Inclusions)" value={t.inclusions} onChange={x => update({ inclusions: x })} multiline readOnly={readonly} />
-          <Field label="含まれないもの (Exclusions)" value={t.exclusions} onChange={x => update({ exclusions: x })} multiline readOnly={readonly} />
-          <Field label="TourOption代表画像URL" value="https://images.unsplash.com/photo-1528360983277-13d401cdc186" onChange={() => {}} wide readOnly={readonly} type="url" ok="画像読み込み確認済み" />
-          <Field label="画像ギャラリーURL一覧" value="祇園夜景, 食事, 集合場所, 街歩き" onChange={() => {}} wide multiline readOnly={readonly} help="4件の画像を登録済み" />
+        <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginBottom:16}}>
+          <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+            {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+              <button key={code} type="button"
+                style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:incLang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:incLang===code?700:400,color:incLang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+                onClick={() => setIncLang(code)}>{label}</button>
+            ))}
+          </div>
+          {incLang === "en" ? (
+            <div className="field-grid">
+              <Field label="Inclusions (EN)" value={t.inclusionsEn||""} onChange={x => update({ inclusionsEn: x })} wide multiline readOnly={readonly} />
+              <Field label="Exclusions (EN)" value={t.exclusionsEn||""} onChange={x => update({ exclusionsEn: x })} wide multiline readOnly={readonly} />
+            </div>
+          ) : (
+            <div className="field-grid">
+              <Field label="含まれるもの (Inclusions)" value={t.inclusions} onChange={x => update({ inclusions: x })} wide multiline readOnly={readonly} />
+              <Field label="含まれないもの (Exclusions)" value={t.exclusions} onChange={x => update({ exclusions: x })} wide multiline readOnly={readonly} />
+            </div>
+          )}
+        </div>
+        <div style={{marginBottom:16}}>
+          <label className="field-label">画像ギャラリー</label>
+          <div style={{border:'2px dashed var(--line-strong)',borderRadius:8,padding:32,textAlign:'center',background:'var(--bg-sunken)',cursor:'pointer'}}
+            onClick={() => document.getElementById('img-upload').click()}>
+            <div style={{fontSize:32,marginBottom:8}}>📁</div>
+            <div style={{fontSize:14,color:'var(--muted)'}}>画像をドラッグ＆ドロップ、またはクリックして選択</div>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:4}}>JPG / PNG / WebP · 最大10枚 · 各5MB以下</div>
+            <input id="img-upload" type="file" accept="image/*" multiple style={{display:'none'}} />
+          </div>
+          <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
+            {["祇園夜景","食事","集合場所","街歩き"].map((name,i) => (
+              <div key={i} style={{width:80,height:60,background:'var(--bg-sunken)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'var(--muted)',position:'relative',border:'1px solid var(--line)'}}>
+                {name}
+                <button type="button" style={{position:'absolute',top:2,right:2,background:'none',border:'none',cursor:'pointer',fontSize:10,color:'var(--muted)'}}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (tab === "schedule") {
+    return (
+      <div className="form-section">
+        <SectionHead eyebrow="STEP 5" title="ツアー行程" desc="このTourOptionのツアー行程を管理します。" />
+        <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+          <a href="tour-schedule-detail.html" className="btn primary">＋ 新規作成</a>
+        </div>
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr><th>行程コード</th><th>行程名</th><th>催行日</th><th>ガイド</th><th>ステータス</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="mono" style={{fontSize:12.5}}>SCH-001</td>
+                <td>祇園ナイトフードツアー 行程A</td>
+                <td>2024/12/01</td>
+                <td>田中ガイド</td>
+                <td><span className="badge teal">確定</span></td>
+                <td><a href="tour-schedule-detail.html" className="btn sm">編集</a></td>
+              </tr>
+              <tr>
+                <td className="mono" style={{fontSize:12.5}}>SCH-002</td>
+                <td>祇園ナイトフードツアー 行程B</td>
+                <td>2024/12/08</td>
+                <td>鈴木ガイド</td>
+                <td><span className="badge outline">下書き</span></td>
+                <td><a href="tour-schedule-detail.html" className="btn sm">編集</a></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     );
@@ -4095,7 +4152,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
     const indivDocs = assigned.filter(d => d.scope === "個別");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-        <SectionHead eyebrow="STEP 5" title="運営・確認" desc="ガイド向けメモ、参考資料・注意事項・行程、公開前チェックを確認します。" />
+        <SectionHead eyebrow="STEP 6" title="運営・確認" desc="ガイド向けメモ、参考資料・注意事項・行程、公開前チェックを確認します。" />
         <div className="field-grid">
           <Field label="ガイド向け注意事項" value={t.guideMemo} onChange={x => update({ guideMemo: x })} wide multiline readOnly={readonly} />
           <Field label="営業時間・定休日メモ" value="月曜定休の店舗があるため代替候補を確認" onChange={() => {}} wide readOnly={readonly} />
@@ -4111,16 +4168,22 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         </div>
 
         <div>
-          <div className="field-label" style={{marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
-            <span>共通資料</span>
-            <span className="badge blue">{commonDocs.length}件</span>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <div className="field-label" style={{marginBottom:0,display:'flex',alignItems:'center',gap:8}}>
+              <span>共通資料</span>
+              <span className="badge blue">{commonDocs.length}件</span>
+            </div>
+            <a href="guide-material-detail.html" className="btn sm">＋ 共通資料を登録</a>
           </div>
           <DocTable docs={commonDocs} />
         </div>
-        <div>
-          <div className="field-label" style={{marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
-            <span>個別資料</span>
-            <span className="badge teal">{indivDocs.length}件</span>
+        <div style={{marginTop:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <div className="field-label" style={{marginBottom:0,display:'flex',alignItems:'center',gap:8}}>
+              <span>個別資料</span>
+              <span className="badge teal">{indivDocs.length}件</span>
+            </div>
+            <a href="guide-material-detail.html" className="btn sm">＋ 個別資料を登録</a>
           </div>
           <DocTable docs={indivDocs} />
         </div>
@@ -4128,15 +4191,36 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
     );
   }
   if (tab === "channels") {
+    const urls = SEED.channelUrls || [];
     return (
       <div className="form-section">
         <SectionHead
-          eyebrow="チャネル別URL"
+          eyebrow="STEP 7"
           title="チャネル別URL"
-          desc="各OTA・自社サイトでの掲載URLは専用画面で管理します。"
+          desc="各OTA・自社サイトでの掲載URLを管理します。"
         />
-        <p style={{fontSize:13,color:'var(--muted)',marginBottom:16}}>チャネル別URLの登録・編集は別画面で行います。</p>
-        <a href="tour-option-detail.html" className="btn">チャネル別URL管理画面を開く →</a>
+        <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
+          <button className="btn primary">＋ チャネルURLを登録</button>
+        </div>
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr><th>チャネル</th><th>URL</th><th>有効</th><th>更新日</th><th></th></tr>
+            </thead>
+            <tbody>
+              {urls.map(ch => (
+                <tr key={ch.id}>
+                  <td><strong>{ch.channel}</strong></td>
+                  <td style={{fontSize:12,color:'var(--muted)',maxWidth:300,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{ch.url}</td>
+                  <td><span className={`badge ${ch.enabled ? "teal" : "outline"}`}>{ch.enabled ? "有効" : "無効"}</span></td>
+                  <td style={{fontSize:12,color:'var(--muted)'}}>{ch.updatedAt}</td>
+                  <td><button className="btn sm">編集</button></td>
+                </tr>
+              ))}
+              {!urls.length && <tr><td colSpan={5} style={{textAlign:'center',color:'var(--muted)',padding:24}}>チャネルURLが登録されていません</td></tr>}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -4152,39 +4236,30 @@ function TieredPricingSection({ enabled, tiers, onToggle, onChange, readonly }) 
   };
   const removeTier = (id) => onChange(tiers.filter(t => t.id !== id));
   const addTier = () => {
-    const last = tiers[tiers.length - 1];
-    const nextMin = last ? Math.max((last.openMax ? last.min : (last.max ?? last.min)) + 1, 1) : 1;
-    onChange([...tiers, { id: `tp-${Date.now()}`, min: nextMin, max: nextMin + 1, price: 6000, openMax: false }]);
+    const sortedMins = tiers.map(t => Number(t.min)).filter(Boolean).sort((a,b)=>a-b);
+    const nextMin = sortedMins.length ? sortedMins[sortedMins.length-1] + 1 : 1;
+    onChange([...tiers, { id: `tp-${Date.now()}`, min: nextMin, price: 6000 }]);
   };
 
-  // Validation: detect overlaps, empty / inverted ranges
+  // Validation: detect duplicate lower bounds
   const tierErrors = useMemo(() => {
     const errs = tiers.map(() => null);
     tiers.forEach((t, i) => {
       const min = Number(t.min);
-      const max = t.openMax ? Infinity : Number(t.max);
       if (!min || min < 1) errs[i] = "下限が未入力";
-      else if (!t.openMax && (!max || max < min)) errs[i] = "上限が下限を下回っています";
       else {
-        // overlap check
         for (let j = 0; j < tiers.length; j++) {
           if (i === j) continue;
-          const o = tiers[j];
-          const oMin = Number(o.min);
-          const oMax = o.openMax ? Infinity : Number(o.max);
-          if (min <= oMax && oMin <= max) { errs[i] = "他の人数帯と重複しています"; break; }
+          if (Number(tiers[j].min) === min) { errs[i] = "下限が重複しています"; break; }
         }
       }
     });
     return errs;
   }, [tiers]);
 
-  // calc preview
-  const matched = tiers.find(t => {
-    const min = Number(t.min);
-    const max = t.openMax ? Infinity : Number(t.max);
-    return sampleN >= min && sampleN <= max;
-  });
+  // calc preview - find tier with highest min that's <= sampleN
+  const sorted = [...tiers].sort((a,b) => Number(b.min)-Number(a.min));
+  const matched = sorted.find(t => sampleN >= Number(t.min));
   const total = matched ? sampleN * Number(matched.price) : null;
 
   return (
@@ -4214,8 +4289,7 @@ function TieredPricingSection({ enabled, tiers, onToggle, onChange, readonly }) 
               <thead>
                 <tr>
                   <th style={{width:28}}></th>
-                  <th style={{width:140}}>人数帯（下限）</th>
-                  <th style={{width:180}}>人数帯（上限）</th>
+                  <th style={{width:160}}>人数（下限）</th>
                   <th>1名あたり単価（税込）</th>
                   <th className="actions" style={{width:80}}>操作</th>
                 </tr>
@@ -4231,30 +4305,8 @@ function TieredPricingSection({ enabled, tiers, onToggle, onChange, readonly }) 
                       <td>
                         <div className="input-affix tier-input">
                           <input type="number" min={1} value={t.min} onChange={e => updateTier(t.id, { min: Number(e.target.value) || 0 })} readOnly={readonly} />
-                          <div className="affix right">名</div>
+                          <div className="affix right">名〜</div>
                         </div>
-                      </td>
-                      <td>
-                        {t.openMax ? (
-                          <div className="open-max-cell">
-                            <span className="open-max-text">上限なし</span>
-                            <label className="mini-check">
-                              <input type="checkbox" checked={t.openMax} onChange={e => updateTier(t.id, { openMax: e.target.checked, max: e.target.checked ? null : (Number(t.min)+1) })} disabled={readonly} />
-                              <span>上限なし</span>
-                            </label>
-                          </div>
-                        ) : (
-                          <div className="open-max-cell">
-                            <div className="input-affix tier-input">
-                              <input type="number" min={1} value={t.max ?? ""} onChange={e => updateTier(t.id, { max: Number(e.target.value) || 0 })} readOnly={readonly} />
-                              <div className="affix right">名</div>
-                            </div>
-                            <label className="mini-check">
-                              <input type="checkbox" checked={!!t.openMax} onChange={e => updateTier(t.id, { openMax: e.target.checked, max: e.target.checked ? null : (Number(t.min)+1) })} disabled={readonly} />
-                              <span>上限なしにする</span>
-                            </label>
-                          </div>
-                        )}
                       </td>
                       <td>
                         <div className="input-affix tier-input price">
@@ -6317,8 +6369,8 @@ function App() {
             <strong>{statusValues.sub}</strong>
           </div>
           <div className="status-actions">
-            <select className="field-input" style={{width:"auto",height:"var(--field-h)",padding:"0 8px",marginRight:4,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13}} value={tourOption.salesStatus} onChange={e => updateTourOption({salesStatus: e.target.value})}>
-              <option value="掲載中">公開</option>
+            <select className="field-input" style={{width:"auto",height:"var(--field-h)",paddingLeft:8,paddingRight:32,marginRight:4,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13}} value={tourOption.salesStatus} onChange={e => updateTourOption({salesStatus: e.target.value})}>
+              <option value="掲載中">掲載中</option>
               <option value="非公開">非公開</option>
               <option value="下書き">下書き</option>
             </select>
@@ -6435,8 +6487,10 @@ function AccentPicker({ value, onChange }) {
 
 function Sidebar({ resource, counts }) {
   const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
+    { key: "tourSchedule",   href: "tour-schedules.html",  icon: "⏱", label: "ツアー行程" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
     { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
   ];

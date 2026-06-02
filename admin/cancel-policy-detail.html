@@ -6271,8 +6271,10 @@ function AccentPicker({ value, onChange }) {
 
 function Sidebar({ resource, counts }) {
   const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
+    { key: "tourSchedule",   href: "tour-schedules.html",  icon: "⏱", label: "ツアー行程" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
     { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
   ];
