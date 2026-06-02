@@ -264,8 +264,10 @@ function genId() { return `tp-${nextId++}`; }
 
 function Sidebar() {
   const items = [
+    { key: "dashboard",       href: "index.html",           icon: "⊞", label: "ダッシュボード" },
     { key: "tourOption",      href: "tour-options.html",    icon: "TO", label: "TourOption",             count: 24 },
     { key: "product",         href: "products.html",        icon: "PP", label: "商品ページ",              count: 8  },
+    { key: "tourSchedule",    href: "tour-schedules.html",  icon: "⏱", label: "ツアー行程",             count: 12 },
     { key: "guideDoc",        href: "guide-materials.html", icon: "GD", label: "ガイド資料",              count: 16 },
     { key: "cancelTemplate",  href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言",  count: 5  },
   ];

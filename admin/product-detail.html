@@ -4375,12 +4375,13 @@ function DocTable({ docs }) {
 // ── PageContent Editor (multilingual) ──────────────────────────────────────
 
 function PageContentEditor({ page, updatePage, readonly }) {
-  const [lang, setLang] = React.useState("ja");
+  const [lang, setLang] = React.useState("en");
   return (
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
       <SectionHead eyebrow="STEP 2" title="共通コンテンツ" desc="ページに紐付くTourOption群に共通する見せ方を管理します。" />
+      <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginBottom:12}}>
       <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
-        {[["ja","日本語"],["en","English"]].map(([code,label]) => (
+        {[["en","English"],["ja","日本語"]].map(([code,label]) => (
           <button key={code} type="button"
             style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:lang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:lang===code?700:400,color:lang===code?'var(--accent)':'var(--muted)',fontSize:13}}
             onClick={() => setLang(code)}>{label}</button>
@@ -4407,6 +4408,7 @@ function PageContentEditor({ page, updatePage, readonly }) {
           <Field label="Excluded Note (EN)" value={page.excludedNoteEn||""} onChange={x => updatePage({ excludedNoteEn: x })} readOnly={readonly} />
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -4418,6 +4420,7 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
   const link = links.find(l => l.id === selectedLinkId) ?? links[0];
 
   if (tab === "pageBasic") {
+    const [titleLang, setTitleLang] = React.useState("en");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead eyebrow="STEP 1" title="商品ページ基本情報" desc="商品ページ全体の表示・検索・公開状態を管理します。" />
@@ -4425,7 +4428,9 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
           <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
           <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
           <SelectField label="ページ種別" value={page.pageType} onChange={x => updatePage({ pageType: x })} options={["通常商品ページ", "キャンペーンLP", "特集ページ", "その他"]} readOnly={readonly} />
-          <div className="field">
+          <SelectField label="テンプレート種別" value={page.template} onChange={x => updatePage({ template: x })} options={["標準商品ページ", "LP型", "特集型"]} readOnly={readonly} />
+          <SelectField label="オプション表示方式" value={page.optionLayout} onChange={x => updatePage({ optionLayout: x })} options={["標準リスト型", "カード型", "コンパクト型"]} readOnly={readonly} />
+          <div className="field" style={{gridColumn:'1/-1'}}>
             <label className="field-label"><span>表示カテゴリ</span></label>
             <div style={{display:'flex',flexWrap:'wrap',gap:10,paddingTop:4}}>
               {["Food & Drink","Culture","Nature","Private Tour","Adventure","Art & Culture","Shopping","Photography"].map(opt => (
@@ -4441,11 +4446,26 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
               ))}
             </div>
           </div>
-          <Field label="商品ページ表示タイトル" required value={page.displayTitle} onChange={x => updatePage({ displayTitle: x })} wide readOnly={readonly} maxLen={50} />
-          <Field label="サブタイトル" value={page.subtitle} onChange={x => updatePage({ subtitle: x })} wide readOnly={readonly} maxLen={80} />
-          <SelectField label="テンプレート種別" value={page.template} onChange={x => updatePage({ template: x })} options={["標準商品ページ", "LP型", "特集型"]} readOnly={readonly} />
-          <SelectField label="オプション表示方式" value={page.optionLayout} onChange={x => updatePage({ optionLayout: x })} options={["標準リスト型", "カード型", "コンパクト型"]} readOnly={readonly} />
-          <SelectField label="掲載ステータス" value={page.status} onChange={x => updatePage({ status: x })} options={["下書き", "掲載中", "非公開"]} readOnly={readonly} />
+          <div style={{gridColumn:'1/-1',border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px'}}>
+            <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+              {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+                <button key={code} type="button"
+                  style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:titleLang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:titleLang===code?700:400,color:titleLang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+                  onClick={() => setTitleLang(code)}>{label}</button>
+              ))}
+            </div>
+            {titleLang === "en" ? (
+              <div className="field-grid">
+                <Field label="表示タイトル (EN)" required value={page.displayTitleEn||""} onChange={x => updatePage({ displayTitleEn: x })} wide readOnly={readonly} maxLen={50} />
+                <Field label="サブタイトル (EN)" value={page.subtitleEn||""} onChange={x => updatePage({ subtitleEn: x })} wide readOnly={readonly} maxLen={80} />
+              </div>
+            ) : (
+              <div className="field-grid">
+                <Field label="商品ページ表示タイトル" required value={page.displayTitle} onChange={x => updatePage({ displayTitle: x })} wide readOnly={readonly} maxLen={50} />
+                <Field label="サブタイトル" value={page.subtitle} onChange={x => updatePage({ subtitle: x })} wide readOnly={readonly} maxLen={80} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -6160,8 +6180,8 @@ function App() {
             <strong>{statusValues.sub}</strong>
           </div>
           <div className="status-actions">
-            <select className="field-input" style={{width:"auto",height:"var(--field-h)",padding:"0 8px",marginRight:4,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13}} value={productPage.status} onChange={e => updateProductPage({status: e.target.value})}>
-              <option value="掲載中">公開</option>
+            <select className="field-input" style={{width:"auto",height:"var(--field-h)",paddingLeft:8,paddingRight:32,marginRight:4,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13}} value={productPage.status} onChange={e => updateProductPage({status: e.target.value})}>
+              <option value="掲載中">掲載中</option>
               <option value="非公開">非公開</option>
               <option value="下書き">下書き</option>
             </select>
@@ -6278,8 +6298,10 @@ function AccentPicker({ value, onChange }) {
 
 function Sidebar({ resource, counts }) {
   const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
+    { key: "tourSchedule",   href: "tour-schedules.html",  icon: "⏱", label: "ツアー行程" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
     { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
   ];

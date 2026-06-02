@@ -5280,7 +5280,7 @@ function TourOptionList({ rows, onOpen, onCreate }) {
                   <td><span className="muted tiny">{r.updatedAt}</span></td>
                   <td className="actions" onClick={e => e.stopPropagation()}>
                     <a href="tour-option-detail.html" className="btn sm">編集</a>
-                    <a href="tour-schedules.html" className="btn sm" style={{marginLeft:4}}>ツアー行程</a>
+
                   </td>
                 </tr>
               ))}
@@ -5387,7 +5387,7 @@ function ProductPageList({ rows, onOpen, onCreate }) {
                   </td>
                   <td className="actions" onClick={e => e.stopPropagation()}>
                     <a href="product-detail.html" className="btn sm">編集</a>
-                    <a href="tour-schedules.html" className="btn sm" style={{marginLeft:4}}>ツアー行程</a>
+
                     <button className="btn sm" style={{marginLeft:4}}>プレビュー</button>
                   </td>
                 </tr>
@@ -6307,8 +6307,10 @@ function AccentPicker({ value, onChange }) {
 
 function Sidebar({ resource, counts }) {
   const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
+    { key: "tourSchedule",   href: "tour-schedules.html",  icon: "⏱", label: "ツアー行程" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
     { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
   ];
