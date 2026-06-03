@@ -4528,10 +4528,10 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
                       <td className="num">{link.order}</td>
                       <td className="center">{link.default && <span className="badge teal" style={{padding:'1px 6px'}}>既定</span>}</td>
                       <td className="center">
-                        <Switch checked={link.visible} onChange={v => updateLinks(link.id, { visible: v })} />
+                        <span className={`badge ${link.visible ? "teal" : "outline"}`} style={{fontSize:11}}>{link.visible ? "表示" : "非表示"}</span>
                       </td>
                       <td className="center">
-                        <Switch checked={link.sellable} onChange={v => updateLinks(link.id, { sellable: v })} />
+                        <span className={`badge ${link.sellable ? "teal" : "outline"}`} style={{fontSize:11}}>{link.sellable ? "販売中" : "販売停止"}</span>
                       </td>
                       <td>
                         <div className="code-mono" style={{fontSize:12,fontWeight:600}}>{link.code}</div>
@@ -4590,8 +4590,16 @@ function LinkSettingsForm({ link, page, readonly, updateLinks }) {
           <div className="field-label"><span>表示・販売設定</span></div>
           <div className="toggle-list" style={{gridTemplateColumns:'repeat(3, 1fr)'}}>
             <ToggleRow checked={link.default} onChange={v => updateLinks(link.id, { default: v })} title="デフォルト選択" desc="初期表示するOption" />
-            <ToggleRow checked={link.visible} onChange={v => updateLinks(link.id, { visible: v })} title="商品ページ上に表示" desc="非表示でも紐付けは保持" />
-            <ToggleRow checked={link.sellable} onChange={v => updateLinks(link.id, { sellable: v })} title="商品ページ上で販売" desc="OFF時は閲覧のみ" />
+            <div style={{padding:'10px 12px',border:'1px solid var(--line)',borderRadius:6,background:'var(--bg-sunken)'}}>
+              <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>商品ページ上に表示</div>
+              <span className={`badge ${link.visible ? "teal" : "outline"}`}>{link.visible ? "表示中" : "非表示"}</span>
+              <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>変更はTourOption編集画面で行ってください</div>
+            </div>
+            <div style={{padding:'10px 12px',border:'1px solid var(--line)',borderRadius:6,background:'var(--bg-sunken)'}}>
+              <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>商品ページ上で販売</div>
+              <span className={`badge ${link.sellable ? "teal" : "outline"}`}>{link.sellable ? "販売中" : "販売停止"}</span>
+              <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>変更はTourOption編集画面で行ってください</div>
+            </div>
           </div>
         </div>
         <Field label="備考（紐付け固有）" value={link.note} onChange={x => updateLinks(link.id, { note: x })} wide placeholder="この紐付けに関するメモがあれば入力" readOnly={readonly} />
