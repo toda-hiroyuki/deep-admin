@@ -5224,7 +5224,7 @@ function TourOptionList({ rows, onOpen, onCreate }) {
         <div className="lf-controls">
           <MultiSelectDropdown
             label="販売ステータス"
-            options={["掲載中", "非公開", "下書き"]}
+            options={["掲載中", "一時停止", "非公開", "下書き"]}
             values={statuses}
             onChange={setStatuses}
           />
@@ -5342,7 +5342,7 @@ function ProductPageList({ rows, onOpen, onCreate }) {
         <div className="lf-controls">
           <MultiSelectDropdown
             label="掲載ステータス"
-            options={["掲載中", "非公開", "下書き"]}
+            options={["掲載中", "一時停止", "非公開", "下書き"]}
             values={statuses}
             onChange={setStatuses}
           />

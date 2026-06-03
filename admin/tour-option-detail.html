@@ -3621,7 +3621,7 @@ function DurationField({ label, value, onChange, required, readOnly }) {
 function CancelPolicyField({ label, value, onChange, readOnly, trail = "前まで無料キャンセル", defaultUnit = "時間" }) {
   const parsed = (() => {
     if (!value) return { n: 24, unit: defaultUnit };
-    const m = /(\d+)\s*(時間|日)/.exec(value);
+    const m = /(\d+)\s*(時間|日|分)/.exec(value);
     if (m) return { n: Number(m[1]) || 0, unit: m[2] };
     return { n: 24, unit: defaultUnit };
   })();
@@ -3645,6 +3645,7 @@ function CancelPolicyField({ label, value, onChange, readOnly, trail = "前ま�
           onChange={e => set(parsed.n, e.target.value)}
           disabled={readOnly}
         >
+          <option value="分">分</option>
           <option value="時間">時間</option>
           <option value="日">日</option>
         </select>
@@ -3941,7 +3942,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           );
         })()}
         <div className="field-grid">
-          <TagMasterField label="タグ / バッジ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
+          <TagMasterField label="タグ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
         </div>
       </div>
     );
@@ -4006,10 +4007,10 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
             </div>
           )}
         </div>
+        <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
         <div className="field-grid three" style={{marginTop:8}}>
           <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
         </div>
-        <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
       </div>
     );
   }
@@ -4167,23 +4168,31 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         </div>
 
         <div>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-            <div className="field-label" style={{marginBottom:0,display:'flex',alignItems:'center',gap:8}}>
+          <div style={{marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
+            <div className="field-label" style={{marginBottom:0}}>
               <span>共通資料</span>
-              <span className="badge blue">{commonDocs.length}件</span>
             </div>
-            <a href="guide-material-detail.html" className="btn sm">＋ 共通資料を登録</a>
+            <span className="badge blue">{commonDocs.length}件</span>
           </div>
+          <DocSearchInput
+            placeholder="資料名で検索して追加..."
+            allDocs={SEED.guideDocs.filter(d => d.scope === "共通")}
+            onAdd={doc => console.log("add common:", doc.id)}
+          />
           <DocTable docs={commonDocs} />
         </div>
         <div style={{marginTop:16}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-            <div className="field-label" style={{marginBottom:0,display:'flex',alignItems:'center',gap:8}}>
+          <div style={{marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
+            <div className="field-label" style={{marginBottom:0}}>
               <span>個別資料</span>
-              <span className="badge teal">{indivDocs.length}件</span>
             </div>
-            <a href="guide-material-detail.html" className="btn sm">＋ 個別資料を登録</a>
+            <span className="badge teal">{indivDocs.length}件</span>
           </div>
+          <DocSearchInput
+            placeholder="資料名で検索して追加..."
+            allDocs={SEED.guideDocs.filter(d => d.scope === "個別")}
+            onAdd={doc => console.log("add individual:", doc.id)}
+          />
           <DocTable docs={indivDocs} />
         </div>
       </div>
@@ -4191,35 +4200,81 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
   if (tab === "channels") {
     const urls = SEED.channelUrls || [];
+    const channelColors = {
+      "Viator": { bg:"#3DAA6D", label:"V" },
+      "GetYourGuide": { bg:"#FF6600", label:"GYG" },
+      "Klook": { bg:"#FF1744", label:"K" },
+      "Airbnb Experiences": { bg:"#FF5A5F", label:"A" },
+      "Expedia / Activities": { bg:"#003580", label:"EX" },
+      "自社サイト": { bg:"#6B7280", label:"d." },
+    };
     return (
       <div className="form-section">
         <SectionHead
           eyebrow="STEP 7"
           title="チャネル別URL"
-          desc="各OTA・自社サイトでの掲載URLを管理します。"
+          desc="各OTA・自社サイトでの掲載URLを管理します。担当ガイドの案件詳細でゲストが見ていたページを表示するために使用されます。"
         />
-        <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
-          <button className="btn primary">＋ チャネルURLを登録</button>
+        <InfoNote>URLが未設定のチャネルから予約が入った場合、運営画面にアラートが表示されます。販売を停止したチャネルはレコードを削除してください。</InfoNote>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 6px'}}>
+          <div>
+            <strong style={{fontSize:14}}>チャネル別掲載URL一覧</strong>
+            <p style={{fontSize:12,color:'var(--muted)',margin:'2px 0 0'}}>各行は「編集」から専用画面で編集します。新しいチャネルは「＋ 新規追加」から登録します。</p>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span className="badge teal">{urls.filter(u => u.channel !== "自社サイト").length}件</span>
+            <a href="tour-channel-detail.html" className="btn primary">＋ 新規追加</a>
+          </div>
         </div>
         <div className="table-wrap">
-          <table className="data-table">
+          <table className="data-table" style={{tableLayout:'fixed',width:'100%'}}>
             <thead>
-              <tr><th>チャネル</th><th>URL</th><th>有効</th><th>更新日</th><th></th></tr>
+              <tr>
+                <th style={{width:160}}>チャネル</th>
+                <th>掲載URL</th>
+                <th style={{width:100,textAlign:'center'}}>有効/無効</th>
+                <th style={{width:110}}>最終更新</th>
+                <th style={{width:60}}></th>
+              </tr>
             </thead>
             <tbody>
-              {urls.map(ch => (
-                <tr key={ch.id}>
-                  <td><strong>{ch.channel}</strong></td>
-                  <td style={{fontSize:12,color:'var(--muted)',maxWidth:300,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{ch.url}</td>
-                  <td><span className={`badge ${ch.enabled ? "teal" : "outline"}`}>{ch.enabled ? "有効" : "無効"}</span></td>
-                  <td style={{fontSize:12,color:'var(--muted)'}}>{ch.updatedAt}</td>
-                  <td><button className="btn sm">編集</button></td>
-                </tr>
-              ))}
+              {urls.map(ch => {
+                const color = channelColors[ch.channel] || { bg:"#9CA3AF", label:ch.channel[0] };
+                const isOwn = ch.channel === "自社サイト";
+                return (
+                  <tr key={ch.id} style={!ch.url && !isOwn ? {background:'var(--bg-sunken)'} : undefined}>
+                    <td>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:32,height:32,borderRadius:6,background:color.bg,color:'#fff',fontSize:10,fontWeight:700,flexShrink:0}}>{color.label}</span>
+                        <strong style={{fontSize:13}}>{ch.channel}</strong>
+                      </div>
+                    </td>
+                    <td style={{fontSize:12,color: ch.url ? 'var(--ink)' : 'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:0}}>
+                      {isOwn
+                        ? <span style={{color:'var(--muted)',display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:14}}>ⓘ</span> 自動取得（商品ページから）</span>
+                        : ch.url
+                          ? <span title={ch.url}>{ch.url}</span>
+                          : <span>（未設定）</span>
+                      }
+                    </td>
+                    <td style={{textAlign:'center'}}>
+                      {!isOwn && (
+                        <span className={`badge ${ch.enabled ? "teal" : "outline"}`} style={{display:'inline-flex',alignItems:'center',gap:4}}>
+                          <span style={{width:6,height:6,borderRadius:'50%',background:ch.enabled ? 'var(--accent)' : '#9CA3AF',display:'inline-block'}}/>
+                          {ch.enabled ? "有効" : "無効"}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>{ch.updatedAt || "—"}</td>
+                    <td>{!isOwn && <a href="tour-channel-detail.html" className="btn sm">編集</a>}</td>
+                  </tr>
+                );
+              })}
               {!urls.length && <tr><td colSpan={5} style={{textAlign:'center',color:'var(--muted)',padding:24}}>チャネルURLが登録されていません</td></tr>}
             </tbody>
           </table>
         </div>
+        <p style={{fontSize:11.5,color:'var(--muted)',marginTop:8}}>ⓘ 自社サイト経由の予約は、商品ページのURLが自動的に適用されます（手動設定不要）</p>
       </div>
     );
   }
@@ -4550,6 +4605,42 @@ function ChannelMark({ name }) {
     <div className="channel-mark">
       <span className="channel-logo" style={{background: m.bg}}>{m.initials}</span>
       <strong>{name}</strong>
+    </div>
+  );
+}
+
+function DocSearchInput({ placeholder, allDocs, onAdd }) {
+  const [query, setQuery] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const filtered = query.trim()
+    ? allDocs.filter(d => d.name.includes(query) || (d.docType||"").includes(query))
+    : allDocs.slice(0, 6);
+  return (
+    <div style={{position:'relative',marginBottom:8}}>
+      <input
+        type="text"
+        value={query}
+        onChange={e => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder={placeholder}
+        style={{width:'100%',padding:'7px 12px',border:'1px solid var(--line)',borderRadius:6,fontSize:13,boxSizing:'border-box',background:'var(--surface)'}}
+      />
+      {open && filtered.length > 0 && (
+        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'var(--surface)',border:'1px solid var(--line)',borderRadius:6,boxShadow:'0 4px 16px rgba(0,0,0,.10)',zIndex:100,maxHeight:220,overflowY:'auto'}}>
+          {filtered.map(doc => (
+            <div key={doc.id}
+              onMouseDown={() => { onAdd(doc); setQuery(""); setOpen(false); }}
+              style={{padding:'8px 12px',cursor:'pointer',borderBottom:'1px solid var(--line)',fontSize:13}}
+              onMouseEnter={e => e.currentTarget.style.background='var(--bg-sunken)'}
+              onMouseLeave={e => e.currentTarget.style.background=''}
+            >
+              <div style={{fontWeight:600}}>{doc.name}</div>
+              <div style={{fontSize:11,color:'var(--muted)'}}>{doc.docType} · {doc.scope}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -5430,7 +5521,7 @@ function TourOptionList({ rows, onOpen, onCreate }) {
         <div className="lf-controls">
           <MultiSelectDropdown
             label="販売ステータス"
-            options={["掲載中", "非公開", "下書き"]}
+            options={["掲載中", "一時停止", "非公開", "下書き"]}
             values={statuses}
             onChange={setStatuses}
           />
@@ -5547,7 +5638,7 @@ function ProductPageList({ rows, onOpen, onCreate }) {
         <div className="lf-controls">
           <MultiSelectDropdown
             label="掲載ステータス"
-            options={["掲載中", "非公開", "下書き"]}
+            options={["掲載中", "一時停止", "非公開", "下書き"]}
             values={statuses}
             onChange={setStatuses}
           />
