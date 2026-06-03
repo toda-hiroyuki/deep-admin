@@ -6189,11 +6189,14 @@ function App() {
             <strong>{statusValues.sub}</strong>
           </div>
           <div className="status-actions">
-            <select className="field-input" style={{width:"auto",height:"var(--field-h)",paddingLeft:8,paddingRight:32,marginRight:4,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13}} value={productPage.status} onChange={e => updateProductPage({status: e.target.value})}>
-              <option value="掲載中">掲載中</option>
-              <option value="非公開">非公開</option>
-              <option value="下書き">下書き</option>
-            </select>
+            <div style={{position:"relative",display:"inline-flex",alignItems:"center",marginRight:4}}>
+              <select style={{width:"auto",height:"var(--field-h)",paddingLeft:8,paddingRight:28,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13,appearance:"none",WebkitAppearance:"none",cursor:"pointer"}} value={productPage.status} onChange={e => updateProductPage({status: e.target.value})}>
+                <option value="掲載中">掲載中</option>
+                <option value="非公開">非公開</option>
+                <option value="下書き">下書き</option>
+              </select>
+              <span style={{position:"absolute",right:8,pointerEvents:"none",fontSize:10,color:"var(--muted)"}}>▼</span>
+            </div>
             <button className="btn primary">{modeData.action}</button>
           </div>
         </div>
