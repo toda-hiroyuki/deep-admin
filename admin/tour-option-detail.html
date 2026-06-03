@@ -3941,7 +3941,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           );
         })()}
         <div className="field-grid">
-          <Field label="正式名称（英）" value={t.officialName} onChange={x => update({ officialName: x })} wide readOnly={readonly} />
           <TagMasterField label="タグ / バッジ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
         </div>
       </div>
@@ -4009,8 +4008,8 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           <div className="field-grid three" style={{marginTop:8}}>
             <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
           </div>
-          <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
         </div>
+        <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
       </div>
     );
   }
@@ -6490,7 +6489,6 @@ function Sidebar({ resource, counts }) {
     { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
-    { key: "tourSchedule",   href: "tour-schedules.html",  icon: "⏱", label: "ツアー行程" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
     { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
   ];
