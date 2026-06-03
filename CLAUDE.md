@@ -238,3 +238,6 @@
     →tour-option-add.htmlとtour-option-edit.htmlにも他のページと同じようにサイドバーを付けてください。
 
 
+## 追加改修011
+- product-detail.html
+   ・更新保存ボタンの右にラインを引いて公開前チェックボタンとラベルを設置してください。ラベルは公開NG or 公開OK どちらかが表示されているイメージ
