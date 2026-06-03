@@ -223,3 +223,18 @@
      チェックボックスのリストはチェックが入ったものだけ表示されるイメージ。
      サンプルとして３つほどチェック入りのみを表示しておいてください。
 
+
+## 追加修正010
+- tour-option-detail.html
+   ・01基本情報
+    →capture/TourOptionID.PNGを参考にTourOptionIDを復活させてください
+    →テーマタイトルをセレクトボックスに変更し、リストをいくつかセットしてください
+
+   ・07チャネル別URL
+    →tour-channel-detail.htmlページにも他のページと同じようにサイドバーを付けてください。
+
+- product-detail.html
+   ・03掲載TourOption
+    →tour-option-add.htmlとtour-option-edit.htmlにも他のページと同じようにサイドバーを付けてください。
+
+
