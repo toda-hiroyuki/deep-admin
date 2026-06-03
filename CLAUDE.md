@@ -175,3 +175,34 @@
    ・03掲載TourOption
      紐づけ中のTourOptionの一覧、表示と販売のラジオボタンをラベルに変更、ここでは更新させない、更新は編集画面で行なう
 
+
+## 追加改修007
+- tour-options.htmlとtour-option-detail.html
+ 「掲載中、非公開、下書き」のステータスの掲載中の下に一時停止を追加
+
+- tour-option-detail.html
+   ・01基本情報タブ
+    →タグ/バッジラベルのバッジを削除、「タグ」というラベルにしてください
+
+   ・02提供条件タブ
+    →ピックアップとGoogleMapURLの表示位置を入れ替えてください
+
+   ・03販売条件タブ
+    →予約期限の「時間、日」のセレクトに分も追加してください
+
+   ・06運営・確認タブ
+    →+共通資料を追加ボタンを削除しinput textを設置し、そのinputで入力サジェストでガイド資料のマスター検索、リストをクリックで資料を追加するイメージにしてください
+    →+個別資料を追加ボタンを削除しinput textを設置し、そのinputで入力サジェストでガイド資料のマスター検索、リストをクリックで資料を追加するイメージにしてください
+
+   ・07チャネル別URLタブ
+    →一覧のデザインをcapture/チャネル一覧.PNGのようにしてください
+    →tour-channel-detail.htmlをcapture/チャネル登録.PNGを参考に作成し、07チャネル別RL一覧の編集ボタンにリンクを貼ってください
+
+- product-detail.html
+   ・01ページ基本タブ
+    →商品ページIDの右にURLを復活させてください（capture/ページURL.PNG）
+
+   ・03掲載TourOptionタブ
+    →tour-option-add.htmlをcapture/紐づけ追加.PNGを参考に作成し +TourOptionを追加ボタンにリンクを貼ってください
+    →tour-option-edit.htmlをcapture/紐づけ編集.PNGを参考に作成し 紐づけ中のTourOption一覧の編集ボタンにリンクを貼ってください
+
