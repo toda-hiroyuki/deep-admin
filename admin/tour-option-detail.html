@@ -4055,6 +4055,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         <div className="field-grid">
           <SelectField label="価格・原価確認" value={t.costCheck} onChange={x => update({ costCheck: x })} options={["未確認", "原価確認済み", "再確認が必要"]} readOnly={readonly} />
         </div>
+        <Field label="販売停止理由" value={t.pauseReason||""} onChange={x => update({ pauseReason: x })} wide multiline readOnly={readonly} placeholder="一時停止時のみ入力" help='販売ステータスが「一時停止」のときのみ必須' />
       </div>
     );
   }
