@@ -6199,8 +6199,7 @@ function App() {
               <span style={{position:"absolute",right:8,pointerEvents:"none",fontSize:10,color:"var(--muted)"}}>▼</span>
             </div>
             <button className="btn primary">{modeData.action}</button>
-            <div style={{width:1,background:"var(--line)",alignSelf:"stretch",margin:"0 6px"}}></div>
-            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"nowrap"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"nowrap",borderLeft:"1px solid var(--line)",paddingLeft:14,marginLeft:6,alignSelf:"stretch"}}>
               <button className="btn" style={{background:"#dc2626",color:"#fff",borderColor:"#dc2626",fontSize:13,padding:"7px 14px"}} onClick={() => setCheckPanelOpen(v => !v)}>公開前チェック</button>
               <span style={{fontSize:12,fontWeight:700,padding:"4px 10px",borderRadius:4,whiteSpace:"nowrap",background: doneCount === checks.length ? "var(--accent-soft)" : "#fef2f2", color: doneCount === checks.length ? "var(--accent)" : "#dc2626"}}>{doneCount === checks.length ? "公開OK" : "公開NG"}</span>
             </div>
