@@ -206,3 +206,12 @@
     →tour-option-add.htmlをcapture/紐づけ追加.PNGを参考に作成し +TourOptionを追加ボタンにリンクを貼ってください
     →tour-option-edit.htmlをcapture/紐づけ編集.PNGを参考に作成し 紐づけ中のTourOption一覧の編集ボタンにリンクを貼ってください
 
+
+## 追加改修008
+- tour-options.htmlとtour-option-detail.html
+  ・販売ステータス「掲載中、非公開、下書き」を「掲載中、一時停止、非公開、下書き」にしてください
+
+   ・03販売条件タブ
+    →価格・原価計算の下に販売停止理由のテキストエリアを設置してください（capture/販売停止理由.PNG）
+
+
