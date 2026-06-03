@@ -4005,9 +4005,9 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
               <Field label="解散場所（日本語）" value={t.dropoff} onChange={x => update({ dropoff: x })} readOnly={readonly} />
             </div>
           )}
-          <div className="field-grid three" style={{marginTop:8}}>
-            <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
-          </div>
+        </div>
+        <div className="field-grid three" style={{marginTop:8}}>
+          <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
         </div>
         <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
       </div>
