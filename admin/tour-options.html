@@ -5158,12 +5158,10 @@ const PRICE_RANGES = [
 ];
 
 function TourOptionList({ rows, onOpen, onCreate }) {
-  const [inputSearch, setInputSearch] = useLState("");
   const [search, setSearch] = useLState("");
   const [statuses, setStatuses] = useLState([]);
   const [priceRange, setPriceRange] = useLState("すべて");
   const [tags, setTags] = useLState([]);
-  const execSearch = () => setSearch(inputSearch);
 
   const allTags = useLMemo(() => {
     const s = new Set();
@@ -5197,7 +5195,7 @@ function TourOptionList({ rows, onOpen, onCreate }) {
 
   const hasFilter = !!search || statuses.length > 0 || priceRange !== "すべて" || tags.length > 0;
   const clearAll = () => {
-    setSearch(""); setInputSearch(""); setStatuses([]); setPriceRange("すべて"); setTags([]);
+    setSearch(""); setStatuses([]); setPriceRange("すべて"); setTags([]);
   };
 
   return (
@@ -5214,12 +5212,10 @@ function TourOptionList({ rows, onOpen, onCreate }) {
       <div className="list-filters">
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           <SearchBar
-            value={inputSearch}
-            onChange={x => { setInputSearch(x); if (!x) setSearch(""); }}
+            value={search}
+            onChange={x => setSearch(x)}
             placeholder="TourOption名・テーマ・コードで検索..."
-            onKeyDown={e => e.key === 'Enter' && execSearch()}
           />
-          <button className="btn primary" style={{flexShrink:0}} onClick={execSearch}>検索</button>
         </div>
         <div className="lf-controls">
           <MultiSelectDropdown
