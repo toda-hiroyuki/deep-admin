@@ -12,11 +12,22 @@
       --ink: #1a1714; --muted: #7c7066; --line: #e8e0d4; --line-strong: #cec5b5;
       --accent: #2b7a6f; --accent-soft: #e8f4f2; --amber: #b45309; --amber-soft: #fef3c7;
       --red: #dc2626; --red-soft: #fef2f2;
+      --side-bg: #1e1a16; --side-ink: #f5f0e8; --side-ink-soft: rgba(245,240,232,0.55); --side-line: rgba(255,255,255,0.08);
       --font: "Inter var", "Hiragino Sans", sans-serif;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font); background: var(--bg); color: var(--ink); min-height: 100vh; }
-    .page-wrap { max-width: 900px; margin: 0 auto; padding: 24px 24px 64px; }
+    body { font-family: var(--font); background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; }
+    .sidebar { width: 220px; background: var(--side-bg); color: var(--side-ink); display: flex; flex-direction: column; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 100; }
+    .sidebar-brand { padding: 20px 16px 16px; border-bottom: 1px solid var(--side-line); }
+    .brand-name { font-size: 16px; font-weight: 700; color: var(--side-ink); }
+    .brand-sub { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+    .sidebar-nav { padding: 12px 0; flex: 1; }
+    .nav-section { padding: 16px 16px 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--side-ink-soft); text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; color: var(--side-ink-soft); text-decoration: none; font-size: 13.5px; font-weight: 500; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: var(--side-ink); }
+    .nav-item.active { background: rgba(255,255,255,0.12); color: var(--side-ink); }
+    .nav-icon { width: 20px; text-align: center; font-size: 14px; opacity: 0.8; }
+    .page-wrap { margin-left: 220px; max-width: 900px; padding: 24px 24px 64px; }
     .page-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
     h1 { font-size: 22px; font-weight: 700; }
     .sub-desc { font-size: 13px; color: var(--accent); margin-top: 4px; }
@@ -43,6 +54,20 @@
   </style>
 </head>
 <body>
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-name">deep_Admin</div>
+    <div class="brand-sub">deep experience</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">メニュー</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">⊞</span>ダッシュボード</a>
+    <a href="tour-options.html" class="nav-item"><span class="nav-icon">◈</span>TourOption</a>
+    <a href="products.html" class="nav-item active"><span class="nav-icon">◻</span>商品ページ</a>
+    <a href="guide-materials.html" class="nav-item"><span class="nav-icon">📄</span>ガイド向け資料</a>
+    <a href="cancel-policies.html" class="nav-item"><span class="nav-icon">⚙</span>キャンセルポリシー</a>
+  </div>
+</nav>
   <div class="page-wrap">
     <div class="page-header">
       <div>

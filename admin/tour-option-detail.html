@@ -3943,8 +3943,9 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           desc="IDは保存時に自動採番、コードは業務上の不変キーとして扱います。"
         />
         <div className="field-grid">
+          <Field label="TourOption ID" value={mode === "create" ? "to_自動採番" : t.id} readOnly mono help="保存時に発番" />
           <Field label="TourOptionコード" required value={t.code} onChange={x => update({ code: x })} placeholder="G-XXX-000-0-XX" mono readOnly={readonly} error={v.code} help={!v.code ? "業務コード（不変）" : null} />
-          <Field label="テーマタイトル" value={t.theme} onChange={x => update({ theme: x })} readOnly={readonly} />
+          <SelectField label="テーマタイトル" value={t.theme} onChange={x => update({ theme: x })} options={["京都ナイトフードツアー","大阪ストリートフードツアー","奈良世界遺産散策","神戸港ハーバー街歩き","東京浅草下町ツアー","鎌倉寺社仏閣めぐり","広島平和と食文化ツアー","北海道自然体験ツアー"]} readOnly={readonly} />
         </div>
         {/* 多言語タブ */}
         {(() => {
