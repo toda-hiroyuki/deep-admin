@@ -4426,6 +4426,7 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
         <SectionHead eyebrow="STEP 1" title="商品ページ基本情報" desc="商品ページ全体の表示・検索・公開状態を管理します。" />
         <div className="field-grid">
           <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
+          <Field label="URL" required value={page.url ? page.url.replace(/^\/tours\//,"") : ""} onChange={x => updatePage({ url: `/tours/${x}` })} readOnly={readonly} affixLeft="/tours/" mono />
           <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
           <SelectField label="ページ種別" value={page.pageType} onChange={x => updatePage({ pageType: x })} options={["通常商品ページ", "キャンペーンLP", "特集ページ", "その他"]} readOnly={readonly} />
           <SelectField label="テンプレート種別" value={page.template} onChange={x => updatePage({ template: x })} options={["標準商品ページ", "LP型", "特集型"]} readOnly={readonly} />
@@ -4492,7 +4493,7 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
             <h3 style={{fontSize:14,fontWeight:600}}>掲載TourOptionの追加</h3>
             <p style={{fontSize:12,color:'var(--muted)',marginTop:2}}>この商品ページに掲載するTourOptionを追加します。</p>
           </div>
-          <a href="tour-option-detail.html" className="btn primary">＋ TourOptionを追加</a>
+          <a href="tour-option-add.html" className="btn primary">＋ TourOptionを追加</a>
         </div>
 
         <div className="section-title" style={{marginTop:4}}>
@@ -4542,7 +4543,7 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
                         <div className="row-sub">{info.duration} · {info.capacity}</div>
                       </td>
                       <td className="num"><strong>{info.price ?? "—"}</strong></td>
-                      <td className="actions"><button className="btn sm">編集</button></td>
+                      <td className="actions"><a href="tour-option-edit.html" className="btn sm">編集</a></td>
                     </tr>
                   );
                 })}
