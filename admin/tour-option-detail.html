@@ -4204,8 +4204,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
             </div>
           );
         })()}
-        <div className="field-grid">
-          <TagMasterField label="タグ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
         </div>
       </div>
     );
@@ -4239,6 +4237,9 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
               </label>
             ))}
           </div>
+        </div>
+        <div className="field-grid">
+          <TagMasterField label="タグ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
         </div>
         <div className="field-grid three">
           <Field label="1予約あたり最小人数" required value={t.minBooking} onChange={x => update({ minBooking: x })} readOnly={readonly} affixRight="名" type="number" />
