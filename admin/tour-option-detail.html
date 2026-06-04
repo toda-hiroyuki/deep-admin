@@ -3930,7 +3930,7 @@ function CancelConditionSection({ t, update, readonly }) {
 
 // ── TourOption Editor ───────────────────────────────────────────────────────
 
-function SlotList({ slots, isPrivate, readonly, onAdd, onRemove, onUpdate, timeOptions, selectStyle }) {
+function SlotList({ slots, readonly, onAdd, onRemove, onUpdate, timeOptions, selectStyle }) {
   return (
     <div style={{display:'flex',flexDirection:'column',gap:8}}>
       {slots.map(slot => (
@@ -3947,11 +3947,6 @@ function SlotList({ slots, isPrivate, readonly, onAdd, onRemove, onUpdate, timeO
             <select value={slot.endTime} disabled={readonly} onChange={e => onUpdate(slot.id,{endTime:e.target.value})} style={selectStyle}>
               {timeOptions.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
-          </div>
-          <div style={{display:'flex',flexDirection:'column',gap:3}}>
-            <label style={{fontSize:11,color:'var(--muted)'}}>定員（名）{isPrivate && <span style={{marginLeft:4,color:'var(--accent)',fontSize:10}}>固定</span>}</label>
-            <input type="number" value={isPrivate ? 1 : slot.capacity} disabled={readonly || isPrivate} onChange={e => onUpdate(slot.id,{capacity:e.target.value})}
-              style={{width:70,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4,background:isPrivate?'var(--bg-sunken)':''}} />
           </div>
           {!readonly && <button type="button" onClick={() => onRemove(slot.id)} style={{marginTop:14,background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'0 4px'}}>✕</button>}
         </div>
@@ -4002,8 +3997,6 @@ function AvailabilityTab({ t, update, readonly }) {
     fri: [{id:5,startTime:"10:00",endTime:"12:00",capacity:8},{id:6,startTime:"14:00",endTime:"16:00",capacity:8}],
     sat: [{id:7,startTime:"09:00",endTime:"11:00",capacity:10},{id:8,startTime:"14:00",endTime:"16:00",capacity:10}],
   });
-  const [stockMode, setStockMode] = useLState("per_slot");
-  const [dailyStock, setDailyStock] = useLState("");
   // 催行リソース
   const [resources, setResources] = useLState([
     { id: 1, key: "guide",   qty: 1 },
@@ -4094,7 +4087,7 @@ function AvailabilityTab({ t, update, readonly }) {
         </div>
 
         {dayMode === "all" ? (
-          <SlotList slots={slots} isPrivate={isPrivate} readonly={readonly}
+          <SlotList slots={slots} readonly={readonly}
             onAdd={addSlot} onRemove={removeSlot} onUpdate={updateSlot}
             timeOptions={timeOptions} selectStyle={selectStyle} />
         ) : (
@@ -4121,7 +4114,7 @@ function AvailabilityTab({ t, update, readonly }) {
                 </div>
                 <div style={{padding:'8px 12px'}}>
                   <SlotList
-                    slots={daySlots[key]||[]} isPrivate={isPrivate} readonly={readonly}
+                    slots={daySlots[key]||[]} readonly={readonly}
                     onAdd={() => addDaySlot(key)}
                     onRemove={(id) => removeDaySlot(key, id)}
                     onUpdate={(id, patch) => updateDaySlot(key, id, patch)}
@@ -4135,56 +4128,17 @@ function AvailabilityTab({ t, update, readonly }) {
         )}
       </div>
 
-      {/* 販売可能枠設定 */}
-      <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
-        <div style={{fontWeight:600,fontSize:13,marginBottom:4}}>販売可能枠</div>
-        <div style={{fontSize:11,color:'var(--muted)',marginBottom:10}}>ここでは各時間帯・日付に対して販売できる最大人数（席数）を設定します。</div>
-        {isRequest ? (
-          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
-            <div>
-              <div style={{fontSize:13,fontWeight:600}}>上限なし</div>
-              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>リクエスト予約のため、販売枠管理を行いません。予約は運営が手動で承認します。</div>
-            </div>
-          </div>
-        ) : isPrivate ? (
-          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
-            <div>
-              <div style={{fontSize:13,fontWeight:600}}>時間帯別（1組/枠）</div>
-              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>プライベートツアーのため、各受付時間帯は1組の予約のみ受け付けます（1催行回 = 1予約）。</div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
-              {[["per_slot","時間帯別"],["daily","日別合計"],["unlimited","上限なし"]].map(([val,label]) => (
-                <label key={val} style={{display:'flex',alignItems:'center',gap:5,fontSize:13,cursor:'pointer',
-                  padding:'4px 12px',borderRadius:20,border:'1.5px solid',
-                  borderColor:stockMode===val?'var(--accent)':'var(--line)',
-                  background:stockMode===val?'var(--accent)':'transparent',
-                  color:stockMode===val?'#fff':'var(--ink)'}}>
-                  <input type="radio" name="stockMode" value={val} checked={stockMode===val} onChange={() => setStockMode(val)} style={{display:'none'}} />
-                  {label}
-                </label>
-              ))}
-            </div>
-            {stockMode === "per_slot" && <div style={{fontSize:12,color:'var(--muted)'}}>各受付時間帯の「定員（名）」が販売可能枠になります。上の受付時間帯で設定してください。</div>}
-            {stockMode === "daily" && (
-              <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <label style={{fontSize:13}}>1日あたり最大販売数</label>
-                <input type="number" value={dailyStock} onChange={e => setDailyStock(e.target.value)} readOnly={readonly} style={{width:80,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
-                <span style={{fontSize:13,color:'var(--muted)'}}>名</span>
-              </div>
-            )}
-            {stockMode === "unlimited" && <div style={{fontSize:12,color:'var(--muted)'}}>販売枠を設けません。予約は常に受け付けます。</div>}
-          </>
-        )}
-      </div>
-
       {/* 催行リソース設定 */}
       <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
         <div style={{fontWeight:600,fontSize:13,marginBottom:4}}>催行リソース設定</div>
         <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>このTourOptionの催行に必要なリソース（ガイド・車両・機材等）を設定します。リソース数が受付時間帯の販売可能枠の上限の根拠となります。</div>
-        {resources.length > 0 && (
+        {isRequest ? (
+          <div style={{padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4,marginBottom:12}}>
+            <div style={{fontSize:13,fontWeight:600}}>制限なし</div>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>リクエスト予約のため、販売枠管理を行いません。予約は運営が手動で承認します。</div>
+          </div>
+        ) : null}
+        {!isRequest && resources.length > 0 && (
           <table style={{width:'100%',borderCollapse:'collapse',fontSize:13,marginBottom:12}}>
             <thead>
               <tr style={{background:'var(--bg-sunken)'}}>
@@ -4211,8 +4165,8 @@ function AvailabilityTab({ t, update, readonly }) {
             </tbody>
           </table>
         )}
-        {resources.length === 0 && <div style={{fontSize:12,color:'var(--muted)',marginBottom:12}}>リソースが未設定です</div>}
-        {!readonly && (
+        {!isRequest && resources.length === 0 && <div style={{fontSize:12,color:'var(--muted)',marginBottom:12}}>リソースが未設定です</div>}
+        {!isRequest && !readonly && (
           <div style={{display:'flex',gap:8,alignItems:'flex-end',flexWrap:'wrap'}}>
             <div style={{display:'flex',flexDirection:'column',gap:4}}>
               <label style={{fontSize:11,color:'var(--muted)'}}>種別</label>
