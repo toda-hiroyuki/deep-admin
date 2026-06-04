@@ -6184,7 +6184,7 @@ function App() {
             <strong>{statusValues.sub}</strong>
           </div>
           <div className="status-cell action">
-            <button className="btn" style={{background:"#dc2626",color:"#fff",borderColor:"#dc2626",fontSize:13,padding:"7px 14px",whiteSpace:"nowrap"}} onClick={() => setCheckPanelOpen(v => !v)}>公開前チェック</button>
+            <button className="btn" style={{background:"#111111",color:"#fff",borderColor:"#111111",fontSize:13,padding:"7px 14px",whiteSpace:"nowrap"}} onClick={() => setCheckPanelOpen(v => !v)}>公開前チェック</button>
             <span style={{fontSize:12,fontWeight:700,padding:"4px 10px",borderRadius:4,whiteSpace:"nowrap",background: doneCount === checks.length ? "var(--accent-soft)" : "#fef2f2", color: doneCount === checks.length ? "var(--accent)" : "#dc2626"}}>{doneCount === checks.length ? "公開OK" : "公開NG"}</span>
           </div>
           <div className="status-cell action">
