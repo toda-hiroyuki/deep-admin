@@ -2650,7 +2650,7 @@ window.SEED = {
       ["basic", "基本情報"],
       ["conditions", "提供条件"],
       ["sales", "販売条件"],
-      ["availability", "販売期間・在庫"],
+      ["availability", "販売期間・リソース"],
       ["content", "コンテンツ"],
       ["schedule", "ツアー行程"],
       ["ops", "運営・確認"],
@@ -3930,6 +3930,40 @@ function CancelConditionSection({ t, update, readonly }) {
 
 // ── TourOption Editor ───────────────────────────────────────────────────────
 
+function SlotList({ slots, isPrivate, readonly, onAdd, onRemove, onUpdate, timeOptions, selectStyle }) {
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {slots.map(slot => (
+        <div key={slot.id} style={{display:'flex',gap:10,alignItems:'center',padding:'8px 10px',background:'var(--bg-sunken)',borderRadius:4,flexWrap:'wrap'}}>
+          <div style={{display:'flex',flexDirection:'column',gap:3}}>
+            <label style={{fontSize:11,color:'var(--muted)'}}>開始</label>
+            <select value={slot.startTime} disabled={readonly} onChange={e => onUpdate(slot.id,{startTime:e.target.value})} style={selectStyle}>
+              {timeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div style={{paddingTop:14,color:'var(--muted)',fontSize:13}}>〜</div>
+          <div style={{display:'flex',flexDirection:'column',gap:3}}>
+            <label style={{fontSize:11,color:'var(--muted)'}}>終了</label>
+            <select value={slot.endTime} disabled={readonly} onChange={e => onUpdate(slot.id,{endTime:e.target.value})} style={selectStyle}>
+              {timeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:3}}>
+            <label style={{fontSize:11,color:'var(--muted)'}}>定員（名）{isPrivate && <span style={{marginLeft:4,color:'var(--accent)',fontSize:10}}>固定</span>}</label>
+            <input type="number" value={isPrivate ? 1 : slot.capacity} disabled={readonly || isPrivate} onChange={e => onUpdate(slot.id,{capacity:e.target.value})}
+              style={{width:70,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4,background:isPrivate?'var(--bg-sunken)':''}} />
+          </div>
+          {!readonly && <button type="button" onClick={() => onRemove(slot.id)} style={{marginTop:14,background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'0 4px'}}>✕</button>}
+        </div>
+      ))}
+      {slots.length === 0 && <div style={{fontSize:12,color:'var(--muted)',padding:'6px 0'}}>時間帯が登録されていません</div>}
+      {!readonly && (
+        <button type="button" className="btn sm" onClick={onAdd} style={{alignSelf:'flex-start',marginTop:4}}>＋ 時間帯を追加</button>
+      )}
+    </div>
+  );
+}
+
 function AvailabilityTab({ t, update, readonly }) {
   const [saleStart, setSaleStart] = useLState("");
   const [saleEnd, setSaleEnd] = useLState("");
@@ -3941,16 +3975,25 @@ function AvailabilityTab({ t, update, readonly }) {
     { id: 1, start: "2026-07-15", end: "2026-07-15" },
     { id: 2, start: "2026-08-13", end: "2026-08-16" },
   ]);
+  // ALL mode: flat slot list
   const [slots, setSlots] = useLState([
     { id: 1, startTime: "09:00", endTime: "11:00", capacity: 10 },
     { id: 2, startTime: "14:00", endTime: "16:00", capacity: 8 },
   ]);
+  // Custom mode: per-day slot lists { sun: [], mon: [...], ... }
+  const [daySlots, setDaySlots] = useLState({
+    sun: [], mon: [{id:1,startTime:"10:00",endTime:"12:00",capacity:8}],
+    tue: [{id:2,startTime:"10:00",endTime:"12:00",capacity:8}],
+    wed: [{id:3,startTime:"10:00",endTime:"12:00",capacity:8}],
+    thu: [{id:4,startTime:"10:00",endTime:"12:00",capacity:8}],
+    fri: [{id:5,startTime:"10:00",endTime:"12:00",capacity:8},{id:6,startTime:"14:00",endTime:"16:00",capacity:8}],
+    sat: [{id:7,startTime:"09:00",endTime:"11:00",capacity:10},{id:8,startTime:"14:00",endTime:"16:00",capacity:10}],
+  });
   const [stockMode, setStockMode] = useLState("per_slot");
   const [dailyStock, setDailyStock] = useLState("");
 
   const isRequest = t.bookingType === "リクエスト予約";
   const isPrivate = t.tourType === "プライベートツアー";
-  const effectiveStockMode = isRequest ? "unlimited" : stockMode;
 
   const today = new Date().toISOString().split("T")[0];
   const futureClosure = closures.filter(c => c.end >= today || c.start >= today);
@@ -3961,10 +4004,17 @@ function AvailabilityTab({ t, update, readonly }) {
     setClosureStart(""); setClosureEnd("");
   };
   const removeClosure = (id) => setClosures(prev => prev.filter(c => c.id !== id));
+  const toggleDow = (d) => setDaysOfWeek(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
+
+  // ALL mode handlers
   const addSlot = () => setSlots(prev => [...prev, { id: Date.now(), startTime: "10:00", endTime: "12:00", capacity: 10 }]);
   const removeSlot = (id) => setSlots(prev => prev.filter(s => s.id !== id));
   const updateSlot = (id, patch) => setSlots(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
-  const toggleDow = (d) => setDaysOfWeek(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
+
+  // Custom mode handlers
+  const addDaySlot = (day) => setDaySlots(prev => ({ ...prev, [day]: [...(prev[day]||[]), { id: Date.now(), startTime: "10:00", endTime: "12:00", capacity: 10 }] }));
+  const removeDaySlot = (day, id) => setDaySlots(prev => ({ ...prev, [day]: (prev[day]||[]).filter(s => s.id !== id) }));
+  const updateDaySlot = (day, id, patch) => setDaySlots(prev => ({ ...prev, [day]: (prev[day]||[]).map(s => s.id === id ? { ...s, ...patch } : s) }));
 
   const timeOptions = [];
   for (let h = 0; h < 24; h++) {
@@ -3977,7 +4027,7 @@ function AvailabilityTab({ t, update, readonly }) {
 
   return (
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-      <SectionHead eyebrow="STEP 4" title="販売期間・在庫" desc="予約を受け付ける期間・曜日・時間帯・在庫を管理します。" />
+      <SectionHead eyebrow="STEP 4" title="販売期間・リソース" desc="予約を受け付ける期間・曜日・時間帯・在庫を管理します。" />
 
       <div className="field-grid three" style={{marginBottom:16}}>
         <SelectField label="予約方式" value={t.bookingType||"即時予約"} onChange={x => update({ bookingType: x })} options={["即時予約","リクエスト予約"]} readOnly={readonly} />
@@ -4000,68 +4050,59 @@ function AvailabilityTab({ t, update, readonly }) {
         </div>
       </div>
 
-      {/* 曜日設定 */}
+      {/* 受付時間帯（曜日別） */}
       <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
-        <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>曜日設定</div>
-        <div style={{display:'flex',gap:8,marginBottom:10}}>
-          {[["all","ALL"],["custom","曜日指定"]].map(([val,label]) => (
+        <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>受付時間帯</div>
+        <div style={{display:'flex',gap:8,marginBottom:12}}>
+          {[["all","全曜日共通"],["custom","曜日別設定"]].map(([val,label]) => (
             <button key={val} type="button" onClick={() => setDayMode(val)}
-              style={{padding:'4px 12px',borderRadius:20,fontSize:12,border:'1.5px solid',
+              style={{padding:'4px 14px',borderRadius:20,fontSize:12,border:'1.5px solid',
                 borderColor:dayMode===val?'var(--accent)':'var(--line)',
                 background:dayMode===val?'var(--accent)':'transparent',
                 color:dayMode===val?'#fff':'var(--ink)',cursor:'pointer',fontWeight:dayMode===val?700:400}}>{label}</button>
           ))}
         </div>
-        {dayMode === "custom" ? (
-          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-            {DOW.map(([key,label]) => (
-              <label key={key} style={{display:'flex',alignItems:'center',gap:4,fontSize:13,cursor:'pointer',
-                padding:'4px 10px',borderRadius:4,border:'1px solid',
-                borderColor:daysOfWeek.includes(key)?'var(--accent)':'var(--line)',
-                background:daysOfWeek.includes(key)?'var(--accent-tint, #e8f5f5)':'transparent',
-                color:daysOfWeek.includes(key)?'var(--accent)':'var(--muted)'}}>
-                <input type="checkbox" checked={daysOfWeek.includes(key)} onChange={() => toggleDow(key)} style={{accentColor:'var(--accent)'}} />
-                {label}
-              </label>
-            ))}
-          </div>
-        ) : (
-          <div style={{fontSize:12,color:'var(--muted)'}}>全曜日で受付</div>
-        )}
-      </div>
 
-      {/* 受付時間帯 */}
-      <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-          <div style={{fontWeight:600,fontSize:13}}>受付時間帯</div>
-          {!readonly && <button type="button" className="btn sm" onClick={addSlot}>＋ 時間帯を追加</button>}
-        </div>
-        <div style={{display:'flex',flexDirection:'column',gap:8}}>
-          {slots.map(slot => (
-            <div key={slot.id} style={{display:'flex',gap:10,alignItems:'center',padding:'8px 10px',background:'var(--bg-sunken)',borderRadius:4}}>
-              <div style={{display:'flex',flexDirection:'column',gap:3}}>
-                <label style={{fontSize:11,color:'var(--muted)'}}>開始</label>
-                <select value={slot.startTime} disabled={readonly} onChange={e => updateSlot(slot.id,{startTime:e.target.value})} style={selectStyle}>
-                  {timeOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div style={{paddingTop:14,color:'var(--muted)',fontSize:13}}>〜</div>
-              <div style={{display:'flex',flexDirection:'column',gap:3}}>
-                <label style={{fontSize:11,color:'var(--muted)'}}>終了</label>
-                <select value={slot.endTime} disabled={readonly} onChange={e => updateSlot(slot.id,{endTime:e.target.value})} style={selectStyle}>
-                  {timeOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <div style={{display:'flex',flexDirection:'column',gap:3}}>
-                <label style={{fontSize:11,color:'var(--muted)'}}>定員（名）{isPrivate && <span style={{marginLeft:4,color:'var(--accent)',fontSize:10}}>プライベート固定</span>}</label>
-                <input type="number" value={isPrivate ? 1 : slot.capacity} disabled={readonly || isPrivate} onChange={e => updateSlot(slot.id,{capacity:e.target.value})}
-                  style={{width:70,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4,background:isPrivate?'var(--bg-sunken)':'',color:isPrivate?'var(--muted)':''}} />
-              </div>
-              {!readonly && <button type="button" onClick={() => removeSlot(slot.id)} style={{marginTop:14,background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'0 4px'}}>✕</button>}
+        {dayMode === "all" ? (
+          <SlotList slots={slots} isPrivate={isPrivate} readonly={readonly}
+            onAdd={addSlot} onRemove={removeSlot} onUpdate={updateSlot}
+            timeOptions={timeOptions} selectStyle={selectStyle} />
+        ) : (
+          <div style={{display:'flex',flexDirection:'column',gap:4}}>
+            {/* 曜日チェックボックス */}
+            <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:10}}>
+              {DOW.map(([key,label]) => (
+                <label key={key} style={{display:'flex',alignItems:'center',gap:4,fontSize:13,cursor:'pointer',
+                  padding:'4px 10px',borderRadius:4,border:'1px solid',
+                  borderColor:daysOfWeek.includes(key)?'var(--accent)':'var(--line)',
+                  background:daysOfWeek.includes(key)?'var(--accent-tint,#e8f5f5)':'transparent',
+                  color:daysOfWeek.includes(key)?'var(--accent)':'var(--muted)'}}>
+                  <input type="checkbox" checked={daysOfWeek.includes(key)} onChange={() => toggleDow(key)} style={{accentColor:'var(--accent)'}} />
+                  {label}
+                </label>
+              ))}
             </div>
-          ))}
-          {slots.length === 0 && <div style={{fontSize:12,color:'var(--muted)',textAlign:'center',padding:'12px 0'}}>時間帯が登録されていません</div>}
-        </div>
+            {/* 有効曜日ごとのスロット設定 */}
+            {DOW.filter(([key]) => daysOfWeek.includes(key)).map(([key, label]) => (
+              <div key={key} style={{border:'1px solid var(--line)',borderRadius:4,marginBottom:4,overflow:'hidden'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 12px',background:'var(--bg-sunken)',borderBottom:'1px solid var(--line)'}}>
+                  <span style={{fontWeight:600,fontSize:13,minWidth:20}}>{label}</span>
+                  <span style={{fontSize:11,color:'var(--muted)'}}>{(daySlots[key]||[]).length}件</span>
+                </div>
+                <div style={{padding:'8px 12px'}}>
+                  <SlotList
+                    slots={daySlots[key]||[]} isPrivate={isPrivate} readonly={readonly}
+                    onAdd={() => addDaySlot(key)}
+                    onRemove={(id) => removeDaySlot(key, id)}
+                    onUpdate={(id, patch) => updateDaySlot(key, id, patch)}
+                    timeOptions={timeOptions} selectStyle={selectStyle}
+                  />
+                </div>
+              </div>
+            ))}
+            {daysOfWeek.length === 0 && <div style={{fontSize:12,color:'var(--muted)',padding:'8px 0'}}>曜日を選択してください</div>}
+          </div>
+        )}
       </div>
 
       {/* 在庫設定 */}
@@ -4069,22 +4110,18 @@ function AvailabilityTab({ t, update, readonly }) {
         <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>在庫設定</div>
         {isRequest ? (
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
-            <span style={{fontSize:20}}>ℹ️</span>
             <div>
               <div style={{fontSize:13,fontWeight:600}}>在庫なし（無制限）</div>
               <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>リクエスト予約のため、在庫管理を行いません。予約は運営が手動で承認します。</div>
             </div>
           </div>
         ) : isPrivate ? (
-          <>
-            <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4,marginBottom:8}}>
-              <span style={{fontSize:20}}>ℹ️</span>
-              <div>
-                <div style={{fontSize:13,fontWeight:600}}>時間帯別（1受注/枠）</div>
-                <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>プライベートツアーのため、各受付時間帯は1件の予約のみ受け付けます（1催行回 = 1予約）。</div>
-              </div>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:600}}>時間帯別（1受注/枠）</div>
+              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>プライベートツアーのため、各受付時間帯は1件の予約のみ受け付けます（1催行回 = 1予約）。</div>
             </div>
-          </>
+          </div>
         ) : (
           <>
             <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
@@ -4209,7 +4246,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "conditions") {
-    const [meetLang, setMeetLang] = useLState("en");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead
@@ -4245,27 +4281,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           <Field label="1予約あたり最大人数" required value={t.maxBooking} onChange={x => update({ maxBooking: x })} readOnly={readonly} affixRight="名" type="number" />
           <Field label="1催行回あたり定員" value={t.capacity} onChange={x => update({ capacity: x })} readOnly={readonly} affixRight="名" type="number" />
         </div>
-        <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginBottom:12}}>
-          <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
-            {[["en","English"],["ja","日本語"]].map(([code,label]) => (
-              <button key={code} type="button"
-                style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:meetLang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:meetLang===code?700:400,color:meetLang===code?'var(--accent)':'var(--muted)',fontSize:13}}
-                onClick={() => setMeetLang(code)}>{label}</button>
-            ))}
-          </div>
-          {meetLang === "en" ? (
-            <div className="field-grid">
-              <Field label="集合場所（英語）" value={t.meetingPlaceEn} onChange={x => update({ meetingPlaceEn: x })} wide readOnly={readonly} />
-              <Field label="解散場所（英語）" value={t.dropoffEn||""} onChange={x => update({ dropoffEn: x })} readOnly={readonly} />
-            </div>
-          ) : (
-            <div className="field-grid">
-              <Field label="集合場所（日本語）" required value={t.meetingPlace} onChange={x => update({ meetingPlace: x })} wide readOnly={readonly} />
-              <Field label="解散場所（日本語）" value={t.dropoff} onChange={x => update({ dropoff: x })} readOnly={readonly} />
-            </div>
-          )}
-        </div>
-        <Field label="Google Map URL" value={t.mapUrl} onChange={x => update({ mapUrl: x })} wide readOnly={readonly} type="url" affixLeft="https://" warn={t.mapUrl && !t.mapUrl.startsWith("https://maps") ? "Google MapのURLか確認してください" : null} />
         <div className="field-grid three" style={{marginTop:8}}>
           <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
         </div>
