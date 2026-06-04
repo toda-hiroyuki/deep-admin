@@ -291,3 +291,17 @@ document/に在庫モデルを置いたので確認してください。
 - product-detail.html
    ・公開前チェックボタンの背景色を黒色にしてください
 
+
+## 追加改修015
+- tour-option-detail.html
+   ・06ツアー行程
+    →ツアー行程一覧をtour-schedules.htmlを反映させてください。
+
+- tour-schedule-detail.html
+   ・立ち寄りスポット、任意スポットを選んだときは地図設定あり、移動を選択したときは地図設定を非表示にしてください
+   ・<span>集合・移動・解散</span>を<span>移動</span>に修正
+   ・Google Map URLを削除
+
+- product-detail.html
+   ・01ページ基本
+    →ページ種別とテンプレート種別を削除
