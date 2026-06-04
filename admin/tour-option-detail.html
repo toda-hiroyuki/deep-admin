@@ -3948,6 +3948,10 @@ function AvailabilityTab({ t, update, readonly }) {
   const [stockMode, setStockMode] = useLState("per_slot");
   const [dailyStock, setDailyStock] = useLState("");
 
+  const isRequest = t.bookingType === "リクエスト予約";
+  const isPrivate = t.tourType === "プライベートツアー";
+  const effectiveStockMode = isRequest ? "unlimited" : stockMode;
+
   const today = new Date().toISOString().split("T")[0];
   const futureClosure = closures.filter(c => c.end >= today || c.start >= today);
 
@@ -4049,9 +4053,9 @@ function AvailabilityTab({ t, update, readonly }) {
                 </select>
               </div>
               <div style={{display:'flex',flexDirection:'column',gap:3}}>
-                <label style={{fontSize:11,color:'var(--muted)'}}>定員（名）</label>
-                <input type="number" value={slot.capacity} disabled={readonly} onChange={e => updateSlot(slot.id,{capacity:e.target.value})}
-                  style={{width:70,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
+                <label style={{fontSize:11,color:'var(--muted)'}}>定員（名）{isPrivate && <span style={{marginLeft:4,color:'var(--accent)',fontSize:10}}>プライベート固定</span>}</label>
+                <input type="number" value={isPrivate ? 1 : slot.capacity} disabled={readonly || isPrivate} onChange={e => updateSlot(slot.id,{capacity:e.target.value})}
+                  style={{width:70,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4,background:isPrivate?'var(--bg-sunken)':'',color:isPrivate?'var(--muted)':''}} />
               </div>
               {!readonly && <button type="button" onClick={() => removeSlot(slot.id)} style={{marginTop:14,background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'0 4px'}}>✕</button>}
             </div>
@@ -4063,27 +4067,49 @@ function AvailabilityTab({ t, update, readonly }) {
       {/* 在庫設定 */}
       <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
         <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>在庫設定</div>
-        <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
-          {[["per_slot","時間帯別"],["daily","日別合計"],["unlimited","在庫なし（無制限）"]].map(([val,label]) => (
-            <label key={val} style={{display:'flex',alignItems:'center',gap:5,fontSize:13,cursor:'pointer',
-              padding:'4px 12px',borderRadius:20,border:'1.5px solid',
-              borderColor:stockMode===val?'var(--accent)':'var(--line)',
-              background:stockMode===val?'var(--accent)':'transparent',
-              color:stockMode===val?'#fff':'var(--ink)'}}>
-              <input type="radio" name="stockMode" value={val} checked={stockMode===val} onChange={() => setStockMode(val)} style={{display:'none'}} />
-              {label}
-            </label>
-          ))}
-        </div>
-        {stockMode === "per_slot" && <div style={{fontSize:12,color:'var(--muted)'}}>各受付時間帯の「定員」が在庫になります。上の受付時間帯で設定してください。</div>}
-        {stockMode === "daily" && (
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <label style={{fontSize:13}}>1日あたり最大予約数</label>
-            <input type="number" value={dailyStock} onChange={e => setDailyStock(e.target.value)} readOnly={readonly} style={{width:80,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
-            <span style={{fontSize:13,color:'var(--muted)'}}>名</span>
+        {isRequest ? (
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
+            <span style={{fontSize:20}}>ℹ️</span>
+            <div>
+              <div style={{fontSize:13,fontWeight:600}}>在庫なし（無制限）</div>
+              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>リクエスト予約のため、在庫管理を行いません。予約は運営が手動で承認します。</div>
+            </div>
           </div>
+        ) : isPrivate ? (
+          <>
+            <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4,marginBottom:8}}>
+              <span style={{fontSize:20}}>ℹ️</span>
+              <div>
+                <div style={{fontSize:13,fontWeight:600}}>時間帯別（1受注/枠）</div>
+                <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>プライベートツアーのため、各受付時間帯は1件の予約のみ受け付けます（1催行回 = 1予約）。</div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
+              {[["per_slot","時間帯別"],["daily","日別合計"],["unlimited","在庫なし（無制限）"]].map(([val,label]) => (
+                <label key={val} style={{display:'flex',alignItems:'center',gap:5,fontSize:13,cursor:'pointer',
+                  padding:'4px 12px',borderRadius:20,border:'1.5px solid',
+                  borderColor:stockMode===val?'var(--accent)':'var(--line)',
+                  background:stockMode===val?'var(--accent)':'transparent',
+                  color:stockMode===val?'#fff':'var(--ink)'}}>
+                  <input type="radio" name="stockMode" value={val} checked={stockMode===val} onChange={() => setStockMode(val)} style={{display:'none'}} />
+                  {label}
+                </label>
+              ))}
+            </div>
+            {stockMode === "per_slot" && <div style={{fontSize:12,color:'var(--muted)'}}>各受付時間帯の「定員」が在庫になります。上の受付時間帯で設定してください。</div>}
+            {stockMode === "daily" && (
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <label style={{fontSize:13}}>1日あたり最大予約数</label>
+                <input type="number" value={dailyStock} onChange={e => setDailyStock(e.target.value)} readOnly={readonly} style={{width:80,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
+                <span style={{fontSize:13,color:'var(--muted)'}}>名</span>
+              </div>
+            )}
+            {stockMode === "unlimited" && <div style={{fontSize:12,color:'var(--muted)'}}>在庫数を管理しません。予約は常に受け付けます。</div>}
+          </>
         )}
-        {stockMode === "unlimited" && <div style={{fontSize:12,color:'var(--muted)'}}>在庫数を管理しません。予約は常に受け付けます。</div>}
       </div>
 
       {/* 臨時休業 */}
