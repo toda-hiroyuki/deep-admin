@@ -56,32 +56,93 @@ body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1
   top: 0; left: 0; bottom: 0;
   overflow-y: auto;
   z-index: 100;
+  padding: 16px 16px 24px;
+  gap: 20px;
 }
 .sidebar-brand {
-  padding: 20px 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--side-line);
 }
+.brand-mark {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: 8px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
 .sidebar-brand .brand-name {
-  font-size: 16px; font-weight: 700; letter-spacing: -0.3px;
+  font-size: 14px; font-weight: 650; letter-spacing: -0.01em;
   color: var(--side-ink);
 }
 .sidebar-brand .brand-sub {
-  font-size: 11px; color: var(--side-ink-soft); margin-top: 2px;
+  font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; letter-spacing: 0.02em;
 }
-.sidebar-nav { padding: 12px 0; flex: 1; }
-.nav-section { padding: 16px 16px 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--side-ink-soft); text-transform: uppercase; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 16px;
+.sidebar-nav { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.nav-section-label {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--side-ink-soft);
-  text-decoration: none;
-  font-size: 13.5px; font-weight: 500;
-  transition: background 0.12s, color 0.12s;
+  padding: 0 8px 6px;
 }
-.nav-item:hover { background: rgba(255,255,255,0.07); color: var(--side-ink); }
-.nav-item.active { background: rgba(255,255,255,0.12); color: var(--side-ink); }
-.nav-icon { width: 20px; text-align: center; font-size: 14px; opacity: 0.8; }
-.nav-item.active .nav-icon { opacity: 1; }
+.nav-group { display: flex; flex-direction: column; gap: 2px; }
+.nav-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--side-ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  position: relative;
+  transition: background 0.12s;
+  text-decoration: none;
+  cursor: pointer;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: var(--side-ink); }
+.nav-item.active { background: rgba(255,255,255,0.10); font-weight: 650; }
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 8px; bottom: 8px;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+.nav-icon {
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.08);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--side-ink-soft);
+  flex-shrink: 0;
+}
+.nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+.side-note {
+  margin-top: auto;
+  border-top: 1px solid var(--side-line);
+  padding-top: 16px;
+  color: var(--side-ink-soft);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
 
 /* ── Main ── */
 .main {
@@ -203,26 +264,41 @@ body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1
 <!-- Sidebar -->
 <nav class="sidebar">
   <div class="sidebar-brand">
-    <div class="brand-name">deep_Admin</div>
-    <div class="brand-sub">deep experience</div>
+    <div class="brand-mark">d.</div>
+    <div>
+      <div class="brand-name">deep_Admin</div>
+      <div class="brand-sub">deep experience</div>
+    </div>
   </div>
   <div class="sidebar-nav">
-    <div class="nav-section">メニュー</div>
-    <a href="index.html" class="nav-item active">
-      <span class="nav-icon">⊞</span>ダッシュボード
-    </a>
-    <a href="tour-options.html" class="nav-item">
-      <span class="nav-icon">◈</span>TourOption
-    </a>
-    <a href="products.html" class="nav-item">
-      <span class="nav-icon">◻</span>商品ページ
-    </a>
-    <a href="guide-materials.html" class="nav-item">
-      <span class="nav-icon">📄</span>ガイド向け資料
-    </a>
-    <a href="cancel-policies.html" class="nav-item">
-      <span class="nav-icon">⚙</span>キャンセルポリシー
-    </a>
+    <div>
+      <div class="nav-section-label">Manage</div>
+      <div class="nav-group">
+        <a href="index.html" class="nav-item active">
+          <span class="nav-icon">⊞</span><span>ダッシュボード</span>
+        </a>
+        <a href="tour-options.html" class="nav-item">
+          <span class="nav-icon">◈</span><span>TourOption</span>
+        </a>
+        <a href="products.html" class="nav-item">
+          <span class="nav-icon">◻</span><span>商品ページ</span>
+        </a>
+        <a href="guide-materials.html" class="nav-item">
+          <span class="nav-icon">📄</span><span>ガイド向け資料</span>
+        </a>
+        <a href="cancel-policies.html" class="nav-item">
+          <span class="nav-icon">⚙</span><span>キャンセルポリシー</span>
+        </a>
+      </div>
+    </div>
+    <div>
+      <div class="nav-section-label">Tools</div>
+      <div class="nav-group">
+        <button class="nav-item"><span class="nav-icon">⌕</span><span>検索</span></button>
+        <button class="nav-item"><span class="nav-icon">≡</span><span>変更履歴</span></button>
+        <button class="nav-item"><span class="nav-icon">?</span><span>ヘルプ</span></button>
+      </div>
+    </div>
   </div>
 </nav>
 
