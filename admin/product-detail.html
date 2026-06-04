@@ -4422,8 +4422,6 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
           <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
           <Field label="URL" required value={page.url ? page.url.replace(/^\/tours\//,"") : ""} onChange={x => updatePage({ url: `/tours/${x}` })} readOnly={readonly} affixLeft="/tours/" mono />
           <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
-          <SelectField label="ページ種別" value={page.pageType} onChange={x => updatePage({ pageType: x })} options={["通常商品ページ", "キャンペーンLP", "特集ページ", "その他"]} readOnly={readonly} />
-          <SelectField label="テンプレート種別" value={page.template} onChange={x => updatePage({ template: x })} options={["標準商品ページ", "LP型", "特集型"]} readOnly={readonly} />
           <SelectField label="オプション表示方式" value={page.optionLayout} onChange={x => updatePage({ optionLayout: x })} options={["標準リスト型", "カード型", "コンパクト型"]} readOnly={readonly} />
           <div className="field" style={{gridColumn:'1/-1'}}>
             <label className="field-label"><span>表示カテゴリ</span></label>
