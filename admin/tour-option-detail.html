@@ -2650,6 +2650,7 @@ window.SEED = {
       ["basic", "基本情報"],
       ["conditions", "提供条件"],
       ["sales", "販売条件"],
+      ["availability", "販売期間・在庫"],
       ["content", "コンテンツ"],
       ["schedule", "ツアー行程"],
       ["ops", "運営・確認"],
@@ -4000,7 +4001,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         <div className="field-grid three">
           <SelectField label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} options={["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"]} readOnly={readonly} />
           <SelectField label="エリア名" value={t.area} onChange={x => update({ area: x })} options={["祇園・東山エリア","嵐山エリア","金閣寺・北野エリア","伏見稲荷エリア","大阪難波エリア","大阪梅田エリア","神戸元町エリア","奈良中心エリア"]} readOnly={readonly} />
-          <Field label="市区町村" value={t.city} onChange={x => update({ city: x })} readOnly={readonly} />
         </div>
         <div className="field" style={{marginBottom:16}}>
           <label className="field-label"><span>カテゴリ</span></label>
@@ -4035,11 +4035,13 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
             <div className="field-grid">
               <Field label="集合場所（英語）" value={t.meetingPlaceEn} onChange={x => update({ meetingPlaceEn: x })} wide readOnly={readonly} />
               <Field label="解散場所（英語）" value={t.dropoffEn||""} onChange={x => update({ dropoffEn: x })} readOnly={readonly} />
+              <Field label="住所（英語）" value={t.addressEn||""} onChange={x => update({ addressEn: x })} wide readOnly={readonly} placeholder="e.g. 123 Gion, Higashiyama-ku, Kyoto" />
             </div>
           ) : (
             <div className="field-grid">
               <Field label="集合場所（日本語）" required value={t.meetingPlace} onChange={x => update({ meetingPlace: x })} wide readOnly={readonly} />
               <Field label="解散場所（日本語）" value={t.dropoff} onChange={x => update({ dropoff: x })} readOnly={readonly} />
+              <Field label="住所（日本語）" value={t.address||""} onChange={x => update({ address: x })} wide readOnly={readonly} placeholder="例: 京都府京都市東山区祇園町123" />
             </div>
           )}
         </div>
@@ -4096,12 +4098,221 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
     );
   }
 
+  if (tab === "availability") {
+    const [salePeriodMode, setSalePeriodMode] = useLState("unlimited"); // "unlimited" | "range"
+    const [saleStart, setSaleStart] = useLState("");
+    const [saleEnd, setSaleEnd] = useLState("");
+    const [dayMode, setDayMode] = useLState("all"); // "all" | "custom"
+    const [daysOfWeek, setDaysOfWeek] = useLState(["sun","mon","tue","wed","thu","fri","sat"]);
+    const [closureStart, setClosureStart] = useLState("");
+    const [closureEnd, setClosureEnd] = useLState("");
+    const [closures, setClosures] = useLState([
+      { id: 1, start: "2026-07-15", end: "2026-07-15" },
+      { id: 2, start: "2026-08-13", end: "2026-08-16" },
+    ]);
+    const [slots, setSlots] = useLState([
+      { id: 1, startTime: "09:00", endTime: "11:00", capacity: 10 },
+      { id: 2, startTime: "14:00", endTime: "16:00", capacity: 8 },
+    ]);
+    const [stockMode, setStockMode] = useLState("per_slot"); // "per_slot" | "daily" | "unlimited"
+    const [dailyStock, setDailyStock] = useLState("");
+    const today = new Date().toISOString().split("T")[0];
+
+    const addClosure = () => {
+      if (!closureStart) return;
+      const newId = Date.now();
+      setClosures(prev => [...prev, { id: newId, start: closureStart, end: closureEnd || closureStart }]);
+      setClosureStart(""); setClosureEnd("");
+    };
+    const removeClosure = (id) => setClosures(prev => prev.filter(c => c.id !== id));
+    const futureClosure = closures.filter(c => c.end >= today || c.start >= today);
+
+    const addSlot = () => {
+      setSlots(prev => [...prev, { id: Date.now(), startTime: "10:00", endTime: "12:00", capacity: 10 }]);
+    };
+    const removeSlot = (id) => setSlots(prev => prev.filter(s => s.id !== id));
+    const updateSlot = (id, patch) => setSlots(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
+
+    const timeOptions = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        timeOptions.push(`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`);
+      }
+    }
+
+    const DOW = [["sun","日"],["mon","月"],["tue","火"],["wed","水"],["thu","木"],["fri","金"],["sat","土"]];
+    const toggleDow = (d) => {
+      setDaysOfWeek(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
+    };
+
+    return (
+      <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
+        <SectionHead eyebrow="STEP 4" title="販売期間・在庫" desc="予約を受け付ける期間・曜日・時間帯・在庫を管理します。" />
+
+        {/* 予約種別 */}
+        <div className="field-grid three" style={{marginBottom:16}}>
+          <SelectField label="予約方式" value={t.bookingType||"即時予約"} onChange={x => update({ bookingType: x })} options={["即時予約","リクエスト予約"]} readOnly={readonly} />
+          <SelectField label="ツアー形式" value={t.tourType||"グループツアー"} onChange={x => update({ tourType: x })} options={["グループツアー","プライベートツアー"]} readOnly={readonly} />
+        </div>
+
+        {/* 販売期間指定 */}
+        <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
+          <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>販売期間指定</div>
+          <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              <label style={{fontSize:12,color:'var(--muted)'}}>開始日 <span style={{color:'var(--red)'}}>*</span></label>
+              <input type="date" value={saleStart} onChange={e => setSaleStart(e.target.value)} readOnly={readonly} style={{fontSize:13,padding:'5px 8px',border:'1px solid var(--line)',borderRadius:4,background:'var(--surface)'}} />
+            </div>
+            <div style={{paddingTop:18,color:'var(--muted)',fontSize:13}}>〜</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              <label style={{fontSize:12,color:'var(--muted)'}}>終了日 <span style={{fontSize:11,color:'var(--muted)',fontWeight:400}}>(空欄で無期限)</span></label>
+              <input type="date" value={saleEnd} onChange={e => setSaleEnd(e.target.value)} readOnly={readonly} style={{fontSize:13,padding:'5px 8px',border:'1px solid var(--line)',borderRadius:4,background:'var(--surface)'}} />
+            </div>
+          </div>
+        </div>
+
+        {/* 曜日設定 */}
+        <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
+          <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>曜日設定</div>
+          <div style={{display:'flex',gap:8,marginBottom:10}}>
+            <button type="button" onClick={() => setDayMode("all")}
+              style={{padding:'4px 12px',borderRadius:20,fontSize:12,border:'1.5px solid',
+                borderColor:dayMode==="all"?'var(--accent)':'var(--line)',
+                background:dayMode==="all"?'var(--accent)':'transparent',
+                color:dayMode==="all"?'#fff':'var(--ink)',cursor:'pointer',fontWeight:dayMode==="all"?700:400}}>ALL</button>
+            <button type="button" onClick={() => setDayMode("custom")}
+              style={{padding:'4px 12px',borderRadius:20,fontSize:12,border:'1.5px solid',
+                borderColor:dayMode==="custom"?'var(--accent)':'var(--line)',
+                background:dayMode==="custom"?'var(--accent)':'transparent',
+                color:dayMode==="custom"?'#fff':'var(--ink)',cursor:'pointer',fontWeight:dayMode==="custom"?700:400}}>曜日指定</button>
+          </div>
+          {dayMode === "custom" && (
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              {DOW.map(([key,label]) => (
+                <label key={key} style={{display:'flex',alignItems:'center',gap:4,fontSize:13,cursor:'pointer',
+                  padding:'4px 10px',borderRadius:4,border:'1px solid',
+                  borderColor:daysOfWeek.includes(key)?'var(--accent)':'var(--line)',
+                  background:daysOfWeek.includes(key)?'var(--accent-tint, #e8f5f5)':'transparent',
+                  color:daysOfWeek.includes(key)?'var(--accent)':'var(--muted)'}}>
+                  <input type="checkbox" checked={daysOfWeek.includes(key)} onChange={() => toggleDow(key)} style={{accentColor:'var(--accent)'}} />
+                  {label}
+                </label>
+              ))}
+            </div>
+          )}
+          {dayMode === "all" && <div style={{fontSize:12,color:'var(--muted)'}}>全曜日で受付</div>}
+        </div>
+
+        {/* 受付時間帯 */}
+        <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div style={{fontWeight:600,fontSize:13}}>受付時間帯</div>
+            {!readonly && <button type="button" className="btn sm" onClick={addSlot}>＋ 時間帯を追加</button>}
+          </div>
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {slots.map(slot => (
+              <div key={slot.id} style={{display:'flex',gap:10,alignItems:'center',padding:'8px 10px',background:'var(--bg-sunken)',borderRadius:4}}>
+                <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                  <label style={{fontSize:11,color:'var(--muted)'}}>開始</label>
+                  <select value={slot.startTime} disabled={readonly} onChange={e => updateSlot(slot.id,{startTime:e.target.value})}
+                    style={{fontSize:13,padding:'4px 24px 4px 8px',border:'1px solid var(--line)',borderRadius:4,background:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 6px center / 12px,var(--surface)`,WebkitAppearance:'none',appearance:'none'}}>
+                    {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{paddingTop:14,color:'var(--muted)',fontSize:13}}>〜</div>
+                <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                  <label style={{fontSize:11,color:'var(--muted)'}}>終了</label>
+                  <select value={slot.endTime} disabled={readonly} onChange={e => updateSlot(slot.id,{endTime:e.target.value})}
+                    style={{fontSize:13,padding:'4px 24px 4px 8px',border:'1px solid var(--line)',borderRadius:4,background:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 6px center / 12px,var(--surface)`,WebkitAppearance:'none',appearance:'none'}}>
+                    {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                  <label style={{fontSize:11,color:'var(--muted)'}}>定員（名）</label>
+                  <input type="number" value={slot.capacity} disabled={readonly} onChange={e => updateSlot(slot.id,{capacity:e.target.value})}
+                    style={{width:70,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
+                </div>
+                {!readonly && <button type="button" onClick={() => removeSlot(slot.id)} style={{marginTop:14,background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'0 4px'}}>✕</button>}
+              </div>
+            ))}
+            {slots.length === 0 && <div style={{fontSize:12,color:'var(--muted)',textAlign:'center',padding:'12px 0'}}>時間帯が登録されていません</div>}
+          </div>
+        </div>
+
+        {/* 在庫 */}
+        <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
+          <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>在庫設定</div>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            {[["per_slot","時間帯別"],["daily","日別合計"],["unlimited","在庫なし（無制限）"]].map(([val,label]) => (
+              <label key={val} style={{display:'flex',alignItems:'center',gap:5,fontSize:13,cursor:'pointer',
+                padding:'4px 12px',borderRadius:20,border:'1.5px solid',
+                borderColor:stockMode===val?'var(--accent)':'var(--line)',
+                background:stockMode===val?'var(--accent)':'transparent',
+                color:stockMode===val?'#fff':'var(--ink)'}}>
+                <input type="radio" name="stockMode" value={val} checked={stockMode===val} onChange={() => setStockMode(val)} style={{display:'none'}} />
+                {label}
+              </label>
+            ))}
+          </div>
+          {stockMode === "per_slot" && (
+            <div style={{fontSize:12,color:'var(--muted)'}}>各受付時間帯の「定員」が在庫になります。上の受付時間帯で設定してください。</div>
+          )}
+          {stockMode === "daily" && (
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <label style={{fontSize:13}}>1日あたり最大予約数</label>
+              <input type="number" value={dailyStock} onChange={e => setDailyStock(e.target.value)} readOnly={readonly} style={{width:80,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
+              <span style={{fontSize:13,color:'var(--muted)'}}>名</span>
+            </div>
+          )}
+          {stockMode === "unlimited" && (
+            <div style={{fontSize:12,color:'var(--muted)'}}>在庫数を管理しません。予約は常に受け付けます。</div>
+          )}
+        </div>
+
+        {/* 臨時休業 */}
+        <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
+          <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>臨時休業</div>
+          {!readonly && (
+            <div style={{display:'flex',gap:10,alignItems:'flex-end',marginBottom:12,flexWrap:'wrap'}}>
+              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                <label style={{fontSize:12,color:'var(--muted)'}}>開始日 <span style={{color:'var(--red)'}}>*</span></label>
+                <input type="date" value={closureStart} onChange={e => setClosureStart(e.target.value)} style={{fontSize:13,padding:'5px 8px',border:'1px solid var(--line)',borderRadius:4,background:'var(--surface)'}} />
+              </div>
+              <div style={{paddingBottom:8,color:'var(--muted)',fontSize:13}}>〜</div>
+              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                <label style={{fontSize:12,color:'var(--muted)'}}>終了日 <span style={{fontSize:11,color:'var(--muted)',fontWeight:400}}>(空欄で単日)</span></label>
+                <input type="date" value={closureEnd} onChange={e => setClosureEnd(e.target.value)} style={{fontSize:13,padding:'5px 8px',border:'1px solid var(--line)',borderRadius:4,background:'var(--surface)'}} />
+              </div>
+              <button type="button" className="btn primary" onClick={addClosure} disabled={!closureStart} style={{height:32}}>追加</button>
+            </div>
+          )}
+          {futureClosure.length === 0 ? (
+            <div style={{fontSize:12,color:'var(--muted)',textAlign:'center',padding:'8px 0'}}>臨時休業の予定はありません</div>
+          ) : (
+            <table className="data-table" style={{marginTop:4}}>
+              <thead><tr><th>開始日</th><th>終了日</th>{!readonly && <th></th>}</tr></thead>
+              <tbody>
+                {futureClosure.map(c => (
+                  <tr key={c.id}>
+                    <td>{c.start}</td>
+                    <td>{c.end === c.start ? "（単日）" : c.end}</td>
+                    {!readonly && <td><button type="button" className="btn sm" style={{color:'var(--red)'}} onClick={() => removeClosure(c.id)}>削除</button></td>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (tab === "content") {
     const [incLang, setIncLang] = useLState("en");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead
-          eyebrow="STEP 4"
+          eyebrow="STEP 5"
           title="コンテンツ"
           desc="ゲスト向けの表示内容を管理します。ツアー行程は「ツアー行程」タブで管理します。"
         />
@@ -4150,7 +4361,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   if (tab === "schedule") {
     return (
       <div className="form-section">
-        <SectionHead eyebrow="STEP 5" title="ツアー行程" desc="このTourOptionのツアー行程を管理します。" />
+        <SectionHead eyebrow="STEP 6" title="ツアー行程" desc="このTourOptionのツアー行程を管理します。" />
         <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
           <a href="tour-schedule-detail.html" className="btn primary">＋ 新規作成</a>
         </div>
@@ -4189,7 +4400,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
     const indivDocs = assigned.filter(d => d.scope === "個別");
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-        <SectionHead eyebrow="STEP 6" title="運営・確認" desc="ガイド向けメモ、参考資料・注意事項・行程、公開前チェックを確認します。" />
+        <SectionHead eyebrow="STEP 7" title="運営・確認" desc="ガイド向けメモ、参考資料・注意事項・行程、公開前チェックを確認します。" />
         <div className="field-grid">
           <Field label="ガイド向け注意事項" value={t.guideMemo} onChange={x => update({ guideMemo: x })} wide multiline readOnly={readonly} />
           <Field label="営業時間・定休日メモ" value="月曜定休の店舗があるため代替候補を確認" onChange={() => {}} wide readOnly={readonly} />
@@ -4248,7 +4459,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
     return (
       <div className="form-section">
         <SectionHead
-          eyebrow="STEP 7"
+          eyebrow="STEP 8"
           title="チャネル別URL"
           desc="各OTA・自社サイトでの掲載URLを管理します。担当ガイドの案件詳細でゲストが見ていたページを表示するために使用されます。"
         />
@@ -4501,7 +4712,7 @@ function ChannelsTab({ data, update, readonly }) {
   return (
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
       <SectionHead
-        eyebrow="STEP 6"
+        eyebrow="STEP 8"
         title="チャネル別URL"
         desc="各OTA・自社サイトでの掲載URLを管理します。担当ガイドの案件詳細でゲストが見ていたページを表示するために使用されます。"
       />
