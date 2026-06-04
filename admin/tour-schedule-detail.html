@@ -2559,9 +2559,11 @@ function Sidebar({ resource, counts }) {
 const TOUR_NAME = "Osaka: LED E-Bike Night Ride to Dotonbori, Namba & Shinsekai";
 const LANG_TABS = ["English", "日本語"];
 const SCHEDULE_TYPES = [
+  { key: "gather", label: "集合", desc: "ツアー開始の集合場所" },
   { key: "stop", label: "立ち寄りスポット", desc: "必ず訪れる場所・体験" },
   { key: "optional", label: "任意スポット", desc: "状況に応じて訪れる場所" },
   { key: "move", label: "移動", desc: "移動" },
+  { key: "dismiss", label: "解散", desc: "ツアー終了の解散場所" },
 ];
 
 function App() {
