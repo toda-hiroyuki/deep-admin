@@ -2586,14 +2586,14 @@ function App() {
             <div className="crumbs">
               <span>deep_Admin</span>
               <span className="sep">/</span>
-              <a className="crumb-link" href="products.html">商品ページ</a>
+              <a className="crumb-link" href="tour-options.html">TourOption</a>
               <span className="sep">/</span>
-              <a className="crumb-link" href="tour-schedules.html">ツアー行程</a>
+              <a className="crumb-link" href="tour-option-detail.html?tab=schedule">ツアー行程</a>
               <span className="sep">/</span>
               <span className="current">行程登録</span>
             </div>
             <div className="title-row">
-              <button className="btn ghost sm back-btn" onClick={() => { window.location.href = 'tour-schedules.html'; }}>← 一覧に戻る</button>
+              <button className="btn ghost sm back-btn" onClick={() => { window.location.href = 'tour-option-detail.html?tab=schedule'; }}>← 一覧に戻る</button>
               <h1 style={{fontSize:18}}>『<span style={{color:"var(--accent)"}}>{TOUR_NAME}</span>』の行程登録</h1>
             </div>
           </div>
@@ -2648,6 +2648,13 @@ function App() {
                     <label className="field-label">住所</label>
                     <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="住所を入力..." />
                   </div>
+                  {scheduleType === "gather" && (
+                    <div className="field-wide">
+                      <label className="field-label">Google Map URL</label>
+                      <input type="url" placeholder="https://maps.google.com/..." />
+                      <div className="field-help"><span>集合場所のGoogle MapsリンクURLを入力してください</span></div>
+                    </div>
+                  )}
                   <div className="field">
                     <label className="field-label">ピン表示</label>
                     <div className="flex-row" style={{gap:12,paddingTop:6}}>
@@ -2707,7 +2714,7 @@ function App() {
             </div>
 
             <div style={{padding:"16px 20px",borderTop:"1px solid var(--line)",display:"flex",justifyContent:"flex-end",gap:8}}>
-              <button className="btn ghost" onClick={() => { window.location.href = 'tour-schedules.html'; }}>キャンセル</button>
+              <button className="btn ghost" onClick={() => { window.location.href = 'tour-option-detail.html?tab=schedule'; }}>キャンセル</button>
               <button className="btn primary">保存</button>
             </div>
           </section>

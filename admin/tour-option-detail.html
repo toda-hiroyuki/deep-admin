@@ -4105,27 +4105,28 @@ function AvailabilityTab({ t, update, readonly }) {
         )}
       </div>
 
-      {/* 在庫設定 */}
+      {/* 販売可能枠設定 */}
       <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
-        <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>在庫設定</div>
+        <div style={{fontWeight:600,fontSize:13,marginBottom:4}}>販売可能枠</div>
+        <div style={{fontSize:11,color:'var(--muted)',marginBottom:10}}>催行リソース（ガイド・車両等）の管理はBOKUNで行います。ここでは各時間帯・日付に対して販売できる最大人数（席数）を設定します。</div>
         {isRequest ? (
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
             <div>
-              <div style={{fontSize:13,fontWeight:600}}>在庫なし（無制限）</div>
-              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>リクエスト予約のため、在庫管理を行いません。予約は運営が手動で承認します。</div>
+              <div style={{fontSize:13,fontWeight:600}}>上限なし</div>
+              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>リクエスト予約のため、販売枠管理を行いません。予約は運営が手動で承認します。</div>
             </div>
           </div>
         ) : isPrivate ? (
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4}}>
             <div>
-              <div style={{fontSize:13,fontWeight:600}}>時間帯別（1受注/枠）</div>
-              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>プライベートツアーのため、各受付時間帯は1件の予約のみ受け付けます（1催行回 = 1予約）。</div>
+              <div style={{fontSize:13,fontWeight:600}}>時間帯別（1組/枠）</div>
+              <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>プライベートツアーのため、各受付時間帯は1組の予約のみ受け付けます（1催行回 = 1予約）。</div>
             </div>
           </div>
         ) : (
           <>
             <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
-              {[["per_slot","時間帯別"],["daily","日別合計"],["unlimited","在庫なし（無制限）"]].map(([val,label]) => (
+              {[["per_slot","時間帯別"],["daily","日別合計"],["unlimited","上限なし"]].map(([val,label]) => (
                 <label key={val} style={{display:'flex',alignItems:'center',gap:5,fontSize:13,cursor:'pointer',
                   padding:'4px 12px',borderRadius:20,border:'1.5px solid',
                   borderColor:stockMode===val?'var(--accent)':'var(--line)',
@@ -4136,15 +4137,15 @@ function AvailabilityTab({ t, update, readonly }) {
                 </label>
               ))}
             </div>
-            {stockMode === "per_slot" && <div style={{fontSize:12,color:'var(--muted)'}}>各受付時間帯の「定員」が在庫になります。上の受付時間帯で設定してください。</div>}
+            {stockMode === "per_slot" && <div style={{fontSize:12,color:'var(--muted)'}}>各受付時間帯の「定員（名）」が販売可能枠になります。上の受付時間帯で設定してください。</div>}
             {stockMode === "daily" && (
               <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <label style={{fontSize:13}}>1日あたり最大予約数</label>
+                <label style={{fontSize:13}}>1日あたり最大販売数</label>
                 <input type="number" value={dailyStock} onChange={e => setDailyStock(e.target.value)} readOnly={readonly} style={{width:80,fontSize:13,padding:'4px 8px',border:'1px solid var(--line)',borderRadius:4}} />
                 <span style={{fontSize:13,color:'var(--muted)'}}>名</span>
               </div>
             )}
-            {stockMode === "unlimited" && <div style={{fontSize:12,color:'var(--muted)'}}>在庫数を管理しません。予約は常に受け付けます。</div>}
+            {stockMode === "unlimited" && <div style={{fontSize:12,color:'var(--muted)'}}>販売枠を設けません。予約は常に受け付けます。</div>}
           </>
         )}
       </div>
@@ -4283,6 +4284,13 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         </div>
         <div className="field-grid three" style={{marginTop:8}}>
           <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
+          {t.pickup === "あり" && (
+            <div className="field">
+              <label className="field-label">ピックアップ範囲・距離制限</label>
+              <input type="text" value={t.pickupRange || ""} onChange={e => update({ pickupRange: e.target.value })} readOnly={readonly} placeholder="例: 大阪市内、梅田駅から5km圏内" />
+              <div className="field-help"><span>ピックアップ可能なエリアや距離の目安を入力してください</span></div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -6587,7 +6595,7 @@ function App() {
   const [resource, setResource] = useState("tourOption");
   const [view, setView] = useState("detail");
   const [mode, setMode] = useState("edit");
-  const [tab, setTab] = useState("basic");
+  const [tab, setTab] = useState(() => { try { return new URLSearchParams(window.location.search).get('tab') || 'basic'; } catch(e) { return 'basic'; } });
   const [selectedLink, setSelectedLink] = useState("link-01");
   const [selectedDoc, setSelectedDoc] = useState("doc-001");
   const [selectedTemplate, setSelectedTemplate] = useState((SEED.cancelTemplates && SEED.cancelTemplates[0] && SEED.cancelTemplates[0].id) || null);
