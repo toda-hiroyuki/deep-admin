@@ -2561,7 +2561,7 @@ const LANG_TABS = ["English", "日本語"];
 const SCHEDULE_TYPES = [
   { key: "stop", label: "立ち寄りスポット", desc: "必ず訪れる場所・体験" },
   { key: "optional", label: "任意スポット", desc: "状況に応じて訪れる場所" },
-  { key: "move", label: "移動", desc: "集合・移動・解散" },
+  { key: "move", label: "移動", desc: "移動" },
 ];
 
 function App() {
@@ -2622,6 +2622,7 @@ function App() {
             </div>
 
             {/* ── 地図設定 ── */}
+            {scheduleType !== "move" && (
             <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
               <div className="form-section">
                 <div className="section-title">
@@ -2646,10 +2647,6 @@ function App() {
                     <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="住所を入力..." />
                   </div>
                   <div className="field">
-                    <label className="field-label">Google Maps URL</label>
-                    <input type="url" placeholder="https://maps.google.com/..." />
-                  </div>
-                  <div className="field">
                     <label className="field-label">ピン表示</label>
                     <div className="flex-row" style={{gap:12,paddingTop:6}}>
                       <label className="toggle-row" style={{flex:1,cursor:"pointer"}} onClick={() => setPinDisplay(true)}>
@@ -2665,6 +2662,7 @@ function App() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* ── 多言語テキスト ── */}
             <div>

@@ -4374,34 +4374,47 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "schedule") {
+    const SCHEDULE_ROWS = [
+      { id:"sc-001", no:1, iconType:"move",     iconLabel:"移", category:"移動",           pinDisplay:false, title:"集合 → 京阪祇園四条駅 6番出口", body:"18:00集合。地下鉄出口から徒歩3分。" },
+      { id:"sc-002", no:2, iconType:"stop",     iconLabel:"①", category:"立ち寄りスポット", pinDisplay:true,  title:"花見小路散策", body:"祇園の中心を流れる石畳の小路。約20分の散策。" },
+      { id:"sc-003", no:3, iconType:"optional", iconLabel:"任", category:"任意スポット",    pinDisplay:true,  title:"居酒屋Aでの前菜・日本酒体験", body:"ゲストの希望に応じて立ち寄り可能。" },
+      { id:"sc-004", no:4, iconType:"stop",     iconLabel:"②", category:"立ち寄りスポット", pinDisplay:false, title:"八坂神社周辺で解散", body:"20:20頃、八坂神社正面付近で解散。" },
+    ];
+    const badgeClass = (cat) => cat === "移動" ? "" : cat === "立ち寄りスポット" ? "teal" : "amber";
+    const iconBg = (type) => type === "stop" ? "var(--accent)" : type === "optional" ? "var(--amber)" : "var(--muted)";
     return (
       <div className="form-section">
         <SectionHead eyebrow="STEP 6" title="ツアー行程" desc="このTourOptionのツアー行程を管理します。" />
         <div style={{display:'flex',justifyContent:'flex-end',marginBottom:12}}>
-          <a href="tour-schedule-detail.html" className="btn primary">＋ 新規作成</a>
+          <a href="tour-schedule-detail.html" className="btn primary">＋ 新規登録</a>
         </div>
         <div className="table-wrap">
-          <table className="data-table">
+          <table className="data-table" style={{minWidth:640}}>
             <thead>
-              <tr><th>行程コード</th><th>行程名</th><th>催行日</th><th>ガイド</th><th>ステータス</th><th></th></tr>
+              <tr>
+                <th style={{width:44}}>No.</th>
+                <th style={{width:44}}>行程</th>
+                <th style={{width:120}}>分類</th>
+                <th style={{width:80}}>ピン表示</th>
+                <th>タイトル</th>
+                <th>本文</th>
+                <th style={{width:60}}></th>
+              </tr>
             </thead>
             <tbody>
-              <tr>
-                <td className="mono" style={{fontSize:12.5}}>SCH-001</td>
-                <td>祇園ナイトフードツアー 行程A</td>
-                <td>2024/12/01</td>
-                <td>田中ガイド</td>
-                <td><span className="badge teal">確定</span></td>
-                <td><a href="tour-schedule-detail.html" className="btn sm">編集</a></td>
-              </tr>
-              <tr>
-                <td className="mono" style={{fontSize:12.5}}>SCH-002</td>
-                <td>祇園ナイトフードツアー 行程B</td>
-                <td>2024/12/08</td>
-                <td>鈴木ガイド</td>
-                <td><span className="badge outline">下書き</span></td>
-                <td><a href="tour-schedule-detail.html" className="btn sm">編集</a></td>
-              </tr>
+              {SCHEDULE_ROWS.map(r => (
+                <tr key={r.id}>
+                  <td style={{textAlign:'center',fontWeight:600,color:'var(--muted)',fontSize:12}}>{"0"+r.no}</td>
+                  <td style={{textAlign:'center'}}>
+                    <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:24,height:24,borderRadius:'50%',background:iconBg(r.iconType),color:'#fff',fontSize:10,fontWeight:700}}>{r.iconLabel}</span>
+                  </td>
+                  <td><span className={`badge ${badgeClass(r.category)}`}>{r.category}</span></td>
+                  <td style={{textAlign:'center',fontSize:12,color:r.pinDisplay?'var(--accent)':'var(--muted)'}}>{r.pinDisplay ? "● On" : "○ Off"}</td>
+                  <td><strong style={{fontSize:13}}>{r.title}</strong></td>
+                  <td style={{fontSize:12,color:'var(--muted)',maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.body}</td>
+                  <td><a href="tour-schedule-detail.html" className="btn sm">編集</a></td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
