@@ -342,4 +342,12 @@ document/に在庫モデルを置いたので確認してください。
 リクエスト予約のため、販売枠管理を行いません。予約は運営が手動で承認します。
 
 
+## 追加改修019
+- product-detail.html
+   ・03掲載TourOption
+    →+TourOptionを追加ボタンを削除
+    →紐づけTourOption一覧の上に入力サジェストから追加するinput textを設置してください
+
+- tour-option-edit.html
+   ・キャンセルボタンなどでproduct-detail.htmlにもどったとき03掲載TourOptionのタブがアクティブになっているようにしてください
 
