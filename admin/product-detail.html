@@ -4480,15 +4480,15 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
           <strong>Phase 1：</strong>紐付けレコードは表示順・表示可否・販売可否のみ管理します。表示名・説明・画像等の表示内容はTourOption画面で編集します。
         </InfoNote>
 
-        <TourOptionSuggestAdd links={links} updateLinks={updateLinks} lookup={lookup} />
-
-        <div className="section-title" style={{marginTop:16}}>
+        <div className="section-title" style={{marginTop:4}}>
           <div>
             <h3>紐付け中のTourOption</h3>
             <p style={{margin:'4px 0 0',color:'var(--muted)',fontSize:12.5}}>この商品ページで現在掲載しているTourOptionです。ドラッグ&ドロップで表示順を変更できます。</p>
           </div>
           <span className="badge teal">{links.length}件</span>
         </div>
+
+        <TourOptionSuggestAdd links={links} updateLinks={updateLinks} lookup={lookup} />
 
         <div className="table-wrap">
           <div className="table-scroll">
@@ -4601,16 +4601,15 @@ function LinkSettingsForm({ link, page, readonly, updateLinks }) {
 
 function TourOptionSuggestAdd({ links, updateLinks, lookup }) {
   const [query, setQuery] = React.useState("");
-  const [showSuggests, setShowSuggests] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
   const existingCodes = links.map(l => l.code);
-  const allOptions = Object.entries(lookup);
+  const allOptions = Object.entries(lookup).filter(([code]) => !existingCodes.includes(code));
   const suggests = query.trim()
     ? allOptions.filter(([code, info]) =>
-        !existingCodes.includes(code) &&
-        (code.toLowerCase().includes(query.toLowerCase()) ||
-         (info.selectionName || "").toLowerCase().includes(query.toLowerCase()))
+        code.toLowerCase().includes(query.toLowerCase()) ||
+        (info.selectionName || "").toLowerCase().includes(query.toLowerCase())
       )
-    : [];
+    : allOptions.slice(0, 8);
 
   const addOption = (code, info) => {
     const newLink = {
@@ -4624,47 +4623,40 @@ function TourOptionSuggestAdd({ links, updateLinks, lookup }) {
     };
     updateLinks([...links, newLink]);
     setQuery("");
-    setShowSuggests(false);
+    setOpen(false);
   };
 
   return (
-    <div style={{marginBottom:8}}>
-      <h3 style={{fontSize:14,fontWeight:600,marginBottom:6}}>掲載TourOptionを追加</h3>
-      <div style={{position:"relative",maxWidth:480}}>
-        <input
-          type="text"
-          value={query}
-          onChange={e => { setQuery(e.target.value); setShowSuggests(true); }}
-          onFocus={() => setShowSuggests(true)}
-          onBlur={() => setTimeout(() => setShowSuggests(false), 150)}
-          placeholder="TourOption名・コードで検索して追加..."
-          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:6,fontSize:13,boxSizing:"border-box"}}
-        />
-        {showSuggests && suggests.length > 0 && (
-          <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid var(--border)",borderRadius:6,boxShadow:"0 4px 12px rgba(0,0,0,.12)",zIndex:100,maxHeight:240,overflowY:"auto"}}>
-            {suggests.map(([code, info]) => (
-              <div
-                key={code}
-                onMouseDown={() => addOption(code, info)}
-                style={{padding:"8px 12px",cursor:"pointer",borderBottom:"1px solid var(--border-soft)",display:"flex",justifyContent:"space-between",alignItems:"center"}}
-                onMouseEnter={e => e.currentTarget.style.background="#f5f5f3"}
-                onMouseLeave={e => e.currentTarget.style.background=""}
-              >
-                <div>
-                  <div style={{fontWeight:600,fontSize:13}}>{info.selectionName || code}</div>
-                  <div style={{fontSize:11,color:"var(--muted)",fontFamily:"monospace"}}>{code}</div>
-                </div>
-                <span style={{fontSize:12,color:"var(--muted)"}}>{info.price || ""}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        {showSuggests && query.trim() && suggests.length === 0 && (
-          <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid var(--border)",borderRadius:6,padding:"10px 12px",fontSize:13,color:"var(--muted)",zIndex:100}}>
-            該当するTourOptionが見つかりません
-          </div>
-        )}
-      </div>
+    <div style={{position:'relative',marginBottom:12}}>
+      <input
+        type="text"
+        value={query}
+        onChange={e => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="TourOption名・コードで検索して追加..."
+        style={{width:'100%',padding:'7px 12px',border:'1px solid var(--line)',borderRadius:6,fontSize:13,boxSizing:'border-box',background:'var(--surface)'}}
+      />
+      {open && suggests.length > 0 && (
+        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'var(--surface)',border:'1px solid var(--line)',borderRadius:6,boxShadow:'0 4px 16px rgba(0,0,0,.10)',zIndex:100,maxHeight:220,overflowY:'auto'}}>
+          {suggests.map(([code, info]) => (
+            <div key={code}
+              onMouseDown={() => addOption(code, info)}
+              style={{padding:'8px 12px',cursor:'pointer',borderBottom:'1px solid var(--line)',fontSize:13}}
+              onMouseEnter={e => e.currentTarget.style.background='var(--bg-sunken)'}
+              onMouseLeave={e => e.currentTarget.style.background=''}
+            >
+              <div style={{fontWeight:600}}>{info.selectionName || code}</div>
+              <div style={{fontSize:11,color:'var(--muted)',fontFamily:'monospace'}}>{code}{info.price ? ' · ' + info.price : ''}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {open && query.trim() && suggests.length === 0 && (
+        <div style={{position:'absolute',top:'100%',left:0,right:0,background:'var(--surface)',border:'1px solid var(--line)',borderRadius:6,padding:'10px 12px',fontSize:13,color:'var(--muted)',zIndex:100}}>
+          該当するTourOptionが見つかりません
+        </div>
+      )}
     </div>
   );
 }
