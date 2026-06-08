@@ -4480,15 +4480,9 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
           <strong>Phase 1：</strong>紐付けレコードは表示順・表示可否・販売可否のみ管理します。表示名・説明・画像等の表示内容はTourOption画面で編集します。
         </InfoNote>
 
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <div>
-            <h3 style={{fontSize:14,fontWeight:600}}>掲載TourOptionの追加</h3>
-            <p style={{fontSize:12,color:'var(--muted)',marginTop:2}}>この商品ページに掲載するTourOptionを追加します。</p>
-          </div>
-          <a href="tour-option-add.html" className="btn primary">＋ TourOptionを追加</a>
-        </div>
+        <TourOptionSuggestAdd links={links} updateLinks={updateLinks} lookup={lookup} />
 
-        <div className="section-title" style={{marginTop:4}}>
+        <div className="section-title" style={{marginTop:16}}>
           <div>
             <h3>紐付け中のTourOption</h3>
             <p style={{margin:'4px 0 0',color:'var(--muted)',fontSize:12.5}}>この商品ページで現在掲載しているTourOptionです。ドラッグ&ドロップで表示順を変更できます。</p>
@@ -4601,6 +4595,76 @@ function LinkSettingsForm({ link, page, readonly, updateLinks }) {
         <strong>TourOption自体が非公開の場合、この商品ページの販売設定にかかわらず販売OFFになります。</strong><br/>
         TourOptionの表示内容を変更する場合はTourOption画面で編集してください。同じTourOptionを掲載している全商品ページに反映されます。
       </InfoNote>
+    </div>
+  );
+}
+
+function TourOptionSuggestAdd({ links, updateLinks, lookup }) {
+  const [query, setQuery] = React.useState("");
+  const [showSuggests, setShowSuggests] = React.useState(false);
+  const existingCodes = links.map(l => l.code);
+  const allOptions = Object.entries(lookup);
+  const suggests = query.trim()
+    ? allOptions.filter(([code, info]) =>
+        !existingCodes.includes(code) &&
+        (code.toLowerCase().includes(query.toLowerCase()) ||
+         (info.selectionName || "").toLowerCase().includes(query.toLowerCase()))
+      )
+    : [];
+
+  const addOption = (code, info) => {
+    const newLink = {
+      id: "link-" + Date.now(),
+      code,
+      tourOptionId: "TO-" + code,
+      order: links.length + 1,
+      default: false,
+      visible: true,
+      sellable: true,
+    };
+    updateLinks([...links, newLink]);
+    setQuery("");
+    setShowSuggests(false);
+  };
+
+  return (
+    <div style={{marginBottom:8}}>
+      <h3 style={{fontSize:14,fontWeight:600,marginBottom:6}}>掲載TourOptionを追加</h3>
+      <div style={{position:"relative",maxWidth:480}}>
+        <input
+          type="text"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setShowSuggests(true); }}
+          onFocus={() => setShowSuggests(true)}
+          onBlur={() => setTimeout(() => setShowSuggests(false), 150)}
+          placeholder="TourOption名・コードで検索して追加..."
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:6,fontSize:13,boxSizing:"border-box"}}
+        />
+        {showSuggests && suggests.length > 0 && (
+          <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid var(--border)",borderRadius:6,boxShadow:"0 4px 12px rgba(0,0,0,.12)",zIndex:100,maxHeight:240,overflowY:"auto"}}>
+            {suggests.map(([code, info]) => (
+              <div
+                key={code}
+                onMouseDown={() => addOption(code, info)}
+                style={{padding:"8px 12px",cursor:"pointer",borderBottom:"1px solid var(--border-soft)",display:"flex",justifyContent:"space-between",alignItems:"center"}}
+                onMouseEnter={e => e.currentTarget.style.background="#f5f5f3"}
+                onMouseLeave={e => e.currentTarget.style.background=""}
+              >
+                <div>
+                  <div style={{fontWeight:600,fontSize:13}}>{info.selectionName || code}</div>
+                  <div style={{fontSize:11,color:"var(--muted)",fontFamily:"monospace"}}>{code}</div>
+                </div>
+                <span style={{fontSize:12,color:"var(--muted)"}}>{info.price || ""}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {showSuggests && query.trim() && suggests.length === 0 && (
+          <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#fff",border:"1px solid var(--border)",borderRadius:6,padding:"10px 12px",fontSize:13,color:"var(--muted)",zIndex:100}}>
+            該当するTourOptionが見つかりません
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -6018,7 +6082,11 @@ function App() {
   const [resource, setResource] = useState("productPage");
   const [view, setView] = useState("detail");
   const [mode, setMode] = useState("edit");
-  const [tab, setTab] = useState("pageBasic");
+  const [tab, setTab] = useState(() => {
+    const hash = window.location.hash.replace("#", "");
+    const validTabs = ["pageBasic", "pageContent", "links"];
+    return validTabs.includes(hash) ? hash : "pageBasic";
+  });
   const [checkPanelOpen, setCheckPanelOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState("link-01");
   const [selectedDoc, setSelectedDoc] = useState("doc-001");
