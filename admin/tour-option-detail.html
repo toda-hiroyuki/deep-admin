@@ -1152,16 +1152,16 @@ function SlotList({ slots, readonly, onAdd, onRemove, onUpdate, timeOptions, sel
 }
 
 const RESOURCE_MASTER = [
-  { key: "guide",    label: "ガイド",        unit: "名" },
-  { key: "driver",   label: "ドライバー",    unit: "名" },
-  { key: "van",      label: "車両（バン）",  unit: "台" },
-  { key: "bus",      label: "車両（バス）",  unit: "台" },
-  { key: "bicycle",  label: "自転車",        unit: "台" },
-  { key: "kayak",    label: "カヤック",      unit: "艇" },
-  { key: "sup",      label: "SUP",           unit: "台" },
-  { key: "wetsuit",  label: "ウェットスーツ",unit: "着" },
-  { key: "equipment",label: "機材セット",    unit: "式" },
-  { key: "other",    label: "その他",        unit: "個" },
+  { key: "guide",    label: "ガイド",        unit: "名",  cooldown: 0   },
+  { key: "driver",   label: "ドライバー",    unit: "名",  cooldown: 0   },
+  { key: "van",      label: "車両（バン）",  unit: "台",  cooldown: 30  },
+  { key: "bus",      label: "車両（バス）",  unit: "台",  cooldown: 60  },
+  { key: "bicycle",  label: "自転車",        unit: "台",  cooldown: 15  },
+  { key: "kayak",    label: "カヤック",      unit: "艇",  cooldown: 30  },
+  { key: "sup",      label: "SUP",           unit: "台",  cooldown: 30  },
+  { key: "wetsuit",  label: "ウェットスーツ",unit: "着",  cooldown: 60  },
+  { key: "equipment",label: "機材セット",    unit: "式",  cooldown: 0   },
+  { key: "other",    label: "その他",        unit: "個",  cooldown: 0   },
 ];
 
 function AvailabilityTab({ t, update, readonly }) {
@@ -1336,6 +1336,7 @@ function AvailabilityTab({ t, update, readonly }) {
               <tr style={{background:'var(--bg-sunken)'}}>
                 <th style={{padding:'5px 10px',textAlign:'left',fontWeight:600,borderBottom:'1px solid var(--line)',color:'var(--muted)',fontSize:11}}>リソース種別</th>
                 <th style={{padding:'5px 10px',textAlign:'right',fontWeight:600,borderBottom:'1px solid var(--line)',color:'var(--muted)',fontSize:11}}>数量</th>
+                <th style={{padding:'5px 10px',textAlign:'right',fontWeight:600,borderBottom:'1px solid var(--line)',color:'var(--muted)',fontSize:11}}>再利用可能までの時間</th>
                 {!readonly && <th style={{padding:'5px 10px',borderBottom:'1px solid var(--line)',width:48}}></th>}
               </tr>
             </thead>
@@ -1346,6 +1347,7 @@ function AvailabilityTab({ t, update, readonly }) {
                   <tr key={r.id} style={{borderBottom:'1px solid var(--line)'}}>
                     <td style={{padding:'7px 10px'}}>{master.label}</td>
                     <td style={{padding:'7px 10px',textAlign:'right'}}>{r.qty} {master.unit}</td>
+                    <td style={{padding:'7px 10px',textAlign:'right',color:'var(--muted)',fontSize:12}}>{master.cooldown > 0 ? `${master.cooldown}分` : '—'}</td>
                     {!readonly && (
                       <td style={{padding:'7px 10px',textAlign:'center'}}>
                         <button type="button" onClick={() => removeResource(r.id)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:14,lineHeight:1}}>✕</button>
@@ -1382,6 +1384,15 @@ function AvailabilityTab({ t, update, readonly }) {
             </button>
           </div>
         )}
+      </div>
+
+      {/* 予約人数制限 */}
+      <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
+        <div style={{fontWeight:600,fontSize:13,marginBottom:12}}>予約人数制限</div>
+        <div className="field-grid three">
+          <Field label="1予約あたり最小人数" required value={t.minBooking} onChange={x => update({ minBooking: x })} readOnly={readonly} affixRight="名" type="number" />
+          <Field label="1予約あたり最大人数（１催行回あたり定員）" required value={t.maxBooking} onChange={x => update({ maxBooking: x })} readOnly={readonly} affixRight="名" type="number" />
+        </div>
       </div>
 
       {/* 臨時休業 */}
@@ -1489,7 +1500,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
           desc="所要時間、人数、集合場所など、実際の催行に必要な条件を管理します。"
         />
         <div className="field-grid three">
-          <SelectField label="商品種類" required value={t.type} onChange={x => update({ type: x })} options={["ガイドツアー", "施設体験", "移動付きツアー"]} readOnly={readonly} />
+          <SelectField label="商品種類" required value={t.type} onChange={x => update({ type: x })} options={["ガイドツアー", "移動付きガイドツアー", "施設体験"]} readOnly={readonly} />
           <DurationField label="所要時間" required value={t.duration} onChange={x => update({ duration: x })} readOnly={readonly} />
         </div>
         <div className="field" style={{marginBottom:16}}>
@@ -1510,11 +1521,6 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
         </div>
         <div className="field-grid">
           <TagMasterField label="タグ" value={t.tags} onChange={x => update({ tags: x })} readOnly={readonly} help="ゲスト向けに表示する短いキーワード" />
-        </div>
-        <div className="field-grid three">
-          <Field label="1予約あたり最小人数" required value={t.minBooking} onChange={x => update({ minBooking: x })} readOnly={readonly} affixRight="名" type="number" />
-          <Field label="1予約あたり最大人数" required value={t.maxBooking} onChange={x => update({ maxBooking: x })} readOnly={readonly} affixRight="名" type="number" />
-          <Field label="1催行回あたり定員" value={t.capacity} onChange={x => update({ capacity: x })} readOnly={readonly} affixRight="名" type="number" />
         </div>
         <div className="field-grid three" style={{marginTop:8}}>
           <SelectField label="ピックアップ" value={t.pickup} onChange={x => update({ pickup: x })} options={["なし", "あり", "要相談"]} readOnly={readonly} />
