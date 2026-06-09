@@ -1645,8 +1645,8 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
         <SectionHead eyebrow="STEP 1" title="商品ページ基本情報" desc="商品ページ全体の表示・検索・公開状態を管理します。" />
         <div className="field-grid">
           <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
-          <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
           <SelectField label="オプション表示方式" value={page.optionLayout} onChange={x => updatePage({ optionLayout: x })} options={["標準リスト型", "カード型", "コンパクト型"]} readOnly={readonly} />
+          <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
           <div style={{gridColumn:'1/-1',border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px'}}>
             <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
               {[["en","English"],["ja","日本語"]].map(([code,label]) => (
