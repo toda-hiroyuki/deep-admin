@@ -219,7 +219,6 @@ window.SEED = {
       ["pageBasic", "ページ基本"],
       ["pageContent", "共通コンテンツ"],
       ["links", "掲載TourOption"],
-      ["pagePreview", "表示確認"],
     ],
     guideDoc: [
       ["docList", "資料一覧"],
