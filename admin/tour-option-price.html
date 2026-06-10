@@ -415,16 +415,13 @@ function App() {
                       <div style={{flex:1}}>1名あたり単価（税込）</div>
                       <div style={{width:60}} />
                     </div>
-                    {tiers.map((tier, index) => (
+                    {[...tiers].sort((a, b) => a.min - b.min).map((tier, index) => (
                       <TierRow
-                        key={tier.id} tier={tier} tiers={tiers} index={index}
+                        key={tier.id} tier={tier} tiers={tiers} index={tiers.indexOf(tier)}
                         onChange={handleChange} onDelete={handleDelete}
                         onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}
                       />
                     ))}
-                    <div className="info-box" style={{marginTop:8}}>
-                      <strong>ドラッグ＆ドロップ</strong>で並び替えられます。上限は次の段階の下限 − 1名として自動計算されます。
-                    </div>
                   </>
                 )}
               </div>
