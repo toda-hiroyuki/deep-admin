@@ -193,67 +193,85 @@ function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOv
 // ── Price preview ─────────────────────────────────────────────────────────────
 
 function PricePreview({ tiers, enabled, basePrice }) {
-  const [pax, setPax] = useState(2);
+  const [pax, setPax] = useState(6);
+
+  const sorted = [...tiers].sort((a, b) => a.min - b.min);
 
   let appliedTier = null;
   let pricePerPerson = null;
   let totalPrice = null;
+  let tierLabel = "";
 
   if (enabled && tiers.length > 0) {
-    const sorted = [...tiers].sort((a, b) => a.min - b.min);
     for (let i = sorted.length - 1; i >= 0; i--) {
       if (pax >= sorted[i].min) { appliedTier = sorted[i]; break; }
     }
     if (appliedTier) {
       pricePerPerson = appliedTier.price;
       totalPrice = pricePerPerson * pax;
+      const tierIndex = sorted.findIndex(t => t.id === appliedTier.id);
+      const next = sorted[tierIndex + 1];
+      tierLabel = next
+        ? `${appliedTier.min}〜${next.min - 1}名帯`
+        : `${appliedTier.min}名以上帯`;
     }
   } else if (!enabled) {
     pricePerPerson = basePrice;
     totalPrice = basePrice * pax;
+    tierLabel = "基準販売価格";
   }
 
   return (
-    <div>
-      <div className="section-title">
-        <div>
-          <h2>計算プレビュー</h2>
-          <p>人数を入力すると、適用される1名あたり単価と合計額を確認できます。</p>
-        </div>
+    <div style={{
+      background:"#f0faf8",
+      border:"1.5px solid #5bbfaa",
+      borderRadius:10,
+      padding:"14px 20px",
+      marginTop:4,
+    }}>
+      {/* Header row */}
+      <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:10}}>
+        <span style={{
+          background:"#3aab94",
+          color:"#fff",
+          fontWeight:700,
+          fontSize:12,
+          padding:"3px 10px",
+          borderRadius:5,
+          letterSpacing:"0.04em",
+          whiteSpace:"nowrap",
+          flexShrink:0,
+        }}>計算プレビュー</span>
+        <span style={{fontSize:12.5, color:"#4a7a70"}}>
+          人数を変更すると、適用される単価帯がハイライトされます。
+        </span>
       </div>
-      <div className="price-preview-box">
-        <div style={{display:"flex", alignItems:"center", gap:8}}>
-          <label style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>人数</label>
-          <input
-            type="number"
-            min={1}
-            value={pax}
-            onChange={e => setPax(Math.max(1, parseInt(e.target.value, 10) || 1))}
-            style={{width:80}}
-          />
-          <span style={{fontSize:13, color:"var(--muted)"}}>名</span>
-        </div>
-        <div style={{borderLeft:"1px solid var(--line)", height:40}} />
+      {/* Calculation row */}
+      <div style={{display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>
+        <span style={{fontSize:13, color:"#4a7a70", marginRight:2}}>例：</span>
+        <input
+          type="number"
+          min={1}
+          value={pax}
+          onChange={e => setPax(Math.max(1, parseInt(e.target.value, 10) || 1))}
+          style={{width:64, textAlign:"right", background:"#fff", border:"1px solid #9fd4c9", borderRadius:5, padding:"4px 8px", fontSize:14}}
+        />
+        <span style={{fontSize:13, color:"#4a7a70"}}>名 で予約</span>
         {totalPrice !== null ? (
           <>
-            <div>
-              <div className="price-preview-result">
-                ¥{pricePerPerson.toLocaleString()}<span style={{fontSize:14, fontWeight:500, color:"var(--muted)"}}>/人</span>
-              </div>
-              <div className="price-preview-sub">
-                {enabled && appliedTier ? `${appliedTier.min}名から適用` : "基準販売価格が適用"}
-              </div>
-            </div>
-            <div style={{borderLeft:"1px solid var(--line)", height:40}} />
-            <div>
-              <div className="price-preview-result">¥{totalPrice.toLocaleString()}</div>
-              <div className="price-preview-sub">{pax}名合計（税込）</div>
-            </div>
+            <span style={{fontSize:13, color:"#333", margin:"0 4px"}}>
+              <strong>{pax}名 × ¥{pricePerPerson.toLocaleString()}</strong>
+              <span style={{color:"#6aab96", fontSize:12, marginLeft:4}}>（{tierLabel}）</span>
+            </span>
+            <span style={{fontSize:15, color:"#4a7a70", margin:"0 2px"}}>=</span>
+            <span style={{fontSize:20, fontWeight:800, color:"#1a6b5a", letterSpacing:"-0.01em"}}>
+              ¥{totalPrice.toLocaleString()}
+            </span>
           </>
         ) : (
-          <div style={{color:"var(--muted)", fontSize:13}}>
+          <span style={{color:"#9abfba", fontSize:13, marginLeft:8}}>
             {enabled ? "この人数に適用できる段階がありません。" : "段階価格が無効です。"}
-          </div>
+          </span>
         )}
       </div>
     </div>
@@ -555,6 +573,12 @@ function App() {
         {/* Preview calculator card */}
         {(enabled || basePrice > 0) && (
           <div className="card">
+            <div className="card-header">
+              <div>
+                <h2>計算プレビュー</h2>
+                <p style={{margin:"4px 0 0", color:"var(--muted)", fontSize:12.5}}>人数を入力すると、適用される1名あたり単価と合計額を確認できます。</p>
+              </div>
+            </div>
             <div className="card-body">
               <PricePreview tiers={tiers} enabled={enabled} basePrice={basePrice} />
             </div>
