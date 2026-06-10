@@ -1607,7 +1607,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
                       <td>
                         {cat.tieredEnabled && cat.tiers && cat.tiers.length > 0
                           ? (
-                            <div style={{display:'flex',flexWrap:'wrap',gap:'2px 12px'}}>
+                            <div style={{display:'flex',flexDirection:'column',gap:2}}>
                               {[...cat.tiers].sort((a,b)=>a.min-b.min).map((tier,i) => (
                                 <span key={i} style={{fontSize:12,color:'var(--ink)',whiteSpace:'nowrap'}}>
                                   {tier.min}名〜 ¥{tier.price.toLocaleString()}
