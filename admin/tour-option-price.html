@@ -219,9 +219,8 @@ function App() {
   const seedTo   = getSeedTourOption();
   const existingCat = catId ? seedCats.find(c => c.id === catId) : null;
 
-  const [catName,    setCatName]    = useState(existingCat?.name || "");
+  const [catName,    setCatName]    = useState(existingCat?.name || "区別なし");
   const [basePrice,  setBasePrice]  = useState(existingCat?.basePrice  ?? 10000);
-  const [costPrice,  setCostPrice]  = useState(existingCat?.costPrice  ?? 0);
   const [enabled,    setEnabled]    = useState(existingCat?.tieredEnabled ?? false);
   const [tiers,      setTiers]      = useState(existingCat?.tiers || [
     { id: "tp-1", min:1, price:10000 },
@@ -256,8 +255,6 @@ function App() {
     dragSrcIndex.current = null;
   }, []);
   const handleSave = () => {
-    if (!catName.trim()) { setCatNameErr("参加者区分名は必須です"); return; }
-    setCatNameErr("");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -321,20 +318,14 @@ function App() {
                 </div>
                 <div className="field-grid">
                   <div className="field">
-                    <label className="field-label">
-                      参加者区分 <span style={{color:"var(--coral)"}}>*</span>
-                    </label>
+                    <label className="field-label">参加者区分</label>
                     <div className="select-wrap">
                       <select
-                        value={PARTICIPANT_CATEGORY_MASTER.some(m => m.label === catName) ? catName : (catName === "" ? "" : "__custom__")}
-                        onChange={e => {
-                          if (e.target.value === "__custom__") { setCatName(""); }
-                          else { setCatName(e.target.value); if (e.target.value) setCatNameErr(""); }
-                        }}
+                        value={PARTICIPANT_CATEGORY_MASTER.some(m => m.label === catName) ? catName : "区別なし"}
+                        onChange={e => setCatName(e.target.value)}
                         style={{width:"100%"}}
                       >
-                        <option value="">選択してください</option>
-                        {PARTICIPANT_CATEGORY_MASTER.map(m => {
+                        {PARTICIPANT_CATEGORY_MASTER.filter(m => m.label !== "区別なし").map(m => {
                           const isUsed = usedNames.includes(m.label);
                           return (
                             <option key={m.id} value={m.label} disabled={isUsed}>
@@ -342,38 +333,12 @@ function App() {
                             </option>
                           );
                         })}
-                        <option value="__custom__">カスタム入力...</option>
+                        <option value="区別なし">区別なし</option>
                       </select>
                     </div>
-                    {catNameErr && <div style={{color:"var(--coral)", fontSize:12, marginTop:6}}>{catNameErr}</div>}
                   </div>
-                  {catName !== "" && !PARTICIPANT_CATEGORY_MASTER.some(m => m.label === catName) && (
-                    <div className="field">
-                      <label className="field-label">
-                        カスタム区分名 <span style={{color:"var(--coral)"}}>*</span>
-                      </label>
-                      <input
-                        type="text" value={catName}
-                        onChange={e => { setCatName(e.target.value); if (e.target.value) setCatNameErr(""); }}
-                        placeholder="例：ファミリー、グループなど"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 価格設定 */}
-            <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
-              <div className="form-section">
-                <div className="section-title">
-                  <div><h2>価格設定</h2></div>
-                </div>
-                <div className="field-grid">
                   <div className="field">
-                    <label className="field-label">
-                      販売価格（基準）<span style={{color:"var(--coral)", marginLeft:2}}>*</span>
-                    </label>
+                    <label className="field-label">販売価格</label>
                     <div style={{display:"flex", alignItems:"center", gap:6}}>
                       <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
                       <input
@@ -382,18 +347,6 @@ function App() {
                         style={{width:140}}
                       />
                       <span style={{fontSize:12, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
-                    </div>
-                  </div>
-                  <div className="field">
-                    <label className="field-label">原価</label>
-                    <div style={{display:"flex", alignItems:"center", gap:6}}>
-                      <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
-                      <input
-                        type="number" min={0} step={100} value={costPrice}
-                        onChange={e => setCostPrice(parseInt(e.target.value,10)||0)}
-                        style={{width:140}}
-                      />
-                      <span style={{fontSize:12, color:"var(--muted)", whiteSpace:"nowrap"}}>/人</span>
                     </div>
                   </div>
                 </div>
