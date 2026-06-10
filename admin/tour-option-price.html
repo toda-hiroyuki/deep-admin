@@ -256,7 +256,7 @@ function App() {
   }, []);
   const handleSave = () => {
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => { window.location.href = "tour-option-detail.html?tab=sales"; }, 800);
   };
 
   return (
