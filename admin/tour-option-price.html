@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>段階価格 編集 | deep_Admin</title>
+    <title>料金区分 編集 | deep_Admin</title>
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css">
@@ -15,35 +15,55 @@
     <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
+    <script src="js/master-data.js"></script>
     <script type="text/babel" data-presets="react">
-const { useState, useCallback, useRef } = React;
+const { useState, useCallback, useRef, useEffect } = React;
 
-// ── Initial data ─────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-const TOUR_OPTION = {
-  code: "G-KYO-003-1-PR",
-  name: "祇園夜の食べ歩きツアー 貸切3時間プラン",
-  basePrice: 18000,
-};
+function getParam(key) {
+  try {
+    return new URLSearchParams(window.location.search).get(key);
+  } catch (e) {
+    return null;
+  }
+}
 
-const INITIAL_TIERS = [
-  { id: "tp-1", min: 1, price: 18000 },
-  { id: "tp-2", min: 3, price: 14000 },
-  { id: "tp-3", min: 6, price: 10000 },
+// Participant category master (マスター管理)
+const PARTICIPANT_CATEGORY_MASTER = [
+  { id: "cat-adult",  label: "大人" },
+  { id: "cat-child",  label: "小人" },
+  { id: "cat-senior", label: "シニア" },
+  { id: "cat-infant", label: "乳幼児" },
+  { id: "cat-none",   label: "区別なし" },
 ];
 
-let nextId = 10;
-function genId() { return `tp-${nextId++}`; }
+// Load existing categories from SEED
+function getSeedCategories() {
+  try {
+    return window.SEED?.tourOption?.pricingCategories || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function getSeedTourOption() {
+  try {
+    return window.SEED?.tourOption || {};
+  } catch (e) {
+    return {};
+  }
+}
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
 function Sidebar() {
   const items = [
-    { key: "dashboard",       href: "index.html",           icon: "⊞", label: "ダッシュボード" },
-    { key: "tourOption",      href: "tour-options.html",    icon: "TO", label: "TourOption",             count: 24 },
-    { key: "product",         href: "products.html",        icon: "PP", label: "商品ページ",              count: 8  },
-    { key: "guideDoc",        href: "guide-materials.html", icon: "GD", label: "ガイド資料",              count: 16 },
-    { key: "cancelTemplate",  href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言",  count: 5  },
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",            count: 24 },
+    { key: "product",        href: "products.html",        icon: "PP", label: "商品ページ",             count: 8  },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: 16 },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: 5  },
   ];
   return (
     <aside className="side-nav">
@@ -64,7 +84,7 @@ function Sidebar() {
               <span style={{flex:1, minWidth:0}}>
                 <div>{it.label}</div>
               </span>
-              <span className="nav-count">{it.count}</span>
+              {it.count && <span className="nav-count">{it.count}</span>}
             </a>
           ))}
         </div>
@@ -79,27 +99,26 @@ function Sidebar() {
       </div>
       <div className="side-note">
         <strong>Phase 1 設計原則</strong>
-        同じTourOptionを複数ページに紐付ける場合、全ページで同じ表示内容を使います。ページごとの見せ方変更は将来フェーズで設計します。
+        同じTourOptionを複数ページに紐付ける場合、全ページで同じ表示内容を使います。
       </div>
     </aside>
   );
 }
 
-// ── Auto upper limit label ────────────────────────────────────────────────────
+// ── Upper limit label ─────────────────────────────────────────────────────────
 
 function UpperLimitLabel({ tiers, index }) {
   const next = tiers[index + 1];
   if (!next) {
-    return <span className="tier-auto-limit open">上限なし（○名以上）</span>;
+    return <span style={{fontSize:13, color:"var(--accent)", fontWeight:600}}>上限なし（○名以上）</span>;
   }
-  return <span className="tier-auto-limit">{next.min - 1}名まで（自動）</span>;
+  return <span style={{fontSize:13, color:"var(--muted)"}}>{next.min - 1}名まで（自動）</span>;
 }
 
-// ── Tiered price row ──────────────────────────────────────────────────────────
+// ── Tier row ──────────────────────────────────────────────────────────────────
 
 function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOver, onDrop }) {
   const rowRef = useRef(null);
-
   return (
     <tr
       ref={rowRef}
@@ -107,25 +126,24 @@ function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOv
       onDragStart={e => onDragStart(e, index)}
       onDragOver={e => { e.preventDefault(); onDragOver(e, index); }}
       onDrop={e => onDrop(e, index)}
-      style={{cursor: "grab"}}
+      style={{cursor:"grab"}}
     >
-      <td style={{width: 32, textAlign: "center"}}>
+      <td style={{width:32, textAlign:"center"}}>
         <span className="drag-handle" title="ドラッグして並び替え">⠿</span>
       </td>
-      <td style={{width: 140}}>
+      <td style={{width:160}}>
         <div style={{display:"flex", alignItems:"center", gap:6}}>
           <input
             type="number"
-            className="narrow"
             min={1}
             value={tier.min}
             onChange={e => onChange(tier.id, "min", parseInt(e.target.value, 10) || 1)}
-            style={{width: 80}}
+            style={{width:80}}
           />
           <span style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>名から</span>
         </div>
       </td>
-      <td style={{width: 180}}>
+      <td style={{width:180}}>
         <UpperLimitLabel tiers={tiers} index={index} />
       </td>
       <td>
@@ -137,24 +155,24 @@ function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOv
             step={100}
             value={tier.price}
             onChange={e => onChange(tier.id, "price", parseInt(e.target.value, 10) || 0)}
-            style={{width: 120}}
+            style={{width:120}}
           />
           <span style={{fontSize:12.5, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
         </div>
       </td>
-      <td style={{width: 60, textAlign:"center"}}>
+      <td style={{width:60, textAlign:"center"}}>
         <button
-          className="btn sm danger icon"
+          className="btn sm"
           onClick={() => onDelete(tier.id)}
+          style={{color:"var(--coral)"}}
           title="この段階を削除"
-          style={{width:28}}
-        >✕</button>
+        >削除</button>
       </td>
     </tr>
   );
 }
 
-// ── Preview calculator ────────────────────────────────────────────────────────
+// ── Price preview ─────────────────────────────────────────────────────────────
 
 function PricePreview({ tiers, enabled, basePrice }) {
   const [pax, setPax] = useState(2);
@@ -166,10 +184,7 @@ function PricePreview({ tiers, enabled, basePrice }) {
   if (enabled && tiers.length > 0) {
     const sorted = [...tiers].sort((a, b) => a.min - b.min);
     for (let i = sorted.length - 1; i >= 0; i--) {
-      if (pax >= sorted[i].min) {
-        appliedTier = sorted[i];
-        break;
-      }
+      if (pax >= sorted[i].min) { appliedTier = sorted[i]; break; }
     }
     if (appliedTier) {
       pricePerPerson = appliedTier.price;
@@ -213,9 +228,7 @@ function PricePreview({ tiers, enabled, basePrice }) {
             </div>
             <div style={{borderLeft:"1px solid var(--line)", height:40}} />
             <div>
-              <div className="price-preview-result">
-                ¥{totalPrice.toLocaleString()}
-              </div>
+              <div className="price-preview-result">¥{totalPrice.toLocaleString()}</div>
               <div className="price-preview-sub">{pax}名合計（税込）</div>
             </div>
           </>
@@ -231,10 +244,26 @@ function PricePreview({ tiers, enabled, basePrice }) {
 
 // ── Main App ──────────────────────────────────────────────────────────────────
 
+let nextId = 100;
+function genId() { return `tp-${nextId++}`; }
+
 function App() {
-  const [tiers, setTiers] = useState(INITIAL_TIERS);
-  const [enabled, setEnabled] = useState(true);
+  const catId = getParam("id");
+  const isNew = getParam("mode") === "new";
+
+  const seedCats = getSeedCategories();
+  const seedTo = getSeedTourOption();
+
+  // Find existing category or create new
+  const existingCat = catId ? seedCats.find(c => c.id === catId) : null;
+
+  const [catName, setCatName] = useState(existingCat?.name || "");
+  const [basePrice, setBasePrice] = useState(existingCat?.basePrice ?? 10000);
+  const [costPrice, setCostPrice] = useState(existingCat?.costPrice ?? 0);
+  const [enabled, setEnabled] = useState(existingCat?.tieredEnabled ?? false);
+  const [tiers, setTiers] = useState(existingCat?.tiers || []);
   const [saved, setSaved] = useState(false);
+  const [catNameErr, setCatNameErr] = useState("");
 
   const dragSrcIndex = useRef(null);
 
@@ -274,9 +303,17 @@ function App() {
   }, []);
 
   const handleSave = () => {
+    if (!catName.trim()) { setCatNameErr("参加者区分名は必須です"); return; }
+    setCatNameErr("");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
+
+  // Used categories (to avoid duplicates)
+  const usedNames = seedCats.filter(c => !existingCat || c.id !== existingCat.id).map(c => c.name);
+
+  const isEditing = !!existingCat;
+  const pageTitle = isEditing ? `料金区分 編集 — ${existingCat.name}` : "料金区分 新規追加";
 
   return (
     <div className="app-shell">
@@ -290,15 +327,15 @@ function App() {
               <span className="sep">›</span>
               <a href="tour-options.html" style={{color:"inherit", textDecoration:"none"}}>TourOption一覧</a>
               <span className="sep">›</span>
-              <a href="tour-option-detail.html" style={{color:"inherit", textDecoration:"none"}}>TourOption編集</a>
+              <a href="tour-option-detail.html?tab=sales" style={{color:"inherit", textDecoration:"none"}}>TourOption編集</a>
               <span className="sep">›</span>
-              <span className="current">段階価格</span>
+              <span className="current">{isEditing ? `料金区分：${existingCat.name}` : "料金区分 新規追加"}</span>
             </div>
-            <h1>段階価格 編集</h1>
+            <h1>{pageTitle}</h1>
           </div>
           <div className="topbar-actions">
-            <a href="tour-option-detail.html" className="btn ghost">
-              ← TourOption編集に戻る
+            <a href="tour-option-detail.html?tab=sales" className="btn ghost">
+              ← 販売条件に戻る
             </a>
             <button className="btn primary" onClick={handleSave}>
               {saved ? "✓ 保存しました" : "保存"}
@@ -310,11 +347,106 @@ function App() {
         <div className="to-info-strip">
           <div>
             <div style={{fontSize:11, color:"var(--muted)", marginBottom:3, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:600}}>TourOption</div>
-            <div style={{fontSize:15, fontWeight:650}}>{TOUR_OPTION.name}</div>
+            <div style={{fontSize:15, fontWeight:650}}>{seedTo.name || "祇園夜の食べ歩きツアー 貸切3時間プラン"}</div>
           </div>
-          <span className="code">{TOUR_OPTION.code}</span>
-          <div className="base-price">
-            基準販売価格：<strong>¥{TOUR_OPTION.basePrice.toLocaleString()}</strong><span style={{fontSize:12, color:"var(--muted)"}}> /人</span>
+          <span className="code">{seedTo.code || "G-KYO-003-1-PR"}</span>
+        </div>
+
+        {/* Category name card */}
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <h2>参加者区分</h2>
+              <p style={{margin:"4px 0 0", color:"var(--muted)", fontSize:12.5}}>
+                マスターから選択、または任意の区分名を入力してください。
+              </p>
+            </div>
+          </div>
+          <div className="card-body">
+            <div style={{display:"flex", gap:12, flexWrap:"wrap", alignItems:"flex-start"}}>
+              {/* Master list buttons */}
+              <div style={{display:"flex", flexDirection:"column", gap:6, minWidth:160}}>
+                <div style={{fontSize:11, color:"var(--muted)", fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:4}}>マスターから選択</div>
+                <div style={{display:"flex", flexWrap:"wrap", gap:6}}>
+                  {PARTICIPANT_CATEGORY_MASTER.map(m => {
+                    const isUsed = usedNames.includes(m.label);
+                    return (
+                      <button
+                        key={m.id}
+                        className={`btn sm${catName === m.label ? " primary" : ""}`}
+                        onClick={() => { if (!isUsed) setCatName(m.label); }}
+                        disabled={isUsed}
+                        title={isUsed ? "この区分はすでに設定済みです" : ""}
+                        style={isUsed ? {opacity:0.45} : {}}
+                      >
+                        {m.label}{isUsed ? " (設定済)" : ""}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Custom input */}
+              <div style={{flex:1, minWidth:200}}>
+                <div style={{fontSize:11, color:"var(--muted)", fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:4}}>区分名</div>
+                <input
+                  type="text"
+                  value={catName}
+                  onChange={e => { setCatName(e.target.value); if (e.target.value) setCatNameErr(""); }}
+                  placeholder="例：大人、小人、シニアなど"
+                  style={{width:"100%", maxWidth:280}}
+                />
+                {catNameErr && (
+                  <div style={{color:"var(--coral)", fontSize:12, marginTop:4}}>{catNameErr}</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Price card */}
+        <div className="card">
+          <div className="card-header">
+            <div>
+              <h2>価格設定</h2>
+            </div>
+          </div>
+          <div className="card-body">
+            <div style={{display:"flex", gap:24, flexWrap:"wrap"}}>
+              <div>
+                <label style={{fontSize:12, color:"var(--muted)", fontWeight:600, display:"block", marginBottom:6}}>
+                  販売価格（基準）<span style={{color:"var(--coral)", marginLeft:2}}>*</span>
+                </label>
+                <div style={{display:"flex", alignItems:"center", gap:6}}>
+                  <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={basePrice}
+                    onChange={e => setBasePrice(parseInt(e.target.value, 10) || 0)}
+                    style={{width:140}}
+                  />
+                  <span style={{fontSize:13, color:"var(--muted)"}}>/人（税込）</span>
+                </div>
+              </div>
+              <div>
+                <label style={{fontSize:12, color:"var(--muted)", fontWeight:600, display:"block", marginBottom:6}}>
+                  原価
+                </label>
+                <div style={{display:"flex", alignItems:"center", gap:6}}>
+                  <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={100}
+                    value={costPrice}
+                    onChange={e => setCostPrice(parseInt(e.target.value, 10) || 0)}
+                    style={{width:140}}
+                  />
+                  <span style={{fontSize:13, color:"var(--muted)"}}>/人</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -330,14 +462,14 @@ function App() {
                 <div className="toggle-label">段階価格を有効にする</div>
                 <div className="toggle-desc">
                   {enabled
-                    ? "有効：基準販売価格の代わりに、下記の段階価格が予約時に適用されます。"
-                    : "無効：基準販売価格（¥" + TOUR_OPTION.basePrice.toLocaleString() + "/人）が全人数に適用されます。"}
+                    ? "有効：予約時の人数に応じて以下の段階価格が適用されます。"
+                    : `無効：基準販売価格（¥${basePrice.toLocaleString()}/人）が全人数に適用されます。`}
                 </div>
               </div>
             </div>
-            {!enabled && (
-              <div className="info-box amber" style={{marginTop: 12}}>
-                段階価格が無効のため、下記の設定は保存されますが予約には適用されません。基準販売価格 <strong>¥{TOUR_OPTION.basePrice.toLocaleString()}/人</strong> が使われます。
+            {!enabled && tiers.length > 0 && (
+              <div className="info-box amber" style={{marginTop:12}}>
+                段階価格が無効のため、設定は保存されますが予約には適用されません。
               </div>
             )}
           </div>
@@ -359,7 +491,7 @@ function App() {
           <div className={`tier-table-wrap${!enabled ? " disabled" : ""}`}>
             {tiers.length === 0 ? (
               <div style={{padding:"32px 20px", textAlign:"center", color:"var(--muted)", fontSize:13}}>
-                段階価格が設定されていません。「段階を追加」ボタンで追加してください。
+                {enabled ? "段階価格が設定されていません。「段階を追加」ボタンで追加してください。" : "段階価格が無効です。"}
               </div>
             ) : (
               <table className="tier-table">
@@ -390,7 +522,7 @@ function App() {
               </table>
             )}
           </div>
-          {tiers.length > 0 && (
+          {tiers.length > 0 && enabled && (
             <div style={{padding:"12px 20px", borderTop:"1px solid var(--line-soft)"}}>
               <div className="info-box">
                 <strong>ドラッグ＆ドロップ</strong>で行を並び替えられます。上限は次の行の下限 − 1名として自動計算されます。最後の行は常に「上限なし」です。
@@ -400,16 +532,18 @@ function App() {
         </div>
 
         {/* Preview calculator card */}
-        <div className="card">
-          <div className="card-body">
-            <PricePreview tiers={tiers} enabled={enabled} basePrice={TOUR_OPTION.basePrice} />
+        {(enabled || basePrice > 0) && (
+          <div className="card">
+            <div className="card-body">
+              <PricePreview tiers={tiers} enabled={enabled} basePrice={basePrice} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Bottom actions */}
         <div style={{display:"flex", justifyContent:"flex-end", gap:8, padding:"0 4px 16px"}}>
-          <a href="tour-option-detail.html" className="btn ghost">
-            ← TourOption編集に戻る
+          <a href="tour-option-detail.html?tab=sales" className="btn ghost">
+            ← 販売条件に戻る
           </a>
           <button className="btn primary" onClick={handleSave}>
             {saved ? "✓ 保存しました" : "保存"}
