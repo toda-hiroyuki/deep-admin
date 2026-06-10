@@ -1582,10 +1582,9 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
                 <thead>
                   <tr>
                     <th style={{width:140}}>参加者区分</th>
-                    <th style={{width:160}}>販売価格（基準）</th>
-                    <th style={{width:140}}>原価</th>
+                    <th style={{width:160}}>販売価格</th>
                     <th style={{width:120}}>段階価格</th>
-                    <th style={{width:80}}>段階数</th>
+                    <th>段階設定</th>
                     <th style={{width:120}}></th>
                   </tr>
                 </thead>
@@ -1599,17 +1598,25 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
                         <strong>¥{cat.basePrice.toLocaleString()}</strong>
                         <span style={{fontSize:11,color:'var(--muted)',marginLeft:2}}>/人</span>
                       </td>
-                      <td className="num" style={{color:'var(--muted)'}}>
-                        ¥{cat.costPrice.toLocaleString()}
-                      </td>
                       <td>
                         {cat.tieredEnabled
                           ? <span className="badge teal">有効</span>
                           : <span className="badge" style={{background:'var(--bg-sunken)',color:'var(--muted)'}}>無効</span>
                         }
                       </td>
-                      <td style={{textAlign:'center',color:'var(--muted)',fontSize:13}}>
-                        {cat.tieredEnabled ? `${cat.tiers.length}段階` : '—'}
+                      <td>
+                        {cat.tieredEnabled && cat.tiers && cat.tiers.length > 0
+                          ? (
+                            <div style={{display:'flex',flexWrap:'wrap',gap:'2px 12px'}}>
+                              {[...cat.tiers].sort((a,b)=>a.min-b.min).map((tier,i) => (
+                                <span key={i} style={{fontSize:12,color:'var(--ink)',whiteSpace:'nowrap'}}>
+                                  {tier.min}名〜 ¥{tier.price.toLocaleString()}
+                                </span>
+                              ))}
+                            </div>
+                          )
+                          : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
+                        }
                       </td>
                       <td>
                         <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
