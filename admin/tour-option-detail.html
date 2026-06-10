@@ -1244,11 +1244,6 @@ function AvailabilityTab({ t, update, readonly }) {
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
       <SectionHead eyebrow="STEP 4" title="販売期間・リソース" desc="予約を受け付ける期間・曜日・時間帯・在庫を管理します。" />
 
-      <div className="field-grid three" style={{marginBottom:16}}>
-        <SelectField label="予約方式" value={t.bookingType||"即時予約"} onChange={x => update({ bookingType: x })} options={["即時予約","リクエスト予約"]} readOnly={readonly} />
-        <SelectField label="ツアー形式" value={t.tourType||"グループツアー"} onChange={x => update({ tourType: x })} options={["グループツアー","プライベートツアー"]} readOnly={readonly} />
-      </div>
-
       {/* 販売期間指定 */}
       <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
         <div style={{fontWeight:600,fontSize:13,marginBottom:10}}>販売期間指定</div>
@@ -1318,6 +1313,11 @@ function AvailabilityTab({ t, update, readonly }) {
             {daysOfWeek.length === 0 && <div style={{fontSize:12,color:'var(--muted)',padding:'8px 0'}}>曜日を選択してください</div>}
           </div>
         )}
+      </div>
+
+      <div className="field-grid three" style={{marginBottom:16}}>
+        <SelectField label="予約方式" value={t.bookingType||"即時予約"} onChange={x => update({ bookingType: x })} options={["即時予約","リクエスト予約"]} readOnly={readonly} />
+        <SelectField label="ツアー形式" value={t.tourType||"グループツアー"} onChange={x => update({ tourType: x })} options={["グループツアー","プライベートツアー"]} readOnly={readonly} />
       </div>
 
       {/* 催行リソース設定 */}
