@@ -105,70 +105,88 @@ function Sidebar() {
   );
 }
 
-// ── Upper limit label ─────────────────────────────────────────────────────────
+// ── Tier card row ─────────────────────────────────────────────────────────────
 
-function UpperLimitLabel({ tiers, index }) {
-  const next = tiers[index + 1];
-  if (!next) {
-    return <span style={{fontSize:13, color:"var(--accent)", fontWeight:600}}>上限なし（○名以上）</span>;
-  }
-  return <span style={{fontSize:13, color:"var(--muted)"}}>{next.min - 1}名まで（自動）</span>;
+function getUpperLimit(tiers, index) {
+  const sorted = [...tiers].sort((a, b) => a.min - b.min);
+  const sortedIndex = sorted.findIndex(t => t.id === tiers[index].id);
+  const next = sorted[sortedIndex + 1];
+  return next ? next.min - 1 : null;
 }
-
-// ── Tier row ──────────────────────────────────────────────────────────────────
 
 function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOver, onDrop }) {
   const rowRef = useRef(null);
+  const upperLimit = getUpperLimit(tiers, index);
+  const isLast = upperLimit === null;
+
   return (
-    <tr
+    <div
       ref={rowRef}
       draggable
       onDragStart={e => onDragStart(e, index)}
       onDragOver={e => { e.preventDefault(); onDragOver(e, index); }}
       onDrop={e => onDrop(e, index)}
-      style={{cursor:"grab"}}
+      style={{
+        display:"flex", alignItems:"center", gap:0,
+        background:"var(--bg-card, #fff)", border:"1px solid var(--line)",
+        borderRadius:8, marginBottom:8, overflow:"hidden",
+        cursor:"grab",
+      }}
     >
-      <td style={{width:32, textAlign:"center"}}>
-        <span className="drag-handle" title="ドラッグして並び替え">⠿</span>
-      </td>
-      <td style={{width:160}}>
-        <div style={{display:"flex", alignItems:"center", gap:6}}>
-          <input
-            type="number"
-            min={1}
-            value={tier.min}
-            onChange={e => onChange(tier.id, "min", parseInt(e.target.value, 10) || 1)}
-            style={{width:80}}
-          />
-          <span style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>名から</span>
-        </div>
-      </td>
-      <td style={{width:180}}>
-        <UpperLimitLabel tiers={tiers} index={index} />
-      </td>
-      <td>
-        <div style={{display:"flex", alignItems:"center", gap:6}}>
-          <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
-          <input
-            type="number"
-            min={0}
-            step={100}
-            value={tier.price}
-            onChange={e => onChange(tier.id, "price", parseInt(e.target.value, 10) || 0)}
-            style={{width:120}}
-          />
-          <span style={{fontSize:12.5, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
-        </div>
-      </td>
-      <td style={{width:60, textAlign:"center"}}>
+      {/* Drag handle */}
+      <div style={{padding:"14px 12px", color:"var(--muted)", fontSize:16, cursor:"grab", flexShrink:0}}>
+        ⠿
+      </div>
+      {/* Step number badge */}
+      <div style={{
+        width:32, height:32, borderRadius:"50%",
+        background:"var(--accent)", color:"#fff",
+        display:"flex", alignItems:"center", justifyContent:"center",
+        fontWeight:700, fontSize:13, flexShrink:0, marginRight:12,
+      }}>
+        {index + 1}
+      </div>
+      {/* 人数帯 */}
+      <div style={{flex:"0 0 220px", display:"flex", alignItems:"center", gap:4}}>
+        <input
+          type="number"
+          min={1}
+          value={tier.min}
+          onChange={e => onChange(tier.id, "min", parseInt(e.target.value, 10) || 1)}
+          style={{width:72, textAlign:"right"}}
+        />
+        <span style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>名〜</span>
+        {isLast ? (
+          <span style={{fontSize:13, color:"var(--accent)", fontWeight:600, whiteSpace:"nowrap"}}>上限なし</span>
+        ) : (
+          <span style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>{upperLimit}名</span>
+        )}
+      </div>
+      {/* 区切り */}
+      <div style={{width:1, height:40, background:"var(--line)", flexShrink:0, margin:"0 16px"}} />
+      {/* 単価 */}
+      <div style={{flex:1, display:"flex", alignItems:"center", gap:4}}>
+        <span style={{fontSize:12, color:"var(--muted)", whiteSpace:"nowrap"}}>1名あたり</span>
+        <span style={{fontSize:13, color:"var(--muted)"}}>¥</span>
+        <input
+          type="number"
+          min={0}
+          step={100}
+          value={tier.price}
+          onChange={e => onChange(tier.id, "price", parseInt(e.target.value, 10) || 0)}
+          style={{width:120, fontWeight:600}}
+        />
+        <span style={{fontSize:12, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
+      </div>
+      {/* 削除 */}
+      <div style={{padding:"0 12px", flexShrink:0}}>
         <button
           className="btn sm"
           onClick={() => onDelete(tier.id)}
           style={{color:"var(--coral)"}}
-          title="この段階を削除"
         >削除</button>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 }
 
@@ -358,48 +376,60 @@ function App() {
             <div>
               <h2>参加者区分</h2>
               <p style={{margin:"4px 0 0", color:"var(--muted)", fontSize:12.5}}>
-                マスターから選択、または任意の区分名を入力してください。
+                マスターから選択してください。
               </p>
             </div>
           </div>
           <div className="card-body">
-            <div style={{display:"flex", gap:12, flexWrap:"wrap", alignItems:"flex-start"}}>
-              {/* Master list buttons */}
-              <div style={{display:"flex", flexDirection:"column", gap:6, minWidth:160}}>
-                <div style={{fontSize:11, color:"var(--muted)", fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:4}}>マスターから選択</div>
-                <div style={{display:"flex", flexWrap:"wrap", gap:6}}>
-                  {PARTICIPANT_CATEGORY_MASTER.map(m => {
-                    const isUsed = usedNames.includes(m.label);
-                    return (
-                      <button
-                        key={m.id}
-                        className={`btn sm${catName === m.label ? " primary" : ""}`}
-                        onClick={() => { if (!isUsed) setCatName(m.label); }}
-                        disabled={isUsed}
-                        title={isUsed ? "この区分はすでに設定済みです" : ""}
-                        style={isUsed ? {opacity:0.45} : {}}
-                      >
-                        {m.label}{isUsed ? " (設定済)" : ""}
-                      </button>
-                    );
-                  })}
+            <div style={{display:"flex", gap:16, flexWrap:"wrap", alignItems:"flex-start"}}>
+              <div style={{minWidth:220}}>
+                <label style={{fontSize:12, color:"var(--muted)", fontWeight:600, display:"block", marginBottom:6}}>
+                  参加者区分 <span style={{color:"var(--coral)"}}>*</span>
+                </label>
+                <div className="select-wrap" style={{maxWidth:280}}>
+                  <select
+                    value={catName === "" || PARTICIPANT_CATEGORY_MASTER.some(m => m.label === catName) ? catName : "__custom__"}
+                    onChange={e => {
+                      if (e.target.value === "__custom__") {
+                        setCatName("");
+                      } else {
+                        setCatName(e.target.value);
+                        if (e.target.value) setCatNameErr("");
+                      }
+                    }}
+                    style={{width:"100%"}}
+                  >
+                    <option value="">選択してください</option>
+                    {PARTICIPANT_CATEGORY_MASTER.map(m => {
+                      const isUsed = usedNames.includes(m.label);
+                      return (
+                        <option key={m.id} value={m.label} disabled={isUsed}>
+                          {m.label}{isUsed ? "（設定済）" : ""}
+                        </option>
+                      );
+                    })}
+                    <option value="__custom__">カスタム入力...</option>
+                  </select>
                 </div>
               </div>
-              {/* Custom input */}
-              <div style={{flex:1, minWidth:200}}>
-                <div style={{fontSize:11, color:"var(--muted)", fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase", marginBottom:4}}>区分名</div>
-                <input
-                  type="text"
-                  value={catName}
-                  onChange={e => { setCatName(e.target.value); if (e.target.value) setCatNameErr(""); }}
-                  placeholder="例：大人、小人、シニアなど"
-                  style={{width:"100%", maxWidth:280}}
-                />
-                {catNameErr && (
-                  <div style={{color:"var(--coral)", fontSize:12, marginTop:4}}>{catNameErr}</div>
-                )}
-              </div>
+              {(catName !== "" && !PARTICIPANT_CATEGORY_MASTER.some(m => m.label === catName)) && (
+                <div style={{minWidth:200}}>
+                  <label style={{fontSize:12, color:"var(--muted)", fontWeight:600, display:"block", marginBottom:6}}>
+                    カスタム区分名 <span style={{color:"var(--coral)"}}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={catName}
+                    onChange={e => { setCatName(e.target.value); if (e.target.value) setCatNameErr(""); }}
+                    placeholder="例：ファミリー、グループなど"
+                    style={{width:240}}
+                  />
+                </div>
+              )}
             </div>
+            {catNameErr && (
+              <div style={{color:"var(--coral)", fontSize:12, marginTop:8}}>{catNameErr}</div>
+            )}
           </div>
         </div>
 
@@ -481,54 +511,45 @@ function App() {
             <div>
               <h2>段階価格設定</h2>
               <p style={{margin:"4px 0 0", color:"var(--muted)", fontSize:12.5, lineHeight:1.55}}>
-                下限のみを設定します。上限は次の行の下限から自動計算されます。最後の行は「上限なし」（○名以上）になります。
+                下限のみを設定します。上限は次の段階の下限から自動計算されます。最後の段階は「上限なし」になります。
               </p>
             </div>
             <button className="btn sm primary" onClick={handleAdd} disabled={!enabled} style={!enabled ? {opacity:0.45} : {}}>
               ＋ 段階を追加
             </button>
           </div>
-          <div className={`tier-table-wrap${!enabled ? " disabled" : ""}`}>
+          <div style={{padding:"16px 20px", opacity: !enabled ? 0.45 : 1, pointerEvents: !enabled ? "none" : "auto"}}>
             {tiers.length === 0 ? (
-              <div style={{padding:"32px 20px", textAlign:"center", color:"var(--muted)", fontSize:13}}>
+              <div style={{padding:"32px 0", textAlign:"center", color:"var(--muted)", fontSize:13, border:"2px dashed var(--line)", borderRadius:8}}>
                 {enabled ? "段階価格が設定されていません。「段階を追加」ボタンで追加してください。" : "段階価格が無効です。"}
               </div>
             ) : (
-              <table className="tier-table">
-                <thead>
-                  <tr>
-                    <th style={{width:32}}></th>
-                    <th>下限（人数）</th>
-                    <th>上限（自動計算）</th>
-                    <th>1名あたり単価</th>
-                    <th style={{width:60}}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tiers.map((tier, index) => (
-                    <TierRow
-                      key={tier.id}
-                      tier={tier}
-                      tiers={tiers}
-                      index={index}
-                      onChange={handleChange}
-                      onDelete={handleDelete}
-                      onDragStart={handleDragStart}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                    />
-                  ))}
-                </tbody>
-              </table>
+              <>
+                {/* Column header */}
+                <div style={{display:"flex", alignItems:"center", gap:0, padding:"0 0 6px 56px", fontSize:11, color:"var(--muted)", fontWeight:600, letterSpacing:"0.05em", textTransform:"uppercase"}}>
+                  <div style={{flex:"0 0 220px"}}>人数帯</div>
+                  <div style={{width:1, height:12, background:"transparent", margin:"0 16px"}} />
+                  <div style={{flex:1}}>1名あたり単価（税込）</div>
+                </div>
+                {tiers.map((tier, index) => (
+                  <TierRow
+                    key={tier.id}
+                    tier={tier}
+                    tiers={tiers}
+                    index={index}
+                    onChange={handleChange}
+                    onDelete={handleDelete}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  />
+                ))}
+                <div className="info-box" style={{marginTop:8}}>
+                  <strong>ドラッグ＆ドロップ</strong>で段階を並び替えられます。上限は次の段階の下限 − 1名として自動計算されます。
+                </div>
+              </>
             )}
           </div>
-          {tiers.length > 0 && enabled && (
-            <div style={{padding:"12px 20px", borderTop:"1px solid var(--line-soft)"}}>
-              <div className="info-box">
-                <strong>ドラッグ＆ドロップ</strong>で行を並び替えられます。上限は次の行の下限 − 1名として自動計算されます。最後の行は常に「上限なし」です。
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Preview calculator card */}
