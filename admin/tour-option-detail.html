@@ -1537,39 +1537,105 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "sales") {
-    const isDraft = t.salesStatus === "下書き";
-    const isPublished = t.salesStatus === "掲載中";
-    const isPrivate = t.salesStatus === "非公開";
-    const tieredOn = !!t.tieredPricingEnabled;
+    const [priceCats, setPriceCats] = useLState(t.pricingCategories || []);
+
+    const syncCats = (newCats) => {
+      setPriceCats(newCats);
+      update({ pricingCategories: newCats });
+    };
+
+    const removeCat = (id) => {
+      if (!window.confirm("この料金区分を削除しますか？")) return;
+      syncCats(priceCats.filter(c => c.id !== id));
+    };
+
+    const hasCategories = priceCats.length > 0;
+
     return (
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead
           eyebrow="STEP 3"
           title="販売条件"
-          desc="予約期限、価格参照、キャンセル条件、販売ステータスをまとめて確認します。"
+          desc="予約期限、料金区分、キャンセル条件をまとめて設定します。"
         />
         <div className="field-grid">
           <CancelPolicyField label="予約期限" value={t.cutoff} onChange={x => update({ cutoff: x })} readOnly={readonly} trail="前まで予約可能" />
-          <div className={`field ${tieredOn ? "field-deemphasized" : ""}`}>
-            <label className="field-label">
-              {!tieredOn && <span className="req" />}
-              <span>基準販売価格</span>
-              {tieredOn && <span className="opt" style={{textTransform:'none',letterSpacing:0,color:'var(--amber)',fontWeight:600}}>（段階価格適用時は参照しない）</span>}
-            </label>
-            <div className="input-affix">
-              <input
-                type="number"
-                value={t.price?.replace(/[^\d]/g, "") ?? ""}
-                onChange={e => update({ price: `¥${Number(e.target.value || 0).toLocaleString()}` })}
-                readOnly={readonly || tieredOn}
-                disabled={tieredOn}
-              />
-              <div className="affix right">円</div>
-            </div>
-          </div>
         </div>
 
-        <TieredPricingSection enabled={tieredOn} tiers={t.tieredPrices||[]} onToggle={v => update({tieredPricingEnabled:v})} onChange={v => update({tieredPrices:v})} readonly={readonly} />
+        {/* 料金区分テーブル */}
+        <section style={{marginTop:24}}>
+          <div className="section-title" style={{borderBottom:'1px solid var(--line)'}}>
+            <div>
+              <h2>料金区分 <span className="muted" style={{fontWeight:500,fontSize:13,letterSpacing:0}}>(Pricing Categories)</span></h2>
+              <p>参加者の区分（大人・小人など）ごとに販売価格・段階価格を設定します。区分を設定しない場合は「区別なし」の料金が適用されます。</p>
+            </div>
+            {!readonly && (
+              <a href="tour-option-price.html?mode=new" className="btn primary sm">
+                ＋ 料金区分を追加
+              </a>
+            )}
+          </div>
+
+          {hasCategories ? (
+            <div className="table-wrap" style={{marginTop:12}}>
+              <table className="data-table" style={{minWidth:600}}>
+                <thead>
+                  <tr>
+                    <th style={{width:140}}>参加者区分</th>
+                    <th style={{width:160}}>販売価格（基準）</th>
+                    <th style={{width:140}}>原価</th>
+                    <th style={{width:120}}>段階価格</th>
+                    <th style={{width:80}}>段階数</th>
+                    <th style={{width:120}}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {priceCats.map(cat => (
+                    <tr key={cat.id}>
+                      <td>
+                        <strong style={{fontSize:14}}>{cat.name}</strong>
+                      </td>
+                      <td className="num">
+                        <strong>¥{cat.basePrice.toLocaleString()}</strong>
+                        <span style={{fontSize:11,color:'var(--muted)',marginLeft:2}}>/人</span>
+                      </td>
+                      <td className="num" style={{color:'var(--muted)'}}>
+                        ¥{cat.costPrice.toLocaleString()}
+                      </td>
+                      <td>
+                        {cat.tieredEnabled
+                          ? <span className="badge teal">有効</span>
+                          : <span className="badge" style={{background:'var(--bg-sunken)',color:'var(--muted)'}}>無効</span>
+                        }
+                      </td>
+                      <td style={{textAlign:'center',color:'var(--muted)',fontSize:13}}>
+                        {cat.tieredEnabled ? `${cat.tiers.length}段階` : '—'}
+                      </td>
+                      <td>
+                        <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
+                          <a href={`tour-option-price.html?id=${cat.id}`} className="btn sm">編集</a>
+                          {!readonly && (
+                            <button className="btn sm" style={{color:'var(--coral)'}} onClick={() => removeCat(cat.id)}>削除</button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{marginTop:12,padding:'24px 20px',background:'var(--bg-sunken)',borderRadius:8,textAlign:'center',color:'var(--muted)',fontSize:13,border:'1px dashed var(--line-strong)'}}>
+              <div style={{marginBottom:6}}>料金区分が未設定です。</div>
+              <div>区分を追加しない場合、TourOption全体に「区別なし」の単一料金が適用されます。</div>
+              {!readonly && (
+                <a href="tour-option-price.html?mode=new" className="btn sm primary" style={{marginTop:12,display:'inline-block'}}>
+                  ＋ 料金区分を追加
+                </a>
+              )}
+            </div>
+          )}
+        </section>
 
         <CancelPolicySection t={t} update={update} readonly={readonly} />
 

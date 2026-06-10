@@ -49,6 +49,28 @@ window.SEED = {
       { id: "tp-2", min: 3, max: 5, price: 8000, openMax: false },
       { id: "tp-3", min: 6, max: null, price: 7000, openMax: true },
     ],
+    pricingCategories: [
+      {
+        id: "pc-adult",
+        name: "大人",
+        basePrice: 18000,
+        costPrice: 8000,
+        tieredEnabled: true,
+        tiers: [
+          { id: "tp-1", min: 1, price: 10000 },
+          { id: "tp-2", min: 3, price: 8000 },
+          { id: "tp-3", min: 6, price: 7000 },
+        ],
+      },
+      {
+        id: "pc-child",
+        name: "小人",
+        basePrice: 9000,
+        costPrice: 4000,
+        tieredEnabled: false,
+        tiers: [],
+      },
+    ],
   },
 
   productPage: {
