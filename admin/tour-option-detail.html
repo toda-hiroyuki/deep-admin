@@ -1537,62 +1537,350 @@ function AvailabilityTab({ t, update, readonly }) {
   );
 }
 
+// ── Tab sub-components (hooks must be at top level of each component) ────────
+
+function BasicTab({ t, update, mode, readonly }) {
+  const [lang, setLang] = useLState("en");
+  return (
+    <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
+      <SectionHead eyebrow="STEP 1" title="TourOption基本情報" desc="IDは保存時に自動採番、コードは業務上の不変キーとして扱います。" />
+      <div className="field-grid">
+        <Field label="TourOption ID" value={mode === "create" ? "to_自動採番" : t.id} readOnly mono help="保存時に発番" />
+        <Field label="TourOptionコード" required value={t.code} onChange={x => update({ code: x })} placeholder="G-XXX-000-0-XX" mono readOnly={readonly} help={!undefined ? "業務コード（不変）" : null} />
+        <SelectField label="テーマタイトル" value={t.theme} onChange={x => update({ theme: x })} options={["京都ナイトフードツアー","大阪ストリートフードツアー","奈良世界遺産散策","神戸港ハーバー街歩き","東京浅草下町ツアー","鎌倉寺社仏閣めぐり","広島平和と食文化ツアー","北海道自然体験ツアー"]} readOnly={readonly} />
+      </div>
+      <div className="field-grid three">
+        <SelectField label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} options={["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"]} readOnly={readonly} />
+        <SelectField label="エリア名" value={t.area} onChange={x => update({ area: x })} options={["祇園・東山エリア","嵐山エリア","金閣寺・北野エリア","伏見稲荷エリア","大阪難波エリア","大阪梅田エリア","神戸元町エリア","奈良中心エリア"]} readOnly={readonly} />
+      </div>
+      {/* 多言語タブ */}
+      <div style={{marginTop:16,border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px'}}>
+        <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+          {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+            <button key={code} type="button"
+              style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:lang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:lang===code?700:400,color:lang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+              onClick={() => setLang(code)}>{label}</button>
+          ))}
+        </div>
+        {lang === "en" ? (
+          <div className="field-grid">
+            <Field label="TourOption Name (EN)" value={t.nameEn} onChange={x => update({ nameEn: x })} readOnly={readonly} maxLen={60} />
+            <Field label="Selection Display Name (EN)" value={t.selectionNameEn} onChange={x => update({ selectionNameEn: x })} readOnly={readonly} maxLen={30} />
+            <Field label="Short Description (EN)" value={t.shortDescriptionEn} onChange={x => update({ shortDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={80} />
+            <Field label="Detail Description (EN)" value={t.detailDescriptionEn} onChange={x => update({ detailDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={400} />
+            <Field label="住所（英語）" value={t.addressEn||""} onChange={x => update({ addressEn: x })} wide readOnly={readonly} placeholder="e.g. 123 Gion, Higashiyama-ku, Kyoto" />
+          </div>
+        ) : (
+          <div className="field-grid">
+            <Field label="TourOption名" required value={t.name} onChange={x => update({ name: x })} readOnly={readonly} maxLen={60} />
+            <Field label="選択表示名" required value={t.selectionName} onChange={x => update({ selectionName: x })} readOnly={readonly} help="商品ページのオプション選択に表示されます" maxLen={30} />
+            <Field label="短い説明" required value={t.shortDescription} onChange={x => update({ shortDescription: x })} wide multiline readOnly={readonly} maxLen={80} help="一覧・選択カードに表示される1〜2行" />
+            <Field label="詳細説明" value={t.detailDescription} onChange={x => update({ detailDescription: x })} wide multiline readOnly={readonly} maxLen={400} />
+            <Field label="住所（日本語）" value={t.address||""} onChange={x => update({ address: x })} wide readOnly={readonly} placeholder="例: 京都府京都市東山区祇園町123" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SalesTab({ t, update, mode, readonly }) {
+  const [priceCats, setPriceCats] = useLState(t.pricingCategories || []);
+
+  const syncCats = (newCats) => {
+    setPriceCats(newCats);
+    update({ pricingCategories: newCats });
+  };
+  const removeCat = (id) => {
+    if (!window.confirm("この料金区分を削除しますか？")) return;
+    syncCats(priceCats.filter(c => c.id !== id));
+  };
+  const hasCategories = priceCats.length > 0;
+
+  return (
+    <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
+      <SectionHead eyebrow="STEP 3" title="販売条件" desc="予約期限、料金区分、キャンセル条件をまとめて設定します。" />
+      <div className="field-grid">
+        <CancelPolicyField label="予約期限" value={t.cutoff} onChange={x => update({ cutoff: x })} readOnly={readonly} trail="前まで予約可能" />
+      </div>
+      {/* 料金区分テーブル */}
+      <section style={{marginTop:24}}>
+        <div className="section-title" style={{borderBottom:'1px solid var(--line)'}}>
+          <div>
+            <h2>料金区分 <span className="muted" style={{fontWeight:500,fontSize:13,letterSpacing:0}}>(Pricing Categories)</span></h2>
+            <p>参加者の区分（大人・小人など）ごとに販売価格・段階価格を設定します。区分を設定しない場合は「区別なし」の料金が適用されます。</p>
+          </div>
+          {!readonly && (
+            <a href="tour-option-price.html?mode=new" className="btn primary sm">＋ 料金区分を追加</a>
+          )}
+        </div>
+        {hasCategories ? (
+          <div className="table-wrap" style={{marginTop:12}}>
+            <table className="data-table" style={{minWidth:600}}>
+              <thead>
+                <tr>
+                  <th style={{width:140}}>参加者区分</th>
+                  <th style={{width:160}}>販売価格</th>
+                  <th style={{width:120}}>段階価格</th>
+                  <th>段階設定</th>
+                  <th style={{width:120}}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {priceCats.map(cat => (
+                  <tr key={cat.id}>
+                    <td><strong style={{fontSize:14}}>{cat.name}</strong></td>
+                    <td className="num">
+                      <strong>¥{cat.basePrice.toLocaleString()}</strong>
+                      <span style={{fontSize:11,color:'var(--muted)',marginLeft:2}}>/人</span>
+                    </td>
+                    <td>
+                      {cat.tieredEnabled
+                        ? <span className="badge teal">有効</span>
+                        : <span className="badge" style={{background:'var(--bg-sunken)',color:'var(--muted)'}}>無効</span>
+                      }
+                    </td>
+                    <td>
+                      {cat.tieredEnabled && cat.tiers && cat.tiers.length > 0
+                        ? (
+                          <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                            {[...cat.tiers].sort((a,b)=>a.min-b.min).map((tier,i) => (
+                              <span key={i} style={{fontSize:12,color:'var(--ink)',whiteSpace:'nowrap'}}>
+                                {tier.min}名〜 ¥{tier.price.toLocaleString()}
+                              </span>
+                            ))}
+                          </div>
+                        )
+                        : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
+                      }
+                    </td>
+                    <td>
+                      <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
+                        <a href={`tour-option-price.html?id=${cat.id}`} className="btn sm">編集</a>
+                        {!readonly && (
+                          <button className="btn sm" style={{color:'var(--coral)'}} onClick={() => removeCat(cat.id)}>削除</button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div style={{marginTop:12,padding:'24px 20px',background:'var(--bg-sunken)',borderRadius:8,textAlign:'center',color:'var(--muted)',fontSize:13,border:'1px dashed var(--line-strong)'}}>
+            <div style={{marginBottom:6}}>料金区分が未設定です。</div>
+            <div>区分を追加しない場合、TourOption全体に「区別なし」の単一料金が適用されます。</div>
+            {!readonly && (
+              <a href="tour-option-price.html?mode=new" className="btn sm primary" style={{marginTop:12,display:'inline-block'}}>
+                ＋ 料金区分を追加
+              </a>
+            )}
+          </div>
+        )}
+      </section>
+      <CancelPolicySection t={t} update={update} readonly={readonly} />
+      <div className="field-grid">
+        <SelectField label="価格・原価確認" value={t.costCheck} onChange={x => update({ costCheck: x })} options={["未確認", "原価確認済み", "再確認が必要"]} readOnly={readonly} />
+      </div>
+      <Field label="販売停止理由" value={t.pauseReason||""} onChange={x => update({ pauseReason: x })} wide multiline readOnly={readonly} placeholder="一時停止時のみ入力" help='販売ステータスが「一時停止」のときのみ必須' />
+    </div>
+  );
+}
+
+function ContentTab({ t, update, readonly }) {
+  const [incLang, setIncLang] = useLState("en");
+  return (
+    <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
+      <SectionHead eyebrow="STEP 5" title="コンテンツ" desc="ゲスト向けの表示内容を管理します。ツアー行程は「ツアー行程」タブで管理します。" />
+      <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginBottom:16}}>
+        <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+          {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+            <button key={code} type="button"
+              style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:incLang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:incLang===code?700:400,color:incLang===code?'var(--accent)':'var(--muted)',fontSize:13}}
+              onClick={() => setIncLang(code)}>{label}</button>
+          ))}
+        </div>
+        {incLang === "en" ? (
+          <div className="field-grid">
+            <Field label="Inclusions (EN)" value={t.inclusionsEn||""} onChange={x => update({ inclusionsEn: x })} wide multiline readOnly={readonly} />
+            <Field label="Exclusions (EN)" value={t.exclusionsEn||""} onChange={x => update({ exclusionsEn: x })} wide multiline readOnly={readonly} />
+          </div>
+        ) : (
+          <div className="field-grid">
+            <Field label="含まれるもの (Inclusions)" value={t.inclusions} onChange={x => update({ inclusions: x })} wide multiline readOnly={readonly} />
+            <Field label="含まれないもの (Exclusions)" value={t.exclusions} onChange={x => update({ exclusions: x })} wide multiline readOnly={readonly} />
+          </div>
+        )}
+      </div>
+      <div style={{marginBottom:16}}>
+        <label className="field-label">画像ギャラリー</label>
+        <div style={{border:'2px dashed var(--line-strong)',borderRadius:8,padding:32,textAlign:'center',background:'var(--bg-sunken)',cursor:'pointer'}}
+          onClick={() => document.getElementById('img-upload').click()}>
+          <div style={{fontSize:32,marginBottom:8}}>📁</div>
+          <div style={{fontSize:14,color:'var(--muted)'}}>画像をドラッグ＆ドロップ、またはクリックして選択</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginTop:4}}>JPG / PNG / WebP · 最大10枚 · 各5MB以下</div>
+          <input id="img-upload" type="file" accept="image/*" multiple style={{display:'none'}} />
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
+          {["祇園夜景","食事","集合場所","街歩き"].map((name,i) => (
+            <div key={i} style={{width:80,height:60,background:'var(--bg-sunken)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'var(--muted)',position:'relative',border:'1px solid var(--line)'}}>
+              {name}
+              <button type="button" style={{position:'absolute',top:2,right:2,background:'none',border:'none',cursor:'pointer',fontSize:10,color:'var(--muted)'}}>✕</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExpensesTab({ t, update, readonly }) {
+  const [expenseRows, setExpenseRows] = useLState([
+    { id: "exp-1", name: "ガイド人件費", type: "人件費", unitPrice: 15000, unit: "1催行あたり", note: "" },
+    { id: "exp-2", name: "交通費", type: "交通費", unitPrice: 2000, unit: "1名あたり", note: "" },
+    { id: "exp-3", name: "施設入場料", type: "施設費", unitPrice: 500, unit: "1名あたり", note: "" },
+  ]);
+  const [editingId, setEditingId] = useLState(null);
+
+  const addRow = () => {
+    const newRow = { id: `exp-${Date.now()}`, name: "", type: "人件費", unitPrice: 0, unit: "1催行あたり", note: "" };
+    setExpenseRows(prev => [...prev, newRow]);
+    setEditingId(newRow.id);
+  };
+  const removeRow = (id) => setExpenseRows(prev => prev.filter(r => r.id !== id));
+  const updateRow = (id, patch) => setExpenseRows(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
+
+  const fixedTotal = expenseRows.filter(r => r.unit === "1催行あたり").reduce((s, r) => s + Number(r.unitPrice||0), 0);
+  const varTotal = expenseRows.filter(r => r.unit === "1名あたり").reduce((s, r) => s + Number(r.unitPrice||0), 0);
+  const sampleN = 10;
+  const grandTotal = fixedTotal + varTotal * sampleN;
+  const typeOptions = ["人件費","交通費","施設費","材料費","食費","宿泊費","その他"];
+  const unitOptions = ["1催行あたり","1名あたり","1日あたり","固定"];
+
+  return (
+    <div className="form-section">
+      <SectionHead eyebrow="STEP 9" title="経費管理" desc="このTourOptionにかかる経費を管理します。原価計算・採算管理にご活用ください。" />
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 8px'}}>
+        <strong style={{fontSize:14}}>経費一覧</strong>
+        {!readonly && (
+          <button type="button" onClick={addRow} className="btn primary sm">＋ 経費を追加</button>
+        )}
+      </div>
+      <div className="table-wrap">
+        <table className="data-table" style={{tableLayout:'fixed',width:'100%'}}>
+          <thead>
+            <tr>
+              <th style={{width:'22%'}}>経費名</th>
+              <th style={{width:'14%'}}>種別</th>
+              <th style={{width:'14%',textAlign:'right'}}>単価</th>
+              <th style={{width:'16%'}}>単位</th>
+              <th>備考</th>
+              {!readonly && <th style={{width:100}}></th>}
+            </tr>
+          </thead>
+          <tbody>
+            {expenseRows.map(row => (
+              <tr key={row.id}>
+                <td>
+                  {editingId === row.id && !readonly ? (
+                    <input value={row.name} onChange={e => updateRow(row.id, {name: e.target.value})}
+                      style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}} />
+                  ) : (
+                    <span style={{fontSize:13}}>{row.name || <span style={{color:'var(--muted)'}}>（未入力）</span>}</span>
+                  )}
+                </td>
+                <td>
+                  {editingId === row.id && !readonly ? (
+                    <select value={row.type} onChange={e => updateRow(row.id, {type: e.target.value})}
+                      style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'auto'}}>
+                      {typeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  ) : (
+                    <span className="badge outline" style={{fontSize:11}}>{row.type}</span>
+                  )}
+                </td>
+                <td style={{textAlign:'right'}}>
+                  {editingId === row.id && !readonly ? (
+                    <input type="number" min={0} value={row.unitPrice} onChange={e => updateRow(row.id, {unitPrice: e.target.value})}
+                      style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,textAlign:'right'}} />
+                  ) : (
+                    <strong style={{fontSize:13}}>¥{Number(row.unitPrice).toLocaleString()}</strong>
+                  )}
+                </td>
+                <td>
+                  {editingId === row.id && !readonly ? (
+                    <select value={row.unit} onChange={e => updateRow(row.id, {unit: e.target.value})}
+                      style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'auto'}}>
+                      {unitOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  ) : (
+                    <span style={{fontSize:12,color:'var(--muted)'}}>{row.unit}</span>
+                  )}
+                </td>
+                <td>
+                  {editingId === row.id && !readonly ? (
+                    <input value={row.note} onChange={e => updateRow(row.id, {note: e.target.value})}
+                      placeholder="備考"
+                      style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}} />
+                  ) : (
+                    <span style={{fontSize:12,color:'var(--muted)'}}>{row.note || "—"}</span>
+                  )}
+                </td>
+                {!readonly && (
+                  <td style={{textAlign:'right'}}>
+                    <div style={{display:'flex',gap:4,justifyContent:'flex-end'}}>
+                      {editingId === row.id ? (
+                        <button type="button" onClick={() => setEditingId(null)} className="btn sm teal">完了</button>
+                      ) : (
+                        <button type="button" onClick={() => setEditingId(row.id)} className="btn sm">編集</button>
+                      )}
+                      <button type="button" onClick={() => removeRow(row.id)} className="btn sm danger">削除</button>
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))}
+            {!expenseRows.length && (
+              <tr><td colSpan={readonly?5:6} style={{textAlign:'center',color:'var(--muted)',padding:24}}>経費が登録されていません</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {/* 合計サマリー */}
+      <div style={{marginTop:16,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+        <div style={{background:'var(--bg-sunken)',padding:'10px 16px',borderBottom:'1px solid var(--line)'}}>
+          <strong style={{fontSize:13}}>原価サマリー（目安）</strong>
+          <span style={{fontSize:11,color:'var(--muted)',marginLeft:8}}>※サンプル {sampleN}名催行時の試算</span>
+        </div>
+        <div style={{padding:'12px 16px',display:'flex',gap:32,flexWrap:'wrap'}}>
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>固定費合計</div>
+            <strong style={{fontSize:18}}>¥{fixedTotal.toLocaleString()}</strong>
+            <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1催行あたり</span>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>変動費合計</div>
+            <strong style={{fontSize:18}}>¥{varTotal.toLocaleString()}</strong>
+            <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1名あたり</span>
+          </div>
+          <div style={{borderLeft:'2px solid var(--line)',paddingLeft:32}}>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>原価合計目安（{sampleN}名催行時）</div>
+            <strong style={{fontSize:20,color:'var(--coral)'}}>¥{grandTotal.toLocaleString()}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TourOptionEditor({ tab, mode, data, update, validation }) {
   const readonly = mode === "review";
   const v = validation || {};
   const t = data;
 
   if (tab === "basic") {
-    return (
-      <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-        <SectionHead
-          eyebrow="STEP 1"
-          title="TourOption基本情報"
-          desc="IDは保存時に自動採番、コードは業務上の不変キーとして扱います。"
-        />
-        <div className="field-grid">
-          <Field label="TourOption ID" value={mode === "create" ? "to_自動採番" : t.id} readOnly mono help="保存時に発番" />
-          <Field label="TourOptionコード" required value={t.code} onChange={x => update({ code: x })} placeholder="G-XXX-000-0-XX" mono readOnly={readonly} error={v.code} help={!v.code ? "業務コード（不変）" : null} />
-          <SelectField label="テーマタイトル" value={t.theme} onChange={x => update({ theme: x })} options={["京都ナイトフードツアー","大阪ストリートフードツアー","奈良世界遺産散策","神戸港ハーバー街歩き","東京浅草下町ツアー","鎌倉寺社仏閣めぐり","広島平和と食文化ツアー","北海道自然体験ツアー"]} readOnly={readonly} />
-        </div>
-        <div className="field-grid three">
-          <SelectField label="都道府県" value={t.prefecture} onChange={x => update({ prefecture: x })} options={["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"]} readOnly={readonly} />
-          <SelectField label="エリア名" value={t.area} onChange={x => update({ area: x })} options={["祇園・東山エリア","嵐山エリア","金閣寺・北野エリア","伏見稲荷エリア","大阪難波エリア","大阪梅田エリア","神戸元町エリア","奈良中心エリア"]} readOnly={readonly} />
-        </div>
-        {/* 多言語タブ */}
-        {(() => {
-          const [lang, setLang] = useLState("en");
-          return (
-            <div style={{marginTop:16,border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px'}}>
-              <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
-                {[["en","English"],["ja","日本語"]].map(([code,label]) => (
-                  <button key={code} type="button"
-                    style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:lang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:lang===code?700:400,color:lang===code?'var(--accent)':'var(--muted)',fontSize:13}}
-                    onClick={() => setLang(code)}>{label}</button>
-                ))}
-              </div>
-              {lang === "en" ? (
-                <div className="field-grid">
-                  <Field label="TourOption Name (EN)" value={t.nameEn} onChange={x => update({ nameEn: x })} readOnly={readonly} maxLen={60} />
-                  <Field label="Selection Display Name (EN)" value={t.selectionNameEn} onChange={x => update({ selectionNameEn: x })} readOnly={readonly} maxLen={30} />
-                  <Field label="Short Description (EN)" value={t.shortDescriptionEn} onChange={x => update({ shortDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={80} />
-                  <Field label="Detail Description (EN)" value={t.detailDescriptionEn} onChange={x => update({ detailDescriptionEn: x })} wide multiline readOnly={readonly} maxLen={400} />
-                  <Field label="住所（英語）" value={t.addressEn||""} onChange={x => update({ addressEn: x })} wide readOnly={readonly} placeholder="e.g. 123 Gion, Higashiyama-ku, Kyoto" />
-                </div>
-              ) : (
-                <div className="field-grid">
-                  <Field label="TourOption名" required value={t.name} onChange={x => update({ name: x })} readOnly={readonly} maxLen={60} />
-                  <Field label="選択表示名" required value={t.selectionName} onChange={x => update({ selectionName: x })} readOnly={readonly} help="商品ページのオプション選択に表示されます" maxLen={30} />
-                  <Field label="短い説明" required value={t.shortDescription} onChange={x => update({ shortDescription: x })} wide multiline readOnly={readonly} maxLen={80} help="一覧・選択カードに表示される1〜2行" />
-                  <Field label="詳細説明" value={t.detailDescription} onChange={x => update({ detailDescription: x })} wide multiline readOnly={readonly} maxLen={400} />
-                  <Field label="住所（日本語）" value={t.address||""} onChange={x => update({ address: x })} wide readOnly={readonly} placeholder="例: 京都府京都市東山区祇園町123" />
-                </div>
-              )}
-            </div>
-          );
-        })()}
-      </div>
-    );
+    return <BasicTab t={t} update={update} mode={mode} readonly={readonly} />;
   }
 
   if (tab === "conditions") {
@@ -1641,121 +1929,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "sales") {
-    const [priceCats, setPriceCats] = useLState(t.pricingCategories || []);
-
-    const syncCats = (newCats) => {
-      setPriceCats(newCats);
-      update({ pricingCategories: newCats });
-    };
-
-    const removeCat = (id) => {
-      if (!window.confirm("この料金区分を削除しますか？")) return;
-      syncCats(priceCats.filter(c => c.id !== id));
-    };
-
-    const hasCategories = priceCats.length > 0;
-
-    return (
-      <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-        <SectionHead
-          eyebrow="STEP 3"
-          title="販売条件"
-          desc="予約期限、料金区分、キャンセル条件をまとめて設定します。"
-        />
-        <div className="field-grid">
-          <CancelPolicyField label="予約期限" value={t.cutoff} onChange={x => update({ cutoff: x })} readOnly={readonly} trail="前まで予約可能" />
-        </div>
-
-        {/* 料金区分テーブル */}
-        <section style={{marginTop:24}}>
-          <div className="section-title" style={{borderBottom:'1px solid var(--line)'}}>
-            <div>
-              <h2>料金区分 <span className="muted" style={{fontWeight:500,fontSize:13,letterSpacing:0}}>(Pricing Categories)</span></h2>
-              <p>参加者の区分（大人・小人など）ごとに販売価格・段階価格を設定します。区分を設定しない場合は「区別なし」の料金が適用されます。</p>
-            </div>
-            {!readonly && (
-              <a href="tour-option-price.html?mode=new" className="btn primary sm">
-                ＋ 料金区分を追加
-              </a>
-            )}
-          </div>
-
-          {hasCategories ? (
-            <div className="table-wrap" style={{marginTop:12}}>
-              <table className="data-table" style={{minWidth:600}}>
-                <thead>
-                  <tr>
-                    <th style={{width:140}}>参加者区分</th>
-                    <th style={{width:160}}>販売価格</th>
-                    <th style={{width:120}}>段階価格</th>
-                    <th>段階設定</th>
-                    <th style={{width:120}}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {priceCats.map(cat => (
-                    <tr key={cat.id}>
-                      <td>
-                        <strong style={{fontSize:14}}>{cat.name}</strong>
-                      </td>
-                      <td className="num">
-                        <strong>¥{cat.basePrice.toLocaleString()}</strong>
-                        <span style={{fontSize:11,color:'var(--muted)',marginLeft:2}}>/人</span>
-                      </td>
-                      <td>
-                        {cat.tieredEnabled
-                          ? <span className="badge teal">有効</span>
-                          : <span className="badge" style={{background:'var(--bg-sunken)',color:'var(--muted)'}}>無効</span>
-                        }
-                      </td>
-                      <td>
-                        {cat.tieredEnabled && cat.tiers && cat.tiers.length > 0
-                          ? (
-                            <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                              {[...cat.tiers].sort((a,b)=>a.min-b.min).map((tier,i) => (
-                                <span key={i} style={{fontSize:12,color:'var(--ink)',whiteSpace:'nowrap'}}>
-                                  {tier.min}名〜 ¥{tier.price.toLocaleString()}
-                                </span>
-                              ))}
-                            </div>
-                          )
-                          : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
-                        }
-                      </td>
-                      <td>
-                        <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
-                          <a href={`tour-option-price.html?id=${cat.id}`} className="btn sm">編集</a>
-                          {!readonly && (
-                            <button className="btn sm" style={{color:'var(--coral)'}} onClick={() => removeCat(cat.id)}>削除</button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div style={{marginTop:12,padding:'24px 20px',background:'var(--bg-sunken)',borderRadius:8,textAlign:'center',color:'var(--muted)',fontSize:13,border:'1px dashed var(--line-strong)'}}>
-              <div style={{marginBottom:6}}>料金区分が未設定です。</div>
-              <div>区分を追加しない場合、TourOption全体に「区別なし」の単一料金が適用されます。</div>
-              {!readonly && (
-                <a href="tour-option-price.html?mode=new" className="btn sm primary" style={{marginTop:12,display:'inline-block'}}>
-                  ＋ 料金区分を追加
-                </a>
-              )}
-            </div>
-          )}
-        </section>
-
-        <CancelPolicySection t={t} update={update} readonly={readonly} />
-
-        <div className="field-grid">
-          <SelectField label="価格・原価確認" value={t.costCheck} onChange={x => update({ costCheck: x })} options={["未確認", "原価確認済み", "再確認が必要"]} readOnly={readonly} />
-        </div>
-        <Field label="販売停止理由" value={t.pauseReason||""} onChange={x => update({ pauseReason: x })} wide multiline readOnly={readonly} placeholder="一時停止時のみ入力" help='販売ステータスが「一時停止」のときのみ必須' />
-      </div>
-    );
+    return <SalesTab t={t} update={update} mode={mode} readonly={readonly} />;
   }
 
   if (tab === "availability") {
@@ -1763,54 +1937,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "content") {
-    const [incLang, setIncLang] = useLState("en");
-    return (
-      <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-        <SectionHead
-          eyebrow="STEP 5"
-          title="コンテンツ"
-          desc="ゲスト向けの表示内容を管理します。ツアー行程は「ツアー行程」タブで管理します。"
-        />
-        <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginBottom:16}}>
-          <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
-            {[["en","English"],["ja","日本語"]].map(([code,label]) => (
-              <button key={code} type="button"
-                style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:incLang===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:incLang===code?700:400,color:incLang===code?'var(--accent)':'var(--muted)',fontSize:13}}
-                onClick={() => setIncLang(code)}>{label}</button>
-            ))}
-          </div>
-          {incLang === "en" ? (
-            <div className="field-grid">
-              <Field label="Inclusions (EN)" value={t.inclusionsEn||""} onChange={x => update({ inclusionsEn: x })} wide multiline readOnly={readonly} />
-              <Field label="Exclusions (EN)" value={t.exclusionsEn||""} onChange={x => update({ exclusionsEn: x })} wide multiline readOnly={readonly} />
-            </div>
-          ) : (
-            <div className="field-grid">
-              <Field label="含まれるもの (Inclusions)" value={t.inclusions} onChange={x => update({ inclusions: x })} wide multiline readOnly={readonly} />
-              <Field label="含まれないもの (Exclusions)" value={t.exclusions} onChange={x => update({ exclusions: x })} wide multiline readOnly={readonly} />
-            </div>
-          )}
-        </div>
-        <div style={{marginBottom:16}}>
-          <label className="field-label">画像ギャラリー</label>
-          <div style={{border:'2px dashed var(--line-strong)',borderRadius:8,padding:32,textAlign:'center',background:'var(--bg-sunken)',cursor:'pointer'}}
-            onClick={() => document.getElementById('img-upload').click()}>
-            <div style={{fontSize:32,marginBottom:8}}>📁</div>
-            <div style={{fontSize:14,color:'var(--muted)'}}>画像をドラッグ＆ドロップ、またはクリックして選択</div>
-            <div style={{fontSize:12,color:'var(--muted)',marginTop:4}}>JPG / PNG / WebP · 最大10枚 · 各5MB以下</div>
-            <input id="img-upload" type="file" accept="image/*" multiple style={{display:'none'}} />
-          </div>
-          <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
-            {["祇園夜景","食事","集合場所","街歩き"].map((name,i) => (
-              <div key={i} style={{width:80,height:60,background:'var(--bg-sunken)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'var(--muted)',position:'relative',border:'1px solid var(--line)'}}>
-                {name}
-                <button type="button" style={{position:'absolute',top:2,right:2,background:'none',border:'none',cursor:'pointer',fontSize:10,color:'var(--muted)'}}>✕</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <ContentTab t={t} update={update} readonly={readonly} />;
   }
 
   if (tab === "schedule") {
@@ -1996,148 +2123,7 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
   }
 
   if (tab === "expenses") {
-    const [expenseRows, setExpenseRows] = React.useState([
-      { id: "exp-1", name: "ガイド人件費", type: "人件費", unitPrice: 15000, unit: "1催行あたり", note: "" },
-      { id: "exp-2", name: "交通費", type: "交通費", unitPrice: 2000, unit: "1名あたり", note: "" },
-      { id: "exp-3", name: "施設入場料", type: "施設費", unitPrice: 500, unit: "1名あたり", note: "" },
-    ]);
-    const [editingId, setEditingId] = React.useState(null);
-
-    const addRow = () => {
-      const newRow = { id: `exp-${Date.now()}`, name: "", type: "人件費", unitPrice: 0, unit: "1催行あたり", note: "" };
-      setExpenseRows(prev => [...prev, newRow]);
-      setEditingId(newRow.id);
-    };
-    const removeRow = (id) => setExpenseRows(prev => prev.filter(r => r.id !== id));
-    const updateRow = (id, patch) => setExpenseRows(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
-
-    const fixedTotal = expenseRows.filter(r => r.unit === "1催行あたり").reduce((s, r) => s + Number(r.unitPrice||0), 0);
-    const varTotal = expenseRows.filter(r => r.unit === "1名あたり").reduce((s, r) => s + Number(r.unitPrice||0), 0);
-    const sampleN = 10;
-    const grandTotal = fixedTotal + varTotal * sampleN;
-
-    const typeOptions = ["人件費","交通費","施設費","材料費","食費","宿泊費","その他"];
-    const unitOptions = ["1催行あたり","1名あたり","1日あたり","固定"];
-
-    return (
-      <div className="form-section">
-        <SectionHead
-          eyebrow="STEP 9"
-          title="経費管理"
-          desc="このTourOptionにかかる経費を管理します。原価計算・採算管理にご活用ください。"
-        />
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 8px'}}>
-          <strong style={{fontSize:14}}>経費一覧</strong>
-          {!readonly && (
-            <button type="button" onClick={addRow} className="btn primary sm">＋ 経費を追加</button>
-          )}
-        </div>
-        <div className="table-wrap">
-          <table className="data-table" style={{tableLayout:'fixed',width:'100%'}}>
-            <thead>
-              <tr>
-                <th style={{width:'22%'}}>経費名</th>
-                <th style={{width:'14%'}}>種別</th>
-                <th style={{width:'14%',textAlign:'right'}}>単価</th>
-                <th style={{width:'16%'}}>単位</th>
-                <th>備考</th>
-                {!readonly && <th style={{width:100}}></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {expenseRows.map(row => (
-                <tr key={row.id}>
-                  <td>
-                    {editingId === row.id && !readonly ? (
-                      <input value={row.name} onChange={e => updateRow(row.id, {name: e.target.value})}
-                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}} />
-                    ) : (
-                      <span style={{fontSize:13}}>{row.name || <span style={{color:'var(--muted)'}}>（未入力）</span>}</span>
-                    )}
-                  </td>
-                  <td>
-                    {editingId === row.id && !readonly ? (
-                      <select value={row.type} onChange={e => updateRow(row.id, {type: e.target.value})}
-                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'auto'}}>
-                        {typeOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                    ) : (
-                      <span className="badge outline" style={{fontSize:11}}>{row.type}</span>
-                    )}
-                  </td>
-                  <td style={{textAlign:'right'}}>
-                    {editingId === row.id && !readonly ? (
-                      <input type="number" min={0} value={row.unitPrice} onChange={e => updateRow(row.id, {unitPrice: e.target.value})}
-                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,textAlign:'right'}} />
-                    ) : (
-                      <strong style={{fontSize:13}}>¥{Number(row.unitPrice).toLocaleString()}</strong>
-                    )}
-                  </td>
-                  <td>
-                    {editingId === row.id && !readonly ? (
-                      <select value={row.unit} onChange={e => updateRow(row.id, {unit: e.target.value})}
-                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'auto'}}>
-                        {unitOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                      </select>
-                    ) : (
-                      <span style={{fontSize:12,color:'var(--muted)'}}>{row.unit}</span>
-                    )}
-                  </td>
-                  <td>
-                    {editingId === row.id && !readonly ? (
-                      <input value={row.note} onChange={e => updateRow(row.id, {note: e.target.value})}
-                        placeholder="備考"
-                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}} />
-                    ) : (
-                      <span style={{fontSize:12,color:'var(--muted)'}}>{row.note || "—"}</span>
-                    )}
-                  </td>
-                  {!readonly && (
-                    <td style={{textAlign:'right'}}>
-                      <div style={{display:'flex',gap:4,justifyContent:'flex-end'}}>
-                        {editingId === row.id ? (
-                          <button type="button" onClick={() => setEditingId(null)} className="btn sm teal">完了</button>
-                        ) : (
-                          <button type="button" onClick={() => setEditingId(row.id)} className="btn sm">編集</button>
-                        )}
-                        <button type="button" onClick={() => removeRow(row.id)} className="btn sm danger">削除</button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {!expenseRows.length && (
-                <tr><td colSpan={readonly?5:6} style={{textAlign:'center',color:'var(--muted)',padding:24}}>経費が登録されていません</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* 合計サマリー */}
-        <div style={{marginTop:16,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
-          <div style={{background:'var(--bg-sunken)',padding:'10px 16px',borderBottom:'1px solid var(--line)'}}>
-            <strong style={{fontSize:13}}>原価サマリー（目安）</strong>
-            <span style={{fontSize:11,color:'var(--muted)',marginLeft:8}}>※サンプル {sampleN}名催行時の試算</span>
-          </div>
-          <div style={{padding:'12px 16px',display:'flex',gap:32,flexWrap:'wrap'}}>
-            <div>
-              <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>固定費合計</div>
-              <strong style={{fontSize:18}}>¥{fixedTotal.toLocaleString()}</strong>
-              <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1催行あたり</span>
-            </div>
-            <div>
-              <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>変動費合計</div>
-              <strong style={{fontSize:18}}>¥{varTotal.toLocaleString()}</strong>
-              <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1名あたり</span>
-            </div>
-            <div style={{borderLeft:'2px solid var(--line)',paddingLeft:32}}>
-              <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>原価合計目安（{sampleN}名催行時）</div>
-              <strong style={{fontSize:20,color:'var(--coral)'}}>¥{grandTotal.toLocaleString()}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ExpensesTab t={t} update={update} readonly={readonly} />;
   }
 
   return null;
