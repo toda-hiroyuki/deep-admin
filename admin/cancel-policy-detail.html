@@ -2014,40 +2014,35 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
         </div>
       </div>
 
-      <div className="multilang-section" style={{marginTop:8}}>
-        <div className="multilang-tab-bar" style={{borderBottom:'2px solid var(--line)',marginBottom:0}}>
-          <button type="button"
-            className={`multilang-tab-btn${langTab === "en" ? " active" : ""}`}
-            onClick={() => setLangTab("en")}>English</button>
-          <button type="button"
-            className={`multilang-tab-btn${langTab === "ja" ? " active" : ""}`}
-            onClick={() => setLangTab("ja")}>日本語</button>
+      <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginTop:8}}>
+        <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
+          {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+            <button key={code} type="button"
+              style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',borderBottom:langTab===code?'2px solid var(--accent)':'2px solid transparent',fontWeight:langTab===code?700:400,color:langTab===code?'var(--accent)':'var(--muted)',fontSize:13}}
+              onClick={() => setLangTab(code)}>{label}</button>
+          ))}
         </div>
-        <div style={{border:'1px solid var(--line)',borderTop:'none',borderRadius:'0 0 8px 8px',padding:'16px'}}>
-          {langTab === "en" ? (
-            <div className="field-wide">
-              <Field
-                label="キャンセル名"
-                required
-                value={tmpl.nameEn || ""}
-                onChange={x => updateTemplate(tmpl.id, { nameEn: x })}
-                readOnly={readonly}
-                placeholder="e.g. Non-refundable"
-              />
-            </div>
-          ) : (
-            <div className="field-wide">
-              <Field
-                label="キャンセル名"
-                required
-                value={tmpl.name || ""}
-                onChange={x => updateTemplate(tmpl.id, { name: x })}
-                readOnly={readonly}
-                placeholder="例：全額返金不可"
-              />
-            </div>
-          )}
-        </div>
+        {langTab === "en" ? (
+          <Field
+            label="キャンセル名"
+            required
+            value={tmpl.nameEn || ""}
+            onChange={x => updateTemplate(tmpl.id, { nameEn: x })}
+            readOnly={readonly}
+            placeholder="e.g. Non-refundable"
+            wide
+          />
+        ) : (
+          <Field
+            label="キャンセル名"
+            required
+            value={tmpl.name || ""}
+            onChange={x => updateTemplate(tmpl.id, { name: x })}
+            readOnly={readonly}
+            placeholder="例：全額返金不可"
+            wide
+          />
+        )}
       </div>
     </div>
   );
@@ -3306,16 +3301,20 @@ function App() {
 
         <div className="status-strip">
 
+          {resource !== "cancelTemplate" && (
+            <div className="status-cell">
+              <span className="status-label">業務コード / URL</span>
+              <strong className="code-mono" style={{fontSize:13}}>{statusValues.code}</strong>
+            </div>
+          )}
+          {resource !== "cancelTemplate" && (
+            <div className="status-cell">
+              <span className="status-label">{resource === "guideDoc" ? "対象" : "ステータス"}</span>
+              <strong>{statusValues.status}</strong>
+            </div>
+          )}
           <div className="status-cell">
-            <span className="status-label">業務コード / URL</span>
-            <strong className="code-mono" style={{fontSize:13}}>{statusValues.code}</strong>
-          </div>
-          <div className="status-cell">
-            <span className="status-label">{resource === "guideDoc" ? "対象" : "ステータス"}</span>
-            <strong>{statusValues.status}</strong>
-          </div>
-          <div className="status-cell">
-            <span className="status-label">{resource === "guideDoc" ? "資料名" : resource === "tourOption" ? "TourOption名" : "表示タイトル"}</span>
+            <span className="status-label">{resource === "guideDoc" ? "資料名" : resource === "tourOption" ? "TourOption名" : resource === "cancelTemplate" ? "ポリシー名" : "表示タイトル"}</span>
             <strong>{statusValues.sub}</strong>
           </div>
           <div className="status-actions">
