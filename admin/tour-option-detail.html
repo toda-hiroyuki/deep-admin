@@ -27,6 +27,7 @@ window.SEED.tabs.tourOption = [
   ["schedule", "ツアー行程"],
   ["ops", "運営・確認"],
   ["channels", "チャネル別URL"],
+  ["expenses", "経費"],
 ];
     </script>
     <script type="text/babel" data-presets="react">
@@ -924,6 +925,18 @@ function CancelPolicySection({ t, update, readonly }) {
     "返金不可",
   ];
 
+  // カスタマイズモード状態
+  const [policyMode, setPolicyMode] = React.useState(t.cancelPolicyMode || "master");
+  const [customRules, setCustomRules] = React.useState(
+    t.cancelCustomRules || [{ id: "cr-1", days: 3, rate: 50 }, { id: "cr-2", days: 1, rate: 100 }]
+  );
+
+  const addRule = () => {
+    setCustomRules(prev => [...prev, { id: `cr-${Date.now()}`, days: "", rate: "" }]);
+  };
+  const removeRule = (id) => setCustomRules(prev => prev.filter(r => r.id !== id));
+  const updateRule = (id, patch) => setCustomRules(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
+
   return (
     <div style={{marginTop:16}}>
       <div className="field-grid">
@@ -942,15 +955,100 @@ function CancelPolicySection({ t, update, readonly }) {
       </div>
 
       {!isTravel ? (
-        <div className="field-grid" style={{marginTop:12}}>
-          <SelectField
-            label="キャンセルポリシー"
-            required
-            value={t.cancelPolicy || ""}
-            onChange={x => update({ cancelPolicy: x })}
-            options={normalPolicies}
-            readOnly={readonly}
-          />
+        <div style={{marginTop:12}}>
+          {/* マスター選択 / カスタマイズ 切り替え */}
+          <div className="field-grid" style={{marginBottom:12}}>
+            <div className="field">
+              <label className="field-label"><span className="req"/><span>設定方法</span></label>
+              <div style={{display:'flex',gap:20,paddingTop:6}}>
+                {[["master","マスターから選択"],["custom","カスタマイズ"]].map(([val, label]) => (
+                  <label key={val} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                    <input type="radio" name="policyMode" value={val} checked={policyMode===val} disabled={readonly}
+                      onChange={() => { setPolicyMode(val); update({ cancelPolicyMode: val }); }} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {policyMode === "master" ? (
+            <div className="field-grid">
+              <SelectField
+                label="キャンセルポリシー"
+                required
+                value={t.cancelPolicy || ""}
+                onChange={x => update({ cancelPolicy: x })}
+                options={normalPolicies}
+                readOnly={readonly}
+              />
+            </div>
+          ) : (
+            <div style={{marginTop:4}}>
+              <div className="field-grid" style={{marginBottom:8}}>
+                <div className="field field-wide">
+                  <label className="field-label"><span className="req"/><span>カスタムキャンセル条件</span></label>
+                  <p style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>体験日の何日前に何%のキャンセル料が発生するかを設定します。</p>
+                  <div style={{border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+                    <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+                      <thead>
+                        <tr style={{background:'var(--bg-sunken)'}}>
+                          <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>体験日の何日前</th>
+                          <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>キャンセル料率</th>
+                          {!readonly && <th style={{padding:'8px 12px',borderBottom:'1px solid var(--line)',width:60}}></th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {customRules.map((rule, idx) => (
+                          <tr key={rule.id} style={{borderBottom:'1px solid var(--line)'}}>
+                            <td style={{padding:'6px 12px'}}>
+                              {readonly ? (
+                                <span>{rule.days} 日前</span>
+                              ) : (
+                                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                                  <input type="number" min={0} value={rule.days}
+                                    onChange={e => updateRule(rule.id, {days: e.target.value})}
+                                    style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
+                                  />
+                                  <span style={{color:'var(--muted)'}}>日前</span>
+                                </div>
+                              )}
+                            </td>
+                            <td style={{padding:'6px 12px'}}>
+                              {readonly ? (
+                                <span>{rule.rate} %</span>
+                              ) : (
+                                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                                  <input type="number" min={0} max={100} value={rule.rate}
+                                    onChange={e => updateRule(rule.id, {rate: e.target.value})}
+                                    style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
+                                  />
+                                  <span style={{color:'var(--muted)'}}>%</span>
+                                </div>
+                              )}
+                            </td>
+                            {!readonly && (
+                              <td style={{padding:'6px 12px',textAlign:'center'}}>
+                                <button type="button" onClick={() => removeRule(rule.id)}
+                                  style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,lineHeight:1}}
+                                  title="削除">✕</button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                        {!customRules.length && (
+                          <tr><td colSpan={readonly?2:3} style={{padding:'16px 12px',textAlign:'center',color:'var(--muted)'}}>条件が登録されていません</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {!readonly && (
+                    <button type="button" onClick={addRule} className="btn sm" style={{marginTop:8}}>＋ 条件を追加</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div style={{marginTop:12}}>
@@ -1890,6 +1988,152 @@ function TourOptionEditor({ tab, mode, data, update, validation }) {
       </div>
     );
   }
+
+  if (tab === "expenses") {
+    const [expenseRows, setExpenseRows] = React.useState([
+      { id: "exp-1", name: "ガイド人件費", type: "人件費", unitPrice: 15000, unit: "1催行あたり", note: "" },
+      { id: "exp-2", name: "交通費", type: "交通費", unitPrice: 2000, unit: "1名あたり", note: "" },
+      { id: "exp-3", name: "施設入場料", type: "施設費", unitPrice: 500, unit: "1名あたり", note: "" },
+    ]);
+    const [editingId, setEditingId] = React.useState(null);
+
+    const addRow = () => {
+      const newRow = { id: `exp-${Date.now()}`, name: "", type: "人件費", unitPrice: 0, unit: "1催行あたり", note: "" };
+      setExpenseRows(prev => [...prev, newRow]);
+      setEditingId(newRow.id);
+    };
+    const removeRow = (id) => setExpenseRows(prev => prev.filter(r => r.id !== id));
+    const updateRow = (id, patch) => setExpenseRows(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
+
+    const fixedTotal = expenseRows.filter(r => r.unit === "1催行あたり").reduce((s, r) => s + Number(r.unitPrice||0), 0);
+    const varTotal = expenseRows.filter(r => r.unit === "1名あたり").reduce((s, r) => s + Number(r.unitPrice||0), 0);
+    const sampleN = 10;
+    const grandTotal = fixedTotal + varTotal * sampleN;
+
+    const typeOptions = ["人件費","交通費","施設費","材料費","食費","宿泊費","その他"];
+    const unitOptions = ["1催行あたり","1名あたり","1日あたり","固定"];
+
+    return (
+      <div className="form-section">
+        <SectionHead
+          eyebrow="STEP 9"
+          title="経費管理"
+          desc="このTourOptionにかかる経費を管理します。原価計算・採算管理にご活用ください。"
+        />
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'16px 0 8px'}}>
+          <strong style={{fontSize:14}}>経費一覧</strong>
+          {!readonly && (
+            <button type="button" onClick={addRow} className="btn primary sm">＋ 経費を追加</button>
+          )}
+        </div>
+        <div className="table-wrap">
+          <table className="data-table" style={{tableLayout:'fixed',width:'100%'}}>
+            <thead>
+              <tr>
+                <th style={{width:'22%'}}>経費名</th>
+                <th style={{width:'14%'}}>種別</th>
+                <th style={{width:'14%',textAlign:'right'}}>単価</th>
+                <th style={{width:'16%'}}>単位</th>
+                <th>備考</th>
+                {!readonly && <th style={{width:100}}></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {expenseRows.map(row => (
+                <tr key={row.id}>
+                  <td>
+                    {editingId === row.id && !readonly ? (
+                      <input value={row.name} onChange={e => updateRow(row.id, {name: e.target.value})}
+                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}} />
+                    ) : (
+                      <span style={{fontSize:13}}>{row.name || <span style={{color:'var(--muted)'}}>（未入力）</span>}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === row.id && !readonly ? (
+                      <select value={row.type} onChange={e => updateRow(row.id, {type: e.target.value})}
+                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'auto'}}>
+                        {typeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    ) : (
+                      <span className="badge outline" style={{fontSize:11}}>{row.type}</span>
+                    )}
+                  </td>
+                  <td style={{textAlign:'right'}}>
+                    {editingId === row.id && !readonly ? (
+                      <input type="number" min={0} value={row.unitPrice} onChange={e => updateRow(row.id, {unitPrice: e.target.value})}
+                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,textAlign:'right'}} />
+                    ) : (
+                      <strong style={{fontSize:13}}>¥{Number(row.unitPrice).toLocaleString()}</strong>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === row.id && !readonly ? (
+                      <select value={row.unit} onChange={e => updateRow(row.id, {unit: e.target.value})}
+                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'auto'}}>
+                        {unitOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    ) : (
+                      <span style={{fontSize:12,color:'var(--muted)'}}>{row.unit}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editingId === row.id && !readonly ? (
+                      <input value={row.note} onChange={e => updateRow(row.id, {note: e.target.value})}
+                        placeholder="備考"
+                        style={{width:'100%',padding:'4px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}} />
+                    ) : (
+                      <span style={{fontSize:12,color:'var(--muted)'}}>{row.note || "—"}</span>
+                    )}
+                  </td>
+                  {!readonly && (
+                    <td style={{textAlign:'right'}}>
+                      <div style={{display:'flex',gap:4,justifyContent:'flex-end'}}>
+                        {editingId === row.id ? (
+                          <button type="button" onClick={() => setEditingId(null)} className="btn sm teal">完了</button>
+                        ) : (
+                          <button type="button" onClick={() => setEditingId(row.id)} className="btn sm">編集</button>
+                        )}
+                        <button type="button" onClick={() => removeRow(row.id)} className="btn sm danger">削除</button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {!expenseRows.length && (
+                <tr><td colSpan={readonly?5:6} style={{textAlign:'center',color:'var(--muted)',padding:24}}>経費が登録されていません</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 合計サマリー */}
+        <div style={{marginTop:16,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+          <div style={{background:'var(--bg-sunken)',padding:'10px 16px',borderBottom:'1px solid var(--line)'}}>
+            <strong style={{fontSize:13}}>原価サマリー（目安）</strong>
+            <span style={{fontSize:11,color:'var(--muted)',marginLeft:8}}>※サンプル {sampleN}名催行時の試算</span>
+          </div>
+          <div style={{padding:'12px 16px',display:'flex',gap:32,flexWrap:'wrap'}}>
+            <div>
+              <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>固定費合計</div>
+              <strong style={{fontSize:18}}>¥{fixedTotal.toLocaleString()}</strong>
+              <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1催行あたり</span>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>変動費合計</div>
+              <strong style={{fontSize:18}}>¥{varTotal.toLocaleString()}</strong>
+              <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1名あたり</span>
+            </div>
+            <div style={{borderLeft:'2px solid var(--line)',paddingLeft:32}}>
+              <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>原価合計目安（{sampleN}名催行時）</div>
+              <strong style={{fontSize:20,color:'var(--coral)'}}>¥{grandTotal.toLocaleString()}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return null;
 }
 
