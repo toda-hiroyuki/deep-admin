@@ -419,4 +419,15 @@ capture/経費の関連図.png
    ・多言語タブはEnglish、日本語だけでよい
    ・キャンセルポリシーへのURLパスの欄はいらない
 
+## 追加改修025
+- tour-option-detail.html
+   ・09経費タブ
+   追加ボタンをリストの上にもってきてクリックでtour-option-cost-add.html（新規作ってください）に遷移、そこで登録処理するよう変更
+   編集ボタンクリックでtour-option-cost-edit.html（新規作ってください）に遷移、そこで編集処理するよう変更
+
+- cancel-policy-detail.html
+   ・01テンプレート一覧、テンプレート編集のタブ削除
+   ・多言語タブのデザインをproduct-detail.htmlのもととあわせてください
+   ・変更保存ボタンの左側、業務コード / URLとステータスを削除
+
 
