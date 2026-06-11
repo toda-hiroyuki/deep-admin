@@ -1947,7 +1947,7 @@ function renderTemplateBody(body) {
 function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTemplateId, selectTemplate, setTab }) {
   const readonly = mode === "review";
   const tmpl = templates.find(x => x.id === selectedTemplateId) ?? templates[0];
-  const bodyRef = useRef(null);
+  const [langTab, setLangTab] = useState("en");
 
   if (tab === "tmplList") {
     return (
@@ -1955,21 +1955,15 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
         <SectionHead
           eyebrow="STEP 1"
           title="キャンセルポリシー"
-          desc="OTA掲載やゲスト通知に使う定型文を管理します。本文に変数を埋め込むと、適用するTourOptionの設定値に置き換わります。"
+          desc="TourOptionに適用するキャンセルポリシーを管理します。"
           action={<button className="btn primary">＋ 新規作成</button>}
         />
-        <div className="badge-row">
-          <span className="badge teal">有効 {templates.filter(x => x.enabled).length}件</span>
-          <span className="badge outline">無効 {templates.filter(x => !x.enabled).length}件</span>
-        </div>
         <div className="table-wrap">
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
-                  <th>テンプレート名</th>
-                  <th style={{width:96}}>言語</th>
-                  <th style={{width:96}}>有効/無効</th>
+                  <th>ポリシー名</th>
                   <th style={{width:110}}>更新日</th>
                   <th className="actions" style={{width:64}}>操作</th>
                 </tr>
@@ -1977,16 +1971,7 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
               <tbody>
                 {templates.map(x => (
                   <tr key={x.id} className={selectedTemplateId === x.id ? "selected" : ""} onClick={() => { selectTemplate(x.id); setTab("tmplDetail"); }}>
-                    <td>
-                      <strong>{x.name}</strong>
-                      <div className="row-sub code-mono">{x.id}</div>
-                    </td>
-                    <td><span className={`badge ${x.lang === "日本語" ? "blue" : "outline"}`}>{x.lang}</span></td>
-                    <td>
-                      {x.enabled
-                        ? <span className="badge teal"><span className="dot"/>有効</span>
-                        : <span className="badge muted"><span className="dot"/>無効</span>}
-                    </td>
+                    <td><strong>{x.name}</strong></td>
                     <td className="muted tiny" style={{fontVariantNumeric:'tabular-nums'}}>{x.updatedAt || "—"}</td>
                     <td className="actions"><button className="btn sm">編集</button></td>
                   </tr>
@@ -1995,78 +1980,69 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
             </table>
           </div>
         </div>
-        <div className="empty-state">
-          <strong>変数について</strong>
-          <span>本文中の <code>{"{{ freeCancelDeadline }}"}</code> などの変数は、文言生成時に各TourOptionの設定値へ自動で置き換わります。</span>
-        </div>
       </div>
     );
   }
 
   // tmplDetail
-  const insertVar = (token) => {
-    if (readonly) return;
-    const ta = bodyRef.current;
-    const cur = tmpl.body || "";
-    let start = cur.length, end = cur.length;
-    if (ta) { start = ta.selectionStart ?? cur.length; end = ta.selectionEnd ?? cur.length; }
-    const next = cur.slice(0, start) + token + cur.slice(end);
-    updateTemplate(tmpl.id, { body: next });
-    requestAnimationFrame(() => {
-      if (ta) { ta.focus(); const pos = start + token.length; ta.setSelectionRange(pos, pos); }
-    });
-  };
-
   return (
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
-      <SectionHead eyebrow="STEP 2" title="テンプレート編集" desc="本文に変数を埋め込むと、適用するTourOptionの値に自動で置き換わります。" />
-      {!tmpl.enabled && (
-        <InfoNote amber icon={<Icon.alert />}>
-          <strong>このテンプレートは無効です。</strong> 文言生成時の選択肢には表示されません。
-        </InfoNote>
-      )}
-      <div className="field-grid">
-        <Field label="テンプレートID" value={tmpl.id} readOnly mono help="保存時に自動採番" />
-        <SelectField label="言語" value={tmpl.lang} onChange={x => updateTemplate(tmpl.id, { lang: x })} options={["日本語", "English"]} readOnly={readonly} />
-        <Field label="テンプレート名" required value={tmpl.name} onChange={x => updateTemplate(tmpl.id, { name: x })} wide readOnly={readonly} maxLen={60} />
+      <SectionHead eyebrow="STEP 2" title="キャンセルポリシー編集" desc="キャンセル可能日数とポリシー名を設定します。" />
 
-        <div className="field-wide">
-          <div className="field-label"><span>有効 / 無効</span></div>
-          <ToggleRow
-            checked={!!tmpl.enabled}
-            onChange={v => updateTemplate(tmpl.id, { enabled: v })}
-            title={tmpl.enabled ? "有効" : "無効"}
-            desc="無効にすると新規の文言生成では選択できなくなります"
-          />
-        </div>
-
-        <div className="field-wide">
-          <label className="field-label"><span className="req" /><span>テンプレート本文</span></label>
-          <textarea
-            ref={bodyRef}
-            rows={5}
-            value={tmpl.body || ""}
-            onChange={e => updateTemplate(tmpl.id, { body: e.target.value })}
-            readOnly={readonly}
-            placeholder="無料キャンセルは {{ freeCancelDeadline }} まで可能です。"
-          />
-          <div className="var-chip-row">
-            <span className="var-chip-label">利用可能変数</span>
-            {TEMPLATE_VARS.map(v => (
-              <button key={v.token} type="button" className="var-chip" onClick={() => insertVar(v.token)} disabled={readonly} title={`${v.label} を挿入`}>
-                <code>{v.token}</code>
-              </button>
-            ))}
-            <span className="var-chip-hint">クリックでカーソル位置に挿入</span>
+      <div style={{background:'var(--surface)',border:'1px solid var(--line)',borderRadius:8,padding:'16px 20px',marginBottom:16}}>
+        <div style={{fontWeight:600,fontSize:13,marginBottom:12,color:'var(--muted)',letterSpacing:'.05em',textTransform:'uppercase'}}>共通項目</div>
+        <div className="field-grid">
+          <div className="field">
+            <label className="field-label">
+              <span className="req" />
+              <span>キャンセル可能日数</span>
+            </label>
+            <div className="input-affix" style={{maxWidth:160}}>
+              <input
+                type="number" min="0"
+                value={tmpl.cancelDays ?? 0}
+                onChange={e => updateTemplate(tmpl.id, { cancelDays: Math.max(0, Number(e.target.value) || 0) })}
+                readOnly={readonly}
+              />
+              <div className="affix right">日</div>
+            </div>
+            <div className="field-help"><Icon.info /><span>キャンセル不可の場合は『0』で登録してください。半角数字で登録してください。</span></div>
           </div>
         </div>
+      </div>
 
-        <div className="field-wide">
-          <div className="field-label"><span>プレビュー</span><span className="opt">サンプル値で表示</span></div>
-          <div className="tmpl-preview">{renderTemplateBody(tmpl.body) || "（本文未入力）"}</div>
+      <div className="multilang-section" style={{marginTop:8}}>
+        <div className="multilang-tab-bar" style={{borderBottom:'2px solid var(--line)',marginBottom:0}}>
+          <button type="button"
+            className={`multilang-tab-btn${langTab === "en" ? " active" : ""}`}
+            onClick={() => setLangTab("en")}>English</button>
+          <button type="button"
+            className={`multilang-tab-btn${langTab === "ja" ? " active" : ""}`}
+            onClick={() => setLangTab("ja")}>日本語</button>
         </div>
-
-        <Field label="備考" value={tmpl.note} onChange={x => updateTemplate(tmpl.id, { note: x })} wide readOnly={readonly} />
+        <div style={{border:'1px solid var(--line)',borderTop:'none',borderRadius:'0 0 8px 8px',padding:'16px'}}>
+          {langTab === "en" ? (
+            <Field
+              label="キャンセル名"
+              required
+              value={tmpl.nameEn || ""}
+              onChange={x => updateTemplate(tmpl.id, { nameEn: x })}
+              readOnly={readonly}
+              placeholder="e.g. Non-refundable"
+              wide
+            />
+          ) : (
+            <Field
+              label="キャンセル名"
+              required
+              value={tmpl.name || ""}
+              onChange={x => updateTemplate(tmpl.id, { name: x })}
+              readOnly={readonly}
+              placeholder="例：全額返金不可"
+              wide
+            />
+          )}
+        </div>
       </div>
     </div>
   );
