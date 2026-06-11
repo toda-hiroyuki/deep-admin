@@ -1644,8 +1644,17 @@ function ProductPageEditor({ tab, mode, page, updatePage, links, updateLinks, se
       <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
         <SectionHead eyebrow="STEP 1" title="商品ページ基本情報" desc="商品ページ全体の表示・検索・公開状態を管理します。" />
         <div className="field-grid">
-          <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
-          <SelectField label="オプション表示方式" value={page.optionLayout} onChange={x => updatePage({ optionLayout: x })} options={["標準リスト型", "カード型", "コンパクト型"]} readOnly={readonly} />
+          <div style={{display:'flex',gap:12,alignItems:'flex-end',gridColumn:'1/-1',flexWrap:'wrap'}}>
+            <div style={{flex:'0 0 auto',minWidth:160}}>
+              <Field label="商品ページID" value={mode === "create" ? "PG-自動採番" : page.id} readOnly mono />
+            </div>
+            <div style={{flex:'0 0 auto',minWidth:160}}>
+              <Field label="商品コード" value={page.productCode||""} onChange={x => updatePage({ productCode: x })} readOnly={readonly} mono />
+            </div>
+            <div style={{flex:'1 1 180px',minWidth:180}}>
+              <SelectField label="オプション表示方式" value={page.optionLayout} onChange={x => updatePage({ optionLayout: x })} options={["標準リスト型", "カード型", "コンパクト型"]} readOnly={readonly} />
+            </div>
+          </div>
           <Field label="商品ページ名（内部）" required value={page.name} onChange={x => updatePage({ name: x })} wide readOnly={readonly} />
           <div style={{gridColumn:'1/-1',border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px'}}>
             <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)',marginBottom:16}}>
