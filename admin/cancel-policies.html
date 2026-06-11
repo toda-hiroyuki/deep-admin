@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>キャンセルポリシー文言 一覧 | deep_Admin</title>
+    <title>キャンセルポリシー 一覧 | deep_Admin</title>
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css">
@@ -921,7 +921,7 @@ function CancelConditionSection({ t, update, readonly }) {
         <div className="field-wide">
           <label className="field-label">
             {!readonly && <span className="req" />}
-            <span>キャンセルポリシー文言テンプレート</span>
+            <span>キャンセルポリシー</span>
           </label>
           {readonly ? (
             <div className="readonly-text">{selTemplate ? selTemplate.name : "（未選択）"}</div>
@@ -1954,7 +1954,7 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
       <div className="form-section">
         <SectionHead
           eyebrow="STEP 1"
-          title="キャンセルポリシー文言テンプレート"
+          title="キャンセルポリシー"
           desc="OTA掲載やゲスト通知に使う定型文を管理します。本文に変数を埋め込むと、適用するTourOptionの設定値に置き換わります。"
           action={<button className="btn primary">＋ 新規作成</button>}
         />
@@ -2693,87 +2693,34 @@ function GuideDocList({ rows, onOpen, onCreate }) {
 // ── Cancel Policy Template List ──────────────────────────────────
 
 function CancelTemplateList({ rows, onOpen, onCreate }) {
-  const [search, setSearch] = useLState("");
-  const [lang, setLang] = useLState("すべて");
-  const [enabledOnly, setEnabledOnly] = useLState(false);
-
-  const filtered = useLMemo(() => {
-    const s = search.trim().toLowerCase();
-    return rows.filter(r => {
-      if (s && !`${r.name} ${r.body}`.toLowerCase().includes(s)) return false;
-      if (lang !== "すべて" && r.lang !== lang) return false;
-      if (enabledOnly && !r.enabled) return false;
-      return true;
-    });
-  }, [rows, search, lang, enabledOnly]);
-
-  const hasFilter = !!search || lang !== "すべて" || enabledOnly;
-  const clearAll = () => { setSearch(""); setLang("すべて"); setEnabledOnly(false); };
-
   return (
     <div className="list-view">
       <ListHeader
-        title="キャンセルポリシー文言テンプレート 一覧"
-        desc="OTA掲載やゲスト通知に使う定型文を管理します。変数を埋め込むとTourOptionの設定値に置き換わります。"
+        title="キャンセルポリシー 一覧"
+        desc="TourOptionに適用するキャンセルポリシーを管理します。"
         onCreate={onCreate}
         createLabel="新規作成"
-        counter={<ResultCounter total={rows.length} shown={filtered.length} hasFilter={hasFilter} />}
-        clearButton={<ClearFiltersButton show={hasFilter} onClick={clearAll} />}
+        counter={<ResultCounter total={rows.length} shown={rows.length} hasFilter={false} />}
       />
-
-      <div className="list-scope-row">
-        <span className="lf-scope-label">言語</span>
-        <TabFilter
-          options={["すべて", "日本語", "English"]}
-          value={lang}
-          onChange={setLang}
-        />
-      </div>
-
-      <div className="list-filters">
-        <SearchBar
-          value={search}
-          onChange={setSearch}
-          placeholder="テンプレート名・本文で検索..."
-        />
-        <div className="lf-controls">
-          <ToggleFilter
-            label="有効のみ"
-            value={enabledOnly}
-            onChange={setEnabledOnly}
-          />
-        </div>
-      </div>
 
       <div className="list-table-wrap">
         <div className="table-scroll">
           <table className="list-table">
             <thead>
               <tr>
-                <th>テンプレート名</th>
-                <th style={{width:110}}>言語</th>
-                <th style={{width:110}}>有効/無効</th>
+                <th>ポリシー名</th>
                 <th style={{width:130}}>更新日</th>
                 <th className="actions" style={{width:90}}>アクション</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
-                <tr><td colSpan="5" className="list-empty">該当するテンプレートがありません</td></tr>
+              {rows.length === 0 && (
+                <tr><td colSpan="3" className="list-empty">ポリシーがありません</td></tr>
               )}
-              {filtered.map(r => (
+              {rows.map(r => (
                 <tr key={r.id} onClick={() => onOpen(r)} className="list-row">
                   <td>
                     <strong>{r.name}</strong>
-                    <div className="row-sub code-mono">{r.id}</div>
-                  </td>
-                  <td>
-                    <span className={`badge ${r.lang === "日本語" ? "blue" : "outline"}`}>{r.lang}</span>
-                  </td>
-                  <td>
-                    {r.enabled
-                      ? <span className="badge teal"><span className="dot"/>有効</span>
-                      : <span className="badge muted"><span className="dot"/>無効</span>}
                   </td>
                   <td className="muted" style={{fontVariantNumeric:'tabular-nums'}}>{r.updatedAt || "—"}</td>
                   <td className="actions" onClick={e => e.stopPropagation()}>
@@ -3279,7 +3226,7 @@ function App() {
   }, [resource, mode, tourOption, productPage, guideDocs, selectedDoc, cancelTemplates, selectedTemplate]);
 
   // Header label
-  const headerLabel = resource === "tourOption" ? "TourOption" : resource === "productPage" ? "商品ページ" : resource === "cancelTemplate" ? "キャンセルポリシー文言" : "ガイド向け資料";
+  const headerLabel = resource === "tourOption" ? "TourOption" : resource === "productPage" ? "商品ページ" : resource === "cancelTemplate" ? "キャンセルポリシー" : "ガイド向け資料";
 
   // For productPage, preview pane is only shown on the 表示確認 tab
   const previewHidden = (resource === "productPage" && tab !== "pagePreview") || resource === "cancelTemplate";
@@ -3483,7 +3430,7 @@ function Sidebar({ resource, counts }) {
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
-    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー", count: counts.ct, hint: "キャンセル文言" },
   ];
   return (
     <aside className="side-nav">

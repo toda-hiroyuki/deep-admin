@@ -921,7 +921,7 @@ function CancelConditionSection({ t, update, readonly }) {
         <div className="field-wide">
           <label className="field-label">
             {!readonly && <span className="req" />}
-            <span>キャンセルポリシー文言テンプレート</span>
+            <span>キャンセルポリシー</span>
           </label>
           {readonly ? (
             <div className="readonly-text">{selTemplate ? selTemplate.name : "（未選択）"}</div>
@@ -1954,7 +1954,7 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
       <div className="form-section">
         <SectionHead
           eyebrow="STEP 1"
-          title="キャンセルポリシー文言テンプレート"
+          title="キャンセルポリシー"
           desc="OTA掲載やゲスト通知に使う定型文を管理します。本文に変数を埋め込むと、適用するTourOptionの設定値に置き換わります。"
           action={<button className="btn primary">＋ 新規作成</button>}
         />
@@ -2712,7 +2712,7 @@ function CancelTemplateList({ rows, onOpen, onCreate }) {
   return (
     <div className="list-view">
       <ListHeader
-        title="キャンセルポリシー文言テンプレート 一覧"
+        title="キャンセルポリシー 一覧"
         desc="OTA掲載やゲスト通知に使う定型文を管理します。変数を埋め込むとTourOptionの設定値に置き換わります。"
         onCreate={onCreate}
         createLabel="新規作成"
@@ -3278,7 +3278,7 @@ function App() {
   }, [resource, mode, tourOption, productPage, guideDocs, selectedDoc, cancelTemplates, selectedTemplate]);
 
   // Header label
-  const headerLabel = resource === "tourOption" ? "TourOption" : resource === "productPage" ? "商品ページ" : resource === "cancelTemplate" ? "キャンセルポリシー文言" : "ガイド向け資料";
+  const headerLabel = resource === "tourOption" ? "TourOption" : resource === "productPage" ? "商品ページ" : resource === "cancelTemplate" ? "キャンセルポリシー" : "ガイド向け資料";
 
   // For productPage, preview pane is only shown on the 表示確認 tab
   const previewHidden = (resource === "productPage" && tab !== "pagePreview") || resource === "cancelTemplate";
@@ -3482,7 +3482,7 @@ function Sidebar({ resource, counts }) {
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",          count: counts.to, hint: "ツアーの実体" },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",             count: counts.pg, hint: "顧客表示" },
     { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",             count: counts.gd, hint: "運営注意・行程" },
-    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー", count: counts.ct, hint: "キャンセル文言" },
   ];
   return (
     <aside className="side-nav">
