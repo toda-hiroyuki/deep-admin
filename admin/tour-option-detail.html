@@ -928,11 +928,11 @@ function CancelPolicySection({ t, update, readonly }) {
   // カスタマイズモード状態
   const [policyMode, setPolicyMode] = React.useState(t.cancelPolicyMode || "master");
   const [customRules, setCustomRules] = React.useState(
-    t.cancelCustomRules || [{ id: "cr-1", days: 3, rate: 50 }, { id: "cr-2", days: 1, rate: 100 }]
+    t.cancelCustomRules || [{ id: "cr-1", days: 3, unit: "日", rate: 50 }, { id: "cr-2", days: 1, unit: "日", rate: 100 }]
   );
 
   const addRule = () => {
-    setCustomRules(prev => [...prev, { id: `cr-${Date.now()}`, days: "", rate: "" }]);
+    setCustomRules(prev => [...prev, { id: `cr-${Date.now()}`, days: "", unit: "日", rate: "" }]);
   };
   const removeRule = (id) => setCustomRules(prev => prev.filter(r => r.id !== id));
   const updateRule = (id, patch) => setCustomRules(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
@@ -993,7 +993,7 @@ function CancelPolicySection({ t, update, readonly }) {
                     <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
                       <thead>
                         <tr style={{background:'var(--bg-sunken)'}}>
-                          <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>体験日の何日前</th>
+                          <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>体験日の何時間/日前</th>
                           <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>キャンセル料率</th>
                           {!readonly && <th style={{padding:'8px 12px',borderBottom:'1px solid var(--line)',width:60}}></th>}
                         </tr>
@@ -1003,14 +1003,20 @@ function CancelPolicySection({ t, update, readonly }) {
                           <tr key={rule.id} style={{borderBottom:'1px solid var(--line)'}}>
                             <td style={{padding:'6px 12px'}}>
                               {readonly ? (
-                                <span>{rule.days} 日前</span>
+                                <span>{rule.days} {rule.unit||"日"}前</span>
                               ) : (
                                 <div style={{display:'flex',alignItems:'center',gap:6}}>
                                   <input type="number" min={0} value={rule.days}
                                     onChange={e => updateRule(rule.id, {days: e.target.value})}
                                     style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
                                   />
-                                  <span style={{color:'var(--muted)'}}>日前</span>
+                                  <div className="select-wrap" style={{minWidth:80}}>
+                                    <select value={rule.unit||"日"} onChange={e => updateRule(rule.id, {unit: e.target.value})}
+                                      style={{fontSize:13,padding:'5px 24px 5px 8px'}}>
+                                      <option value="日">日前</option>
+                                      <option value="時間">時間前</option>
+                                    </select>
+                                  </div>
                                 </div>
                               )}
                             </td>
