@@ -1932,6 +1932,13 @@ function ExpensesTab({ t, update, readonly }) {
     <div className="form-section">
       <SectionHead eyebrow="STEP 9" title="経費管理" desc="このTourOptionにかかる経費を管理します。費用区分・費用タイプを設定して原価計算・採算管理にご活用ください。" />
 
+      {/* 追加ボタン */}
+      {!readonly && (
+        <div style={{marginBottom:12}}>
+          <a href="tour-option-cost-add.html" className="btn primary sm">＋ 経費を追加</a>
+        </div>
+      )}
+
       {/* 費用区分の凡例 */}
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
         {categoryLegend.map(c => (
@@ -1981,7 +1988,7 @@ function ExpensesTab({ t, update, readonly }) {
               )}
             </div>
             {!readonly && (
-              <button type="button" onClick={() => setEditingId(row.id)} className="btn sm" style={{flexShrink:0}}>編集</button>
+              <a href="tour-option-cost-edit.html" className="btn sm" style={{flexShrink:0}}>編集</a>
             )}
           </div>
         )
@@ -1990,10 +1997,6 @@ function ExpensesTab({ t, update, readonly }) {
         <div style={{textAlign:'center',color:'var(--muted)',padding:'24px 0',border:'1px dashed var(--line)',borderRadius:'var(--radius)'}}>
           経費が登録されていません
         </div>
-      )}
-
-      {!readonly && (
-        <button type="button" onClick={addRow} className="btn primary sm" style={{marginTop:8}}>＋ 経費を追加</button>
       )}
 
       {/* 原価サマリー */}

@@ -248,8 +248,7 @@ window.SEED = {
       ["docLinks", "TourOption割り当て"],
     ],
     cancelTemplate: [
-      ["tmplList", "テンプレート一覧"],
-      ["tmplDetail", "テンプレート編集"],
+      ["tmplDetail", "ポリシー編集"],
     ],
   },
 
