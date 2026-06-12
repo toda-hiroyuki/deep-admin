@@ -115,6 +115,52 @@ function SelectField({ label, value, onChange, options, readOnly, required, help
   );
 }
 
+// ── CooldownField ────────────────────────────────────────────────────────────
+function CooldownField({ value, onChange }) {
+  const totalMins = value || 0;
+  const [days,  setDays]  = React.useState(Math.floor(totalMins / 1440));
+  const [hours, setHours] = React.useState(Math.floor((totalMins % 1440) / 60));
+  const [mins,  setMins]  = React.useState(totalMins % 60);
+
+  const update = (d, h, m) => {
+    setDays(d); setHours(h); setMins(m);
+    onChange?.(d * 1440 + h * 60 + m);
+  };
+
+  const summary = `${days > 0 ? days + "日" : ""}${hours > 0 ? hours + "時間" : ""}${mins > 0 ? mins + "分" : ""}`;
+
+  return (
+    <div className="field-wide" style={{ marginTop: 8 }}>
+      <label className="field-label"><span>再利用可能までの時間</span></label>
+      <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <input type="number" min={0} max={90} value={days}
+            onChange={e => update(Math.max(0, Math.min(90, Number(e.target.value))), hours, mins)}
+            style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
+          <span style={{ fontSize:14, fontWeight:600 }}>日</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <input type="number" min={0} max={23} value={hours}
+            onChange={e => update(days, Math.max(0, Math.min(23, Number(e.target.value))), mins)}
+            style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
+          <span style={{ fontSize:14, fontWeight:600 }}>時間</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <input type="number" min={0} max={59} value={mins}
+            onChange={e => update(days, hours, Math.max(0, Math.min(59, Number(e.target.value))))}
+            style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
+          <span style={{ fontSize:14, fontWeight:600 }}>分</span>
+        </div>
+        {summary
+          ? <span style={{ fontSize:13, color:"var(--muted)" }}>（<strong style={{ color:"var(--fg)" }}>{summary}後に再利用可能</strong>）</span>
+          : <span style={{ fontSize:12, color:"var(--muted)" }}>※ 即時再利用可能</span>
+        }
+      </div>
+      <div className="field-help">使用後に再利用可能になるまでの待機時間（例：ウェットスーツの乾燥に1時間→0日1時間0分）</div>
+    </div>
+  );
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const seed = (SEED.resourceMaster || []).find(r => r.id === targetId);
@@ -201,13 +247,11 @@ function App() {
 
                 <div>
                   <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>運用設定</h2>
-                  <p style={{fontSize:12,color:'var(--muted)'}}>使用後に再利用可能になるまでの時間を設定します。0の場合は即時再利用可能です。</p>
+                  <p style={{fontSize:12,color:'var(--muted)'}}>使用後に再利用可能になるまでの時間を設定します。すべて0の場合は即時再利用可能です。</p>
                 </div>
 
                 <div className="field-grid">
-                  <Field label="再利用可能までの時間（分）" type="number" value={String(form.cooldown)}
-                    onChange={v => update({ cooldown: Math.max(0, Number(v)) })}
-                    help="例：ウェットスーツは乾燥に60分必要 → 60と入力" />
+                  <CooldownField value={form.cooldown} onChange={v => update({ cooldown: v })} />
                   <Field label="メモ" value={form.note}
                     onChange={v => update({ note: v })}
                     help="サイズ・仕様など運営メモ（例：7人乗り、S/M/L各4着）" wide />
