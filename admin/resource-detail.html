@@ -169,7 +169,6 @@ function App() {
 
   const [form, setForm] = useState(seed ? { ...seed } : {
     id: "",
-    key: "",
     label: "",
     unit: "台",
     totalQty: 1,
@@ -204,10 +203,6 @@ function App() {
             <span className="status-label">リソースID</span>
             <span className="status-value mono">{isCreate ? "自動採番" : form.id}</span>
           </div>
-          <div className="status-cell">
-            <span className="status-label">キー</span>
-            <span className="status-value mono">{form.key || "—"}</span>
-          </div>
           <div className="status-cell fill">
             <span className="status-label">リソース名</span>
             <strong>{form.label || "—"}</strong>
@@ -234,15 +229,12 @@ function App() {
                   <Field label="リソース名" required value={form.label}
                     onChange={v => update({ label: v })}
                     help="管理画面内での表示名（例：自転車、車両（バン））" />
-                  <Field label="キー（英数字）" required value={form.key}
-                    onChange={v => update({ key: v })}
-                    mono help="システム内部で使用する識別キー（例：bicycle）" />
-                  <SelectField label="単位" required value={form.unit}
-                    onChange={v => update({ unit: v })}
-                    options={UNIT_OPTIONS} />
                   <Field label="保有数" required type="number" value={String(form.totalQty)}
                     onChange={v => update({ totalQty: Math.max(1, Number(v)) })}
                     help="このリソースの保有合計数（催行可能な上限の根拠）" />
+                  <SelectField label="単位" required value={form.unit}
+                    onChange={v => update({ unit: v })}
+                    options={UNIT_OPTIONS} />
                 </div>
 
                 <div>
