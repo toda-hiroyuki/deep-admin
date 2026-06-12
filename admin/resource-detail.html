@@ -71,12 +71,12 @@ function Sidebar() {
 }
 
 // ── Field helpers ────────────────────────────────────────────────────────────
-function Field({ label, value, onChange, readOnly, required, help, mono, type = "text", wide }) {
+function Field({ label, value, onChange, readOnly, required, help, mono, type = "text", wide, style }) {
   return (
-    <div className={wide ? "field-wide" : "field"}>
+    <div className={wide ? "field-wide" : "field"} style={style}>
       <label className="field-label">
         <span>{label}</span>
-        {required && <span className="field-required">必須</span>}
+        {required && <span className="req" aria-label="required" />}
       </label>
       <input
         type={type}
@@ -91,12 +91,12 @@ function Field({ label, value, onChange, readOnly, required, help, mono, type = 
   );
 }
 
-function SelectField({ label, value, onChange, options, readOnly, required, help, wide }) {
+function SelectField({ label, value, onChange, options, readOnly, required, help, wide, style }) {
   return (
-    <div className={wide ? "field-wide" : "field"}>
+    <div className={wide ? "field-wide" : "field"} style={style}>
       <label className="field-label">
         <span>{label}</span>
-        {required && <span className="field-required">必須</span>}
+        {required && <span className="req" aria-label="required" />}
       </label>
       <div style={{position:'relative',display:'inline-flex',width:'100%'}}>
         <select
@@ -225,13 +225,13 @@ function App() {
                   <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
                 </div>
 
-                <div className="field-grid">
+                <div style={{display:'grid', gridTemplateColumns:'50% 25% 25%', gap:'var(--sp-3)'}}>
                   <Field label="リソース名" required value={form.label}
                     onChange={v => update({ label: v })}
                     help="管理画面内での表示名（例：自転車、車両（バン））" />
                   <Field label="保有数" required type="number" value={String(form.totalQty)}
                     onChange={v => update({ totalQty: Math.max(1, Number(v)) })}
-                    help="このリソースの保有合計数（催行可能な上限の根拠）" />
+                    help="催行可能な上限の根拠" />
                   <SelectField label="単位" required value={form.unit}
                     onChange={v => update({ unit: v })}
                     options={UNIT_OPTIONS} />
