@@ -76,61 +76,61 @@ function App() {
   return (
     <div className="app-shell">
       <Sidebar />
-      <div className="main-col">
-        <div className="topbar">
-          <div className="topbar-left">
-            <nav className="breadcrumb">
-              <a href="index.html">deep_Admin</a>
-              <span> / </span>
-              <span>リソース管理</span>
-            </nav>
-          </div>
-          <div className="topbar-right">
-            <a href="resource-detail.html?mode=create" className="btn primary">＋ リソースを追加</a>
+      <div className="list-shell">
+        <div className="topbar list-topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <span className="current">リソース管理</span>
+            </div>
           </div>
         </div>
 
-        <div className="list-page">
+        <div className="list-view">
           <div className="list-header">
             <div>
-              <h1 className="list-title">リソース管理</h1>
+              <h1>リソース管理</h1>
               <p className="list-desc">催行に必要な機材・車両などの保有リソースを管理します。TourOptionの催行リソース設定から参照されます。</p>
+            </div>
+            <div style={{alignSelf:'flex-start'}}>
+              <a href="resource-detail.html?mode=create" className="btn primary">＋ リソースを追加</a>
             </div>
           </div>
 
-          <div className="table-wrap">
-            <table className="data-table">
+          <div className="list-table-wrap">
+            <table className="list-table">
               <thead>
                 <tr>
-                  <th style={{width:180}}>リソース名</th>
+                  <th>リソース名</th>
                   <th style={{width:60,textAlign:'center'}}>単位</th>
-                  <th style={{width:80,textAlign:'center'}}>保有数</th>
-                  <th style={{width:120,textAlign:'center'}}>再利用可能までの時間</th>
+                  <th style={{width:100,textAlign:'center'}}>保有数</th>
+                  <th style={{width:140,textAlign:'center'}}>再利用可能までの時間</th>
                   <th>メモ</th>
-                  <th style={{width:80}}></th>
+                  <th className="actions" style={{width:80}}></th>
                 </tr>
               </thead>
               <tbody>
                 {resources.map(r => (
-                  <tr key={r.id}>
+                  <tr key={r.id} className="list-row" onClick={() => { window.location.href = `resource-detail.html?id=${r.id}`; }}>
                     <td>
-                      <strong style={{fontSize:13}}>{r.label}</strong>
-                      <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{r.key}</div>
+                      <strong>{r.label}</strong>
+                      <div className="row-sub">{r.key}</div>
                     </td>
-                    <td style={{textAlign:'center',fontSize:13}}>{r.unit}</td>
+                    <td style={{textAlign:'center'}}>{r.unit}</td>
                     <td style={{textAlign:'center'}}>
                       <span style={{fontWeight:700,fontSize:15}}>{r.totalQty}</span>
                       <span style={{fontSize:11,color:'var(--muted)',marginLeft:2}}>{r.unit}</span>
                     </td>
-                    <td style={{textAlign:'center',fontSize:13}}>
+                    <td style={{textAlign:'center'}}>
                       {r.cooldown > 0
                         ? <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#fef3c7',color:'#92400e'}}>{r.cooldown}分</span>
                         : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
                       }
                     </td>
-                    <td style={{fontSize:12,color:'var(--muted)'}}>{r.note || '—'}</td>
-                    <td style={{textAlign:'right'}}>
-                      <a href={`resource-detail.html?id=${r.id}`} className="btn sm">編集</a>
+                    <td style={{color:'var(--muted)'}}>{r.note || '—'}</td>
+                    <td className="actions">
+                      <a href={`resource-detail.html?id=${r.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
                     </td>
                   </tr>
                 ))}
