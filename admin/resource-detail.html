@@ -225,7 +225,7 @@ function App() {
                   <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
                 </div>
 
-                <div style={{display:'grid', gridTemplateColumns:'50% 25% 25%', gap:'var(--sp-3)'}}>
+                <div style={{display:'grid', gridTemplateColumns:'2fr 1fr 1fr', gap:'var(--sp-3)', alignItems:'start'}}>
                   <Field label="リソース名" required value={form.label}
                     onChange={v => update({ label: v })}
                     help="管理画面内での表示名（例：自転車、車両（バン））" />
