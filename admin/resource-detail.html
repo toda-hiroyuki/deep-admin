@@ -150,12 +150,6 @@ function App() {
               <span className="current">{isCreate ? "新規追加" : form.label}</span>
             </div>
           </div>
-          <div className="topbar-right">
-            <a href="resources.html" className="btn">キャンセル</a>
-            <button className="btn primary" onClick={() => { window.location.href = 'resources.html'; }}>
-              {isCreate ? "保存" : "更新保存"}
-            </button>
-          </div>
         </div>
 
         {/* Status strip */}
@@ -171,6 +165,12 @@ function App() {
           <div className="status-cell fill">
             <span className="status-label">リソース名</span>
             <strong>{form.label || "—"}</strong>
+          </div>
+          <div className="status-actions">
+            <a href="resources.html" className="btn">キャンセル</a>
+            <button className="btn primary" onClick={() => { window.location.href = 'resources.html'; }}>
+              {isCreate ? "保存" : "更新保存"}
+            </button>
           </div>
         </div>
 

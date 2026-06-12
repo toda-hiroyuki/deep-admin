@@ -76,6 +76,7 @@ function App() {
   return (
     <div className="app-shell">
       <Sidebar />
+      <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:14,minWidth:0,overflowY:'auto'}}>
       <div className="list-shell">
         <div className="topbar list-topbar">
           <div>
@@ -143,6 +144,7 @@ function App() {
             </table>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
