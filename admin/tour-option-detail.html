@@ -886,10 +886,7 @@ function CancelPolicyField({ label, value, onChange, readOnly, trail = "前ま�
 
 window.UIBlocks2 = { DurationField, CancelPolicyField };
 
-// ──────────────────────────────────────────────────────────────────────────────
-// 予約期限 UI候補モック（確認後に最終案だけ残す）
-// ──────────────────────────────────────────────────────────────────────────────
-function CutoffUICandidates() {
+function CutoffField({ readonly }) {
   const [days,  setDays]  = React.useState(1);
   const [hours, setHours] = React.useState(0);
   const [mins,  setMins]  = React.useState(0);
@@ -897,27 +894,27 @@ function CutoffUICandidates() {
   const summary = `${days > 0 ? days + "日" : ""}${hours > 0 ? hours + "時間" : ""}${mins > 0 ? mins + "分" : ""}`;
 
   return (
-    <div style={{ marginTop: 24, marginBottom: 8 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
-        <span style={{ fontSize:11, fontWeight:700, letterSpacing:1, color:"var(--muted)", textTransform:"uppercase" }}>🔧 予約期限 UI候補</span>
-        <span style={{ fontSize:11, color:"var(--muted)" }}>（確認用モック。採用後に現行フィールドと入れ替えます）</span>
-      </div>
+    <div className="field-wide" style={{ marginTop: 8 }}>
+      <label className="field-label"><span>予約期限</span></label>
       <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <input type="number" min={0} max={90} value={days}
             onChange={e => setDays(Math.max(0, Math.min(90, Number(e.target.value))))}
+            readOnly={readonly}
             style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
           <span style={{ fontSize:14, fontWeight:600 }}>日</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <input type="number" min={0} max={23} value={hours}
             onChange={e => setHours(Math.max(0, Math.min(23, Number(e.target.value))))}
+            readOnly={readonly}
             style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
           <span style={{ fontSize:14, fontWeight:600 }}>時間</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <input type="number" min={0} max={59} value={mins}
             onChange={e => setMins(Math.max(0, Math.min(59, Number(e.target.value))))}
+            readOnly={readonly}
             style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
           <span style={{ fontSize:14, fontWeight:600 }}>分</span>
         </div>
@@ -1643,14 +1640,7 @@ function SalesTab({ t, update, mode, readonly }) {
   return (
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
       <SectionHead eyebrow="STEP 3" title="販売条件" desc="予約期限、料金区分、キャンセル条件をまとめて設定します。" />
-      <div className="field-grid">
-        <CancelPolicyField label="予約期限（現行）" value={t.cutoff} onChange={x => update({ cutoff: x })} readOnly={readonly} trail="前まで予約可能" />
-      </div>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          ▼ 予約期限 UI候補（確認用モック・後で削除）
-          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <CutoffUICandidates />
+      <CutoffField readonly={readonly} />
 
       {/* 料金区分テーブル */}
       <section style={{marginTop:24}}>
