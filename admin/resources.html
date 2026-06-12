@@ -104,8 +104,8 @@ function App() {
               <thead>
                 <tr>
                   <th>リソース名</th>
-                  <th style={{width:60,textAlign:'center'}}>単位</th>
                   <th style={{width:100,textAlign:'center'}}>保有数</th>
+                  <th style={{width:60,textAlign:'center'}}>単位</th>
                   <th style={{width:140,textAlign:'center'}}>再利用可能までの時間</th>
                   <th>メモ</th>
                   <th className="actions" style={{width:80}}></th>
@@ -116,13 +116,11 @@ function App() {
                   <tr key={r.id} className="list-row" onClick={() => { window.location.href = `resource-detail.html?id=${r.id}`; }}>
                     <td>
                       <strong>{r.label}</strong>
-                      <div className="row-sub">{r.key}</div>
                     </td>
-                    <td style={{textAlign:'center'}}>{r.unit}</td>
                     <td style={{textAlign:'center'}}>
                       <span style={{fontWeight:700,fontSize:15}}>{r.totalQty}</span>
-                      <span style={{fontSize:11,color:'var(--muted)',marginLeft:2}}>{r.unit}</span>
                     </td>
+                    <td style={{textAlign:'center'}}>{r.unit}</td>
                     <td style={{textAlign:'center'}}>
                       {r.cooldown > 0
                         ? <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#fef3c7',color:'#92400e'}}>{r.cooldown}分</span>
