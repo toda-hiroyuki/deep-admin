@@ -1335,10 +1335,9 @@ function AvailabilityTab({ t, update, readonly }) {
   });
   // 催行リソース
   const [resources, setResources] = useLState([
-    { id: 1, key: "guide",   qty: 1 },
     { id: 2, key: "bicycle", qty: 8 },
   ]);
-  const [newResKey, setNewResKey] = useLState("guide");
+  const [newResKey, setNewResKey] = useLState("driver");
   const [newResQty, setNewResQty] = useLState("1");
   const addResource = () => {
     if (!newResQty || Number(newResQty) < 1) return;
