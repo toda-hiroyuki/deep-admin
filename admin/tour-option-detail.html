@@ -890,158 +890,88 @@ window.UIBlocks2 = { DurationField, CancelPolicyField };
 // 予約期限 UI候補モック（確認後に最終案だけ残す）
 // ──────────────────────────────────────────────────────────────────────────────
 function CutoffUICandidates() {
-  // 案A state
-  const [aPreset, setAPreset] = React.useState("1日前");
-  const [aCustomN, setACustomN] = React.useState(2);
-  const [aCustomUnit, setACustomUnit] = React.useState("日");
+  const PRESETS = [
+    { label: "当日不可", days: 1, hours: 0 },
+    { label: "1日前",   days: 1, hours: 0 },
+    { label: "2日前",   days: 2, hours: 0 },
+    { label: "3日前",   days: 3, hours: 0 },
+    { label: "7日前",   days: 7, hours: 0 },
+    { label: "14日前",  days: 14, hours: 0 },
+  ];
 
-  // 案B state
-  const [bDays, setBDays] = React.useState(1);
-  const [bHours, setBHours] = React.useState(0);
+  const [preset, setPreset] = React.useState("1日前");
+  const [days,   setDays]   = React.useState(1);
+  const [hours,  setHours]  = React.useState(0);
 
-  // 案C state
-  const [cUnit, setCUnit] = React.useState("日");
-  const [cN, setCN] = React.useState(1);
-  const cLimits = { 分: [1, 59], 時間: [1, 23], 日: [1, 90] };
-  const [cMin, cMax] = cLimits[cUnit] || [1, 99];
-
-  const boxStyle = {
-    border: "1px solid var(--line)",
-    borderRadius: 8,
-    padding: "16px 20px",
-    background: "#fff",
-    marginBottom: 12,
+  const selectPreset = (p) => {
+    setPreset(p.label);
+    setDays(p.days);
+    setHours(p.hours);
   };
-  const labelStyle = { fontSize: 12, color: "var(--muted)", marginBottom: 6, display: "block" };
-  const badgeStyle = { display:"inline-block", padding:"2px 10px", borderRadius:99, fontSize:12, background:"var(--accent)", color:"#fff", marginLeft:8 };
-  const presets = ["当日不可（24時間前）", "1日前", "2日前", "3日前", "7日前", "14日前", "カスタム"];
+  const selectCustom = () => setPreset("カスタム");
+
+  const summaryText = preset === "カスタム"
+    ? `${days > 0 ? days + "日" : ""}${hours > 0 ? hours + "時間" : ""}前`
+    : preset;
 
   return (
     <div style={{ marginTop: 24, marginBottom: 8 }}>
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
         <span style={{ fontSize:11, fontWeight:700, letterSpacing:1, color:"var(--muted)", textTransform:"uppercase" }}>🔧 予約期限 UI候補</span>
-        <span style={{ fontSize:11, color:"var(--muted)" }}>（確認用モック。採用案が決まったら削除します）</span>
+        <span style={{ fontSize:11, color:"var(--muted)" }}>（確認用モック。採用後に現行フィールドと入れ替えます）</span>
       </div>
 
-      {/* ── 案A: プリセット＋カスタム ── */}
-      <div style={boxStyle}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-          <span style={{ fontWeight:700, fontSize:13 }}>案A</span>
-          <span style={{ fontSize:12, color:"var(--muted)" }}>プリセット選択 ＋ カスタム入力</span>
-          <span style={{ fontSize:11, color:"#059669", background:"#d1fae5", borderRadius:99, padding:"2px 8px" }}>推奨</span>
-        </div>
-        <div style={{ fontSize:12, color:"var(--muted)", marginBottom:10, lineHeight:1.6 }}>
-          よく使う期限をプリセットで選ぶ。「カスタム」を選んだときだけ数値＋単位入力欄が出る。<br />
-          → <strong>「1日前」と入力したいのに「1分前」にするミスを防げる</strong>（単位の誤選択が起きにくい）
-        </div>
+      <div style={{ border:"1px solid var(--line)", borderRadius:8, padding:"16px 20px", background:"#fff" }}>
+        {/* プリセットボタン列 */}
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, alignItems:"center" }}>
-          {presets.map(p => (
-            <button key={p} type="button"
-              onClick={() => setAPreset(p)}
+          {PRESETS.map(p => (
+            <button key={p.label} type="button" onClick={() => selectPreset(p)}
               style={{
-                padding:"6px 14px", borderRadius:99, fontSize:13, cursor:"pointer",
-                border: aPreset === p ? "2px solid var(--accent)" : "1px solid var(--line)",
-                background: aPreset === p ? "var(--accent)" : "#fff",
-                color: aPreset === p ? "#fff" : "var(--fg)",
-                fontWeight: aPreset === p ? 700 : 400,
-              }}>{p}</button>
+                padding:"6px 16px", borderRadius:99, fontSize:13, cursor:"pointer",
+                border: preset === p.label ? "2px solid var(--accent)" : "1px solid var(--line)",
+                background: preset === p.label ? "var(--accent)" : "#fff",
+                color: preset === p.label ? "#fff" : "var(--fg)",
+                fontWeight: preset === p.label ? 700 : 400,
+              }}>{p.label}</button>
           ))}
+          {/* カスタムボタン */}
+          <button type="button" onClick={selectCustom}
+            style={{
+              padding:"6px 16px", borderRadius:99, fontSize:13, cursor:"pointer",
+              border: preset === "カスタム" ? "2px solid var(--accent)" : "1px dashed var(--line)",
+              background: preset === "カスタム" ? "var(--accent)" : "#fff",
+              color: preset === "カスタム" ? "#fff" : "var(--muted)",
+              fontWeight: preset === "カスタム" ? 700 : 400,
+            }}>カスタム…</button>
         </div>
-        {aPreset === "カスタム" && (
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:12, padding:"10px 14px", background:"var(--bg)", borderRadius:6 }}>
-            <input type="number" min={1} max={999} value={aCustomN}
-              onChange={e => setACustomN(Math.max(1, Number(e.target.value)))}
-              style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:14, textAlign:"right" }} />
-            <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
-              <select value={aCustomUnit} onChange={e => setACustomUnit(e.target.value)}
-                style={{ padding:"6px 28px 6px 10px", border:"1px solid var(--line)", borderRadius:4, fontSize:14, appearance:"none", background:"#fff", cursor:"pointer" }}>
-                <option value="日">日</option>
-                <option value="時間">時間</option>
-                <option value="分">分</option>
-              </select>
-              <span style={{ position:"absolute", right:8, pointerEvents:"none", fontSize:10, color:"var(--muted)" }}>▼</span>
+
+        {/* カスタム時のみ：日＋時間の2軸入力（分なし） */}
+        {preset === "カスタム" && (
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginTop:14, padding:"12px 16px", background:"var(--bg)", borderRadius:6, flexWrap:"wrap" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <input type="number" min={0} max={90} value={days}
+                onChange={e => setDays(Math.max(0, Math.min(90, Number(e.target.value))))}
+                style={{ width:68, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
+              <span style={{ fontSize:14, fontWeight:600 }}>日</span>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <input type="number" min={0} max={23} value={hours}
+                onChange={e => setHours(Math.max(0, Math.min(23, Number(e.target.value))))}
+                style={{ width:68, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
+              <span style={{ fontSize:14, fontWeight:600 }}>時間</span>
             </div>
             <span style={{ fontSize:13, color:"var(--muted)" }}>前まで予約可能</span>
+            <span style={{ fontSize:11, color:"var(--muted)", marginLeft:4 }}>※ 分単位の設定は不可</span>
           </div>
         )}
-        {aPreset !== "カスタム" && (
-          <div style={{ marginTop:10, fontSize:13, color:"var(--muted)" }}>
-            設定値：<strong style={{ color:"var(--fg)" }}>{aPreset}</strong> まで予約可能
-          </div>
-        )}
-      </div>
 
-      {/* ── 案B: 日＋時間の2軸スピナー ── */}
-      <div style={boxStyle}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-          <span style={{ fontWeight:700, fontSize:13 }}>案B</span>
-          <span style={{ fontSize:12, color:"var(--muted)" }}>日数 ＋ 時間の2段階入力</span>
+        {/* サマリー表示 */}
+        <div style={{ marginTop:12, fontSize:13, color:"var(--muted)" }}>
+          設定値：<strong style={{ color:"var(--fg)", fontSize:14 }}>{summaryText}</strong> まで予約可能
+          {preset === "カスタム" && days === 0 && hours === 0 && (
+            <span style={{ color:"#e57373", marginLeft:8 }}>※ 当日予約OK（制限なし）</span>
+          )}
         </div>
-        <div style={{ fontSize:12, color:"var(--muted)", marginBottom:10, lineHeight:1.6 }}>
-          「分」を廃止し「N日 M時間前」で設定。<br />
-          → <strong>分単位の設定ができないのでヒューマンエラーを根本排除</strong>。細かい設定が不要なケース向け。
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <input type="number" min={0} max={90} value={bDays}
-              onChange={e => setBDays(Math.max(0, Number(e.target.value)))}
-              style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
-            <span style={{ fontSize:14, fontWeight:600 }}>日</span>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <input type="number" min={0} max={23} value={bHours}
-              onChange={e => setBHours(Math.min(23, Math.max(0, Number(e.target.value))))}
-              style={{ width:72, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
-            <span style={{ fontSize:14, fontWeight:600 }}>時間</span>
-          </div>
-          <span style={{ fontSize:13, color:"var(--muted)" }}>前まで予約可能</span>
-        </div>
-        <div style={{ marginTop:10, fontSize:13, color:"var(--muted)" }}>
-          設定値：<strong style={{ color:"var(--fg)" }}>{bDays > 0 ? `${bDays}日` : ""}{bHours > 0 ? `${bHours}時間` : ""}{bDays === 0 && bHours === 0 ? "0日" : ""}前</strong> まで予約可能
-          {bDays === 0 && bHours === 0 && <span style={{ color:"#e57373", marginLeft:8 }}>※ 当日予約OK（制限なし）</span>}
-        </div>
-      </div>
-
-      {/* ── 案C: 単位を先に選んで数値レンジを自動制限 ── */}
-      <div style={boxStyle}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-          <span style={{ fontWeight:700, fontSize:13 }}>案C</span>
-          <span style={{ fontSize:12, color:"var(--muted)" }}>単位先選択 → 数値の入力範囲を自動制限</span>
-        </div>
-        <div style={{ fontSize:12, color:"var(--muted)", marginBottom:10, lineHeight:1.6 }}>
-          単位（日／時間／分）を先に選ぶと、数値のmin/maxが自動で変わる。<br />
-          → <strong>「日を選んで1〜90」「分を選んで1〜59」に制限されるのでミスに気づきやすい</strong>
-        </div>
-        <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-          <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
-            <select value={cUnit} onChange={e => { setCUnit(e.target.value); const [mn] = cLimits[e.target.value]; setCN(mn); }}
-              style={{ padding:"6px 28px 6px 10px", border:"2px solid var(--accent)", borderRadius:4, fontSize:14, fontWeight:700, appearance:"none", background:"#fff", cursor:"pointer", color:"var(--accent)" }}>
-              <option value="日">日</option>
-              <option value="時間">時間</option>
-              <option value="分">分</option>
-            </select>
-            <span style={{ position:"absolute", right:8, pointerEvents:"none", fontSize:10, color:"var(--accent)" }}>▼</span>
-          </div>
-          <span style={{ fontSize:13, color:"var(--muted)" }}>単位を選択 →</span>
-          <input type="number" min={cMin} max={cMax} value={cN}
-            onChange={e => setCN(Math.min(cMax, Math.max(cMin, Number(e.target.value))))}
-            style={{ width:80, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
-          <span style={{ fontSize:14, fontWeight:600 }}>{cUnit}前</span>
-          <span style={{ fontSize:12, color:"var(--muted)" }}>（{cMin}〜{cMax}の範囲）</span>
-          <span style={{ fontSize:13, color:"var(--muted)" }}>まで予約可能</span>
-        </div>
-        <div style={{ marginTop:10, fontSize:13, color:"var(--muted)" }}>
-          設定値：<strong style={{ color:"var(--fg)" }}>{cN}{cUnit}前</strong> まで予約可能
-        </div>
-      </div>
-
-      <div style={{ fontSize:12, color:"var(--muted)", background:"#fafafa", border:"1px dashed var(--line)", borderRadius:6, padding:"10px 14px" }}>
-        💡 <strong>比較まとめ</strong>
-        <ul style={{ margin:"6px 0 0 16px", lineHeight:2 }}>
-          <li><strong>案A（推奨）</strong>：プリセットで大半をカバー。カスタムは例外扱いで意識的な操作が必要 → ヒューマンエラー最小</li>
-          <li><strong>案B</strong>：日＋時間の2軸で分を廃止。シンプルで直感的。「分単位設定が必要ない」業務なら最良</li>
-          <li><strong>案C</strong>：現行の改善版。単位先選択で入力範囲を絞る。現行からの変更が最小</li>
-        </ul>
       </div>
     </div>
   );
