@@ -138,19 +138,19 @@ function App() {
   return (
     <div className="app-shell">
       <Sidebar />
-      <div className="main-col">
+      <div style={{display:'flex',flexDirection:'column',minHeight:'100vh',minWidth:0}}>
         {/* Topbar */}
         <div className="topbar">
           <div className="topbar-left">
-            <nav className="breadcrumb">
-              <a href="index.html">deep_Admin</a>
-              <span> / </span>
-              <a href="resources.html">リソース管理</a>
-              <span> / </span>
-              <span>{isCreate ? "新規追加" : form.label}</span>
-            </nav>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="resources.html" className="crumb-link">リソース管理</a>
+              <span className="sep">/</span>
+              <span className="current">{isCreate ? "新規追加" : form.label}</span>
+            </div>
           </div>
-          <div className="topbar-right" style={{display:'flex',gap:8,alignItems:'center'}}>
+          <div className="topbar-right">
             <a href="resources.html" className="btn">キャンセル</a>
             <button className="btn primary" onClick={() => { window.location.href = 'resources.html'; }}>
               {isCreate ? "保存" : "更新保存"}
@@ -170,81 +170,85 @@ function App() {
           </div>
           <div className="status-cell fill">
             <span className="status-label">リソース名</span>
-            <span className="status-value">{form.label || "—"}</span>
+            <strong>{form.label || "—"}</strong>
           </div>
         </div>
 
         {/* Form */}
-        <div className="detail-body">
-          <div className="form-section">
-            <div style={{marginBottom:24}}>
-              <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>基本情報</h2>
-              <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
-            </div>
-
-            <div className="field-grid">
-              <Field label="リソース名" required value={form.label}
-                onChange={v => update({ label: v })}
-                help="管理画面内での表示名（例：自転車、車両（バン））" />
-              <Field label="キー（英数字）" required value={form.key}
-                onChange={v => update({ key: v })}
-                mono help="システム内部で使用する識別キー（例：bicycle）" />
-              <SelectField label="単位" required value={form.unit}
-                onChange={v => update({ unit: v })}
-                options={UNIT_OPTIONS} />
-              <Field label="保有数" required type="number" value={String(form.totalQty)}
-                onChange={v => update({ totalQty: Math.max(1, Number(v)) })}
-                help="このリソースの保有合計数（催行可能な上限の根拠）" />
-            </div>
-
-            <div style={{marginTop:28,marginBottom:24}}>
-              <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>運用設定</h2>
-              <p style={{fontSize:12,color:'var(--muted)'}}>使用後に再利用可能になるまでの時間を設定します。0の場合は即時再利用可能です。</p>
-            </div>
-
-            <div className="field-grid">
-              <Field label="再利用可能までの時間（分）" type="number" value={String(form.cooldown)}
-                onChange={v => update({ cooldown: Math.max(0, Number(v)) })}
-                help="例：ウェットスーツは乾燥に60分必要 → 60と入力" />
-              <Field label="メモ" value={form.note}
-                onChange={v => update({ note: v })}
-                help="サイズ・仕様など運営メモ（例：7人乗り、S/M/L各4着）" wide />
-            </div>
-
-            {/* 使用中TourOption一覧（参考表示） */}
-            {!isCreate && (
-              <div style={{marginTop:32}}>
-                <h2 style={{fontSize:15,fontWeight:700,marginBottom:8}}>使用中のTourOption</h2>
-                <p style={{fontSize:12,color:'var(--muted)',marginBottom:12}}>このリソースを催行リソースに設定しているTourOptionの一覧です。</p>
-                <div className="table-wrap">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>TourOption名</th>
-                        <th style={{width:80,textAlign:'center'}}>消費数</th>
-                        <th style={{width:120}}>消費単位</th>
-                        <th style={{width:80}}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>祇園ナイトフードツアー 貸切3時間</td>
-                        <td style={{textAlign:'center'}}>1 {form.unit}</td>
-                        <td>
-                          <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#dbeafe',color:'#1d4ed8'}}>
-                            人数割（1人あたり）
-                          </span>
-                        </td>
-                        <td style={{textAlign:'right'}}>
-                          <a href="tour-option-detail.html" className="btn sm">TourOption編集</a>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+        <div className="content-grid" data-no-preview="true" style={{padding:'var(--sp-5)'}}>
+          <section className="editor-pane">
+            <div className="editor-content">
+              <div className="form-section">
+                <div>
+                  <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>基本情報</h2>
+                  <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
                 </div>
+
+                <div className="field-grid">
+                  <Field label="リソース名" required value={form.label}
+                    onChange={v => update({ label: v })}
+                    help="管理画面内での表示名（例：自転車、車両（バン））" />
+                  <Field label="キー（英数字）" required value={form.key}
+                    onChange={v => update({ key: v })}
+                    mono help="システム内部で使用する識別キー（例：bicycle）" />
+                  <SelectField label="単位" required value={form.unit}
+                    onChange={v => update({ unit: v })}
+                    options={UNIT_OPTIONS} />
+                  <Field label="保有数" required type="number" value={String(form.totalQty)}
+                    onChange={v => update({ totalQty: Math.max(1, Number(v)) })}
+                    help="このリソースの保有合計数（催行可能な上限の根拠）" />
+                </div>
+
+                <div>
+                  <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>運用設定</h2>
+                  <p style={{fontSize:12,color:'var(--muted)'}}>使用後に再利用可能になるまでの時間を設定します。0の場合は即時再利用可能です。</p>
+                </div>
+
+                <div className="field-grid">
+                  <Field label="再利用可能までの時間（分）" type="number" value={String(form.cooldown)}
+                    onChange={v => update({ cooldown: Math.max(0, Number(v)) })}
+                    help="例：ウェットスーツは乾燥に60分必要 → 60と入力" />
+                  <Field label="メモ" value={form.note}
+                    onChange={v => update({ note: v })}
+                    help="サイズ・仕様など運営メモ（例：7人乗り、S/M/L各4着）" wide />
+                </div>
+
+                {/* 使用中TourOption一覧（参考表示） */}
+                {!isCreate && (
+                  <div>
+                    <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>使用中のTourOption</h2>
+                    <p style={{fontSize:12,color:'var(--muted)',marginBottom:12}}>このリソースを催行リソースに設定しているTourOptionの一覧です。</p>
+                    <div className="list-table-wrap">
+                      <table className="list-table">
+                        <thead>
+                          <tr>
+                            <th>TourOption名</th>
+                            <th style={{width:80,textAlign:'center'}}>消費数</th>
+                            <th style={{width:140}}>消費単位</th>
+                            <th className="actions" style={{width:100}}></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>祇園ナイトフードツアー 貸切3時間</td>
+                            <td style={{textAlign:'center'}}>1 {form.unit}</td>
+                            <td>
+                              <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#dbeafe',color:'#1d4ed8'}}>
+                                人数割（1人あたり）
+                              </span>
+                            </td>
+                            <td className="actions">
+                              <a href="tour-option-detail.html" className="btn sm">TourOption編集</a>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>
