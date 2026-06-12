@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>リソース編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState, useMemo } = React;
+
+// ── URLパラメータ取得 ────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const targetId = params.get("id");
+const isCreate = params.get("mode") === "create" || !targetId;
+
+// ── Sidebar ─────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",        hint: "ツアーの実体" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",           hint: "顧客表示" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",          hint: "機材・車両等" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",           hint: "運営注意・行程" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",   hint: "キャンセル文言" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "resource" ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}>
+                <div>{it.label}</div>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Tools</div>
+        <div className="nav-group">
+          <button className="nav-item"><span className="nav-icon" style={{fontSize:11}}>⌕</span><span>検索</span></button>
+          <button className="nav-item"><span className="nav-icon" style={{fontSize:11}}>≡</span><span>変更履歴</span></button>
+          <button className="nav-item"><span className="nav-icon" style={{fontSize:11}}>?</span><span>ヘルプ</span></button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── Field helpers ────────────────────────────────────────────────────────────
+function Field({ label, value, onChange, readOnly, required, help, mono, type = "text", wide }) {
+  return (
+    <div className={wide ? "field-wide" : "field"}>
+      <label className="field-label">
+        <span>{label}</span>
+        {required && <span className="field-required">必須</span>}
+      </label>
+      <input
+        type={type}
+        value={value ?? ""}
+        onChange={e => onChange?.(e.target.value)}
+        readOnly={readOnly}
+        className={mono ? "mono" : ""}
+        style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13,background:readOnly?'var(--bg-sunken)':'#fff'}}
+      />
+      {help && <div className="field-help">{help}</div>}
+    </div>
+  );
+}
+
+function SelectField({ label, value, onChange, options, readOnly, required, help, wide }) {
+  return (
+    <div className={wide ? "field-wide" : "field"}>
+      <label className="field-label">
+        <span>{label}</span>
+        {required && <span className="field-required">必須</span>}
+      </label>
+      <div style={{position:'relative',display:'inline-flex',width:'100%'}}>
+        <select
+          value={value ?? ""}
+          onChange={e => onChange?.(e.target.value)}
+          disabled={readOnly}
+          style={{width:'100%',padding:'7px 28px 7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13,
+            background:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 8px center / 12px,${readOnly?'var(--bg-sunken)':'#fff'}`,
+            WebkitAppearance:'none',appearance:'none',cursor:readOnly?'default':'pointer'}}
+        >
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+      {help && <div className="field-help">{help}</div>}
+    </div>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const seed = (SEED.resourceMaster || []).find(r => r.id === targetId);
+
+  const UNIT_OPTIONS = ["名", "台", "艇", "着", "式", "個", "本", "枚"];
+
+  const [form, setForm] = useState(seed ? { ...seed } : {
+    id: "",
+    key: "",
+    label: "",
+    unit: "台",
+    totalQty: 1,
+    cooldown: 0,
+    note: "",
+  });
+
+  const update = (patch) => setForm(s => ({ ...s, ...patch }));
+
+  const pageTitle = isCreate ? "リソースを追加" : `${form.label} を編集`;
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <div className="main-col">
+        {/* Topbar */}
+        <div className="topbar">
+          <div className="topbar-left">
+            <nav className="breadcrumb">
+              <a href="index.html">deep_Admin</a>
+              <span> / </span>
+              <a href="resources.html">リソース管理</a>
+              <span> / </span>
+              <span>{isCreate ? "新規追加" : form.label}</span>
+            </nav>
+          </div>
+          <div className="topbar-right" style={{display:'flex',gap:8,alignItems:'center'}}>
+            <a href="resources.html" className="btn">キャンセル</a>
+            <button className="btn primary" onClick={() => { window.location.href = 'resources.html'; }}>
+              {isCreate ? "保存" : "更新保存"}
+            </button>
+          </div>
+        </div>
+
+        {/* Status strip */}
+        <div className="status-strip">
+          <div className="status-cell">
+            <span className="status-label">リソースID</span>
+            <span className="status-value mono">{isCreate ? "自動採番" : form.id}</span>
+          </div>
+          <div className="status-cell">
+            <span className="status-label">キー</span>
+            <span className="status-value mono">{form.key || "—"}</span>
+          </div>
+          <div className="status-cell fill">
+            <span className="status-label">リソース名</span>
+            <span className="status-value">{form.label || "—"}</span>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="detail-body">
+          <div className="form-section">
+            <div style={{marginBottom:24}}>
+              <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>基本情報</h2>
+              <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
+            </div>
+
+            <div className="field-grid">
+              <Field label="リソース名" required value={form.label}
+                onChange={v => update({ label: v })}
+                help="管理画面内での表示名（例：自転車、車両（バン））" />
+              <Field label="キー（英数字）" required value={form.key}
+                onChange={v => update({ key: v })}
+                mono help="システム内部で使用する識別キー（例：bicycle）" />
+              <SelectField label="単位" required value={form.unit}
+                onChange={v => update({ unit: v })}
+                options={UNIT_OPTIONS} />
+              <Field label="保有数" required type="number" value={String(form.totalQty)}
+                onChange={v => update({ totalQty: Math.max(1, Number(v)) })}
+                help="このリソースの保有合計数（催行可能な上限の根拠）" />
+            </div>
+
+            <div style={{marginTop:28,marginBottom:24}}>
+              <h2 style={{fontSize:15,fontWeight:700,marginBottom:4}}>運用設定</h2>
+              <p style={{fontSize:12,color:'var(--muted)'}}>使用後に再利用可能になるまでの時間を設定します。0の場合は即時再利用可能です。</p>
+            </div>
+
+            <div className="field-grid">
+              <Field label="再利用可能までの時間（分）" type="number" value={String(form.cooldown)}
+                onChange={v => update({ cooldown: Math.max(0, Number(v)) })}
+                help="例：ウェットスーツは乾燥に60分必要 → 60と入力" />
+              <Field label="メモ" value={form.note}
+                onChange={v => update({ note: v })}
+                help="サイズ・仕様など運営メモ（例：7人乗り、S/M/L各4着）" wide />
+            </div>
+
+            {/* 使用中TourOption一覧（参考表示） */}
+            {!isCreate && (
+              <div style={{marginTop:32}}>
+                <h2 style={{fontSize:15,fontWeight:700,marginBottom:8}}>使用中のTourOption</h2>
+                <p style={{fontSize:12,color:'var(--muted)',marginBottom:12}}>このリソースを催行リソースに設定しているTourOptionの一覧です。</p>
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>TourOption名</th>
+                        <th style={{width:80,textAlign:'center'}}>消費数</th>
+                        <th style={{width:120}}>消費単位</th>
+                        <th style={{width:80}}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>祇園ナイトフードツアー 貸切3時間</td>
+                        <td style={{textAlign:'center'}}>1 {form.unit}</td>
+                        <td>
+                          <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#dbeafe',color:'#1d4ed8'}}>
+                            人数割（1人あたり）
+                          </span>
+                        </td>
+                        <td style={{textAlign:'right'}}>
+                          <a href="tour-option-detail.html" className="btn sm">TourOption編集</a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
