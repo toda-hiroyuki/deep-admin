@@ -902,16 +902,18 @@ function CutoffUICandidates() {
   const [preset, setPreset] = React.useState("1日前");
   const [days,   setDays]   = React.useState(1);
   const [hours,  setHours]  = React.useState(0);
+  const [mins,   setMins]   = React.useState(0);
 
   const selectPreset = (p) => {
     setPreset(p.label);
     setDays(p.days);
     setHours(p.hours);
+    setMins(0);
   };
   const selectCustom = () => setPreset("カスタム");
 
   const summaryText = preset === "カスタム"
-    ? `${days > 0 ? days + "日" : ""}${hours > 0 ? hours + "時間" : ""}前`
+    ? `${days > 0 ? days + "日" : ""}${hours > 0 ? hours + "時間" : ""}${mins > 0 ? mins + "分" : ""}前`
     : preset;
 
   return (
@@ -960,15 +962,20 @@ function CutoffUICandidates() {
                 style={{ width:68, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
               <span style={{ fontSize:14, fontWeight:600 }}>時間</span>
             </div>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <input type="number" min={0} max={59} value={mins}
+                onChange={e => setMins(Math.max(0, Math.min(59, Number(e.target.value))))}
+                style={{ width:68, padding:"6px 8px", border:"1px solid var(--line)", borderRadius:4, fontSize:16, fontWeight:700, textAlign:"right" }} />
+              <span style={{ fontSize:14, fontWeight:600 }}>分</span>
+            </div>
             <span style={{ fontSize:13, color:"var(--muted)" }}>前まで予約可能</span>
-            <span style={{ fontSize:11, color:"var(--muted)", marginLeft:4 }}>※ 分単位の設定は不可</span>
           </div>
         )}
 
         {/* サマリー表示 */}
         <div style={{ marginTop:12, fontSize:13, color:"var(--muted)" }}>
           設定値：<strong style={{ color:"var(--fg)", fontSize:14 }}>{summaryText}</strong> まで予約可能
-          {preset === "カスタム" && days === 0 && hours === 0 && (
+          {preset === "カスタム" && days === 0 && hours === 0 && mins === 0 && (
             <span style={{ color:"#e57373", marginLeft:8 }}>※ 当日予約OK（制限なし）</span>
           )}
         </div>
