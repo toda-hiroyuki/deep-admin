@@ -183,7 +183,7 @@ function App() {
   return (
     <div className="app-shell">
       <Sidebar />
-      <div style={{display:'flex',flexDirection:'column',minHeight:'100vh',minWidth:0}}>
+      <main className="workspace">
         {/* Topbar */}
         <div className="topbar">
           <div className="topbar-left">
@@ -216,7 +216,7 @@ function App() {
         </div>
 
         {/* Form */}
-        <div className="content-grid" data-no-preview="true" style={{padding:'var(--sp-5)'}}>
+        <div className="content-grid" data-no-preview="true">
           <section className="editor-pane">
             <div className="editor-content">
               <div className="form-section">
@@ -287,7 +287,7 @@ function App() {
             </div>
           </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
