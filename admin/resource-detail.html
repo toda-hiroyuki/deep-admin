@@ -225,7 +225,7 @@ function App() {
                   <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
                 </div>
 
-                <div style={{display:'grid', gridTemplateColumns:'2fr 1fr 1fr', gap:'var(--sp-3)', alignItems:'start'}}>
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'var(--sp-3)', alignItems:'start'}}>
                   <Field label="リソース名" required value={form.label}
                     onChange={v => update({ label: v })}
                     help="管理画面内での表示名（例：自転車、車両（バン））" />
@@ -235,6 +235,10 @@ function App() {
                   <SelectField label="単位" required value={form.unit}
                     onChange={v => update({ unit: v })}
                     options={UNIT_OPTIONS} />
+                  <Field label="収容人数" value={form.note}
+                    onChange={v => update({ note: v })}
+                    type="number"
+                    help="催行リソースの計算に使用します。" />
                 </div>
 
                 <div>
@@ -244,10 +248,6 @@ function App() {
 
                 <div className="field-grid">
                   <CooldownField value={form.cooldown} onChange={v => update({ cooldown: v })} />
-                  <Field label="収容人数" value={form.note}
-                    onChange={v => update({ note: v })}
-                    type="number"
-                    help="リソースの収容人数（例：7、28）。催行リソースの計算に使用します。" />
                 </div>
 
                 {/* 使用中TourOption一覧（参考表示） */}
