@@ -420,12 +420,11 @@ window.SEED = {
 
   resourceMaster: [
     { id: "rm_01", key: "driver",    label: "ドライバー",     unit: "名", totalQty: 3,  cooldown: 0,  note: "" },
-    { id: "rm_02", key: "van",       label: "車両（バン）",   unit: "台", totalQty: 2,  cooldown: 30, note: "7人乗り" },
-    { id: "rm_03", key: "bus",       label: "車両（バス）",   unit: "台", totalQty: 1,  cooldown: 60, note: "28人乗り" },
+    { id: "rm_02", key: "van",       label: "車両（バン）",   unit: "台", totalQty: 2,  cooldown: 30, note: "7" },
+    { id: "rm_03", key: "bus",       label: "車両（バス）",   unit: "台", totalQty: 1,  cooldown: 60, note: "28" },
     { id: "rm_04", key: "bicycle",   label: "自転車",         unit: "台", totalQty: 10, cooldown: 15, note: "" },
     { id: "rm_05", key: "kayak",     label: "カヤック",       unit: "艇", totalQty: 6,  cooldown: 30, note: "" },
     { id: "rm_06", key: "sup",       label: "SUP",            unit: "台", totalQty: 8,  cooldown: 30, note: "" },
-    { id: "rm_07", key: "wetsuit",   label: "ウェットスーツ", unit: "着", totalQty: 12, cooldown: 60, note: "S/M/L各4着" },
     { id: "rm_08", key: "equipment", label: "機材セット",     unit: "式", totalQty: 4,  cooldown: 0,  note: "" },
   ],
 

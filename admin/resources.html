@@ -107,7 +107,7 @@ function App() {
                   <th style={{width:100,textAlign:'center'}}>保有数</th>
                   <th style={{width:60,textAlign:'center'}}>単位</th>
                   <th style={{width:140,textAlign:'center'}}>再利用可能までの時間</th>
-                  <th>メモ</th>
+                  <th style={{width:100,textAlign:'center'}}>収容人数</th>
                   <th className="actions" style={{width:80}}></th>
                 </tr>
               </thead>
@@ -127,7 +127,7 @@ function App() {
                         : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
                       }
                     </td>
-                    <td style={{color:'var(--muted)'}}>{r.note || '—'}</td>
+                    <td style={{textAlign:'center'}}>{r.note ? `${r.note}人` : '—'}</td>
                     <td className="actions">
                       <a href={`resource-detail.html?id=${r.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
                     </td>
