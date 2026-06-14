@@ -244,9 +244,10 @@ function App() {
 
                 <div className="field-grid">
                   <CooldownField value={form.cooldown} onChange={v => update({ cooldown: v })} />
-                  <Field label="メモ" value={form.note}
+                  <Field label="収容人数" value={form.note}
                     onChange={v => update({ note: v })}
-                    help="サイズ・仕様など運営メモ（例：7人乗り、S/M/L各4着）" wide />
+                    type="number"
+                    help="リソースの収容人数（例：7、28）。催行リソースの計算に使用します。" />
                 </div>
 
                 {/* 使用中TourOption一覧（参考表示） */}
