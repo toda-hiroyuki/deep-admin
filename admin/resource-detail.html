@@ -158,6 +158,10 @@ function App() {
   const seed = (SEED.resourceMaster || []).find(r => r.id === targetId);
 
   const UNIT_OPTIONS = ["名", "台", "艇", "着", "式", "個", "本", "枚"];
+  const CONSUME_TYPE_OPTIONS = [
+    { value: "per_tour",   label: "催行固定（1催行あたり）" },
+    { value: "per_person", label: "人数割（1人あたり）" },
+  ];
 
   const [form, setForm] = useState(seed ? { ...seed } : {
     id: "",
@@ -166,6 +170,7 @@ function App() {
     totalQty: 1,
     cooldown: 0,
     note: "1",
+    consumeType: "per_tour",
   });
 
   const update = (patch) => setForm(s => ({ ...s, ...patch }));
@@ -213,7 +218,7 @@ function App() {
                   <p style={{fontSize:12,color:'var(--muted)'}}>リソースの名称・単位・保有数を設定します。</p>
                 </div>
 
-                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'var(--sp-3)', alignItems:'start'}}>
+                <div style={{display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 2fr', gap:'var(--sp-3)', alignItems:'start'}}>
                   <Field label="リソース名" required value={form.label}
                     onChange={v => update({ label: v })}
                     help="管理画面内での表示名（例：自転車、車両（バン））" />
@@ -227,6 +232,18 @@ function App() {
                     onChange={v => update({ note: v })}
                     type="number"
                     help="催行リソースの計算に使用します。" />
+                  <div className="field">
+                    <label className="field-label"><span>消費単位</span><span className="req" aria-label="required" /></label>
+                    <div style={{position:'relative',display:'inline-flex',width:'100%'}}>
+                      <select value={form.consumeType || "per_tour"} onChange={e => update({ consumeType: e.target.value })}
+                        style={{width:'100%',padding:'7px 28px 7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13,
+                          background:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 8px center / 12px,#fff`,
+                          WebkitAppearance:'none',appearance:'none',cursor:'pointer'}}>
+                        {CONSUME_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </div>
+                    <div className="field-help">TourOptionの催行リソース設定で参照されます。</div>
+                  </div>
                 </div>
 
                 <div>
