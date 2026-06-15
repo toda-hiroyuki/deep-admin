@@ -1338,13 +1338,13 @@ function AvailabilityTab({ t, update, readonly }) {
   ]);
   const [newResKey, setNewResKey] = useLState("driver");
   const [newResQty, setNewResQty] = useLState("1");
-  const [newResConsumeType, setNewResConsumeType] = useLState("per_tour");
   const addResource = () => {
     if (!newResQty || Number(newResQty) < 1) return;
+    const master = RESOURCE_MASTER.find(m => m.key === newResKey) || {};
     if (resources.some(r => r.key === newResKey)) {
-      setResources(prev => prev.map(r => r.key === newResKey ? { ...r, qty: Number(newResQty), consumeType: newResConsumeType } : r));
+      setResources(prev => prev.map(r => r.key === newResKey ? { ...r, qty: Number(newResQty) } : r));
     } else {
-      setResources(prev => [...prev, { id: Date.now(), key: newResKey, qty: Number(newResQty), consumeType: newResConsumeType }]);
+      setResources(prev => [...prev, { id: Date.now(), key: newResKey, qty: Number(newResQty), consumeType: master.consumeType || "per_tour" }]);
     }
     setNewResQty("1");
   };
@@ -1466,7 +1466,7 @@ function AvailabilityTab({ t, update, readonly }) {
       {/* 催行リソース設定 */}
       <div style={{border:'1px solid var(--line)',borderRadius:6,padding:'12px 14px',marginBottom:16}}>
         <div style={{fontWeight:600,fontSize:13,marginBottom:4}}>催行リソース設定</div>
-        <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>このTourOptionの催行に必要なリソースを設定します。マスターに登録された保有数を消費数と消費単位で消費し、販売可能枠の上限を決定します。</div>
+        <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>このTourOptionの催行に必要なリソースと消費数を設定します。消費単位はリソースマスターの設定に従います。</div>
         {isRequest ? (
           <div style={{padding:'8px 12px',background:'var(--bg-sunken)',borderRadius:4,marginBottom:12}}>
             <div style={{fontSize:13,fontWeight:600}}>制限なし</div>
@@ -1486,16 +1486,17 @@ function AvailabilityTab({ t, update, readonly }) {
             </thead>
             <tbody>
               {resources.map(r => {
-                const master = RESOURCE_MASTER.find(m => m.key === r.key) || { label: r.key, unit: "個" };
-                const consumeLabel = r.consumeType === "per_person" ? "人数割（1人あたり）" : "催行固定（1催行あたり）";
+                const master = RESOURCE_MASTER.find(m => m.key === r.key) || { label: r.key, unit: "個", consumeType: "per_tour" };
+                const consumeType = master.consumeType || "per_tour";
+                const consumeLabel = consumeType === "per_person" ? "人数割（1人あたり）" : "催行固定（1催行あたり）";
                 return (
                   <tr key={r.id} style={{borderBottom:'1px solid var(--line)'}}>
                     <td style={{padding:'7px 10px'}}>{master.label}</td>
                     <td style={{padding:'7px 10px',textAlign:'center'}}>{r.qty} {master.unit}</td>
                     <td style={{padding:'7px 10px',fontSize:12}}>
                       <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,
-                        background: r.consumeType === "per_person" ? "#dbeafe" : "#dcfce7",
-                        color: r.consumeType === "per_person" ? "#1d4ed8" : "#166534"}}>
+                        background: consumeType === "per_person" ? "#dbeafe" : "#dcfce7",
+                        color: consumeType === "per_person" ? "#1d4ed8" : "#166534"}}>
                         {consumeLabel}
                       </span>
                     </td>
@@ -1530,16 +1531,6 @@ function AvailabilityTab({ t, update, readonly }) {
                   style={{width:64,fontSize:13,padding:'5px 8px',border:'1px solid var(--line)',borderRadius:4}} />
                 <span style={{fontSize:12,color:'var(--muted)'}}>{(RESOURCE_MASTER.find(m => m.key === newResKey)||{unit:''}).unit}</span>
               </div>
-            </div>
-            <div style={{display:'flex',flexDirection:'column',gap:4}}>
-              <label style={{fontSize:11,color:'var(--muted)'}}>消費単位</label>
-              <select value={newResConsumeType} onChange={e => setNewResConsumeType(e.target.value)}
-                style={{fontSize:13,padding:'5px 24px 5px 8px',border:'1px solid var(--line)',borderRadius:4,
-                  background:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 6px center / 12px,var(--surface)`,
-                  WebkitAppearance:'none',appearance:'none'}}>
-                <option value="per_tour">催行固定（1催行あたり）</option>
-                <option value="per_person">人数割（1人あたり）</option>
-              </select>
             </div>
             <button type="button" className="btn primary" onClick={addResource} style={{height:32,alignSelf:'flex-end'}}>
               {resources.some(r => r.key === newResKey) ? "更新" : "+ 追加"}
