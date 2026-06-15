@@ -1298,13 +1298,13 @@ function SlotList({ slots, readonly, onAdd, onRemove, onUpdate, timeOptions, sel
 }
 
 const RESOURCE_MASTER = [
-  { key: "driver",   label: "ドライバー",    unit: "名",  cooldown: 0   },
-  { key: "van",      label: "車両（バン）",  unit: "台",  cooldown: 30  },
-  { key: "bus",      label: "車両（バス）",  unit: "台",  cooldown: 60  },
-  { key: "bicycle",  label: "自転車",        unit: "台",  cooldown: 15  },
-  { key: "kayak",    label: "カヤック",      unit: "艇",  cooldown: 30  },
-  { key: "sup",      label: "SUP",           unit: "台",  cooldown: 30  },
-  { key: "equipment",label: "機材セット",    unit: "式",  cooldown: 0   },
+  { key: "driver",   label: "ドライバー",    unit: "名",  cooldown: 0,  consumeType: "per_tour"   },
+  { key: "van",      label: "車両（バン）",  unit: "台",  cooldown: 30, consumeType: "per_tour"   },
+  { key: "bus",      label: "車両（バス）",  unit: "台",  cooldown: 60, consumeType: "per_tour"   },
+  { key: "bicycle",  label: "自転車",        unit: "台",  cooldown: 15, consumeType: "per_person" },
+  { key: "kayak",    label: "カヤック",      unit: "艇",  cooldown: 30, consumeType: "per_person" },
+  { key: "sup",      label: "SUP",           unit: "台",  cooldown: 30, consumeType: "per_person" },
+  { key: "equipment",label: "機材セット",    unit: "式",  cooldown: 0,  consumeType: "per_tour"   },
 ];
 
 function AvailabilityTab({ t, update, readonly }) {
