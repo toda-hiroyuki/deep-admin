@@ -228,7 +228,7 @@ function App() {
                   <SelectField label="単位" required value={form.unit}
                     onChange={v => update({ unit: v })}
                     options={UNIT_OPTIONS} />
-                  <Field label="定員" value={form.note}
+                  <Field label="定員" required value={form.note}
                     onChange={v => update({ note: v })}
                     type="number"
                     help="催行リソースの計算に使用します。" />
