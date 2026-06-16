@@ -20,23 +20,23 @@
 const { useState } = React;
 
 const SEED_PREFECTURES = [
-  { id: "pref-1", nameJa: "京都府",   nameEn: "Kyoto Prefecture",   areas: [
+  { id: "pref-1", nameJa: "京都府",   nameEn: "Kyoto Prefecture",   slug: "kyoto",   areas: [
     { id: "area-1", nameJa: "祇園・東山エリア", nameEn: "Gion / Higashiyama" },
     { id: "area-2", nameJa: "嵐山エリア",       nameEn: "Arashiyama" },
     { id: "area-3", nameJa: "金閣寺・北野エリア", nameEn: "Kinkakuji / Kitano" },
     { id: "area-4", nameJa: "伏見稲荷エリア",   nameEn: "Fushimi Inari" },
   ]},
-  { id: "pref-2", nameJa: "大阪府",   nameEn: "Osaka Prefecture",   areas: [
+  { id: "pref-2", nameJa: "大阪府",   nameEn: "Osaka Prefecture",   slug: "osaka",   areas: [
     { id: "area-5", nameJa: "大阪難波エリア", nameEn: "Osaka Namba" },
     { id: "area-6", nameJa: "大阪梅田エリア", nameEn: "Osaka Umeda" },
   ]},
-  { id: "pref-3", nameJa: "兵庫県",   nameEn: "Hyogo Prefecture",   areas: [
+  { id: "pref-3", nameJa: "兵庫県",   nameEn: "Hyogo Prefecture",   slug: "hyogo",   areas: [
     { id: "area-7", nameJa: "神戸元町エリア", nameEn: "Kobe Motomachi" },
   ]},
-  { id: "pref-4", nameJa: "奈良県",   nameEn: "Nara Prefecture",    areas: [
+  { id: "pref-4", nameJa: "奈良県",   nameEn: "Nara Prefecture",    slug: "nara",    areas: [
     { id: "area-8", nameJa: "奈良中心エリア", nameEn: "Central Nara" },
   ]},
-  { id: "pref-5", nameJa: "東京都",   nameEn: "Tokyo",              areas: [] },
+  { id: "pref-5", nameJa: "東京都",   nameEn: "Tokyo",              slug: "tokyo",   areas: [] },
 ];
 
 // ── Sidebar ─────────────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ function App() {
               <thead>
                 <tr>
                   <th>都道府県名（日本語）</th>
-                  <th>都道府県名（English）</th>
+                  <th>スラッグ</th>
                   <th style={{width:100,textAlign:'center'}}>エリア数</th>
                   <th className="actions" style={{width:80}}></th>
                 </tr>
@@ -126,7 +126,7 @@ function App() {
                 {prefectures.map(p => (
                   <tr key={p.id} className="list-row" onClick={() => { window.location.href = `area-detail.html?id=${p.id}`; }}>
                     <td><strong>{p.nameJa}</strong></td>
-                    <td style={{color:'var(--muted)'}}>{p.nameEn}</td>
+                    <td style={{color:'var(--muted)',fontFamily:'monospace',fontSize:12}}>{p.slug || '—'}</td>
                     <td style={{textAlign:'center'}}>
                       <span style={{display:'inline-block',padding:'2px 10px',borderRadius:99,fontSize:11,background:'#e0e7ff',color:'#3730a3',fontWeight:600}}>
                         {p.areas.length}
