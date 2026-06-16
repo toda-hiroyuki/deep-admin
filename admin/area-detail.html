@@ -20,23 +20,23 @@
 const { useState, useRef } = React;
 
 const SEED_PREFECTURES = [
-  { id: "pref-1", nameJa: "京都府",   nameEn: "Kyoto Prefecture",   areas: [
+  { id: "pref-1", nameJa: "京都府",   nameEn: "Kyoto Prefecture",   slug: "kyoto",   areas: [
     { id: "area-1", nameJa: "祇園・東山エリア", nameEn: "Gion / Higashiyama" },
     { id: "area-2", nameJa: "嵐山エリア",       nameEn: "Arashiyama" },
     { id: "area-3", nameJa: "金閣寺・北野エリア", nameEn: "Kinkakuji / Kitano" },
     { id: "area-4", nameJa: "伏見稲荷エリア",   nameEn: "Fushimi Inari" },
   ]},
-  { id: "pref-2", nameJa: "大阪府",   nameEn: "Osaka Prefecture",   areas: [
+  { id: "pref-2", nameJa: "大阪府",   nameEn: "Osaka Prefecture",   slug: "osaka",   areas: [
     { id: "area-5", nameJa: "大阪難波エリア", nameEn: "Osaka Namba" },
     { id: "area-6", nameJa: "大阪梅田エリア", nameEn: "Osaka Umeda" },
   ]},
-  { id: "pref-3", nameJa: "兵庫県",   nameEn: "Hyogo Prefecture",   areas: [
+  { id: "pref-3", nameJa: "兵庫県",   nameEn: "Hyogo Prefecture",   slug: "hyogo",   areas: [
     { id: "area-7", nameJa: "神戸元町エリア", nameEn: "Kobe Motomachi" },
   ]},
-  { id: "pref-4", nameJa: "奈良県",   nameEn: "Nara Prefecture",    areas: [
+  { id: "pref-4", nameJa: "奈良県",   nameEn: "Nara Prefecture",    slug: "nara",    areas: [
     { id: "area-8", nameJa: "奈良中心エリア", nameEn: "Central Nara" },
   ]},
-  { id: "pref-5", nameJa: "東京都",   nameEn: "Tokyo",              areas: [] },
+  { id: "pref-5", nameJa: "東京都",   nameEn: "Tokyo",              slug: "tokyo",   areas: [] },
 ];
 
 const params = new URLSearchParams(window.location.search);
@@ -104,6 +104,7 @@ function App() {
     id: "",
     nameJa: "",
     nameEn: "",
+    slug: "",
     areas: [],
   });
   const [prefLang, setPrefLang] = useState("en");
@@ -162,6 +163,23 @@ function App() {
         </div>
 
         <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:20}}>
+
+          {/* スラッグ（共通項目） */}
+          <div className="form-section">
+            <div style={{fontWeight:600,fontSize:13,marginBottom:12,color:'var(--muted)',letterSpacing:'.05em',textTransform:'uppercase'}}>共通項目</div>
+            <div style={{background:'var(--surface)',border:'1px solid var(--line)',borderRadius:6,padding:'16px'}}>
+              <div className="field-wide">
+                <label className="field-label">
+                  <span>スラッグ</span>
+                  <span className="req" aria-label="required" />
+                </label>
+                <input type="text" value={form.slug} onChange={e => update({ slug: e.target.value.replace(/[^a-z0-9-]/g, "") })}
+                  placeholder="e.g. kyoto"
+                  style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13,fontFamily:'monospace'}} />
+                <div className="field-help">※この値は、フロント画面で都道府県の識別子としてURLに使用されます。半角英数、ハイフンのみで登録してください。</div>
+              </div>
+            </div>
+          </div>
 
           {/* 都道府県名 多言語タブ */}
           <div className="form-section">
