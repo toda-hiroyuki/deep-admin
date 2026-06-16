@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>リソース管理 | deep_Admin</title>
+    <title>エリア管理 | deep_Admin</title>
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css">
@@ -19,16 +19,36 @@
     <script type="text/babel" data-presets="react">
 const { useState } = React;
 
+const SEED_PREFECTURES = [
+  { id: "pref-1", nameJa: "京都府",   nameEn: "Kyoto Prefecture",   areas: [
+    { id: "area-1", nameJa: "祇園・東山エリア", nameEn: "Gion / Higashiyama" },
+    { id: "area-2", nameJa: "嵐山エリア",       nameEn: "Arashiyama" },
+    { id: "area-3", nameJa: "金閣寺・北野エリア", nameEn: "Kinkakuji / Kitano" },
+    { id: "area-4", nameJa: "伏見稲荷エリア",   nameEn: "Fushimi Inari" },
+  ]},
+  { id: "pref-2", nameJa: "大阪府",   nameEn: "Osaka Prefecture",   areas: [
+    { id: "area-5", nameJa: "大阪難波エリア", nameEn: "Osaka Namba" },
+    { id: "area-6", nameJa: "大阪梅田エリア", nameEn: "Osaka Umeda" },
+  ]},
+  { id: "pref-3", nameJa: "兵庫県",   nameEn: "Hyogo Prefecture",   areas: [
+    { id: "area-7", nameJa: "神戸元町エリア", nameEn: "Kobe Motomachi" },
+  ]},
+  { id: "pref-4", nameJa: "奈良県",   nameEn: "Nara Prefecture",    areas: [
+    { id: "area-8", nameJa: "奈良中心エリア", nameEn: "Central Nara" },
+  ]},
+  { id: "pref-5", nameJa: "東京都",   nameEn: "Tokyo",              areas: [] },
+];
+
 // ── Sidebar ─────────────────────────────────────────────────────────────────
 function Sidebar() {
   const items = [
     { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
-    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",        hint: "ツアーの実体" },
-    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",           hint: "顧客表示" },
-    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",          hint: "機材・車両等" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       hint: "ツアーの実体" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          hint: "顧客表示" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",         hint: "機材・車両等" },
     { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理",           hint: "都道府県・エリア" },
-    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",           hint: "運営注意・行程" },
-    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",   hint: "キャンセル文言" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",          hint: "運営注意・行程" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",  hint: "キャンセル文言" },
   ];
   return (
     <aside className="side-nav">
@@ -44,7 +64,7 @@ function Sidebar() {
         <div className="nav-group">
           {items.map(it => (
             <a key={it.key} href={it.href}
-              className={`nav-item ${it.key === "resource" ? "active" : ""}`}
+              className={`nav-item ${it.key === "area" ? "active" : ""}`}
               style={{textDecoration:"none"}}>
               <span className="nav-icon">{it.icon}</span>
               <span style={{flex:1,minWidth:0}}>
@@ -55,8 +75,8 @@ function Sidebar() {
         </div>
       </div>
       <div className="side-note">
-        <strong>リソース管理</strong>
-        催行に使用する機材・車両等の保有数と再利用可能時間を管理します。TourOptionの催行リソース設定から参照されます。
+        <strong>エリア管理</strong>
+        都道府県とそれに紐づくエリアを管理します。TourOptionのエリア選択に使用されます。
       </div>
     </aside>
   );
@@ -64,7 +84,7 @@ function Sidebar() {
 
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
-  const [resources, setResources] = useState(SEED.resourceMaster || []);
+  const [prefectures] = useState(SEED_PREFECTURES);
 
   return (
     <div className="app-shell">
@@ -76,7 +96,7 @@ function App() {
             <div className="crumbs">
               <a href="index.html" className="crumb-link">deep_Admin</a>
               <span className="sep">/</span>
-              <span className="current">リソース管理</span>
+              <span className="current">エリア管理</span>
             </div>
           </div>
         </div>
@@ -84,11 +104,11 @@ function App() {
         <div className="list-view">
           <div className="list-header">
             <div>
-              <h1>リソース管理</h1>
-              <p className="list-desc">催行に必要な機材・車両などの保有リソースを管理します。TourOptionの催行リソース設定から参照されます。</p>
+              <h1>エリア管理</h1>
+              <p className="list-desc">都道府県とそれに紐づくエリアを管理します。TourOptionのエリア選択に使用されます。</p>
             </div>
             <div style={{alignSelf:'flex-start'}}>
-              <a href="resource-detail.html?mode=create" className="btn primary">＋ リソースを追加</a>
+              <a href="area-detail.html?mode=create" className="btn primary">＋ 都道府県を追加</a>
             </div>
           </div>
 
@@ -96,39 +116,30 @@ function App() {
             <table className="list-table">
               <thead>
                 <tr>
-                  <th>リソース名</th>
-                  <th style={{width:100,textAlign:'center'}}>保有数</th>
-                  <th style={{width:60,textAlign:'center'}}>単位</th>
-                  <th style={{width:140,textAlign:'center'}}>再利用可能までの時間</th>
-                  <th style={{width:100,textAlign:'center'}}>定員</th>
+                  <th>都道府県名（日本語）</th>
+                  <th>都道府県名（English）</th>
+                  <th style={{width:100,textAlign:'center'}}>エリア数</th>
                   <th className="actions" style={{width:80}}></th>
                 </tr>
               </thead>
               <tbody>
-                {resources.map(r => (
-                  <tr key={r.id} className="list-row" onClick={() => { window.location.href = `resource-detail.html?id=${r.id}`; }}>
-                    <td>
-                      <strong>{r.label}</strong>
-                    </td>
+                {prefectures.map(p => (
+                  <tr key={p.id} className="list-row" onClick={() => { window.location.href = `area-detail.html?id=${p.id}`; }}>
+                    <td><strong>{p.nameJa}</strong></td>
+                    <td style={{color:'var(--muted)'}}>{p.nameEn}</td>
                     <td style={{textAlign:'center'}}>
-                      <span style={{fontWeight:700,fontSize:15}}>{r.totalQty}</span>
+                      <span style={{display:'inline-block',padding:'2px 10px',borderRadius:99,fontSize:11,background:'#e0e7ff',color:'#3730a3',fontWeight:600}}>
+                        {p.areas.length}
+                      </span>
                     </td>
-                    <td style={{textAlign:'center'}}>{r.unit}</td>
-                    <td style={{textAlign:'center'}}>
-                      {r.cooldown > 0
-                        ? <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#fef3c7',color:'#92400e'}}>{r.cooldown}分</span>
-                        : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
-                      }
-                    </td>
-                    <td style={{textAlign:'center'}}>{r.note ? `${r.note}人` : '—'}</td>
                     <td className="actions">
-                      <a href={`resource-detail.html?id=${r.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
+                      <a href={`area-detail.html?id=${p.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
                     </td>
                   </tr>
                 ))}
-                {resources.length === 0 && (
+                {prefectures.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="list-empty">リソースが登録されていません</td>
+                    <td colSpan={4} className="list-empty">都道府県が登録されていません</td>
                   </tr>
                 )}
               </tbody>

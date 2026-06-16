@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>エリア編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState, useRef } = React;
+
+const SEED_PREFECTURES = [
+  { id: "pref-1", nameJa: "京都府",   nameEn: "Kyoto Prefecture",   areas: [
+    { id: "area-1", nameJa: "祇園・東山エリア", nameEn: "Gion / Higashiyama" },
+    { id: "area-2", nameJa: "嵐山エリア",       nameEn: "Arashiyama" },
+    { id: "area-3", nameJa: "金閣寺・北野エリア", nameEn: "Kinkakuji / Kitano" },
+    { id: "area-4", nameJa: "伏見稲荷エリア",   nameEn: "Fushimi Inari" },
+  ]},
+  { id: "pref-2", nameJa: "大阪府",   nameEn: "Osaka Prefecture",   areas: [
+    { id: "area-5", nameJa: "大阪難波エリア", nameEn: "Osaka Namba" },
+    { id: "area-6", nameJa: "大阪梅田エリア", nameEn: "Osaka Umeda" },
+  ]},
+  { id: "pref-3", nameJa: "兵庫県",   nameEn: "Hyogo Prefecture",   areas: [
+    { id: "area-7", nameJa: "神戸元町エリア", nameEn: "Kobe Motomachi" },
+  ]},
+  { id: "pref-4", nameJa: "奈良県",   nameEn: "Nara Prefecture",    areas: [
+    { id: "area-8", nameJa: "奈良中心エリア", nameEn: "Central Nara" },
+  ]},
+  { id: "pref-5", nameJa: "東京都",   nameEn: "Tokyo",              areas: [] },
+];
+
+const params = new URLSearchParams(window.location.search);
+const targetId = params.get("id");
+const isCreate = params.get("mode") === "create" || !targetId;
+
+// ── Sidebar ─────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       hint: "ツアーの実体" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          hint: "顧客表示" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",         hint: "機材・車両等" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理",           hint: "都道府県・エリア" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",          hint: "運営注意・行程" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",  hint: "キャンセル文言" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "area" ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}>
+                <div>{it.label}</div>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── LangTabs ─────────────────────────────────────────────────────────────────
+function LangTabs({ value, onChange }) {
+  return (
+    <div style={{display:'flex',gap:0,borderBottom:'1px solid var(--line)'}}>
+      {[["en","English"],["ja","日本語"]].map(([code,label]) => (
+        <button key={code}
+          style={{padding:'8px 18px',border:'none',background:'none',cursor:'pointer',
+            borderBottom:value===code?'2px solid var(--accent)':'2px solid transparent',
+            fontWeight:value===code?700:400,color:value===code?'var(--accent)':'var(--muted)',fontSize:13}}
+          onClick={() => onChange(code)}>{label}</button>
+      ))}
+    </div>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const seed = SEED_PREFECTURES.find(p => p.id === targetId);
+  const [form, setForm] = useState(seed ? { ...seed, areas: [...seed.areas] } : {
+    id: "",
+    nameJa: "",
+    nameEn: "",
+    areas: [],
+  });
+  const [prefLang, setPrefLang] = useState("en");
+
+  const [areas, setAreas] = useState(form.areas);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newAreaJa, setNewAreaJa] = useState("");
+  const [newAreaEn, setNewAreaEn] = useState("");
+  const [newAreaLang, setNewAreaLang] = useState("en");
+  const [editingAreaId, setEditingAreaId] = useState(null);
+  const [editAreaJa, setEditAreaJa] = useState("");
+  const [editAreaEn, setEditAreaEn] = useState("");
+  const [editAreaLang, setEditAreaLang] = useState("en");
+
+  const update = patch => setForm(s => ({ ...s, ...patch }));
+  const pageTitle = isCreate ? "都道府県を追加" : (prefLang === "en" ? form.nameEn || form.nameJa : form.nameJa || form.nameEn);
+
+  const addArea = () => {
+    if (!newAreaJa && !newAreaEn) return;
+    setAreas(prev => [...prev, { id: `area-new-${Date.now()}`, nameJa: newAreaJa, nameEn: newAreaEn }]);
+    setNewAreaJa(""); setNewAreaEn(""); setShowAddForm(false);
+  };
+
+  const deleteArea = id => setAreas(prev => prev.filter(a => a.id !== id));
+
+  const startEdit = area => {
+    setEditingAreaId(area.id);
+    setEditAreaJa(area.nameJa);
+    setEditAreaEn(area.nameEn);
+    setEditAreaLang("en");
+  };
+
+  const saveEdit = () => {
+    setAreas(prev => prev.map(a => a.id === editingAreaId ? { ...a, nameJa: editAreaJa, nameEn: editAreaEn } : a));
+    setEditingAreaId(null);
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflowY:'auto'}}>
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="areas.html" className="crumb-link">エリア管理</a>
+              <span className="sep">/</span>
+              <span className="current">{isCreate ? "新規追加" : pageTitle}</span>
+            </div>
+            <h1 className="page-title">{pageTitle}</h1>
+          </div>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <button className="btn primary" onClick={() => window.location.href = "areas.html"}>更新保存</button>
+          </div>
+        </div>
+
+        <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:20}}>
+
+          {/* 都道府県名 多言語タブ */}
+          <div className="form-section">
+            <div style={{fontWeight:600,fontSize:13,marginBottom:12,color:'var(--muted)',letterSpacing:'.05em',textTransform:'uppercase'}}>都道府県名</div>
+            <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 16px 16px'}}>
+              <LangTabs value={prefLang} onChange={setPrefLang} />
+              <div style={{paddingTop:14}}>
+                {prefLang === "en" ? (
+                  <div className="field-wide">
+                    <label className="field-label"><span>都道府県名（English）</span><span className="req" aria-label="required" /></label>
+                    <input type="text" value={form.nameEn} onChange={e => update({ nameEn: e.target.value })}
+                      placeholder="e.g. Kyoto Prefecture"
+                      style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                  </div>
+                ) : (
+                  <div className="field-wide">
+                    <label className="field-label"><span>都道府県名（日本語）</span><span className="req" aria-label="required" /></label>
+                    <input type="text" value={form.nameJa} onChange={e => update({ nameJa: e.target.value })}
+                      placeholder="例：京都府"
+                      style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* エリア一覧 */}
+          <div className="form-section">
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+              <div style={{fontWeight:600,fontSize:13,color:'var(--muted)',letterSpacing:'.05em',textTransform:'uppercase'}}>紐づくエリア</div>
+              {!showAddForm && (
+                <button className="btn primary" onClick={() => { setShowAddForm(true); setEditingAreaId(null); }}>＋ エリアを追加</button>
+              )}
+            </div>
+
+            {/* エリア追加フォーム */}
+            {showAddForm && (
+              <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 16px 16px',marginBottom:16}}>
+                <div style={{fontWeight:600,fontSize:12,color:'var(--accent)',padding:'10px 0 8px',letterSpacing:'.04em'}}>新規エリアを追加</div>
+                <LangTabs value={newAreaLang} onChange={setNewAreaLang} />
+                <div style={{paddingTop:12}}>
+                  {newAreaLang === "en" ? (
+                    <div className="field-wide">
+                      <label className="field-label"><span>エリア名（English）</span></label>
+                      <input type="text" value={newAreaEn} onChange={e => setNewAreaEn(e.target.value)}
+                        placeholder="e.g. Gion / Higashiyama"
+                        style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                    </div>
+                  ) : (
+                    <div className="field-wide">
+                      <label className="field-label"><span>エリア名（日本語）</span></label>
+                      <input type="text" value={newAreaJa} onChange={e => setNewAreaJa(e.target.value)}
+                        placeholder="例：祇園・東山エリア"
+                        style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                    </div>
+                  )}
+                </div>
+                <div style={{display:'flex',gap:8,marginTop:12}}>
+                  <button className="btn primary" onClick={addArea}>追加</button>
+                  <button className="btn" onClick={() => { setShowAddForm(false); setNewAreaJa(""); setNewAreaEn(""); }}>キャンセル</button>
+                </div>
+              </div>
+            )}
+
+            <div className="list-table-wrap">
+              <table className="list-table">
+                <thead>
+                  <tr>
+                    <th>エリア名（日本語）</th>
+                    <th>エリア名（English）</th>
+                    <th className="actions" style={{width:120}}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {areas.map(a => (
+                    <tr key={a.id}>
+                      {editingAreaId === a.id ? (
+                        <>
+                          <td colSpan={2}>
+                            <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 14px 14px'}}>
+                              <LangTabs value={editAreaLang} onChange={setEditAreaLang} />
+                              <div style={{paddingTop:10}}>
+                                {editAreaLang === "en" ? (
+                                  <input type="text" value={editAreaEn} onChange={e => setEditAreaEn(e.target.value)}
+                                    placeholder="e.g. Gion / Higashiyama"
+                                    style={{width:'100%',padding:'6px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                                ) : (
+                                  <input type="text" value={editAreaJa} onChange={e => setEditAreaJa(e.target.value)}
+                                    placeholder="例：祇園・東山エリア"
+                                    style={{width:'100%',padding:'6px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="actions">
+                            <button className="btn primary sm" onClick={saveEdit}>保存</button>
+                            <button className="btn sm" onClick={() => setEditingAreaId(null)} style={{marginLeft:4}}>✕</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td><strong>{a.nameJa || <span style={{color:'var(--muted)'}}>—</span>}</strong></td>
+                          <td style={{color:'var(--muted)'}}>{a.nameEn || "—"}</td>
+                          <td className="actions">
+                            <button className="btn sm" onClick={() => startEdit(a)}>編集</button>
+                            <button className="btn sm danger" onClick={() => deleteArea(a.id)} style={{marginLeft:4}}>削除</button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                  {areas.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="list-empty">エリアが登録されていません</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style={{display:'flex',gap:8,paddingBottom:40}}>
+            <a href="areas.html" className="btn">キャンセル</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
