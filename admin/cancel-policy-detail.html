@@ -1950,6 +1950,8 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
   const [langTab, setLangTab] = useState("en");
   const bodyRefJa = useRef(null);
   const bodyRefEn = useRef(null);
+  // 一部返金可能 / 全額返金不可 の切替（デフォルト：一部返金可能）
+  const [refundType, setRefundType] = useState(tmpl?.refundType || "partial");
   const [customRules, setCustomRules] = useState(
     tmpl?.cancelCustomRules || [
       { id: "cr-1", days: 14, unit: "日", rate: 0 },
@@ -2002,26 +2004,44 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
     <div className={`form-section ${readonly ? "readonly-mode" : ""}`}>
       <SectionHead eyebrow="STEP 2" title="キャンセルポリシー編集" desc="キャンセル可能日数とポリシー名を設定します。" />
 
+      {/* 返金タイプ切替 */}
       <div style={{background:'var(--surface)',border:'1px solid var(--line)',borderRadius:8,padding:'16px 20px',marginBottom:16}}>
-        <div style={{fontWeight:600,fontSize:13,marginBottom:12,color:'var(--muted)',letterSpacing:'.05em',textTransform:'uppercase'}}>共通項目</div>
+        <div style={{fontWeight:600,fontSize:13,marginBottom:12,color:'var(--muted)',letterSpacing:'.05em',textTransform:'uppercase'}}>返金設定</div>
         <div className="field-grid">
           <div className="field">
-            <label className="field-label">
-              <span className="req" />
-              <span>キャンセル可能日数</span>
-            </label>
-            <div className="input-affix" style={{maxWidth:160}}>
-              <input
-                type="number" min="0"
-                value={tmpl.cancelDays ?? 0}
-                onChange={e => updateTemplate(tmpl.id, { cancelDays: Math.max(0, Number(e.target.value) || 0) })}
-                readOnly={readonly}
-              />
-              <div className="affix right">日</div>
+            <label className="field-label"><span className="req" /><span>返金タイプ</span></label>
+            <div style={{display:'flex',gap:24,paddingTop:6}}>
+              {[["partial","一部返金可能"],["none","全額返金不可"]].map(([val,label]) => (
+                <label key={val} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
+                  <input type="radio" name="refundType" value={val} checked={refundType===val} disabled={readonly}
+                    onChange={() => setRefundType(val)} />
+                  {label}
+                </label>
+              ))}
             </div>
-            <div className="field-help"><Icon.info /><span>キャンセル不可の場合は『0』で登録してください。半角数字で登録してください。</span></div>
           </div>
         </div>
+
+        {refundType === "none" && (
+          <div className="field-grid" style={{marginTop:12}}>
+            <div className="field">
+              <label className="field-label">
+                <span className="req" />
+                <span>キャンセル可能日数</span>
+              </label>
+              <div className="input-affix" style={{maxWidth:160}}>
+                <input
+                  type="number" min="0"
+                  value={tmpl.cancelDays ?? 0}
+                  onChange={e => updateTemplate(tmpl.id, { cancelDays: Math.max(0, Number(e.target.value) || 0) })}
+                  readOnly={readonly}
+                />
+                <div className="affix right">日</div>
+              </div>
+              <div className="field-help"><Icon.info /><span>キャンセル不可の場合は『0』で登録してください。半角数字で登録してください。</span></div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{border:'1.5px solid var(--accent)',borderRadius:6,padding:'0 12px 12px',marginTop:8}}>
@@ -2055,8 +2075,8 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
         )}
       </div>
 
-      {/* カスタムキャンセル条件 */}
-      <div style={{marginTop:16}}>
+      {/* カスタムキャンセル条件：一部返金可能の場合のみ表示 */}
+      {refundType === "partial" && <div style={{marginTop:16}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
           <div>
             <div style={{fontWeight:600,fontSize:13,color:'var(--fg)'}}>キャンセル条件設定</div>
@@ -2125,7 +2145,7 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
