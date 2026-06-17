@@ -172,7 +172,9 @@ function App() {
           </div>
         </div>
 
-        <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:20}}>
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            <div className="editor-content">
 
           {/* スラッグ（共通項目） */}
           <div className="form-section">
@@ -311,6 +313,8 @@ function App() {
             </div>
           </div>
 
+            </div>
+          </section>
         </div>
       </main>
     </div>
