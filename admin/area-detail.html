@@ -148,7 +148,7 @@ function App() {
       <Sidebar />
       <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflowY:'auto'}}>
         <div className="topbar">
-          <div>
+          <div className="topbar-left">
             <div className="crumbs">
               <a href="index.html" className="crumb-link">deep_Admin</a>
               <span className="sep">/</span>
@@ -156,10 +156,19 @@ function App() {
               <span className="sep">/</span>
               <span className="current">{isCreate ? "新規追加" : pageTitle}</span>
             </div>
-            <h1 className="page-title">{pageTitle}</h1>
           </div>
-          <div style={{display:'flex',gap:8,alignItems:'center'}}>
-            <button className="btn primary" onClick={() => window.location.href = "areas.html"}>更新保存</button>
+        </div>
+
+        <div className="status-strip">
+          <div className="status-cell fill">
+            <span className="status-label">都道府県名</span>
+            <strong>{pageTitle || "—"}</strong>
+          </div>
+          <div className="status-actions">
+            <a href="areas.html" className="btn">キャンセル</a>
+            <button className="btn primary" onClick={() => window.location.href = "areas.html"}>
+              {isCreate ? "保存" : "更新保存"}
+            </button>
           </div>
         </div>
 
@@ -302,9 +311,6 @@ function App() {
             </div>
           </div>
 
-          <div style={{display:'flex',gap:8,paddingBottom:40}}>
-            <a href="areas.html" className="btn">キャンセル</a>
-          </div>
         </div>
       </div>
     </div>
