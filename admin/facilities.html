@@ -20,11 +20,11 @@
 const { useState } = React;
 
 const SEED_FACILITIES = [
-  { id: "fac-1", name: "大阪城公演広場",        type: "観光スポット",   prefecture: "大阪府", address: "大阪市中央区大阪城1-1",     capacity: 500, status: "active" },
-  { id: "fac-2", name: "京都国際会館",           type: "体験施設",      prefecture: "京都府", address: "京都市左京区宝ヶ池",         capacity: 200, status: "active" },
-  { id: "fac-3", name: "奈良 正倉院",            type: "観光スポット",   prefecture: "奈良県", address: "奈良市雑司町406-1",           capacity: 100, status: "active" },
-  { id: "fac-4", name: "神戸北野クラブ",         type: "飲食施設",      prefecture: "兵庫県", address: "神戸市中央区北野町2-10-7",    capacity: 80,  status: "active" },
-  { id: "fac-5", name: "琵琶湖マリーナ",         type: "体験施設",      prefecture: "滋賀県", address: "大津市今堅田2-15",            capacity: 60,  status: "inactive" },
+  { id: "fac-1", name: "嵐山竹林体験センター", subtype: "竹細工・着物体験",  prefecture: "京都府", address: "京都市右京区嵯峨天龍寺芒ノ馬場町", phone: "075-XXX-XXXX", costCount: 3, updatedAt: "2026/06/10", status: "active" },
+  { id: "fac-2", name: "伏見稲荷大社",         subtype: "神社参拝・祈祷",    prefecture: "京都府", address: "京都市伏見区深草藪之内町",          phone: "075-YYY-YYYY", costCount: 2, updatedAt: "2026/06/08", status: "active" },
+  { id: "fac-3", name: "金閣寺（鹿苑寺）",     subtype: "寺院・観光",        prefecture: "京都府", address: "京都市北区金閣寺町",                phone: "075-ZZZ-ZZZZ", costCount: 1, updatedAt: "2026/05/30", status: "active" },
+  { id: "fac-4", name: "京町家体験 山田屋",     subtype: "町家宿泊・茶道体験", prefecture: "京都府", address: "京都市中京区",                      phone: "075-AAA-AAAA", costCount: 4, updatedAt: "2026/06/01", status: "active" },
+  { id: "fac-5", name: "宇治茶農家 田中園",     subtype: "お茶摘み・茶道",    prefecture: "京都府", address: "宇治市",                            phone: "0774-BBB-BBBB", costCount: 2, updatedAt: "2026/04/15", status: "inactive" },
 ];
 
 const FACILITY_TYPES = ["体験施設", "観光スポット", "飲食施設", "宿泊施設", "移動施設", "その他"];
@@ -79,7 +79,7 @@ function Sidebar() {
 function StatusBadge({ status }) {
   const map = {
     active:   { label: "有効",   bg: "#d1fae5", color: "#065f46" },
-    inactive: { label: "無効",   bg: "#f3f4f6", color: "#6b7280" },
+    inactive: { label: "無効",   bg: "#fee2e2", color: "#991b1b" },
   };
   const s = map[status] || map.inactive;
   return (
@@ -89,19 +89,44 @@ function StatusBadge({ status }) {
   );
 }
 
+// ── SelectBox ────────────────────────────────────────────────────────────────
+function SelectBox({ value, onChange, options, style = {} }) {
+  return (
+    <div style={{position:'relative', display:'inline-block', ...style}}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:7,paddingBottom:7,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',width:'100%'}}
+      >
+        {options.map(o => typeof o === 'string'
+          ? <option key={o} value={o}>{o}</option>
+          : <option key={o.value} value={o.value}>{o.label}</option>
+        )}
+      </select>
+      <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
+    </div>
+  );
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [facilities] = useState(SEED_FACILITIES);
-  const [filterType, setFilterType]           = useState("");
-  const [filterPref, setFilterPref]           = useState("");
-  const [filterStatus, setFilterStatus]       = useState("");
+  const [keyword,       setKeyword]       = useState("");
+  const [inputKeyword,  setInputKeyword]  = useState("");
+  const [filterPref,    setFilterPref]    = useState("");
+  const [filterStatus,  setFilterStatus]  = useState("");
 
   const filtered = facilities.filter(f => {
-    if (filterType   && f.type       !== filterType)   return false;
+    if (keyword) {
+      const kw = keyword.toLowerCase();
+      if (![f.name, f.address, f.subtype].some(s => s && s.toLowerCase().includes(kw))) return false;
+    }
     if (filterPref   && f.prefecture !== filterPref)   return false;
     if (filterStatus && f.status     !== filterStatus) return false;
     return true;
   });
+
+  const handleSearch = () => setKeyword(inputKeyword);
 
   return (
     <div className="app-shell">
@@ -122,90 +147,76 @@ function App() {
           <div className="list-header">
             <div>
               <h1>施設管理</h1>
-              <p className="list-desc">ツアーで使用する体験施設・観光スポット・飲食施設などを管理します。</p>
             </div>
             <div style={{alignSelf:'flex-start'}}>
-              <a href="facility-detail.html?mode=create" className="btn primary">＋ 施設を追加</a>
+              <a href="facility-detail.html?mode=create" className="btn primary">＋ 新規登録</a>
             </div>
           </div>
 
-          {/* 検索フィルター */}
-          <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
-            <div style={{position:'relative'}}>
-              <select
-                value={filterType}
-                onChange={e => setFilterType(e.target.value)}
-                style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:6,paddingBottom:6,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',minWidth:130}}
-              >
-                <option value="">すべての施設種別</option>
-                {FACILITY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-              <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
-            </div>
-            <div style={{position:'relative'}}>
-              <select
-                value={filterPref}
-                onChange={e => setFilterPref(e.target.value)}
-                style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:6,paddingBottom:6,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',minWidth:130}}
-              >
-                <option value="">すべての都道府県</option>
-                {PREFECTURES.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-              <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
-            </div>
-            <div style={{position:'relative'}}>
-              <select
-                value={filterStatus}
-                onChange={e => setFilterStatus(e.target.value)}
-                style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:6,paddingBottom:6,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',minWidth:110}}
-              >
-                <option value="">すべてのステータス</option>
-                <option value="active">有効</option>
-                <option value="inactive">無効</option>
-              </select>
-              <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
-            </div>
-            {(filterType || filterPref || filterStatus) && (
-              <button
-                onClick={() => { setFilterType(""); setFilterPref(""); setFilterStatus(""); }}
-                style={{padding:'6px 12px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',color:'var(--muted)'}}
-              >クリア</button>
-            )}
+          {/* 検索バー */}
+          <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap',alignItems:'center'}}>
+            <input
+              type="text"
+              value={inputKeyword}
+              onChange={e => setInputKeyword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder="施設名・住所・エリアで検索..."
+              style={{padding:'7px 12px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,width:260,outline:'none'}}
+            />
+            <SelectBox
+              value={filterPref}
+              onChange={setFilterPref}
+              options={[{value:"",label:"都道府県（すべて）"}, ...PREFECTURES.map(p => ({value:p,label:p}))]}
+              style={{width:170}}
+            />
+            <SelectBox
+              value={filterStatus}
+              onChange={setFilterStatus}
+              options={[{value:"",label:"すべてのステータス"},{value:"active",label:"有効"},{value:"inactive",label:"無効"}]}
+              style={{width:160}}
+            />
+            <button
+              onClick={handleSearch}
+              className="btn primary"
+              style={{padding:'7px 18px',fontSize:13}}
+            >検索する</button>
+            <div style={{flex:1}} />
+            <button
+              style={{padding:'7px 14px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer'}}
+            >CSV出力</button>
           </div>
 
           <div className="list-table-wrap">
             <table className="list-table">
               <thead>
                 <tr>
+                  <th style={{width:44,textAlign:'center'}}>NO</th>
                   <th>施設名</th>
-                  <th style={{width:120,textAlign:'center'}}>施設種別</th>
-                  <th style={{width:100,textAlign:'center'}}>都道府県</th>
+                  <th style={{width:90,textAlign:'center'}}>都道府県</th>
                   <th>住所</th>
-                  <th style={{width:90,textAlign:'center'}}>収容人数</th>
-                  <th style={{width:80,textAlign:'center'}}>ステータス</th>
-                  <th className="actions" style={{width:80}}></th>
+                  <th style={{width:140}}>連絡先</th>
+                  <th style={{width:80,textAlign:'center'}}>経費項目数</th>
+                  <th style={{width:72,textAlign:'center'}}>ステータス</th>
+                  <th style={{width:90,textAlign:'center'}}>最終更新</th>
+                  <th className="actions" style={{width:72}}></th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(f => (
+                {filtered.map((f, idx) => (
                   <tr key={f.id} className="list-row" onClick={() => { window.location.href = `facility-detail.html?id=${f.id}`; }}>
+                    <td style={{textAlign:'center',color:'var(--muted)',fontSize:13}}>{idx + 1}</td>
                     <td>
-                      <strong>{f.name}</strong>
-                    </td>
-                    <td style={{textAlign:'center'}}>
-                      <span style={{display:'inline-block',padding:'2px 8px',borderRadius:99,fontSize:11,background:'#eff6ff',color:'#1d4ed8'}}>{f.type}</span>
+                      <div style={{fontWeight:700,fontSize:14}}>{f.name}</div>
+                      {f.subtype && <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{f.subtype}</div>}
                     </td>
                     <td style={{textAlign:'center',fontSize:13}}>{f.prefecture}</td>
-                    <td style={{fontSize:12,color:'var(--muted)'}}>{f.address}</td>
-                    <td style={{textAlign:'center'}}>
-                      {f.capacity != null
-                        ? <span style={{fontWeight:700,fontSize:14}}>{f.capacity}<span style={{fontWeight:400,fontSize:11,marginLeft:2}}>人</span></span>
-                        : <span style={{color:'var(--muted)',fontSize:12}}>—</span>
-                      }
-                    </td>
+                    <td style={{fontSize:13,color:'#2563eb'}}>{f.address}</td>
+                    <td style={{fontSize:13}}>{f.phone}</td>
+                    <td style={{textAlign:'center',fontWeight:700,fontSize:14,color:'#2563eb'}}>{f.costCount}</td>
                     <td style={{textAlign:'center'}}>
                       <StatusBadge status={f.status} />
                     </td>
+                    <td style={{textAlign:'center',fontSize:12,color:'var(--muted)'}}>{f.updatedAt}</td>
                     <td className="actions">
                       <a href={`facility-detail.html?id=${f.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
                     </td>
@@ -213,7 +224,7 @@ function App() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="list-empty">施設が登録されていません</td>
+                    <td colSpan={9} className="list-empty">施設が登録されていません</td>
                   </tr>
                 )}
               </tbody>
