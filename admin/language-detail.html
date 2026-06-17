@@ -105,7 +105,9 @@ function App() {
           </div>
         </div>
 
-        <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:20}}>
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            <div className="editor-content">
 
           <div className="form-section">
             <div style={{background:'var(--surface)',border:'1px solid var(--line)',borderRadius:6,padding:'16px',display:'flex',flexDirection:'column',gap:16}}>
@@ -132,6 +134,8 @@ function App() {
             </div>
           </div>
 
+            </div>
+          </section>
         </div>
       </main>
     </div>
