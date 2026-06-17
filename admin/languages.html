@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>言語マスター管理 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const SEED_LANGUAGES = [
+  { id: "lang-1", name: "English(US)", code: "en" },
+  { id: "lang-2", name: "日本語",      code: "ja" },
+];
+
+// ── Sidebar ─────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       hint: "ツアーの実体" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          hint: "顧客表示" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",         hint: "機材・車両等" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理",           hint: "都道府県・エリア" },
+    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理",     hint: "対応言語" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",          hint: "運営注意・行程" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",  hint: "キャンセル文言" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "language" ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}>
+                <div>{it.label}</div>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div className="side-note">
+        <strong>言語マスター管理</strong>
+        対応言語を管理します。多言語コンテンツ入力のタブ表示に使用されます。
+      </div>
+    </aside>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [languages] = useState(SEED_LANGUAGES);
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:14,minWidth:0,overflowY:'auto'}}>
+      <div className="list-shell">
+        <div className="topbar list-topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <span className="current">言語マスター管理</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="list-view">
+          <div className="list-header">
+            <div>
+              <h1>言語マスター管理</h1>
+              <p className="list-desc">対応言語を管理します。ドラッグ＆ドロップで並び替えができます。</p>
+            </div>
+            <div style={{alignSelf:'flex-start'}}>
+              <a href="language-detail.html?mode=create" className="btn primary">＋ 新規登録</a>
+            </div>
+          </div>
+
+          <div className="list-table-wrap">
+            <table className="list-table">
+              <thead>
+                <tr>
+                  <th style={{width:60}}>No.</th>
+                  <th>言語名</th>
+                  <th style={{width:120}}>言語コード</th>
+                  <th className="actions" style={{width:80}}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {languages.map((lang, idx) => (
+                  <tr key={lang.id} className="list-row" onClick={() => { window.location.href = `language-detail.html?id=${lang.id}`; }}>
+                    <td style={{textAlign:'center',color:'var(--muted)',fontSize:12}}>{idx + 1}</td>
+                    <td><strong>{lang.name}</strong></td>
+                    <td style={{color:'var(--muted)',fontFamily:'monospace',fontSize:12}}>{lang.code}</td>
+                    <td className="actions">
+                      <a href={`language-detail.html?id=${lang.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
+                    </td>
+                  </tr>
+                ))}
+                {languages.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="list-empty">言語が登録されていません</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
