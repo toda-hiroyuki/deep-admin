@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>施設詳細 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const FACILITY_TYPES = ["体験施設", "観光スポット", "飲食施設", "宿泊施設", "移動施設", "その他"];
+const PREFECTURES = ["大阪府","京都府","奈良県","兵庫県","滋賀県","和歌山県","三重県","東京都","神奈川県","愛知県","福岡県","北海道","沖縄県"];
+
+const SEED_FACILITIES = {
+  "fac-1": { id: "fac-1", name: "大阪城公演広場",  nameEn: "Osaka Castle Plaza",   type: "観光スポット", prefecture: "大阪府", address: "大阪市中央区大阪城1-1",     addressEn: "1-1 Osakajo, Chuo-ku, Osaka",          capacity: 500, phone: "06-6941-3044", url: "https://www.osakacastle.net/", notes: "", status: "active" },
+  "fac-2": { id: "fac-2", name: "京都国際会館",     nameEn: "Kyoto International Conference Center", type: "体験施設", prefecture: "京都府", address: "京都市左京区宝ヶ池",  addressEn: "Takaragaike, Sakyo-ku, Kyoto",          capacity: 200, phone: "075-705-1234", url: "https://www.icckyoto.or.jp/",  notes: "", status: "active" },
+};
+
+// ── Sidebar ─────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",        hint: "ツアーの実体" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",           hint: "顧客表示" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",          hint: "機材・車両等" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理",           hint: "都道府県・エリア" },
+    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設管理",             hint: "体験施設・観光スポット" },
+    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理",     hint: "対応言語" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",           hint: "運営注意・行程" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",   hint: "キャンセル文言" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "facility" ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}>
+                <div>{it.label}</div>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── LangTab ──────────────────────────────────────────────────────────────────
+function LangTabs({ activeTab, onChange }) {
+  return (
+    <div style={{display:'flex',gap:0,borderBottom:'2px solid var(--border)',marginBottom:16}}>
+      {["en","ja"].map(lang => (
+        <button
+          key={lang}
+          onClick={() => onChange(lang)}
+          style={{
+            padding:'6px 18px',border:'none',background:'none',cursor:'pointer',fontSize:13,
+            borderBottom: activeTab === lang ? '2px solid var(--accent)' : '2px solid transparent',
+            color: activeTab === lang ? 'var(--accent)' : 'var(--muted)',
+            fontWeight: activeTab === lang ? 600 : 400,
+            marginBottom: -2,
+          }}
+        >
+          {lang === "en" ? "English" : "日本語"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── SelectBox ────────────────────────────────────────────────────────────────
+function SelectBox({ value, onChange, options, style = {} }) {
+  return (
+    <div style={{position:'relative', display:'inline-block', ...style}}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:7,paddingBottom:7,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',width:'100%'}}
+      >
+        {options.map(o => typeof o === 'string'
+          ? <option key={o} value={o}>{o}</option>
+          : <option key={o.value} value={o.value}>{o.label}</option>
+        )}
+      </select>
+      <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
+    </div>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const params = new URLSearchParams(window.location.search);
+  const facilityId = params.get("id");
+  const isCreate = params.get("mode") === "create" || !facilityId;
+
+  const initial = isCreate
+    ? { id: "", name: "", nameEn: "", type: "体験施設", prefecture: "大阪府", address: "", addressEn: "", capacity: "", phone: "", url: "", notes: "", status: "active" }
+    : (SEED_FACILITIES[facilityId] || { id: facilityId, name: "施設名サンプル", nameEn: "Sample Facility", type: "体験施設", prefecture: "大阪府", address: "", addressEn: "", capacity: 50, phone: "", url: "", notes: "", status: "active" });
+
+  const [form, setForm] = useState(initial);
+  const [langTab, setLangTab] = useState("en");
+  const [saved, setSaved]     = useState(false);
+
+  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const titleLabel = isCreate ? "施設を追加" : "施設を編集";
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflowY:'auto'}}>
+
+        {/* Topbar */}
+        <div className="topbar" style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 var(--sp-5)',borderBottom:'1px solid var(--border)',height:52,flexShrink:0}}>
+          <div className="crumbs">
+            <a href="index.html" className="crumb-link">deep_Admin</a>
+            <span className="sep">/</span>
+            <a href="facilities.html" className="crumb-link">施設管理</a>
+            <span className="sep">/</span>
+            <span className="current">{isCreate ? "新規追加" : (form.name || facilityId)}</span>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <a href="facilities.html" className="btn">キャンセル</a>
+            <button className="btn primary" onClick={handleSave} style={{minWidth:90}}>
+              {saved ? "✓ 保存しました" : "変更を保存"}
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{padding:'var(--sp-5)',maxWidth:760}}>
+          <h2 style={{marginBottom:24,fontSize:18,fontWeight:700}}>{titleLabel}</h2>
+
+          {/* 施設種別 */}
+          <div className="field-row" style={{marginBottom:20}}>
+            <label className="field-label">施設種別</label>
+            <SelectBox
+              value={form.type}
+              onChange={v => upd("type", v)}
+              options={FACILITY_TYPES}
+              style={{width:200}}
+            />
+          </div>
+
+          {/* 施設名（多言語） */}
+          <div style={{border:'1px solid var(--border)',borderRadius:8,padding:'16px 20px',marginBottom:20,background:'#fafafa'}}>
+            <div style={{fontSize:12,fontWeight:600,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>施設名</div>
+            <LangTabs activeTab={langTab} onChange={setLangTab} />
+            {langTab === "en" && (
+              <div className="field-row">
+                <label className="field-label">Facility Name (English)</label>
+                <input className="field-input" value={form.nameEn} onChange={e => upd("nameEn", e.target.value)} placeholder="e.g. Osaka Castle Plaza" />
+              </div>
+            )}
+            {langTab === "ja" && (
+              <div className="field-row">
+                <label className="field-label">施設名（日本語）</label>
+                <input className="field-input" value={form.name} onChange={e => upd("name", e.target.value)} placeholder="例：大阪城公演広場" />
+              </div>
+            )}
+          </div>
+
+          {/* 都道府県 */}
+          <div className="field-row" style={{marginBottom:20}}>
+            <label className="field-label">都道府県</label>
+            <SelectBox
+              value={form.prefecture}
+              onChange={v => upd("prefecture", v)}
+              options={PREFECTURES}
+              style={{width:200}}
+            />
+          </div>
+
+          {/* 住所（多言語） */}
+          <div style={{border:'1px solid var(--border)',borderRadius:8,padding:'16px 20px',marginBottom:20,background:'#fafafa'}}>
+            <div style={{fontSize:12,fontWeight:600,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>住所</div>
+            <LangTabs activeTab={langTab} onChange={setLangTab} />
+            {langTab === "en" && (
+              <div className="field-row">
+                <label className="field-label">Address (English)</label>
+                <input className="field-input" value={form.addressEn} onChange={e => upd("addressEn", e.target.value)} placeholder="e.g. 1-1 Osakajo, Chuo-ku, Osaka" />
+              </div>
+            )}
+            {langTab === "ja" && (
+              <div className="field-row">
+                <label className="field-label">住所（日本語）</label>
+                <input className="field-input" value={form.address} onChange={e => upd("address", e.target.value)} placeholder="例：大阪市中央区大阪城1-1" />
+              </div>
+            )}
+          </div>
+
+          {/* 収容人数 */}
+          <div className="field-row" style={{marginBottom:20}}>
+            <label className="field-label">収容人数</label>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <input
+                className="field-input"
+                type="number" min="1"
+                value={form.capacity}
+                onChange={e => upd("capacity", e.target.value)}
+                placeholder="例：100"
+                style={{width:120}}
+              />
+              <span style={{fontSize:13,color:'var(--muted)'}}>人</span>
+            </div>
+          </div>
+
+          {/* 電話番号 */}
+          <div className="field-row" style={{marginBottom:20}}>
+            <label className="field-label">電話番号</label>
+            <input className="field-input" value={form.phone} onChange={e => upd("phone", e.target.value)} placeholder="例：06-1234-5678" style={{maxWidth:240}} />
+          </div>
+
+          {/* WebサイトURL */}
+          <div className="field-row" style={{marginBottom:20}}>
+            <label className="field-label">WebサイトURL</label>
+            <input className="field-input" type="url" value={form.url} onChange={e => upd("url", e.target.value)} placeholder="https://..." />
+          </div>
+
+          {/* 備考 */}
+          <div className="field-row" style={{marginBottom:20}}>
+            <label className="field-label">備考</label>
+            <textarea
+              className="field-input"
+              value={form.notes}
+              onChange={e => upd("notes", e.target.value)}
+              rows={3}
+              placeholder="運営メモ・注意事項など"
+            />
+          </div>
+
+          {/* ステータス */}
+          <div className="field-row" style={{marginBottom:32}}>
+            <label className="field-label">ステータス</label>
+            <SelectBox
+              value={form.status}
+              onChange={v => upd("status", v)}
+              options={[{value:"active",label:"有効"},{value:"inactive",label:"無効"}]}
+              style={{width:140}}
+            />
+          </div>
+
+          <div style={{display:'flex',gap:10}}>
+            <button className="btn primary" onClick={handleSave} style={{minWidth:120}}>
+              {saved ? "✓ 保存しました" : "変更を保存"}
+            </button>
+            <a href="facilities.html" className="btn">キャンセル</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
