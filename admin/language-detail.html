@@ -79,7 +79,7 @@ function App() {
   return (
     <div className="app-shell">
       <Sidebar />
-      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflowY:'auto'}}>
+      <main className="workspace">
         <div className="topbar">
           <div className="topbar-left">
             <div className="crumbs">
@@ -133,7 +133,7 @@ function App() {
           </div>
 
         </div>
-      </div>
+      </main>
     </div>
   );
 }
