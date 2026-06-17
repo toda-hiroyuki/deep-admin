@@ -967,17 +967,7 @@ function CancelPolicySection({ t, update, readonly }) {
     "返金不可",
   ];
 
-  // カスタマイズモード状態
-  const [policyMode, setPolicyMode] = React.useState(t.cancelPolicyMode || "master");
-  const [customRules, setCustomRules] = React.useState(
-    t.cancelCustomRules || [{ id: "cr-1", days: 3, unit: "日", rate: 50 }, { id: "cr-2", days: 1, unit: "日", rate: 100 }]
-  );
-
-  const addRule = () => {
-    setCustomRules(prev => [...prev, { id: `cr-${Date.now()}`, days: "", unit: "日", rate: "" }]);
-  };
-  const removeRule = (id) => setCustomRules(prev => prev.filter(r => r.id !== id));
-  const updateRule = (id, patch) => setCustomRules(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
+  // カスタマイズモード状態（削除済み）
 
   return (
     <div style={{marginTop:16}}>
@@ -998,105 +988,16 @@ function CancelPolicySection({ t, update, readonly }) {
 
       {!isTravel ? (
         <div style={{marginTop:12}}>
-          {/* マスター選択 / カスタマイズ 切り替え */}
-          <div className="field-grid" style={{marginBottom:12}}>
-            <div className="field">
-              <label className="field-label"><span className="req"/><span>設定方法</span></label>
-              <div style={{display:'flex',gap:20,paddingTop:6}}>
-                {[["master","マスターから選択"],["custom","カスタマイズ"]].map(([val, label]) => (
-                  <label key={val} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
-                    <input type="radio" name="policyMode" value={val} checked={policyMode===val} disabled={readonly}
-                      onChange={() => { setPolicyMode(val); update({ cancelPolicyMode: val }); }} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
+          <div className="field-grid">
+            <SelectField
+              label="キャンセルポリシー"
+              required
+              value={t.cancelPolicy || ""}
+              onChange={x => update({ cancelPolicy: x })}
+              options={normalPolicies}
+              readOnly={readonly}
+            />
           </div>
-
-          {policyMode === "master" ? (
-            <div className="field-grid">
-              <SelectField
-                label="キャンセルポリシー"
-                required
-                value={t.cancelPolicy || ""}
-                onChange={x => update({ cancelPolicy: x })}
-                options={normalPolicies}
-                readOnly={readonly}
-              />
-            </div>
-          ) : (
-            <div style={{marginTop:4}}>
-              <div className="field-grid" style={{marginBottom:8}}>
-                <div className="field field-wide">
-                  <label className="field-label"><span className="req"/><span>カスタムキャンセル条件</span></label>
-                  <p style={{fontSize:12,color:'var(--muted)',marginBottom:8}}>体験日の何日前に何%のキャンセル料が発生するかを設定します。</p>
-                  <div style={{border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
-                    <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-                      <thead>
-                        <tr style={{background:'var(--bg-sunken)'}}>
-                          <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>体験日の何時間/日前</th>
-                          <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>キャンセル料率</th>
-                          {!readonly && <th style={{padding:'8px 12px',borderBottom:'1px solid var(--line)',width:60}}></th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {customRules.map((rule, idx) => (
-                          <tr key={rule.id} style={{borderBottom:'1px solid var(--line)'}}>
-                            <td style={{padding:'6px 12px'}}>
-                              {readonly ? (
-                                <span>{rule.days} {rule.unit||"日"}前</span>
-                              ) : (
-                                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                                  <input type="number" min={0} value={rule.days}
-                                    onChange={e => updateRule(rule.id, {days: e.target.value})}
-                                    style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
-                                  />
-                                  <div className="select-wrap" style={{minWidth:80}}>
-                                    <select value={rule.unit||"日"} onChange={e => updateRule(rule.id, {unit: e.target.value})}
-                                      style={{fontSize:13,padding:'5px 24px 5px 8px'}}>
-                                      <option value="日">日前</option>
-                                      <option value="時間">時間前</option>
-                                    </select>
-                                  </div>
-                                </div>
-                              )}
-                            </td>
-                            <td style={{padding:'6px 12px'}}>
-                              {readonly ? (
-                                <span>{rule.rate} %</span>
-                              ) : (
-                                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                                  <input type="number" min={0} max={100} value={rule.rate}
-                                    onChange={e => updateRule(rule.id, {rate: e.target.value})}
-                                    style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
-                                  />
-                                  <span style={{color:'var(--muted)'}}>%</span>
-                                </div>
-                              )}
-                            </td>
-                            {!readonly && (
-                              <td style={{padding:'6px 12px',textAlign:'center'}}>
-                                <button type="button" onClick={() => removeRule(rule.id)}
-                                  style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,lineHeight:1}}
-                                  title="削除">✕</button>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                        {!customRules.length && (
-                          <tr><td colSpan={readonly?2:3} style={{padding:'16px 12px',textAlign:'center',color:'var(--muted)'}}>条件が登録されていません</td></tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                  {!readonly && (
-                    <button type="button" onClick={addRule} className="btn sm" style={{marginTop:8}}>＋ 条件を追加</button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         <div style={{marginTop:12}}>

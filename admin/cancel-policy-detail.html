@@ -1950,6 +1950,16 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
   const [langTab, setLangTab] = useState("en");
   const bodyRefJa = useRef(null);
   const bodyRefEn = useRef(null);
+  const [customRules, setCustomRules] = useState(
+    tmpl?.cancelCustomRules || [
+      { id: "cr-1", days: 14, unit: "日", rate: 0 },
+      { id: "cr-2", days: 7,  unit: "日", rate: 50 },
+      { id: "cr-3", days: 1,  unit: "日", rate: 100 },
+    ]
+  );
+  const addRule = () => setCustomRules(prev => [...prev, { id: `cr-${Date.now()}`, days: "", unit: "日", rate: "" }]);
+  const removeRule = (id) => setCustomRules(prev => prev.filter(r => r.id !== id));
+  const updateRule = (id, patch) => setCustomRules(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
 
   if (tab === "tmplList") {
     return (
@@ -2043,6 +2053,78 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
             wide
           />
         )}
+      </div>
+
+      {/* カスタムキャンセル条件 */}
+      <div style={{marginTop:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div>
+            <div style={{fontWeight:600,fontSize:13,color:'var(--fg)'}}>キャンセル条件設定</div>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>体験日の何日前に何%のキャンセル料が発生するかを設定します。</div>
+          </div>
+          {!readonly && (
+            <button type="button" onClick={addRule} className="btn sm">＋ 条件を追加</button>
+          )}
+        </div>
+        <div style={{border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+            <thead>
+              <tr style={{background:'var(--bg-sunken)'}}>
+                <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>体験日の何時間/日前</th>
+                <th style={{padding:'8px 12px',textAlign:'left',borderBottom:'1px solid var(--line)',fontWeight:600}}>キャンセル料率</th>
+                {!readonly && <th style={{padding:'8px 12px',borderBottom:'1px solid var(--line)',width:60}}></th>}
+              </tr>
+            </thead>
+            <tbody>
+              {customRules.map((rule) => (
+                <tr key={rule.id} style={{borderBottom:'1px solid var(--line)'}}>
+                  <td style={{padding:'6px 12px'}}>
+                    {readonly ? (
+                      <span>{rule.days} {rule.unit||"日"}前</span>
+                    ) : (
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <input type="number" min={0} value={rule.days}
+                          onChange={e => updateRule(rule.id, {days: e.target.value})}
+                          style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
+                        />
+                        <div className="select-wrap" style={{minWidth:80}}>
+                          <select value={rule.unit||"日"} onChange={e => updateRule(rule.id, {unit: e.target.value})}
+                            style={{fontSize:13,padding:'5px 24px 5px 8px'}}>
+                            <option value="日">日前</option>
+                            <option value="時間">時間前</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </td>
+                  <td style={{padding:'6px 12px'}}>
+                    {readonly ? (
+                      <span>{rule.rate} %</span>
+                    ) : (
+                      <div style={{display:'flex',alignItems:'center',gap:6}}>
+                        <input type="number" min={0} max={100} value={rule.rate}
+                          onChange={e => updateRule(rule.id, {rate: e.target.value})}
+                          style={{width:72,padding:'5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13}}
+                        />
+                        <span style={{color:'var(--muted)'}}>%</span>
+                      </div>
+                    )}
+                  </td>
+                  {!readonly && (
+                    <td style={{padding:'6px 12px',textAlign:'center'}}>
+                      <button type="button" onClick={() => removeRule(rule.id)}
+                        style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,lineHeight:1}}
+                        title="削除">✕</button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {!customRules.length && (
+                <tr><td colSpan={readonly?2:3} style={{padding:'16px 12px',textAlign:'center',color:'var(--muted)'}}>条件が登録されていません</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
