@@ -2011,7 +2011,7 @@ function CancelTemplateEditor({ tab, mode, templates, updateTemplate, selectedTe
           <div className="field">
             <label className="field-label"><span className="req" /><span>返金タイプ</span></label>
             <div style={{display:'flex',gap:24,paddingTop:6}}>
-              {[["none","全額返金不可"],["partial","一部返金可能"]].map(([val,label]) => (
+              {[["none","一部返金不可"],["partial","一部返金可能"]].map(([val,label]) => (
                 <label key={val} style={{display:'flex',alignItems:'center',gap:6,cursor:readonly?'default':'pointer',fontSize:13.5}}>
                   <input type="radio" name="refundType" value={val} checked={refundType===val} disabled={readonly}
                     onChange={() => setRefundType(val)} />
