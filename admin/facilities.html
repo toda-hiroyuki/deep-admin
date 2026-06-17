@@ -111,10 +111,9 @@ function SelectBox({ value, onChange, options, style = {} }) {
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [facilities] = useState(SEED_FACILITIES);
-  const [keyword,       setKeyword]       = useState("");
-  const [inputKeyword,  setInputKeyword]  = useState("");
-  const [filterPref,    setFilterPref]    = useState("");
-  const [filterStatus,  setFilterStatus]  = useState("");
+  const [keyword,      setKeyword]      = useState("");
+  const [filterPref,   setFilterPref]   = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   const filtered = facilities.filter(f => {
     if (keyword) {
@@ -125,8 +124,6 @@ function App() {
     if (filterStatus && f.status     !== filterStatus) return false;
     return true;
   });
-
-  const handleSearch = () => setKeyword(inputKeyword);
 
   return (
     <div className="app-shell">
@@ -157,9 +154,8 @@ function App() {
           <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap',alignItems:'center'}}>
             <input
               type="text"
-              value={inputKeyword}
-              onChange={e => setInputKeyword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              value={keyword}
+              onChange={e => setKeyword(e.target.value)}
               placeholder="施設名・住所・エリアで検索..."
               style={{padding:'7px 12px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,width:260,outline:'none'}}
             />
@@ -175,11 +171,6 @@ function App() {
               options={[{value:"",label:"すべてのステータス"},{value:"active",label:"有効"},{value:"inactive",label:"無効"}]}
               style={{width:160}}
             />
-            <button
-              onClick={handleSearch}
-              className="btn primary"
-              style={{padding:'7px 18px',fontSize:13}}
-            >検索する</button>
             <div style={{flex:1}} />
             <button
               style={{padding:'7px 14px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer'}}
