@@ -196,17 +196,16 @@ function BasicInfoTab({ form, upd }) {
 }
 
 // ── Tab: 経費項目管理 ─────────────────────────────────────────────────────────
-function CostItemsTab({ costs, setCosts }) {
-  const add = () => setCosts(cs => [...cs, { id: `c${Date.now()}`, name: "", unitPrice: 0, unit: "人", paymentType: PAYMENT_TYPES[0] }]);
-  const remove = id => setCosts(cs => cs.filter(c => c.id !== id));
-  const upd = (id, k, v) => setCosts(cs => cs.map(c => c.id === id ? { ...c, [k]: v } : c));
+function CostItemsTab({ costs, facilityId }) {
+  const params = new URLSearchParams(window.location.search);
+  const fid = facilityId || params.get("id") || "";
 
   return (
     <div className="editor-content">
       <div className="form-section">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <SectionHead title="経費項目一覧" desc="この施設に関連する経費項目を管理します。" />
-          <button className="btn primary" onClick={add} style={{alignSelf:'flex-start',marginTop:2}}>＋ 経費項目を追加</button>
+          <a href={`facility-cost-detail.html?facilityId=${fid}&mode=create`} className="btn primary">＋ 経費項目を追加</a>
         </div>
 
         {costs.length === 0 ? (
@@ -222,30 +221,18 @@ function CostItemsTab({ costs, setCosts }) {
                   <th style={{width:120,textAlign:'right'}}>単価（円）</th>
                   <th style={{width:90,textAlign:'center'}}>単位</th>
                   <th>支払区分</th>
-                  <th style={{width:48}}></th>
+                  <th className="actions" style={{width:72}}></th>
                 </tr>
               </thead>
               <tbody>
                 {costs.map(c => (
-                  <tr key={c.id}>
-                    <td>
-                      <input type="text" value={c.name} onChange={e => upd(c.id,"name",e.target.value)} placeholder="例：入場料（大人）" />
-                    </td>
-                    <td>
-                      <input type="number" min="0" value={c.unitPrice} onChange={e => upd(c.id,"unitPrice",Number(e.target.value))} style={{textAlign:'right'}} />
-                    </td>
-                    <td>
-                      <select value={c.unit} onChange={e => upd(c.id,"unit",e.target.value)}>
-                        {["人","回","式","時間","日"].map(u => <option key={u}>{u}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <select value={c.paymentType} onChange={e => upd(c.id,"paymentType",e.target.value)}>
-                        {PAYMENT_TYPES.map(p => <option key={p}>{p}</option>)}
-                      </select>
-                    </td>
-                    <td style={{textAlign:'center'}}>
-                      <button onClick={() => remove(c.id)} className="btn sm danger">✕</button>
+                  <tr key={c.id} className="list-row" onClick={() => { window.location.href = `facility-cost-detail.html?facilityId=${fid}&id=${c.id}`; }}>
+                    <td style={{fontWeight:600}}>{c.name}</td>
+                    <td style={{textAlign:'right'}}>{c.unitPrice.toLocaleString()}</td>
+                    <td style={{textAlign:'center'}}>{c.unit}</td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>{c.paymentType}</td>
+                    <td className="actions">
+                      <a href={`facility-cost-detail.html?facilityId=${fid}&id=${c.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
                     </td>
                   </tr>
                 ))}
@@ -350,7 +337,7 @@ function App() {
             </div>
 
             {tab === "basic" && <BasicInfoTab form={form} upd={upd} />}
-            {tab === "costs" && <CostItemsTab costs={costs} setCosts={setCosts} />}
+            {tab === "costs" && <CostItemsTab costs={costs} facilityId={facilityId} />}
           </section>
         </div>
 
