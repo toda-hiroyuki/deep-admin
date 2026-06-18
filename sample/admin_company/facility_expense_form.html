@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>経費項目 登録・編集 | DeepExperience Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: #f9fafb; color: #111827; line-height: 1.5; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .admin-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #1f2937; color: white; padding: 20px 0;
+               flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar-title { padding: 0 20px 16px; font-size: 16px; font-weight: bold;
+                     border-bottom: 1px solid #374151; margin-bottom: 8px; }
+    .sidebar-section { padding: 8px 20px 4px; font-size: 11px; color: #6b7280;
+                       text-transform: uppercase; letter-spacing: 0.06em; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+                     color: #d1d5db; font-size: 14px; }
+    .sidebar-nav a:hover, .sidebar-nav a.active { background: #374151; color: white; text-decoration: none; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid #374151; }
+    .main-content { flex: 1; padding: 24px; overflow-x: auto; }
+
+    /* Page */
+    .breadcrumb { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+    .breadcrumb a { color: #6b7280; }
+    .breadcrumb a:hover { color: #2563eb; }
+    .page-header { display: flex; justify-content: space-between; align-items: center;
+                   margin-bottom: 24px; }
+    .page-title { font-size: 22px; font-weight: bold; }
+
+    /* Card */
+    .card { background: white; border-radius: 8px; padding: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px;
+            max-width: 720px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 20px;
+                  padding-bottom: 12px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+
+    /* Forms */
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600;
+                  margin-bottom: 5px; color: #374151; }
+    .form-required { color: #ef4444; margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid #d1d5db;
+      border-radius: 6px; font-size: 14px; background: white; color: #111827; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: flex; gap: 14px; }
+    .form-row > * { flex: 1; }
+    .form-hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .form-actions { display: flex; gap: 10px; align-items: center;
+                    padding-top: 20px; margin-top: 8px; border-top: 1px solid #f3f4f6; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px;
+           border-radius: 6px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-ghost { background: transparent; border: 1px solid #d1d5db; color: #374151; }
+    .btn-ghost:hover { background: #f3f4f6; }
+    .btn-lg { padding: 11px 28px; font-size: 15px; }
+    .btn-sm { padding: 4px 10px; font-size: 13px; }
+
+    /* Tier table */
+    .tier-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .tier-table th, .tier-table td {
+      padding: 7px 10px; border: 1px solid #e5e7eb; font-size: 13px; text-align: center; }
+    .tier-table th { background: #f9fafb; color: #6b7280; font-size: 12px; }
+
+    /* Utility */
+    .flex { display: flex; }
+    .gap-2 { gap: 8px; }
+    .mt-2 { margin-top: 8px; }
+    .text-sm { font-size: 13px; }
+    .text-muted { color: #6b7280; }
+    .hidden { display: none; }
+    .info-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px;
+                padding: 10px 14px; font-size: 13px; color: #92400e; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- ════════ Sidebar ════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-title">DeepExperience</div>
+    <div class="sidebar-section">施設管理</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="facilities.html" class="active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18M16 3v18M2 9h20M2 15h20"/></svg>
+          施設一覧
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-section" style="margin-top:8px;">ナビゲーション</div>
+    <ul class="sidebar-nav">
+      <li><a href="../admin/index.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        管理画面トップへ
+      </a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost" style="width:100%;color:#9ca3af;padding:6px 10px;font-size:13px;">ログアウト</button>
+    </div>
+  </nav>
+
+  <!-- ════════ Main ════════ -->
+  <main class="main-content">
+
+    <div class="breadcrumb">
+      <a href="facilities.html">施設一覧</a> &rsaquo;
+      <a href="facility_detail.html">嵐山竹林体験センター</a> &rsaquo;
+      <a href="facility_expenses.html">経費項目管理</a> &rsaquo;
+      <span id="page-mode-label">経費項目を追加</span>
+    </div>
+
+    <div class="page-header">
+      <h1 class="page-title" id="page-title">経費項目を追加</h1>
+    </div>
+
+    <form onsubmit="handleSubmit(event)">
+      <div class="card">
+        <div class="card-title">経費項目情報</div>
+
+        <div class="form-group">
+          <label class="form-label">項目名<span class="form-required">*</span></label>
+          <input class="form-input" id="exp-name" type="text"
+                 placeholder="例：入館料、竹細工体験料、着物レンタル料" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">費用区分<span class="form-required">*</span></label>
+            <select class="form-select" id="exp-cost-type" required
+                    onchange="onCostTypeChange(this.value)">
+              <option value="">選択してください</option>
+              <option value="fixed">固定費</option>
+              <option value="per-person">変動・人数固定</option>
+              <option value="slide">変動・スライド</option>
+              <option value="full-var">変動・完全変動</option>
+            </select>
+            <p class="form-hint">
+              固定費：一定額 ／ 変動・人数固定：人数×単価 ／
+              変動・スライド：人数帯で単価変動 ／ 完全変動：毎回異なる
+            </p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">支払区分<span class="form-required">*</span></label>
+            <select class="form-select" id="exp-pay-type" required>
+              <option value="">選択してください</option>
+              <option value="A">A：施設へ月末一括（会社払い）</option>
+              <option value="B">B：施設へ都度・ガイド立替</option>
+              <option value="C">C：登録施設外への都度・ガイド立替</option>
+              <option value="D">D：ガイド自身の経費</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 固定費 / 変動・人数固定 -->
+        <div id="field-unit-price" class="form-group hidden">
+          <label class="form-label">単価 / 基本料金（円）<span class="form-required">*</span></label>
+          <input class="form-input" id="exp-unit-price" type="number" min="0"
+                 placeholder="例：1200" />
+          <p class="form-hint" id="unit-hint"></p>
+        </div>
+
+        <!-- 変動・スライド -->
+        <div id="field-slide" class="hidden">
+          <div class="form-group">
+            <label class="form-label">人数帯単価テーブル<span class="form-required">*</span></label>
+            <p class="form-hint" style="margin-bottom:10px;">
+              人数帯ごとの1人あたり単価を設定してください。最終行の最大人数は空欄で「上限なし」になります。
+            </p>
+            <table class="tier-table">
+              <thead>
+                <tr>
+                  <th>最大人数（空欄=上限なし）</th>
+                  <th>単価（円/人）</th>
+                  <th style="width:50px;"></th>
+                </tr>
+              </thead>
+              <tbody id="tier-rows">
+                <tr>
+                  <td><input type="number" class="form-input" min="1" value="5"
+                             style="width:90px;padding:5px;" /></td>
+                  <td><input type="number" class="form-input" min="0"
+                             placeholder="例：2000" style="width:100px;padding:5px;" /></td>
+                  <td><button type="button" class="btn btn-ghost btn-sm"
+                              onclick="removeTierRow(this)">×</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-ghost btn-sm mt-2"
+                    onclick="addTierRow()">+ 行を追加</button>
+          </div>
+        </div>
+
+        <!-- 完全変動 -->
+        <div id="field-full-var" class="hidden form-group">
+          <div class="info-box" style="margin-bottom:12px;">
+            完全変動費はツアー実施ごとにガイドが実費を申請します。ここで設定する金額は参考となる基準価格です。
+          </div>
+          <label class="form-label">基準価格（円）</label>
+          <input class="form-input" id="exp-base-price" type="number" min="0"
+                 placeholder="例：3000" />
+          <p class="form-hint">任意入力。実費との差異をガイドが都度申請します。</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">備考</label>
+          <textarea class="form-textarea" id="exp-note"
+                    placeholder="適用条件・注意事項など"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">登録する</button>
+          <a href="facility_expenses.html" class="btn btn-ghost btn-lg">キャンセル</a>
+        </div>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+  // URLパラメータで新規 or 編集を判定
+  const isEdit = new URLSearchParams(location.search).get('mode') === 'edit';
+  if (isEdit) {
+    document.getElementById('page-title').textContent       = '経費項目を編集';
+    document.getElementById('page-mode-label').textContent  = '経費項目を編集';
+    document.getElementById('submit-btn').textContent       = '保存する';
+    // モック：既存データをセット
+    document.getElementById('exp-name').value      = '竹細工体験料';
+    document.getElementById('exp-cost-type').value = 'per-person';
+    document.getElementById('exp-pay-type').value  = 'A';
+    document.getElementById('exp-note').value      = '材料費込み';
+    onCostTypeChange('per-person');
+    document.getElementById('exp-unit-price').value = '1200';
+  }
+
+  function onCostTypeChange(val) {
+    ['field-unit-price','field-slide','field-full-var'].forEach(id =>
+      document.getElementById(id).classList.add('hidden'));
+    if (val === 'fixed' || val === 'per-person') {
+      document.getElementById('field-unit-price').classList.remove('hidden');
+      document.getElementById('unit-hint').textContent =
+        val === 'fixed' ? '1回あたりの合計金額を入力してください。'
+                        : '1人あたりの単価を入力してください。';
+    } else if (val === 'slide') {
+      document.getElementById('field-slide').classList.remove('hidden');
+    } else if (val === 'full-var') {
+      document.getElementById('field-full-var').classList.remove('hidden');
+    }
+  }
+
+  function addTierRow() {
+    const tbody = document.getElementById('tier-rows');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" class="form-input" min="1" style="width:90px;padding:5px;" /></td>
+      <td><input type="number" class="form-input" min="0" placeholder="例：1800"
+                 style="width:100px;padding:5px;" /></td>
+      <td><button type="button" class="btn btn-ghost btn-sm"
+                  onclick="removeTierRow(this)">×</button></td>`;
+    tbody.appendChild(tr);
+  }
+
+  function removeTierRow(btn) {
+    if (document.querySelectorAll('#tier-rows tr').length <= 1) {
+      alert('最低1行必要です'); return;
+    }
+    btn.closest('tr').remove();
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    alert(isEdit ? '経費項目を保存しました（モック）' : '経費項目を登録しました（モック）');
+    location.href = 'facility_expenses.html';
+  }
+</script>
+</body>
+</html>

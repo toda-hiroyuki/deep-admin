@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>施設詳細 — 基本情報 | DeepExperience Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: #f9fafb; color: #111827; line-height: 1.5; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .admin-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #1f2937; color: white; padding: 20px 0;
+               flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar-title { padding: 0 20px 16px; font-size: 16px; font-weight: bold;
+                     border-bottom: 1px solid #374151; margin-bottom: 8px; }
+    .sidebar-section { padding: 8px 20px 4px; font-size: 11px; color: #6b7280;
+                       text-transform: uppercase; letter-spacing: 0.06em; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+                     color: #d1d5db; font-size: 14px; }
+    .sidebar-nav a:hover, .sidebar-nav a.active { background: #374151; color: white; text-decoration: none; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid #374151; }
+    .main-content { flex: 1; padding: 24px; overflow-x: auto; }
+
+    /* Page */
+    .breadcrumb { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+    .breadcrumb a { color: #6b7280; }
+    .breadcrumb a:hover { color: #2563eb; }
+    .page-header { display: flex; justify-content: space-between; align-items: center;
+                   margin-bottom: 20px; }
+    .page-title { font-size: 22px; font-weight: bold; }
+
+    /* Tabs (page-link style) */
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; background: #f3f4f6;
+               padding: 4px; border-radius: 8px; width: fit-content; }
+    .tab { display: inline-block; padding: 6px 20px; border-radius: 6px; font-size: 14px;
+           font-weight: 500; color: #6b7280; text-decoration: none; }
+    .tab:hover { text-decoration: none; color: #111827; }
+    .tab.active { background: white; color: #111827; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+           border-radius: 6px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-ghost { background: transparent; border: 1px solid #d1d5db; color: #374151; }
+    .btn-ghost:hover { background: #f3f4f6; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-sm { padding: 4px 10px; font-size: 13px; }
+
+    /* Card */
+    .card { background: white; border-radius: 8px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px;
+                  padding-bottom: 10px; border-bottom: 1px solid #f3f4f6; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px;
+             font-size: 12px; font-weight: 600; }
+    .badge-active   { background: #d1fae5; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+    /* Detail rows */
+    .detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { width: 160px; font-size: 13px; color: #6b7280; flex-shrink: 0; }
+    .detail-value { font-size: 14px; }
+
+    /* Forms */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600;
+                  margin-bottom: 4px; color: #374151; }
+    .form-required { color: #ef4444; margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 8px 12px; border: 1px solid #d1d5db;
+      border-radius: 6px; font-size: 14px; background: white; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+    .form-textarea { resize: vertical; min-height: 72px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row > * { flex: 1; }
+    .form-hint { font-size: 12px; color: #6b7280; margin-top: 3px; }
+    .form-section { font-size: 12px; font-weight: 700; color: #6b7280;
+                    text-transform: uppercase; letter-spacing: 0.05em;
+                    margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid #f3f4f6; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+                     display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal { background: white; border-radius: 12px; padding: 24px;
+             width: 400px; max-width: 90vw; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center;
+                    margin-bottom: 16px; }
+    .modal-title { font-size: 16px; font-weight: bold; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer;
+                   color: #6b7280; line-height: 1; }
+
+    /* Utility */
+    .flex { display: flex; }
+    .gap-2 { gap: 8px; }
+    .items-center { align-items: center; }
+    .mt-4 { margin-top: 16px; }
+    .text-sm { font-size: 13px; }
+    .text-muted { color: #6b7280; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- ════════ Sidebar ════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-title">DeepExperience</div>
+    <div class="sidebar-section">施設管理</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="facilities.html" class="active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18M16 3v18M2 9h20M2 15h20"/></svg>
+          施設一覧
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-section" style="margin-top:8px;">ナビゲーション</div>
+    <ul class="sidebar-nav">
+      <li><a href="../admin/index.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        管理画面トップへ
+      </a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost btn-sm" style="width:100%;color:#9ca3af;">ログアウト</button>
+    </div>
+  </nav>
+
+  <!-- ════════ Main ════════ -->
+  <main class="main-content">
+
+    <div class="breadcrumb">
+      <a href="facilities.html">施設一覧</a> &rsaquo; 嵐山竹林体験センター
+    </div>
+
+    <div class="page-header">
+      <div class="flex items-center gap-2">
+        <h1 class="page-title">嵐山竹林体験センター</h1>
+        <span class="badge badge-active">有効</span>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" onclick="toggleEdit()">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="openModal('modal-delete')">削除</button>
+      </div>
+    </div>
+
+    <!-- Page-link tabs -->
+    <div class="tab-bar">
+      <a href="facility_detail.html" class="tab active">基本情報</a>
+      <a href="facility_expenses.html" class="tab">経費項目管理</a>
+    </div>
+
+    <!-- ── 閲覧モード ── -->
+    <div id="view-mode">
+      <div class="card">
+        <div class="card-title">基本情報</div>
+        <div class="detail-row">
+          <span class="detail-label">施設名</span>
+          <span class="detail-value">嵐山竹林体験センター</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">カテゴリ</span>
+          <span class="detail-value">体験施設</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">都道府県</span>
+          <span class="detail-value">京都府</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">住所</span>
+          <span class="detail-value">京都市右京区嵯峨天龍寺芒ノ馬場町</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">連絡先電話番号</span>
+          <span class="detail-value">075-XXX-XXXX</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">連絡先メール</span>
+          <span class="detail-value">info@arashiyama-example.com</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">担当者名</span>
+          <span class="detail-value">山田 太郎</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">支払区分（デフォルト）</span>
+          <span class="detail-value">A：施設へ月末一括（会社払い）</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">備考</span>
+          <span class="detail-value text-muted">竹林内の体験エリアは雨天中止。要事前確認。</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">ステータス</span>
+          <span class="detail-value"><span class="badge badge-active">有効</span></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">登録日</span>
+          <span class="detail-value text-muted">2026/04/01</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">最終更新</span>
+          <span class="detail-value text-muted">2026/06/10 14:32</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 編集モード ── -->
+    <div id="edit-mode" class="hidden">
+      <div class="card">
+        <div class="card-title">基本情報を編集</div>
+        <form onsubmit="saveEdit(event)">
+          <div class="form-group">
+            <label class="form-label">施設名<span class="form-required">*</span></label>
+            <input class="form-input" type="text" value="嵐山竹林体験センター" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">カテゴリ<span class="form-required">*</span></label>
+            <select class="form-select" required>
+              <option>神社・仏閣</option>
+              <option selected>体験施設</option>
+              <option>飲食店</option>
+              <option>宿泊施設</option>
+              <option>観光スポット</option>
+              <option>農園・自然</option>
+              <option>その他</option>
+            </select>
+          </div>
+
+          <div class="form-section">所在地</div>
+          <div class="form-group">
+            <label class="form-label">都道府県<span class="form-required">*</span></label>
+            <select class="form-select" required>
+              <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
+              <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
+              <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
+              <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
+              <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
+              <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+              <option>滋賀県</option><option selected>京都府</option><option>大阪府</option><option>兵庫県</option>
+              <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
+              <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
+              <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
+              <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
+              <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">住所（市区町村以降）<span class="form-required">*</span></label>
+            <input class="form-input" type="text" value="京都市右京区嵯峨天龍寺芒ノ馬場町" required />
+          </div>
+
+          <div class="form-section">連絡先</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">連絡先電話番号</label>
+              <input class="form-input" type="tel" value="075-XXX-XXXX" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">連絡先メールアドレス</label>
+              <input class="form-input" type="email" value="info@arashiyama-example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">担当者名</label>
+            <input class="form-input" type="text" value="山田 太郎" />
+          </div>
+
+          <div class="form-section">経費設定</div>
+          <div class="form-group">
+            <label class="form-label">支払区分（デフォルト）</label>
+            <select class="form-select">
+              <option value="A" selected>A：施設へ月末一括（会社払い）</option>
+              <option value="B">B：施設へ都度・ガイド立替</option>
+              <option value="C">C：登録施設外への都度・ガイド立替</option>
+              <option value="D">D：ガイド自身の経費</option>
+            </select>
+            <p class="form-hint">経費項目ごとに個別設定も可能です</p>
+          </div>
+
+          <div class="form-section">その他</div>
+          <div class="form-group">
+            <label class="form-label">備考</label>
+            <textarea class="form-textarea">竹林内の体験エリアは雨天中止。要事前確認。</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ステータス</label>
+            <select class="form-select">
+              <option value="active" selected>有効</option>
+              <option value="inactive">無効</option>
+            </select>
+          </div>
+
+          <div class="flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">保存する</button>
+            <button type="button" class="btn btn-ghost" onclick="toggleEdit()">キャンセル</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ════════ 削除確認 Modal ════════ -->
+<div class="modal-overlay hidden" id="modal-delete" onclick="closeModalOnBg(event,'modal-delete')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" style="color:#ef4444;">削除の確認</span>
+      <button class="modal-close" onclick="closeModal('modal-delete')">×</button>
+    </div>
+    <p style="font-size:14px;color:#374151;margin-bottom:20px;">
+      施設「嵐山竹林体験センター」を削除してもよいですか？<br>
+      関連する経費項目もすべて削除されます。この操作は元に戻せません。
+    </p>
+    <div class="flex gap-2">
+      <button class="btn btn-danger" onclick="executeDelete()">削除する</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-delete')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleEdit() {
+    document.getElementById('view-mode').classList.toggle('hidden');
+    document.getElementById('edit-mode').classList.toggle('hidden');
+  }
+  function saveEdit(e) {
+    e.preventDefault();
+    alert('保存しました（モック）');
+    toggleEdit();
+  }
+  function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+  function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+  function closeModalOnBg(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+  function executeDelete() {
+    alert('削除しました（モック）');
+    location.href = 'facilities.html';
+  }
+</script>
+</body>
+</html>

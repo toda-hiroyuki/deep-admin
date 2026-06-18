@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>施設 新規登録 | DeepExperience Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: #f9fafb; color: #111827; line-height: 1.5; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .admin-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #1f2937; color: white; padding: 20px 0;
+               flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar-title { padding: 0 20px 16px; font-size: 16px; font-weight: bold;
+                     border-bottom: 1px solid #374151; margin-bottom: 8px; }
+    .sidebar-section { padding: 8px 20px 4px; font-size: 11px; color: #6b7280;
+                       text-transform: uppercase; letter-spacing: 0.06em; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+                     color: #d1d5db; font-size: 14px; }
+    .sidebar-nav a:hover, .sidebar-nav a.active { background: #374151; color: white; text-decoration: none; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid #374151; }
+    .main-content { flex: 1; padding: 24px; overflow-x: auto; }
+
+    /* Page */
+    .breadcrumb { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+    .breadcrumb a { color: #6b7280; }
+    .breadcrumb a:hover { color: #2563eb; }
+    .page-header { display: flex; justify-content: space-between; align-items: center;
+                   margin-bottom: 24px; }
+    .page-title { font-size: 22px; font-weight: bold; }
+
+    /* Card */
+    .card { background: white; border-radius: 8px; padding: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px;
+            max-width: 720px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 20px;
+                  padding-bottom: 12px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+
+    /* Forms */
+    .form-group { margin-bottom: 18px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600;
+                  margin-bottom: 5px; color: #374151; }
+    .form-required { color: #ef4444; margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid #d1d5db;
+      border-radius: 6px; font-size: 14px; background: white; color: #111827; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+    .form-textarea { resize: vertical; min-height: 88px; }
+    .form-row { display: flex; gap: 14px; }
+    .form-row > * { flex: 1; }
+    .form-hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .form-section { font-size: 13px; font-weight: 700; color: #6b7280;
+                    text-transform: uppercase; letter-spacing: 0.05em;
+                    margin: 24px 0 14px; padding-top: 20px;
+                    border-top: 1px solid #f3f4f6; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px;
+           border-radius: 6px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-ghost { background: transparent; border: 1px solid #d1d5db; color: #374151; }
+    .btn-ghost:hover { background: #f3f4f6; }
+    .btn-lg { padding: 11px 28px; font-size: 15px; }
+
+    /* Actions bar */
+    .form-actions { display: flex; gap: 10px; align-items: center;
+                    padding-top: 20px; margin-top: 8px; border-top: 1px solid #f3f4f6; }
+
+    /* Utility */
+    .flex { display: flex; }
+    .gap-2 { gap: 8px; }
+    .text-sm { font-size: 13px; }
+    .text-muted { color: #6b7280; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- ════════ Sidebar ════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-title">DeepExperience</div>
+    <div class="sidebar-section">施設管理</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="facilities.html" class="active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18M16 3v18M2 9h20M2 15h20"/></svg>
+          施設一覧
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-section" style="margin-top:8px;">ナビゲーション</div>
+    <ul class="sidebar-nav">
+      <li><a href="../admin/index.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        管理画面トップへ
+      </a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost" style="width:100%;color:#9ca3af;padding:6px 10px;font-size:13px;">ログアウト</button>
+    </div>
+  </nav>
+
+  <!-- ════════ Main ════════ -->
+  <main class="main-content">
+
+    <div class="breadcrumb">
+      <a href="facilities.html">施設一覧</a> &rsaquo; 新規登録
+    </div>
+
+    <div class="page-header">
+      <h1 class="page-title">施設 新規登録</h1>
+    </div>
+
+    <form onsubmit="handleSubmit(event)">
+
+      <!-- ── 基本情報 ── -->
+      <div class="card">
+        <div class="card-title">基本情報</div>
+
+        <div class="form-group">
+          <label class="form-label">施設名<span class="form-required">*</span></label>
+          <input class="form-input" type="text" placeholder="例：嵐山竹林体験センター" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">施設カテゴリ<span class="form-required">*</span></label>
+          <select class="form-select" required>
+            <option value="">選択してください</option>
+            <option>神社・仏閣</option>
+            <option>体験施設</option>
+            <option>飲食店</option>
+            <option>宿泊施設</option>
+            <option>観光スポット</option>
+            <option>農園・自然</option>
+            <option>その他</option>
+          </select>
+        </div>
+
+        <div class="form-section">所在地</div>
+
+        <div class="form-group">
+          <label class="form-label">都道府県<span class="form-required">*</span></label>
+          <select class="form-select" required>
+            <option value="">選択してください</option>
+            <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
+            <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
+            <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
+            <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
+            <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
+            <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+            <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
+            <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
+            <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
+            <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
+            <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
+            <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">住所（市区町村以降）<span class="form-required">*</span></label>
+          <input class="form-input" type="text" placeholder="例：京都市右京区嵯峨天龍寺芒ノ馬場町" required />
+        </div>
+      </div>
+
+      <!-- ── 連絡先 ── -->
+      <div class="card">
+        <div class="card-title">連絡先</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">連絡先電話番号</label>
+            <input class="form-input" type="tel" placeholder="例：075-XXX-XXXX" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">連絡先メールアドレス</label>
+            <input class="form-input" type="email" placeholder="例：contact@example.com" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">担当者名</label>
+          <input class="form-input" type="text" placeholder="例：山田 太郎" />
+        </div>
+      </div>
+
+      <!-- ── 経費設定 ── -->
+      <div class="card">
+        <div class="card-title">経費設定（デフォルト）</div>
+
+        <div class="form-group">
+          <label class="form-label">支払区分（デフォルト）</label>
+          <select class="form-select">
+            <option value="A">A：施設へ月末一括（会社払い）</option>
+            <option value="B">B：施設へ都度・ガイド立替</option>
+            <option value="C">C：登録施設外への都度・ガイド立替</option>
+            <option value="D">D：ガイド自身の経費</option>
+          </select>
+          <p class="form-hint">施設登録後、経費項目ごとに個別設定も可能です。</p>
+        </div>
+      </div>
+
+      <!-- ── その他 ── -->
+      <div class="card">
+        <div class="card-title">その他</div>
+
+        <div class="form-group">
+          <label class="form-label">備考</label>
+          <textarea class="form-textarea" placeholder="施設についての補足・注意事項など"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select">
+            <option value="active">有効</option>
+            <option value="inactive">無効</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg">登録する</button>
+          <a href="facilities.html" class="btn btn-ghost btn-lg">キャンセル</a>
+        </div>
+      </div>
+
+    </form>
+  </main>
+</div>
+
+<script>
+  function handleSubmit(e) {
+    e.preventDefault();
+    alert('施設を登録しました（モック）');
+    location.href = 'facilities.html';
+  }
+</script>
+</body>
+</html>
