@@ -7,6 +7,39 @@
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css">
+    <style>
+      .fd-shell { display:flex; flex:1; min-width:0; overflow-y:auto; flex-direction:column; }
+      .fd-topbar { display:flex; align-items:center; justify-content:space-between; padding:0 var(--sp-5); border-bottom:1px solid var(--border); height:52px; flex-shrink:0; }
+      .fd-page-header { padding:20px var(--sp-5) 0; }
+      .fd-page-title { display:flex; align-items:center; gap:10; margin-bottom:4px; }
+      .fd-page-title h1 { font-size:22px; font-weight:700; margin:0; }
+      .fd-page-actions { display:flex; gap:8px; }
+      .fd-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); padding:0 var(--sp-5); margin-top:16px; }
+      .fd-tab { padding:10px 20px; border:none; background:none; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
+      .fd-tab.active { color:var(--ink); border-bottom-color:var(--accent); font-weight:600; }
+      .fd-tab:hover:not(.active) { color:var(--ink); }
+      .fd-body { padding:28px var(--sp-5); max-width:820px; }
+      .fd-section-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin:28px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+      .fd-section-title:first-child { margin-top:0; }
+      .fd-field { margin-bottom:18px; }
+      .fd-label { font-size:13px; font-weight:600; margin-bottom:6px; color:var(--ink); }
+      .fd-label .req { color:#e53935; margin-left:2px; }
+      .fd-input { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit; box-sizing:border-box; background:white; }
+      .fd-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(59,130,246,.15); }
+      .fd-select-wrap { position:relative; }
+      .fd-select-wrap select { appearance:none; -webkit-appearance:none; padding-right:28px; }
+      .fd-select-wrap::after { content:"▼"; position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:10px; color:#666; pointer-events:none; }
+      .fd-row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+      .fd-hint { font-size:11px; color:var(--muted); margin-top:4px; }
+      .fd-actions { display:flex; gap:10px; margin-top:32px; padding-top:20px; border-top:1px solid var(--border); }
+      .btn-danger { background:#e53935; color:white; border:none; padding:0 16px; height:34px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600; }
+      .btn-danger:hover { background:#c62828; }
+      /* 経費項目タブ */
+      .cost-table { width:100%; border-collapse:collapse; font-size:13px; }
+      .cost-table th { background:#f8f7f5; font-weight:600; font-size:12px; padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+      .cost-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
+      .cost-table tr:last-child td { border-bottom:none; }
+    </style>
   </head>
   <body data-density="regular" data-side="default">
     <div id="root"></div>
@@ -19,15 +52,32 @@
     <script type="text/babel" data-presets="react">
 const { useState } = React;
 
-const FACILITY_TYPES = ["体験施設", "観光スポット", "飲食施設", "宿泊施設", "移動施設", "その他"];
+const FACILITY_CATEGORIES = ["体験施設", "観光スポット", "飲食施設", "宿泊施設", "移動施設", "その他"];
 const PREFECTURES = ["大阪府","京都府","奈良県","兵庫県","滋賀県","和歌山県","三重県","東京都","神奈川県","愛知県","福岡県","北海道","沖縄県"];
+const PAYMENT_TYPES = [
+  "A：施設へ月末一括（会社払い）",
+  "B：施設へ都度払い（会社払い）",
+  "C：ガイドが現地立替（後日精算）",
+  "D：お客様が現地直接払い",
+];
 
-const SEED_FACILITIES = {
-  "fac-1": { id: "fac-1", name: "大阪城公演広場",  nameEn: "Osaka Castle Plaza",   type: "観光スポット", prefecture: "大阪府", address: "大阪市中央区大阪城1-1",     addressEn: "1-1 Osakajo, Chuo-ku, Osaka",          capacity: 500, phone: "06-6941-3044", url: "https://www.osakacastle.net/", notes: "", status: "active" },
-  "fac-2": { id: "fac-2", name: "京都国際会館",     nameEn: "Kyoto International Conference Center", type: "体験施設", prefecture: "京都府", address: "京都市左京区宝ヶ池",  addressEn: "Takaragaike, Sakyo-ku, Kyoto",          capacity: 200, phone: "075-705-1234", url: "https://www.icckyoto.or.jp/",  notes: "", status: "active" },
+const SEED = {
+  "fac-1": {
+    id: "fac-1", name: "嵐山竹林体験センター", category: "体験施設",
+    prefecture: "京都府", address: "京都市右京区嵯峨天龍寺芒ノ馬場町",
+    phone: "075-XXX-XXXX", email: "info@arashiyama-example.com", contact: "山田 太郎",
+    paymentType: "A：施設へ月末一括（会社払い）",
+    notes: "竹林内の体験エリアは雨天中止。要事前確認。",
+    status: "active",
+    costs: [
+      { id: "c1", name: "入場料（大人）", unitPrice: 1500, unit: "人", paymentType: "A：施設へ月末一括（会社払い）" },
+      { id: "c2", name: "竹細工体験料",  unitPrice: 2000, unit: "人", paymentType: "A：施設へ月末一括（会社払い）" },
+      { id: "c3", name: "着物レンタル",  unitPrice: 3500, unit: "人", paymentType: "C：ガイドが現地立替（後日精算）" },
+    ],
+  },
 };
 
-// ── Sidebar ─────────────────────────────────────────────────────────────────
+// ── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar() {
   const items = [
     { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
@@ -57,9 +107,7 @@ function Sidebar() {
               className={`nav-item ${it.key === "facility" ? "active" : ""}`}
               style={{textDecoration:"none"}}>
               <span className="nav-icon">{it.icon}</span>
-              <span style={{flex:1,minWidth:0}}>
-                <div>{it.label}</div>
-              </span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
             </a>
           ))}
         </div>
@@ -68,61 +116,171 @@ function Sidebar() {
   );
 }
 
-// ── LangTab ──────────────────────────────────────────────────────────────────
-function LangTabs({ activeTab, onChange }) {
+// ── SelectField ───────────────────────────────────────────────────────────────
+function SelectField({ label, value, onChange, options, required }) {
   return (
-    <div style={{display:'flex',gap:0,borderBottom:'2px solid var(--border)',marginBottom:16}}>
-      {["en","ja"].map(lang => (
-        <button
-          key={lang}
-          onClick={() => onChange(lang)}
-          style={{
-            padding:'6px 18px',border:'none',background:'none',cursor:'pointer',fontSize:13,
-            borderBottom: activeTab === lang ? '2px solid var(--accent)' : '2px solid transparent',
-            color: activeTab === lang ? 'var(--accent)' : 'var(--muted)',
-            fontWeight: activeTab === lang ? 600 : 400,
-            marginBottom: -2,
-          }}
-        >
-          {lang === "en" ? "English" : "日本語"}
-        </button>
-      ))}
+    <div className="fd-field">
+      <div className="fd-label">{label}{required && <span className="req">*</span>}</div>
+      <div className="fd-select-wrap">
+        <select className="fd-input" value={value} onChange={e => onChange(e.target.value)}>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
     </div>
   );
 }
 
-// ── SelectBox ────────────────────────────────────────────────────────────────
-function SelectBox({ value, onChange, options, style = {} }) {
+// ── TextField ─────────────────────────────────────────────────────────────────
+function TextField({ label, value, onChange, required, placeholder }) {
   return (
-    <div style={{position:'relative', display:'inline-block', ...style}}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:7,paddingBottom:7,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',width:'100%'}}
-      >
-        {options.map(o => typeof o === 'string'
-          ? <option key={o} value={o}>{o}</option>
-          : <option key={o.value} value={o.value}>{o.label}</option>
-        )}
-      </select>
-      <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
+    <div className="fd-field">
+      <div className="fd-label">{label}{required && <span className="req">*</span>}</div>
+      <input className="fd-input" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || ""} />
+    </div>
+  );
+}
+
+// ── StatusBadge ───────────────────────────────────────────────────────────────
+function StatusBadge({ status }) {
+  const map = { active: { label: "有効", variant: "green" }, inactive: { label: "無効", variant: "coral" } };
+  const s = map[status] || map.inactive;
+  return <span className={`badge ${s.variant}`}><span className="dot" />{s.label}</span>;
+}
+
+// ── Tab: 基本情報 ─────────────────────────────────────────────────────────────
+function BasicInfoTab({ form, upd, isCreate }) {
+  return (
+    <div className="fd-body">
+      {!isCreate && <div style={{fontSize:13,fontWeight:700,marginBottom:20}}>基本情報を編集</div>}
+
+      <TextField label="施設名" value={form.name} onChange={v => upd("name", v)} required />
+
+      <SelectField label="カテゴリ" value={form.category} onChange={v => upd("category", v)} options={FACILITY_CATEGORIES} required />
+
+      <div className="fd-section-title">所在地</div>
+
+      <SelectField label="都道府県" value={form.prefecture} onChange={v => upd("prefecture", v)} options={PREFECTURES} required />
+
+      <TextField label="住所（市区町村以降）" value={form.address} onChange={v => upd("address", v)} required placeholder="例：右京区嵯峨天龍寺芒ノ馬場町" />
+
+      <div className="fd-section-title">連絡先</div>
+
+      <div className="fd-row2">
+        <TextField label="連絡先電話番号" value={form.phone} onChange={v => upd("phone", v)} placeholder="例：075-000-0000" />
+        <TextField label="連絡先メールアドレス" value={form.email} onChange={v => upd("email", v)} placeholder="例：info@example.com" />
+      </div>
+      <TextField label="担当者名" value={form.contact} onChange={v => upd("contact", v)} placeholder="例：山田 太郎" />
+
+      <div className="fd-section-title">経費設定</div>
+
+      <SelectField label="支払区分（デフォルト）" value={form.paymentType} onChange={v => upd("paymentType", v)} options={PAYMENT_TYPES} />
+      <div className="fd-hint" style={{marginTop:-12,marginBottom:18}}>経費項目ごとに個別設定も可能です</div>
+
+      <div className="fd-section-title">その他</div>
+
+      <div className="fd-field">
+        <div className="fd-label">備考</div>
+        <textarea
+          className="fd-input"
+          rows={4}
+          value={form.notes}
+          onChange={e => upd("notes", e.target.value)}
+          placeholder="運営メモ・注意事項など"
+          style={{resize:'vertical'}}
+        />
+      </div>
+
+      <div className="fd-field">
+        <div className="fd-label">ステータス</div>
+        <div className="fd-select-wrap" style={{maxWidth:200}}>
+          <select className="fd-input" value={form.status} onChange={e => upd("status", e.target.value)}>
+            <option value="active">有効</option>
+            <option value="inactive">無効</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Tab: 経費項目管理 ─────────────────────────────────────────────────────────
+function CostItemsTab({ costs, setCosts }) {
+  const add = () => setCosts(cs => [...cs, { id: `c${Date.now()}`, name: "", unitPrice: 0, unit: "人", paymentType: PAYMENT_TYPES[0] }]);
+  const remove = id => setCosts(cs => cs.filter(c => c.id !== id));
+  const upd = (id, k, v) => setCosts(cs => cs.map(c => c.id === id ? { ...c, [k]: v } : c));
+
+  return (
+    <div className="fd-body">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+        <div style={{fontSize:13,fontWeight:700}}>経費項目一覧</div>
+        <button className="btn primary" onClick={add}>＋ 経費項目を追加</button>
+      </div>
+
+      {costs.length === 0 ? (
+        <div className="list-empty" style={{padding:'32px 0',textAlign:'center',color:'var(--muted)',fontSize:13}}>経費項目が登録されていません</div>
+      ) : (
+        <table className="cost-table">
+          <thead>
+            <tr>
+              <th>経費項目名</th>
+              <th style={{width:110}}>単価（円）</th>
+              <th style={{width:80}}>単位</th>
+              <th style={{width:280}}>支払区分</th>
+              <th style={{width:60}}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {costs.map(c => (
+              <tr key={c.id}>
+                <td>
+                  <input className="fd-input" value={c.name} onChange={e => upd(c.id,"name",e.target.value)} placeholder="例：入場料（大人）" />
+                </td>
+                <td>
+                  <input className="fd-input" type="number" min="0" value={c.unitPrice} onChange={e => upd(c.id,"unitPrice",Number(e.target.value))} style={{textAlign:'right'}} />
+                </td>
+                <td>
+                  <div className="fd-select-wrap">
+                    <select className="fd-input" value={c.unit} onChange={e => upd(c.id,"unit",e.target.value)}>
+                      {["人","回","式","時間","日"].map(u => <option key={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </td>
+                <td>
+                  <div className="fd-select-wrap">
+                    <select className="fd-input" value={c.paymentType} onChange={e => upd(c.id,"paymentType",e.target.value)}>
+                      {PAYMENT_TYPES.map(p => <option key={p}>{p}</option>)}
+                    </select>
+                  </div>
+                </td>
+                <td style={{textAlign:'center'}}>
+                  <button onClick={() => remove(c.id)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'4px 8px'}} title="削除">✕</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
 
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
-  const params = new URLSearchParams(window.location.search);
+  const params   = new URLSearchParams(window.location.search);
   const facilityId = params.get("id");
-  const isCreate = params.get("mode") === "create" || !facilityId;
+  const isCreate   = params.get("mode") === "create" || !facilityId;
 
-  const initial = isCreate
-    ? { id: "", name: "", nameEn: "", type: "体験施設", prefecture: "大阪府", address: "", addressEn: "", capacity: "", phone: "", url: "", notes: "", status: "active" }
-    : (SEED_FACILITIES[facilityId] || { id: facilityId, name: "施設名サンプル", nameEn: "Sample Facility", type: "体験施設", prefecture: "大阪府", address: "", addressEn: "", capacity: 50, phone: "", url: "", notes: "", status: "active" });
-
-  const [form, setForm] = useState(initial);
-  const [langTab, setLangTab] = useState("en");
-  const [saved, setSaved]     = useState(false);
+  const seed = isCreate ? null : (SEED[facilityId] || null);
+  const [form, setForm] = useState(seed || {
+    id: "", name: "", category: "体験施設",
+    prefecture: "大阪府", address: "",
+    phone: "", email: "", contact: "",
+    paymentType: PAYMENT_TYPES[0],
+    notes: "", status: "active",
+  });
+  const [costs, setCosts] = useState(seed ? seed.costs : []);
+  const [tab,   setTab]   = useState("basic");
+  const [saved, setSaved] = useState(false);
 
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -131,146 +289,56 @@ function App() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const titleLabel = isCreate ? "施設を追加" : "施設を編集";
+  const pageTitle = isCreate ? "施設を追加" : (form.name || "施設詳細");
 
   return (
     <div className="app-shell">
       <Sidebar />
-      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflowY:'auto'}}>
-
+      <div className="fd-shell">
         {/* Topbar */}
-        <div className="topbar" style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 var(--sp-5)',borderBottom:'1px solid var(--border)',height:52,flexShrink:0}}>
+        <div className="fd-topbar">
           <div className="crumbs">
             <a href="index.html" className="crumb-link">deep_Admin</a>
             <span className="sep">/</span>
             <a href="facilities.html" className="crumb-link">施設管理</a>
             <span className="sep">/</span>
-            <span className="current">{isCreate ? "新規追加" : (form.name || facilityId)}</span>
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <a href="facilities.html" className="btn">キャンセル</a>
-            <button className="btn primary" onClick={handleSave} style={{minWidth:90}}>
-              {saved ? "✓ 保存しました" : "変更を保存"}
-            </button>
+            <span className="current">{isCreate ? "新規追加" : form.name}</span>
           </div>
         </div>
 
-        {/* Body */}
-        <div style={{padding:'var(--sp-5)',maxWidth:760}}>
-          <h2 style={{marginBottom:24,fontSize:18,fontWeight:700}}>{titleLabel}</h2>
-
-          {/* 施設種別 */}
-          <div className="field-row" style={{marginBottom:20}}>
-            <label className="field-label">施設種別</label>
-            <SelectBox
-              value={form.type}
-              onChange={v => upd("type", v)}
-              options={FACILITY_TYPES}
-              style={{width:200}}
-            />
-          </div>
-
-          {/* 施設名（多言語） */}
-          <div style={{border:'1px solid var(--border)',borderRadius:8,padding:'16px 20px',marginBottom:20,background:'#fafafa'}}>
-            <div style={{fontSize:12,fontWeight:600,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>施設名</div>
-            <LangTabs activeTab={langTab} onChange={setLangTab} />
-            {langTab === "en" && (
-              <div className="field-row">
-                <label className="field-label">Facility Name (English)</label>
-                <input className="field-input" value={form.nameEn} onChange={e => upd("nameEn", e.target.value)} placeholder="e.g. Osaka Castle Plaza" />
-              </div>
-            )}
-            {langTab === "ja" && (
-              <div className="field-row">
-                <label className="field-label">施設名（日本語）</label>
-                <input className="field-input" value={form.name} onChange={e => upd("name", e.target.value)} placeholder="例：大阪城公演広場" />
-              </div>
-            )}
-          </div>
-
-          {/* 都道府県 */}
-          <div className="field-row" style={{marginBottom:20}}>
-            <label className="field-label">都道府県</label>
-            <SelectBox
-              value={form.prefecture}
-              onChange={v => upd("prefecture", v)}
-              options={PREFECTURES}
-              style={{width:200}}
-            />
-          </div>
-
-          {/* 住所（多言語） */}
-          <div style={{border:'1px solid var(--border)',borderRadius:8,padding:'16px 20px',marginBottom:20,background:'#fafafa'}}>
-            <div style={{fontSize:12,fontWeight:600,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:.5}}>住所</div>
-            <LangTabs activeTab={langTab} onChange={setLangTab} />
-            {langTab === "en" && (
-              <div className="field-row">
-                <label className="field-label">Address (English)</label>
-                <input className="field-input" value={form.addressEn} onChange={e => upd("addressEn", e.target.value)} placeholder="e.g. 1-1 Osakajo, Chuo-ku, Osaka" />
-              </div>
-            )}
-            {langTab === "ja" && (
-              <div className="field-row">
-                <label className="field-label">住所（日本語）</label>
-                <input className="field-input" value={form.address} onChange={e => upd("address", e.target.value)} placeholder="例：大阪市中央区大阪城1-1" />
-              </div>
-            )}
-          </div>
-
-          {/* 収容人数 */}
-          <div className="field-row" style={{marginBottom:20}}>
-            <label className="field-label">収容人数</label>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <input
-                className="field-input"
-                type="number" min="1"
-                value={form.capacity}
-                onChange={e => upd("capacity", e.target.value)}
-                placeholder="例：100"
-                style={{width:120}}
-              />
-              <span style={{fontSize:13,color:'var(--muted)'}}>人</span>
+        {/* Page header */}
+        <div className="fd-page-header">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+            <div className="fd-page-title">
+              <h1>{pageTitle}</h1>
+              {!isCreate && <StatusBadge status={form.status} />}
+            </div>
+            <div className="fd-page-actions">
+              {!isCreate && (
+                <button className="btn sm" style={{marginRight:4}}>編集</button>
+              )}
+              {!isCreate && (
+                <button className="btn-danger">削除</button>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* 電話番号 */}
-          <div className="field-row" style={{marginBottom:20}}>
-            <label className="field-label">電話番号</label>
-            <input className="field-input" value={form.phone} onChange={e => upd("phone", e.target.value)} placeholder="例：06-1234-5678" style={{maxWidth:240}} />
-          </div>
+        {/* Tabs */}
+        <div className="fd-tabs">
+          <button className={`fd-tab ${tab === "basic" ? "active" : ""}`} onClick={() => setTab("basic")}>基本情報</button>
+          <button className={`fd-tab ${tab === "costs" ? "active" : ""}`} onClick={() => setTab("costs")}>経費項目管理</button>
+        </div>
 
-          {/* WebサイトURL */}
-          <div className="field-row" style={{marginBottom:20}}>
-            <label className="field-label">WebサイトURL</label>
-            <input className="field-input" type="url" value={form.url} onChange={e => upd("url", e.target.value)} placeholder="https://..." />
-          </div>
+        {/* Tab content */}
+        {tab === "basic" && <BasicInfoTab form={form} upd={upd} isCreate={isCreate} />}
+        {tab === "costs" && <CostItemsTab costs={costs} setCosts={setCosts} />}
 
-          {/* 備考 */}
-          <div className="field-row" style={{marginBottom:20}}>
-            <label className="field-label">備考</label>
-            <textarea
-              className="field-input"
-              value={form.notes}
-              onChange={e => upd("notes", e.target.value)}
-              rows={3}
-              placeholder="運営メモ・注意事項など"
-            />
-          </div>
-
-          {/* ステータス */}
-          <div className="field-row" style={{marginBottom:32}}>
-            <label className="field-label">ステータス</label>
-            <SelectBox
-              value={form.status}
-              onChange={v => upd("status", v)}
-              options={[{value:"active",label:"有効"},{value:"inactive",label:"無効"}]}
-              style={{width:140}}
-            />
-          </div>
-
-          <div style={{display:'flex',gap:10}}>
-            <button className="btn primary" onClick={handleSave} style={{minWidth:120}}>
-              {saved ? "✓ 保存しました" : "変更を保存"}
+        {/* Footer actions */}
+        <div style={{padding:'0 var(--sp-5) 32px'}}>
+          <div className="fd-actions">
+            <button className="btn primary" onClick={handleSave} style={{minWidth:100}}>
+              {saved ? "✓ 保存しました" : "保存する"}
             </button>
             <a href="facilities.html" className="btn">キャンセル</a>
           </div>
