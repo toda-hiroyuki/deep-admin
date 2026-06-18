@@ -260,7 +260,7 @@ function App() {
     notes: "", status: "有効",
   });
   const [costs, setCosts] = useState(seed ? seed.costs : []);
-  const [tab,   setTab]   = useState("basic");
+  const [tab,   setTab]   = useState(params.get("tab") || "basic");
   const [saved, setSaved] = useState(false);
 
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
