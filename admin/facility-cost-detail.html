@@ -219,7 +219,6 @@ function App() {
                     value={form.costType}
                     onChange={v => upd("costType", v)}
                     options={COST_TYPES}
-                    hint="固定費：一定額 ／ 変動・人数固定：人数×単価 ／ 変動・スライド：人数帯で単価変動 ／ 完全変動：毎回異なる"
                   />
 
                   <SelectField
@@ -228,6 +227,12 @@ function App() {
                     onChange={v => upd("paymentType", v)}
                     options={PAYMENT_TYPES}
                   />
+
+                  <div className="field-wide" style={{marginTop:-8}}>
+                    <div style={{fontSize:12,color:'var(--muted)'}}>
+                      固定費：一定額 ／ 変動・人数固定：人数×単価 ／ 変動・スライド：人数帯で単価変動 ／ 完全変動：毎回異なる
+                    </div>
+                  </div>
 
                   {/* 固定費 / 変動・人数固定 */}
                   {(form.costType === "fixed" || form.costType === "per-person") && (
