@@ -7,39 +7,6 @@
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css">
-    <style>
-      .fd-shell { display:flex; flex:1; min-width:0; overflow-y:auto; flex-direction:column; }
-      .fd-topbar { display:flex; align-items:center; justify-content:space-between; padding:0 var(--sp-5); border-bottom:1px solid var(--border); height:52px; flex-shrink:0; }
-      .fd-page-header { padding:20px var(--sp-5) 0; }
-      .fd-page-title { display:flex; align-items:center; gap:10; margin-bottom:4px; }
-      .fd-page-title h1 { font-size:22px; font-weight:700; margin:0; }
-      .fd-page-actions { display:flex; gap:8px; }
-      .fd-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); padding:0 var(--sp-5); margin-top:16px; }
-      .fd-tab { padding:10px 20px; border:none; background:none; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
-      .fd-tab.active { color:var(--ink); border-bottom-color:var(--accent); font-weight:600; }
-      .fd-tab:hover:not(.active) { color:var(--ink); }
-      .fd-body { padding:28px var(--sp-5); max-width:820px; }
-      .fd-section-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin:28px 0 14px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-      .fd-section-title:first-child { margin-top:0; }
-      .fd-field { margin-bottom:18px; }
-      .fd-label { font-size:13px; font-weight:600; margin-bottom:6px; color:var(--ink); }
-      .fd-label .req { color:#e53935; margin-left:2px; }
-      .fd-input { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit; box-sizing:border-box; background:white; }
-      .fd-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(59,130,246,.15); }
-      .fd-select-wrap { position:relative; }
-      .fd-select-wrap select { appearance:none; -webkit-appearance:none; padding-right:28px; }
-      .fd-select-wrap::after { content:"▼"; position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:10px; color:#666; pointer-events:none; }
-      .fd-row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-      .fd-hint { font-size:11px; color:var(--muted); margin-top:4px; }
-      .fd-actions { display:flex; gap:10px; margin-top:32px; padding-top:20px; border-top:1px solid var(--border); }
-      .btn-danger { background:#e53935; color:white; border:none; padding:0 16px; height:34px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:600; }
-      .btn-danger:hover { background:#c62828; }
-      /* 経費項目タブ */
-      .cost-table { width:100%; border-collapse:collapse; font-size:13px; }
-      .cost-table th { background:#f8f7f5; font-weight:600; font-size:12px; padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
-      .cost-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
-      .cost-table tr:last-child td { border-bottom:none; }
-    </style>
   </head>
   <body data-density="regular" data-side="default">
     <div id="root"></div>
@@ -60,6 +27,10 @@ const PAYMENT_TYPES = [
   "C：ガイドが現地立替（後日精算）",
   "D：お客様が現地直接払い",
 ];
+const TABS = [
+  ["basic", "基本情報"],
+  ["costs", "経費項目管理"],
+];
 
 const SEED = {
   "fac-1": {
@@ -68,7 +39,7 @@ const SEED = {
     phone: "075-XXX-XXXX", email: "info@arashiyama-example.com", contact: "山田 太郎",
     paymentType: "A：施設へ月末一括（会社払い）",
     notes: "竹林内の体験エリアは雨天中止。要事前確認。",
-    status: "active",
+    status: "有効",
     costs: [
       { id: "c1", name: "入場料（大人）", unitPrice: 1500, unit: "人", paymentType: "A：施設へ月末一括（会社払い）" },
       { id: "c2", name: "竹細工体験料",  unitPrice: 2000, unit: "人", paymentType: "A：施設へ月末一括（会社払い）" },
@@ -116,88 +87,109 @@ function Sidebar() {
   );
 }
 
-// ── SelectField ───────────────────────────────────────────────────────────────
-function SelectField({ label, value, onChange, options, required }) {
+// ── SectionHead ───────────────────────────────────────────────────────────────
+function SectionHead({ title, desc }) {
   return (
-    <div className="fd-field">
-      <div className="fd-label">{label}{required && <span className="req">*</span>}</div>
-      <div className="fd-select-wrap">
-        <select className="fd-input" value={value} onChange={e => onChange(e.target.value)}>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
+    <div className="section-title">
+      <div>
+        <h2>{title}</h2>
+        {desc && <p>{desc}</p>}
       </div>
     </div>
   );
 }
 
-// ── TextField ─────────────────────────────────────────────────────────────────
-function TextField({ label, value, onChange, required, placeholder }) {
+// ── Field ─────────────────────────────────────────────────────────────────────
+function Field({ label, required, value, onChange, placeholder, multiline, wide, help, rows = 3 }) {
+  const cls = wide ? "field-wide" : "field";
   return (
-    <div className="fd-field">
-      <div className="fd-label">{label}{required && <span className="req">*</span>}</div>
-      <input className="fd-input" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || ""} />
+    <div className={cls}>
+      <label className="field-label">
+        {required && <span className="req" />}
+        <span>{label}</span>
+        {!required && <span className="opt">任意</span>}
+      </label>
+      {multiline
+        ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || ""} rows={rows} />
+        : <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || ""} />
+      }
+      {help && <div className="field-help">{help}</div>}
     </div>
   );
 }
 
-// ── StatusBadge ───────────────────────────────────────────────────────────────
-function StatusBadge({ status }) {
-  const map = { active: { label: "有効", variant: "green" }, inactive: { label: "無効", variant: "coral" } };
-  const s = map[status] || map.inactive;
-  return <span className={`badge ${s.variant}`}><span className="dot" />{s.label}</span>;
+// ── SelectField ───────────────────────────────────────────────────────────────
+function SelectField({ label, required, value, onChange, options, wide, help }) {
+  const cls = wide ? "field-wide" : "field";
+  return (
+    <div className={cls}>
+      <label className="field-label">
+        {required && <span className="req" />}
+        <span>{label}</span>
+        {!required && <span className="opt">任意</span>}
+      </label>
+      <select value={value} onChange={e => onChange(e.target.value)}>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      {help && <div className="field-help">{help}</div>}
+    </div>
+  );
 }
 
 // ── Tab: 基本情報 ─────────────────────────────────────────────────────────────
-function BasicInfoTab({ form, upd, isCreate }) {
+function BasicInfoTab({ form, upd }) {
   return (
-    <div className="fd-body">
-      {!isCreate && <div style={{fontSize:13,fontWeight:700,marginBottom:20}}>基本情報を編集</div>}
+    <div className="editor-content">
+      <div className="form-section">
+        <SectionHead title="施設情報" desc="施設の基本情報を入力してください。" />
 
-      <TextField label="施設名" value={form.name} onChange={v => upd("name", v)} required />
+        <Field label="施設名" required value={form.name} onChange={v => upd("name", v)} placeholder="例：嵐山竹林体験センター" />
 
-      <SelectField label="カテゴリ" value={form.category} onChange={v => upd("category", v)} options={FACILITY_CATEGORIES} required />
-
-      <div className="fd-section-title">所在地</div>
-
-      <SelectField label="都道府県" value={form.prefecture} onChange={v => upd("prefecture", v)} options={PREFECTURES} required />
-
-      <TextField label="住所（市区町村以降）" value={form.address} onChange={v => upd("address", v)} required placeholder="例：右京区嵯峨天龍寺芒ノ馬場町" />
-
-      <div className="fd-section-title">連絡先</div>
-
-      <div className="fd-row2">
-        <TextField label="連絡先電話番号" value={form.phone} onChange={v => upd("phone", v)} placeholder="例：075-000-0000" />
-        <TextField label="連絡先メールアドレス" value={form.email} onChange={v => upd("email", v)} placeholder="例：info@example.com" />
+        <SelectField label="カテゴリ" required value={form.category} onChange={v => upd("category", v)} options={FACILITY_CATEGORIES} />
       </div>
-      <TextField label="担当者名" value={form.contact} onChange={v => upd("contact", v)} placeholder="例：山田 太郎" />
 
-      <div className="fd-section-title">経費設定</div>
+      <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
+        <SectionHead title="所在地" />
 
-      <SelectField label="支払区分（デフォルト）" value={form.paymentType} onChange={v => upd("paymentType", v)} options={PAYMENT_TYPES} />
-      <div className="fd-hint" style={{marginTop:-12,marginBottom:18}}>経費項目ごとに個別設定も可能です</div>
+        <div className="field-grid">
+          <SelectField label="都道府県" required value={form.prefecture} onChange={v => upd("prefecture", v)} options={PREFECTURES} />
+          <div />
+        </div>
 
-      <div className="fd-section-title">その他</div>
+        <Field label="住所（市区町村以降）" required value={form.address} onChange={v => upd("address", v)} placeholder="例：右京区嵯峨天龍寺芒ノ馬場町" wide />
+      </div>
 
-      <div className="fd-field">
-        <div className="fd-label">備考</div>
-        <textarea
-          className="fd-input"
-          rows={4}
-          value={form.notes}
-          onChange={e => upd("notes", e.target.value)}
-          placeholder="運営メモ・注意事項など"
-          style={{resize:'vertical'}}
+      <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
+        <SectionHead title="連絡先" />
+
+        <div className="field-grid">
+          <Field label="連絡先電話番号" value={form.phone} onChange={v => upd("phone", v)} placeholder="例：075-000-0000" />
+          <Field label="連絡先メールアドレス" value={form.email} onChange={v => upd("email", v)} placeholder="例：info@example.com" />
+        </div>
+
+        <div className="field-grid">
+          <Field label="担当者名" value={form.contact} onChange={v => upd("contact", v)} placeholder="例：山田 太郎" />
+          <div />
+        </div>
+      </div>
+
+      <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
+        <SectionHead title="経費設定" />
+
+        <SelectField
+          label="支払区分（デフォルト）"
+          value={form.paymentType}
+          onChange={v => upd("paymentType", v)}
+          options={PAYMENT_TYPES}
+          wide
+          help="経費項目ごとに個別設定も可能です"
         />
       </div>
 
-      <div className="fd-field">
-        <div className="fd-label">ステータス</div>
-        <div className="fd-select-wrap" style={{maxWidth:200}}>
-          <select className="fd-input" value={form.status} onChange={e => upd("status", e.target.value)}>
-            <option value="active">有効</option>
-            <option value="inactive">無効</option>
-          </select>
-        </div>
+      <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
+        <SectionHead title="その他" />
+
+        <Field label="備考" value={form.notes} onChange={v => upd("notes", v)} placeholder="運営メモ・注意事項など" multiline wide rows={4} />
       </div>
     </div>
   );
@@ -210,73 +202,75 @@ function CostItemsTab({ costs, setCosts }) {
   const upd = (id, k, v) => setCosts(cs => cs.map(c => c.id === id ? { ...c, [k]: v } : c));
 
   return (
-    <div className="fd-body">
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-        <div style={{fontSize:13,fontWeight:700}}>経費項目一覧</div>
-        <button className="btn primary" onClick={add}>＋ 経費項目を追加</button>
-      </div>
+    <div className="editor-content">
+      <div className="form-section">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <SectionHead title="経費項目一覧" desc="この施設に関連する経費項目を管理します。" />
+          <button className="btn primary" onClick={add} style={{alignSelf:'flex-start',marginTop:2}}>＋ 経費項目を追加</button>
+        </div>
 
-      {costs.length === 0 ? (
-        <div className="list-empty" style={{padding:'32px 0',textAlign:'center',color:'var(--muted)',fontSize:13}}>経費項目が登録されていません</div>
-      ) : (
-        <table className="cost-table">
-          <thead>
-            <tr>
-              <th>経費項目名</th>
-              <th style={{width:110}}>単価（円）</th>
-              <th style={{width:80}}>単位</th>
-              <th style={{width:280}}>支払区分</th>
-              <th style={{width:60}}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {costs.map(c => (
-              <tr key={c.id}>
-                <td>
-                  <input className="fd-input" value={c.name} onChange={e => upd(c.id,"name",e.target.value)} placeholder="例：入場料（大人）" />
-                </td>
-                <td>
-                  <input className="fd-input" type="number" min="0" value={c.unitPrice} onChange={e => upd(c.id,"unitPrice",Number(e.target.value))} style={{textAlign:'right'}} />
-                </td>
-                <td>
-                  <div className="fd-select-wrap">
-                    <select className="fd-input" value={c.unit} onChange={e => upd(c.id,"unit",e.target.value)}>
-                      {["人","回","式","時間","日"].map(u => <option key={u}>{u}</option>)}
-                    </select>
-                  </div>
-                </td>
-                <td>
-                  <div className="fd-select-wrap">
-                    <select className="fd-input" value={c.paymentType} onChange={e => upd(c.id,"paymentType",e.target.value)}>
-                      {PAYMENT_TYPES.map(p => <option key={p}>{p}</option>)}
-                    </select>
-                  </div>
-                </td>
-                <td style={{textAlign:'center'}}>
-                  <button onClick={() => remove(c.id)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:16,padding:'4px 8px'}} title="削除">✕</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        {costs.length === 0 ? (
+          <div style={{padding:'32px 0',textAlign:'center',color:'var(--muted)',fontSize:13,border:'1px dashed var(--line)',borderRadius:'var(--radius-lg)'}}>
+            経費項目が登録されていません
+          </div>
+        ) : (
+          <div className="list-table-wrap">
+            <table className="list-table">
+              <thead>
+                <tr>
+                  <th>経費項目名</th>
+                  <th style={{width:120,textAlign:'right'}}>単価（円）</th>
+                  <th style={{width:90,textAlign:'center'}}>単位</th>
+                  <th>支払区分</th>
+                  <th style={{width:48}}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {costs.map(c => (
+                  <tr key={c.id}>
+                    <td>
+                      <input type="text" value={c.name} onChange={e => upd(c.id,"name",e.target.value)} placeholder="例：入場料（大人）" />
+                    </td>
+                    <td>
+                      <input type="number" min="0" value={c.unitPrice} onChange={e => upd(c.id,"unitPrice",Number(e.target.value))} style={{textAlign:'right'}} />
+                    </td>
+                    <td>
+                      <select value={c.unit} onChange={e => upd(c.id,"unit",e.target.value)}>
+                        {["人","回","式","時間","日"].map(u => <option key={u}>{u}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <select value={c.paymentType} onChange={e => upd(c.id,"paymentType",e.target.value)}>
+                        {PAYMENT_TYPES.map(p => <option key={p}>{p}</option>)}
+                      </select>
+                    </td>
+                    <td style={{textAlign:'center'}}>
+                      <button onClick={() => remove(c.id)} className="btn sm danger">✕</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
-  const params   = new URLSearchParams(window.location.search);
+  const params     = new URLSearchParams(window.location.search);
   const facilityId = params.get("id");
   const isCreate   = params.get("mode") === "create" || !facilityId;
+  const seed       = isCreate ? null : (SEED[facilityId] || null);
 
-  const seed = isCreate ? null : (SEED[facilityId] || null);
   const [form, setForm] = useState(seed || {
     id: "", name: "", category: "体験施設",
     prefecture: "大阪府", address: "",
     phone: "", email: "", contact: "",
     paymentType: PAYMENT_TYPES[0],
-    notes: "", status: "active",
+    notes: "", status: "有効",
   });
   const [costs, setCosts] = useState(seed ? seed.costs : []);
   const [tab,   setTab]   = useState("basic");
@@ -289,60 +283,77 @@ function App() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const pageTitle = isCreate ? "施設を追加" : (form.name || "施設詳細");
-
   return (
     <div className="app-shell">
       <Sidebar />
-      <div className="fd-shell">
+      <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflowY:'auto'}}>
+
         {/* Topbar */}
-        <div className="fd-topbar">
-          <div className="crumbs">
-            <a href="index.html" className="crumb-link">deep_Admin</a>
-            <span className="sep">/</span>
-            <a href="facilities.html" className="crumb-link">施設管理</a>
-            <span className="sep">/</span>
-            <span className="current">{isCreate ? "新規追加" : form.name}</span>
-          </div>
-        </div>
-
-        {/* Page header */}
-        <div className="fd-page-header">
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-            <div className="fd-page-title">
-              <h1>{pageTitle}</h1>
-              {!isCreate && <StatusBadge status={form.status} />}
+        <div className="topbar" style={{padding:'0 var(--sp-5)',borderBottom:'1px solid var(--line)',height:52,flexShrink:0}}>
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="facilities.html" className="crumb-link">施設管理</a>
+              <span className="sep">/</span>
+              <span className="current">{isCreate ? "新規追加" : form.name}</span>
             </div>
-            <div className="fd-page-actions">
-              {!isCreate && (
-                <button className="btn sm" style={{marginRight:4}}>編集</button>
-              )}
-              {!isCreate && (
-                <button className="btn-danger">削除</button>
-              )}
+            <div className="title-row">
+              <button className="btn ghost sm back-btn" onClick={() => { window.location.href = 'facilities.html'; }}>← 一覧に戻る</button>
+              <h1>施設 作成・編集・確認</h1>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="fd-tabs">
-          <button className={`fd-tab ${tab === "basic" ? "active" : ""}`} onClick={() => setTab("basic")}>基本情報</button>
-          <button className={`fd-tab ${tab === "costs" ? "active" : ""}`} onClick={() => setTab("costs")}>経費項目管理</button>
-        </div>
-
-        {/* Tab content */}
-        {tab === "basic" && <BasicInfoTab form={form} upd={upd} isCreate={isCreate} />}
-        {tab === "costs" && <CostItemsTab costs={costs} setCosts={setCosts} />}
-
-        {/* Footer actions */}
-        <div style={{padding:'0 var(--sp-5) 32px'}}>
-          <div className="fd-actions">
-            <button className="btn primary" onClick={handleSave} style={{minWidth:100}}>
-              {saved ? "✓ 保存しました" : "保存する"}
+        {/* Status strip */}
+        <div className="status-strip">
+          <div className="status-cell">
+            <span className="status-label">施設名</span>
+            <strong>{form.name || "—"}</strong>
+          </div>
+          <div className="status-cell">
+            <span className="status-label">カテゴリ</span>
+            <strong>{form.category || "—"}</strong>
+          </div>
+          <div className="status-cell">
+            <span className="status-label">都道府県</span>
+            <strong>{form.prefecture || "—"}</strong>
+          </div>
+          <div className="status-actions">
+            <div style={{position:"relative",display:"inline-flex",alignItems:"center",marginRight:4}}>
+              <select
+                style={{width:"auto",height:"var(--field-h)",paddingLeft:8,paddingRight:28,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13,appearance:"none",WebkitAppearance:"none",cursor:"pointer"}}
+                value={form.status}
+                onChange={e => upd("status", e.target.value)}
+              >
+                <option value="有効">有効</option>
+                <option value="無効">無効</option>
+              </select>
+              <span style={{position:"absolute",right:8,pointerEvents:"none",fontSize:10,color:"var(--muted)"}}>▼</span>
+            </div>
+            <button className="btn primary" onClick={handleSave}>
+              {saved ? "✓ 保存しました" : "更新保存"}
             </button>
-            <a href="facilities.html" className="btn">キャンセル</a>
           </div>
         </div>
+
+        {/* Editor pane */}
+        <div className="content-grid" data-no-preview="true" style={{padding:'var(--sp-5)'}}>
+          <section className="editor-pane">
+            <div className="tab-row" role="tablist">
+              {TABS.map(([key, label], i) => (
+                <button key={key} className={`tab-button ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>
+                  <span style={{opacity:0.55,fontVariantNumeric:'tabular-nums',marginRight:6,fontSize:11.5}}>{String(i+1).padStart(2,'0')}</span>
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === "basic" && <BasicInfoTab form={form} upd={upd} />}
+            {tab === "costs" && <CostItemsTab costs={costs} setCosts={setCosts} />}
+          </section>
+        </div>
+
       </div>
     </div>
   );
