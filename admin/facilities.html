@@ -17,20 +17,70 @@
 
     <script src="js/master-data.js"></script>
     <script type="text/babel" data-presets="react">
-const { useState } = React;
+const { useState, useRef, useEffect, useMemo } = React;
 
 const SEED_FACILITIES = [
-  { id: "fac-1", name: "嵐山竹林体験センター", subtype: "竹細工・着物体験",  prefecture: "京都府", address: "京都市右京区嵯峨天龍寺芒ノ馬場町", phone: "075-XXX-XXXX", costCount: 3, updatedAt: "2026/06/10", status: "active" },
-  { id: "fac-2", name: "伏見稲荷大社",         subtype: "神社参拝・祈祷",    prefecture: "京都府", address: "京都市伏見区深草藪之内町",          phone: "075-YYY-YYYY", costCount: 2, updatedAt: "2026/06/08", status: "active" },
-  { id: "fac-3", name: "金閣寺（鹿苑寺）",     subtype: "寺院・観光",        prefecture: "京都府", address: "京都市北区金閣寺町",                phone: "075-ZZZ-ZZZZ", costCount: 1, updatedAt: "2026/05/30", status: "active" },
+  { id: "fac-1", name: "嵐山竹林体験センター", subtype: "竹細工・着物体験",   prefecture: "京都府", address: "京都市右京区嵯峨天龍寺芒ノ馬場町", phone: "075-XXX-XXXX", costCount: 3, updatedAt: "2026/06/10", status: "active" },
+  { id: "fac-2", name: "伏見稲荷大社",         subtype: "神社参拝・祈祷",     prefecture: "京都府", address: "京都市伏見区深草藪之内町",          phone: "075-YYY-YYYY", costCount: 2, updatedAt: "2026/06/08", status: "active" },
+  { id: "fac-3", name: "金閣寺（鹿苑寺）",     subtype: "寺院・観光",         prefecture: "京都府", address: "京都市北区金閣寺町",                phone: "075-ZZZ-ZZZZ", costCount: 1, updatedAt: "2026/05/30", status: "active" },
   { id: "fac-4", name: "京町家体験 山田屋",     subtype: "町家宿泊・茶道体験", prefecture: "京都府", address: "京都市中京区",                      phone: "075-AAA-AAAA", costCount: 4, updatedAt: "2026/06/01", status: "active" },
-  { id: "fac-5", name: "宇治茶農家 田中園",     subtype: "お茶摘み・茶道",    prefecture: "京都府", address: "宇治市",                            phone: "0774-BBB-BBBB", costCount: 2, updatedAt: "2026/04/15", status: "inactive" },
+  { id: "fac-5", name: "宇治茶農家 田中園",     subtype: "お茶摘み・茶道",     prefecture: "京都府", address: "宇治市",                            phone: "0774-BBB-BBBB", costCount: 2, updatedAt: "2026/04/15", status: "inactive" },
 ];
 
-const FACILITY_TYPES = ["体験施設", "観光スポット", "飲食施設", "宿泊施設", "移動施設", "その他"];
 const PREFECTURES = ["大阪府","京都府","奈良県","兵庫県","滋賀県","和歌山県","三重県","東京都","神奈川県","愛知県","福岡県","北海道","沖縄県"];
 
-// ── Sidebar ─────────────────────────────────────────────────────────────────
+// ── click-outside hook ───────────────────────────────────────────────────────
+function useClickOutside(ref, onOutside) {
+  useEffect(() => {
+    function handle(e) { if (ref.current && !ref.current.contains(e.target)) onOutside(); }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [ref, onOutside]);
+}
+
+// ── SearchBar ────────────────────────────────────────────────────────────────
+function SearchBar({ value, onChange, placeholder }) {
+  return (
+    <div className="lf-search">
+      <span className="lf-search-ico" aria-hidden="true">⌕</span>
+      <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+      {value && <button className="lf-search-clear" onClick={() => onChange("")} aria-label="クリア">×</button>}
+    </div>
+  );
+}
+
+// ── SingleSelectDropdown ─────────────────────────────────────────────────────
+function SingleSelectDropdown({ label, options, value, onChange, allLabel = "すべて" }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useClickOutside(ref, () => setOpen(false));
+  const active = value && value !== allLabel;
+  return (
+    <div className={`lf-dropdown ${active ? "is-active" : ""}`} ref={ref}>
+      <button type="button" className="lf-dropdown-btn" onClick={() => setOpen(o => !o)}>
+        <span className="lf-dropdown-label">{label}</span>
+        {active && <span className="lf-dropdown-count">{value}</span>}
+        <span className="lf-caret">▾</span>
+      </button>
+      {open && (
+        <div className="lf-dropdown-menu">
+          <label className="lf-dropdown-item">
+            <input type="radio" name={`single-${label}`} checked={!active} onChange={() => { onChange(allLabel); setOpen(false); }} />
+            <span>{allLabel}</span>
+          </label>
+          {options.map(opt => (
+            <label key={opt} className="lf-dropdown-item">
+              <input type="radio" name={`single-${label}`} checked={value === opt} onChange={() => { onChange(opt); setOpen(false); }} />
+              <span>{opt}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar() {
   const items = [
     { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
@@ -60,9 +110,7 @@ function Sidebar() {
               className={`nav-item ${it.key === "facility" ? "active" : ""}`}
               style={{textDecoration:"none"}}>
               <span className="nav-icon">{it.icon}</span>
-              <span style={{flex:1,minWidth:0}}>
-                <div>{it.label}</div>
-              </span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
             </a>
           ))}
         </div>
@@ -78,32 +126,25 @@ function Sidebar() {
 // ── StatusBadge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const map = {
-    active:   { label: "有効",   bg: "#d1fae5", color: "#065f46" },
-    inactive: { label: "無効",   bg: "#fee2e2", color: "#991b1b" },
+    active:   { label: "有効",  variant: "green" },
+    inactive: { label: "無効",  variant: "coral" },
   };
   const s = map[status] || map.inactive;
-  return (
-    <span style={{display:"inline-block",padding:"2px 8px",borderRadius:99,fontSize:11,background:s.bg,color:s.color,fontWeight:600}}>
-      {s.label}
-    </span>
-  );
+  return <span className={`badge ${s.variant}`}><span className="dot" />{s.label}</span>;
 }
 
-// ── SelectBox ────────────────────────────────────────────────────────────────
-function SelectBox({ value, onChange, options, style = {} }) {
+// ── StatusSummary ─────────────────────────────────────────────────────────────
+function StatusSummary({ counts }) {
   return (
-    <div style={{position:'relative', display:'inline-block', ...style}}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        style={{appearance:'none',WebkitAppearance:'none',paddingRight:28,paddingLeft:10,paddingTop:7,paddingBottom:7,border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer',width:'100%'}}
-      >
-        {options.map(o => typeof o === 'string'
-          ? <option key={o} value={o}>{o}</option>
-          : <option key={o.value} value={o.value}>{o.label}</option>
-        )}
-      </select>
-      <span style={{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:10,color:'#666'}}>▼</span>
+    <div className="list-summary">
+      <div className="summary-item">
+        <span className="dot green" /><span className="label">有効</span>
+        <strong>{counts.active ?? 0}</strong><span className="unit">件</span>
+      </div>
+      <div className="summary-item">
+        <span className="dot coral" /><span className="label">無効</span>
+        <strong>{counts.inactive ?? 0}</strong><span className="unit">件</span>
+      </div>
     </div>
   );
 }
@@ -111,19 +152,25 @@ function SelectBox({ value, onChange, options, style = {} }) {
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [facilities] = useState(SEED_FACILITIES);
-  const [keyword,      setKeyword]      = useState("");
-  const [filterPref,   setFilterPref]   = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [search,       setSearch]       = useState("");
+  const [filterPref,   setFilterPref]   = useState("すべて");
+  const [filterStatus, setFilterStatus] = useState("すべて");
 
-  const filtered = facilities.filter(f => {
-    if (keyword) {
-      const kw = keyword.toLowerCase();
-      if (![f.name, f.address, f.subtype].some(s => s && s.toLowerCase().includes(kw))) return false;
-    }
-    if (filterPref   && f.prefecture !== filterPref)   return false;
-    if (filterStatus && f.status     !== filterStatus) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    return facilities.filter(f => {
+      if (s && ![f.name, f.address, f.subtype].some(v => v && v.toLowerCase().includes(s))) return false;
+      if (filterPref   !== "すべて" && f.prefecture !== filterPref)   return false;
+      if (filterStatus !== "すべて") {
+        const want = filterStatus === "有効" ? "active" : "inactive";
+        if (f.status !== want) return false;
+      }
+      return true;
+    });
+  }, [facilities, search, filterPref, filterStatus]);
+
+  const counts = facilities.reduce((acc, f) => { acc[f.status] = (acc[f.status] ?? 0) + 1; return acc; }, {});
+  const hasFilter = !!search || filterPref !== "すべて" || filterStatus !== "すべて";
 
   return (
     <div className="app-shell">
@@ -131,12 +178,10 @@ function App() {
       <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:14,minWidth:0,overflowY:'auto'}}>
       <div className="list-shell">
         <div className="topbar list-topbar">
-          <div>
-            <div className="crumbs">
-              <a href="index.html" className="crumb-link">deep_Admin</a>
-              <span className="sep">/</span>
-              <span className="current">施設管理</span>
-            </div>
+          <div className="crumbs">
+            <a href="index.html" className="crumb-link">deep_Admin</a>
+            <span className="sep">/</span>
+            <span className="current">施設管理</span>
           </div>
         </div>
 
@@ -144,38 +189,30 @@ function App() {
           <div className="list-header">
             <div>
               <h1>施設管理</h1>
+              <p className="list-desc">ツアーで使用する体験施設・観光スポット・飲食施設などを管理します。</p>
             </div>
             <div style={{alignSelf:'flex-start'}}>
               <a href="facility-detail.html?mode=create" className="btn primary">＋ 新規登録</a>
             </div>
           </div>
 
-          {/* 検索バー */}
-          <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap',alignItems:'center'}}>
-            <input
-              type="text"
-              value={keyword}
-              onChange={e => setKeyword(e.target.value)}
-              placeholder="施設名・住所・エリアで検索..."
-              style={{padding:'7px 12px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,width:260,outline:'none'}}
-            />
-            <SelectBox
-              value={filterPref}
-              onChange={setFilterPref}
-              options={[{value:"",label:"都道府県（すべて）"}, ...PREFECTURES.map(p => ({value:p,label:p}))]}
-              style={{width:170}}
-            />
-            <SelectBox
-              value={filterStatus}
-              onChange={setFilterStatus}
-              options={[{value:"",label:"すべてのステータス"},{value:"active",label:"有効"},{value:"inactive",label:"無効"}]}
-              style={{width:160}}
-            />
-            <div style={{flex:1}} />
-            <button
-              style={{padding:'7px 14px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,background:'white',cursor:'pointer'}}
-            >CSV出力</button>
+          <div className="list-filters">
+            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+              <SearchBar value={search} onChange={setSearch} placeholder="施設名・住所・エリアで検索..." />
+            </div>
+            <div className="lf-controls">
+              <SingleSelectDropdown label="都道府県" options={PREFECTURES} value={filterPref} onChange={setFilterPref} />
+              <SingleSelectDropdown label="ステータス" options={["有効","無効"]} value={filterStatus} onChange={setFilterStatus} />
+              {hasFilter && (
+                <button type="button" className="lf-link clear-all"
+                  onClick={() => { setSearch(""); setFilterPref("すべて"); setFilterStatus("すべて"); }}>
+                  フィルターを解除
+                </button>
+              )}
+            </div>
           </div>
+
+          <StatusSummary counts={counts} />
 
           <div className="list-table-wrap">
             <table className="list-table">
@@ -204,9 +241,7 @@ function App() {
                     <td style={{fontSize:13,color:'#2563eb'}}>{f.address}</td>
                     <td style={{fontSize:13}}>{f.phone}</td>
                     <td style={{textAlign:'center',fontWeight:700,fontSize:14,color:'#2563eb'}}>{f.costCount}</td>
-                    <td style={{textAlign:'center'}}>
-                      <StatusBadge status={f.status} />
-                    </td>
+                    <td style={{textAlign:'center'}}><StatusBadge status={f.status} /></td>
                     <td style={{textAlign:'center',fontSize:12,color:'var(--muted)'}}>{f.updatedAt}</td>
                     <td className="actions">
                       <a href={`facility-detail.html?id=${f.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
@@ -214,9 +249,7 @@ function App() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={9} className="list-empty">施設が登録されていません</td>
-                  </tr>
+                  <tr><td colSpan={9} className="list-empty">施設が登録されていません</td></tr>
                 )}
               </tbody>
             </table>
