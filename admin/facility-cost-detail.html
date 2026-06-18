@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>経費項目 登録・編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const PAYMENT_TYPES = [
+  "A：施設へ月末一括（会社払い）",
+  "B：施設へ都度払い（会社払い）",
+  "C：ガイドが現地立替（後日精算）",
+  "D：お客様が現地直接払い",
+];
+const UNITS = ["人","回","式","時間","日"];
+
+const SEED_COSTS = {
+  "c1": { id: "c1", name: "入場料（大人）", unitPrice: 1500, unit: "人", paymentType: "A：施設へ月末一括（会社払い）", notes: "" },
+  "c2": { id: "c2", name: "竹細工体験料",  unitPrice: 2000, unit: "人", paymentType: "A：施設へ月末一括（会社払い）", notes: "" },
+  "c3": { id: "c3", name: "着物レンタル",  unitPrice: 3500, unit: "人", paymentType: "C：ガイドが現地立替（後日精算）", notes: "" },
+};
+
+const FACILITY_NAMES = {
+  "fac-1": "嵐山竹林体験センター",
+  "fac-2": "伏見稲荷大社",
+  "fac-3": "金閣寺（鹿苑寺）",
+  "fac-4": "京町家体験 山田屋",
+  "fac-5": "宇治茶農家 田中園",
+};
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",        hint: "ツアーの実体" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",           hint: "顧客表示" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",          hint: "機材・車両等" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理",           hint: "都道府県・エリア" },
+    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設管理",             hint: "体験施設・観光スポット" },
+    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理",     hint: "対応言語" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",           hint: "運営注意・行程" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",   hint: "キャンセル文言" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "facility" ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── Field helpers ─────────────────────────────────────────────────────────────
+function Field({ label, required, children }) {
+  return (
+    <div className="field">
+      <label className="field-label">{label}{required && <span style={{color:'var(--danger)',marginLeft:2}}>*</span>}</label>
+      {children}
+    </div>
+  );
+}
+
+function SelectField({ label, required, value, onChange, options }) {
+  return (
+    <Field label={label} required={required}>
+      <div style={{position:"relative",display:"flex",alignItems:"center"}}>
+        <select value={value} onChange={e => onChange(e.target.value)} style={{width:"100%",paddingRight:28,appearance:"none",WebkitAppearance:"none"}}>
+          {options.map(o => <option key={o}>{o}</option>)}
+        </select>
+        <span style={{position:"absolute",right:10,pointerEvents:"none",fontSize:10,color:"var(--muted)"}}>▼</span>
+      </div>
+    </Field>
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const params     = new URLSearchParams(window.location.search);
+  const facilityId = params.get("facilityId") || "";
+  const costId     = params.get("id");
+  const isCreate   = params.get("mode") === "create" || !costId;
+  const seed       = isCreate ? null : (SEED_COSTS[costId] || null);
+
+  const backUrl = facilityId
+    ? `facility-detail.html?id=${facilityId}&tab=costs`
+    : "facilities.html";
+
+  const facilityName = FACILITY_NAMES[facilityId] || facilityId;
+
+  const [form, setForm] = useState(seed || {
+    name: "", unitPrice: "", unit: "人", paymentType: PAYMENT_TYPES[0], notes: "",
+  });
+  const [saved, setSaved] = useState(false);
+
+  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <main className="workspace">
+
+        {/* Topbar */}
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="facilities.html" className="crumb-link">施設管理</a>
+              <span className="sep">/</span>
+              <a href={`facility-detail.html?id=${facilityId}&tab=costs`} className="crumb-link">{facilityName}</a>
+              <span className="sep">/</span>
+              <span className="current">{isCreate ? "経費項目を追加" : form.name}</span>
+            </div>
+            <div className="title-row">
+              <button className="btn ghost sm back-btn" onClick={() => { window.location.href = backUrl; }}>← 施設詳細に戻る</button>
+              <h1>経費項目 {isCreate ? "登録" : "編集"}</h1>
+            </div>
+          </div>
+          <div className="status-actions" style={{marginLeft:"auto"}}>
+            <button className="btn primary" onClick={handleSave}>
+              {saved ? "✓ 保存しました" : "変更保存"}
+            </button>
+          </div>
+        </div>
+
+        {/* Editor */}
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            <div className="editor-content">
+              <div className="form-section">
+                <div className="field-grid">
+                  <Field label="経費項目名" required>
+                    <input type="text" value={form.name} onChange={e => upd("name", e.target.value)} placeholder="例：入場料（大人）" />
+                  </Field>
+
+                  <Field label="単価（円）" required>
+                    <input type="number" min="0" value={form.unitPrice} onChange={e => upd("unitPrice", e.target.value)} placeholder="0" />
+                  </Field>
+
+                  <SelectField label="単位" required value={form.unit} onChange={v => upd("unit", v)} options={UNITS} />
+
+                  <div className="field-wide">
+                    <SelectField label="支払区分" required value={form.paymentType} onChange={v => upd("paymentType", v)} options={PAYMENT_TYPES} />
+                  </div>
+
+                  <div className="field-wide">
+                    <Field label="備考">
+                      <textarea value={form.notes} onChange={e => upd("notes", e.target.value)} rows={3} placeholder="注意事項や補足など" />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:8}}>
+                <button className="btn ghost" onClick={() => { window.location.href = backUrl; }}>キャンセル</button>
+                <button className="btn primary" onClick={handleSave}>
+                  {saved ? "✓ 保存しました" : "変更保存"}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
