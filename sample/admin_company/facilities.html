@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>施設管理 | DeepExperience Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+           background: #f9fafb; color: #111827; line-height: 1.5; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Layout */
+    .admin-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #1f2937; color: white; padding: 20px 0;
+               flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar-title { padding: 0 20px 16px; font-size: 16px; font-weight: bold;
+                     border-bottom: 1px solid #374151; margin-bottom: 8px; }
+    .sidebar-section { padding: 8px 20px 4px; font-size: 11px; color: #6b7280;
+                       text-transform: uppercase; letter-spacing: 0.06em; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+                     color: #d1d5db; font-size: 14px; }
+    .sidebar-nav a:hover, .sidebar-nav a.active { background: #374151; color: white; text-decoration: none; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid #374151; }
+    .main-content { flex: 1; padding: 24px; overflow-x: auto; }
+
+    /* Page */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .page-title { font-size: 22px; font-weight: bold; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+           border-radius: 6px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-ghost { background: transparent; border: 1px solid #d1d5db; color: #374151; }
+    .btn-ghost:hover { background: #f3f4f6; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-sm { padding: 4px 10px; font-size: 13px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px;
+            overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #e5e7eb;
+         font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    tbody tr:hover { background: #f9fafb; cursor: pointer; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px;
+             font-size: 12px; font-weight: 600; }
+    .badge-active   { background: #d1fae5; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+    /* Forms */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600;
+                  margin-bottom: 4px; color: #374151; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 8px 12px; border: 1px solid #d1d5db;
+      border-radius: 6px; font-size: 14px; background: white; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+    .form-textarea { resize: vertical; min-height: 72px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row > * { flex: 1; }
+    .form-hint { font-size: 12px; color: #6b7280; margin-top: 3px; }
+
+    /* Search bar */
+    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+    .search-input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+                    font-size: 14px; width: 300px; }
+    .search-input:focus { outline: none; border-color: #2563eb;
+                          box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+
+    /* Utility */
+    .text-sm   { font-size: 13px; }
+    .text-muted { color: #6b7280; }
+    .text-center { text-align: center; }
+    .flex { display: flex; }
+    .gap-2 { gap: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- ════════ Sidebar ════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-title">DeepExperience</div>
+    <div class="sidebar-section">施設管理</div>
+    <ul class="sidebar-nav">
+      <li>
+        <a href="facilities.html" class="active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18M16 3v18M2 9h20M2 15h20"/></svg>
+          施設一覧
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-section" style="margin-top:8px;">ナビゲーション</div>
+    <ul class="sidebar-nav">
+      <li><a href="../admin/index.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        管理画面トップへ
+      </a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <button class="btn btn-ghost btn-sm" style="width:100%;color:#9ca3af;">ログアウト</button>
+    </div>
+  </nav>
+
+  <!-- ════════ Main ════════ -->
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">施設管理</h1>
+      <a href="facility_new.html" class="btn btn-primary">+ 新規登録</a>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input class="search-input" id="search-text" type="text" placeholder="施設名・住所・エリアで検索..." />
+      <select class="search-input" id="search-pref" style="width:auto;">
+        <option value="">都道府県（すべて）</option>
+        <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
+        <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
+        <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
+        <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
+        <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
+        <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+        <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
+        <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
+        <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
+        <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
+        <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
+        <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+      </select>
+      <select class="search-input" id="search-status" style="width:auto;">
+        <option value="">すべてのステータス</option>
+        <option value="active">有効</option>
+        <option value="inactive">無効</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="applyFilter()">検索する</button>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;">CSV出力</button>
+    </div>
+
+    <!-- Table -->
+    <table id="facilities-table">
+      <thead>
+        <tr>
+          <th style="width:40px;">No</th>
+          <th>施設名</th>
+          <th style="width:90px;">都道府県</th>
+          <th>住所</th>
+          <th>連絡先</th>
+          <th style="width:80px;text-align:center;">経費項目数</th>
+          <th style="width:80px;">ステータス</th>
+          <th style="width:110px;">最終更新</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr onclick="location.href='facility_detail.html'">
+          <td class="text-muted text-sm">1</td>
+          <td>
+            <strong>嵐山竹林体験センター</strong><br>
+            <span class="text-sm text-muted">竹細工・着物体験</span>
+          </td>
+          <td class="text-sm">京都府</td>
+          <td class="text-sm">京都市右京区嵯峨天龍寺芒ノ馬場町</td>
+          <td class="text-sm">075-XXX-XXXX</td>
+          <td class="text-center">3</td>
+          <td><span class="badge badge-active">有効</span></td>
+          <td class="text-sm text-muted">2026/06/10</td>
+        </tr>
+        <tr onclick="location.href='facility_detail.html'">
+          <td class="text-muted text-sm">2</td>
+          <td>
+            <strong>伏見稲荷大社</strong><br>
+            <span class="text-sm text-muted">神社参拝・祈祷</span>
+          </td>
+          <td class="text-sm">京都府</td>
+          <td class="text-sm">京都市伏見区深草藪之内町</td>
+          <td class="text-sm">075-YYY-YYYY</td>
+          <td class="text-center">2</td>
+          <td><span class="badge badge-active">有効</span></td>
+          <td class="text-sm text-muted">2026/06/08</td>
+        </tr>
+        <tr onclick="location.href='facility_detail.html'">
+          <td class="text-muted text-sm">3</td>
+          <td>
+            <strong>金閣寺（鹿苑寺）</strong><br>
+            <span class="text-sm text-muted">寺院・観光</span>
+          </td>
+          <td class="text-sm">京都府</td>
+          <td class="text-sm">京都市北区金閣寺町</td>
+          <td class="text-sm">075-ZZZ-ZZZZ</td>
+          <td class="text-center">1</td>
+          <td><span class="badge badge-active">有効</span></td>
+          <td class="text-sm text-muted">2026/05/30</td>
+        </tr>
+        <tr onclick="location.href='facility_detail.html'">
+          <td class="text-muted text-sm">4</td>
+          <td>
+            <strong>京町家体験 山田屋</strong><br>
+            <span class="text-sm text-muted">町家宿泊・茶道体験</span>
+          </td>
+          <td class="text-sm">京都府</td>
+          <td class="text-sm">京都市中京区</td>
+          <td class="text-sm">075-AAA-AAAA</td>
+          <td class="text-center">4</td>
+          <td><span class="badge badge-active">有効</span></td>
+          <td class="text-sm text-muted">2026/06/01</td>
+        </tr>
+        <tr onclick="location.href='facility_detail.html'">
+          <td class="text-muted text-sm">5</td>
+          <td>
+            <strong>宇治茶農家 田中園</strong><br>
+            <span class="text-sm text-muted">お茶摘み・茶道</span>
+          </td>
+          <td class="text-sm">京都府</td>
+          <td class="text-sm">宇治市</td>
+          <td class="text-sm">0774-BBB-BBBB</td>
+          <td class="text-center">2</td>
+          <td><span class="badge badge-inactive">無効</span></td>
+          <td class="text-sm text-muted">2026/04/15</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+  function applyFilter() {
+    const q      = document.getElementById('search-text').value.toLowerCase();
+    const pref   = document.getElementById('search-pref').value;
+    const status = document.getElementById('search-status').value;
+    const rows   = document.querySelectorAll('#table-body tr');
+
+    rows.forEach(tr => {
+      const text    = tr.textContent.toLowerCase();
+      const badge   = tr.querySelector('.badge');
+      const isActive = badge && badge.classList.contains('badge-active');
+
+      const matchText   = !q      || text.includes(q);
+      const matchPref   = !pref   || text.includes(pref);
+      const matchStatus = !status
+        || (status === 'active'   && isActive)
+        || (status === 'inactive' && !isActive);
+
+      tr.style.display = (matchText && matchPref && matchStatus) ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
