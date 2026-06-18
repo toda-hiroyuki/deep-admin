@@ -166,6 +166,17 @@ function BasicInfoTab({ form, upd }) {
           </div>
         </div>
 
+        {/* 提携施設のみ: ログイン情報 */}
+        {isPartner && (
+          <div style={{marginBottom:'var(--sp-4)',padding:'16px',background:'var(--bg-sunken)',border:'1px solid var(--line)',borderRadius:'var(--radius)'}}>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:'.04em'}}>提携施設 — ログイン情報</div>
+            <div className="field-grid">
+              <Field label="ログインID / URL" value={form.loginId} onChange={v => upd("loginId", v)} placeholder="例：facility-admin@example.com" />
+              <Field label="備考（パスワード管理先など）" value={form.loginNote} onChange={v => upd("loginNote", v)} placeholder="例：LastPass の「施設」フォルダに保存" />
+            </div>
+          </div>
+        )}
+
         <Field label="施設名" required value={form.name} onChange={v => upd("name", v)} placeholder="例：嵐山竹林体験センター" />
 
         <SelectField label="カテゴリ" required value={form.category} onChange={v => upd("category", v)} options={FACILITY_CATEGORIES} />
@@ -194,17 +205,6 @@ function BasicInfoTab({ form, upd }) {
           <Field label="担当者名" value={form.contact} onChange={v => upd("contact", v)} placeholder="例：山田 太郎" />
           <div />
         </div>
-
-        {/* 提携施設のみ: ログイン情報 */}
-        {isPartner && (
-          <div style={{marginTop:'var(--sp-4)',padding:'16px',background:'var(--bg-sunken)',border:'1px solid var(--line)',borderRadius:'var(--radius)'}}>
-            <div style={{fontSize:12,fontWeight:700,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:'.04em'}}>提携施設 — ログイン情報</div>
-            <div className="field-grid">
-              <Field label="ログインID / URL" value={form.loginId} onChange={v => upd("loginId", v)} placeholder="例：facility-admin@example.com" />
-              <Field label="備考（パスワード管理先など）" value={form.loginNote} onChange={v => upd("loginNote", v)} placeholder="例：LastPass の「施設」フォルダに保存" />
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
