@@ -20,6 +20,10 @@
 const { useState } = React;
 
 const FACILITY_CATEGORIES = ["体験施設", "観光スポット", "飲食施設", "宿泊施設", "移動施設", "その他"];
+const FACILITY_TYPES = [
+  { value: "external", label: "外部施設", desc: "大阪城等 — 名前・金額・経費項目のみ管理" },
+  { value: "partner",  label: "提携施設", desc: "梅野宿等 — 担当者・連絡先・ログイン情報等フル管理" },
+];
 const PREFECTURES = ["大阪府","京都府","奈良県","兵庫県","滋賀県","和歌山県","三重県","東京都","神奈川県","愛知県","福岡県","北海道","沖縄県"];
 const PAYMENT_TYPES = [
   "A：施設へ月末一括（会社払い）",
@@ -35,15 +39,17 @@ const TABS = [
 const SEED = {
   "fac-1": {
     id: "fac-1", name: "嵐山竹林体験センター", category: "体験施設",
+    facilityType: "external",
     prefecture: "京都府", address: "京都市右京区嵯峨天龍寺芒ノ馬場町",
     phone: "075-XXX-XXXX", email: "info@arashiyama-example.com", contact: "山田 太郎",
+    loginId: "", loginNote: "",
     paymentType: "A：施設へ月末一括（会社払い）",
     notes: "竹林内の体験エリアは雨天中止。要事前確認。",
     status: "有効",
     costs: [
-      { id: "c1", name: "入場料（大人）", unitPrice: 1500, unit: "人", paymentType: "A：施設へ月末一括（会社払い）" },
-      { id: "c2", name: "竹細工体験料",  unitPrice: 2000, unit: "人", paymentType: "A：施設へ月末一括（会社払い）" },
-      { id: "c3", name: "着物レンタル",  unitPrice: 3500, unit: "人", paymentType: "C：ガイドが現地立替（後日精算）" },
+      { id: "c1", name: "入場料（大人）", costType: "per-person", unitPrice: 1500, paymentType: "A" },
+      { id: "c2", name: "竹細工体験料",  costType: "per-person", unitPrice: 2000, paymentType: "A" },
+      { id: "c3", name: "着物レンタル",  costType: "fixed",      unitPrice: 3500, paymentType: "B" },
     ],
   },
 };
@@ -138,10 +144,27 @@ function SelectField({ label, required, value, onChange, options, wide, help }) 
 
 // ── Tab: 基本情報 ─────────────────────────────────────────────────────────────
 function BasicInfoTab({ form, upd }) {
+  const isPartner = form.facilityType === "partner";
   return (
     <div className="editor-content">
       <div className="form-section">
         <SectionHead title="施設情報" desc="施設の基本情報を入力してください。" />
+
+        {/* 施設種別 */}
+        <div className="field-wide" style={{marginBottom:'var(--sp-4)'}}>
+          <label className="field-label"><span className="req" />施設種別</label>
+          <div style={{display:'flex',gap:12,marginTop:4}}>
+            {FACILITY_TYPES.map(ft => (
+              <label key={ft.value} style={{display:'flex',alignItems:'flex-start',gap:8,padding:'10px 16px',border:`2px solid ${form.facilityType===ft.value?'var(--accent)':'var(--line)'}`,borderRadius:'var(--radius)',cursor:'pointer',flex:1,background:form.facilityType===ft.value?'var(--accent-tint, #eff6ff)':'var(--surface)'}}>
+                <input type="radio" name="facilityType" value={ft.value} checked={form.facilityType===ft.value} onChange={() => upd("facilityType", ft.value)} style={{marginTop:2}} />
+                <div>
+                  <div style={{fontWeight:700,fontSize:13}}>{ft.label}</div>
+                  <div style={{fontSize:11,color:'var(--muted)',marginTop:1}}>{ft.desc}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
 
         <Field label="施設名" required value={form.name} onChange={v => upd("name", v)} placeholder="例：嵐山竹林体験センター" />
 
@@ -171,6 +194,17 @@ function BasicInfoTab({ form, upd }) {
           <Field label="担当者名" value={form.contact} onChange={v => upd("contact", v)} placeholder="例：山田 太郎" />
           <div />
         </div>
+
+        {/* 提携施設のみ: ログイン情報 */}
+        {isPartner && (
+          <div style={{marginTop:'var(--sp-4)',padding:'16px',background:'var(--bg-sunken)',border:'1px solid var(--line)',borderRadius:'var(--radius)'}}>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--muted)',marginBottom:12,textTransform:'uppercase',letterSpacing:'.04em'}}>提携施設 — ログイン情報</div>
+            <div className="field-grid">
+              <Field label="ログインID / URL" value={form.loginId} onChange={v => upd("loginId", v)} placeholder="例：facility-admin@example.com" />
+              <Field label="備考（パスワード管理先など）" value={form.loginNote} onChange={v => upd("loginNote", v)} placeholder="例：LastPass の「施設」フォルダに保存" />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
@@ -218,8 +252,8 @@ function CostItemsTab({ costs, facilityId }) {
               <thead>
                 <tr>
                   <th>経費項目名</th>
-                  <th style={{width:120,textAlign:'right'}}>単価（円）</th>
-                  <th style={{width:90,textAlign:'center'}}>単位</th>
+                  <th style={{width:130}}>費用区分</th>
+                  <th style={{width:160}}>金額</th>
                   <th>支払区分</th>
                   <th className="actions" style={{width:72}}></th>
                 </tr>
@@ -228,9 +262,21 @@ function CostItemsTab({ costs, facilityId }) {
                 {costs.map(c => (
                   <tr key={c.id} className="list-row" onClick={() => { window.location.href = `facility-cost-detail.html?facilityId=${fid}&id=${c.id}`; }}>
                     <td style={{fontWeight:600}}>{c.name}</td>
-                    <td style={{textAlign:'right'}}>{c.unitPrice.toLocaleString()}</td>
-                    <td style={{textAlign:'center'}}>{c.unit}</td>
-                    <td style={{fontSize:12,color:'var(--muted)'}}>{c.paymentType}</td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>
+                      {{ "fixed":"固定費","per-person":"変動・人数固定","slide":"変動・スライド","full-var":"完全変動" }[c.costType] || c.costType}
+                    </td>
+                    <td>
+                      {(c.costType==="fixed"||c.costType==="per-person") && (
+                        <span style={{fontWeight:600}}>¥{Number(c.unitPrice).toLocaleString()}
+                          <span style={{fontSize:11,color:'var(--muted)',fontWeight:400,marginLeft:4}}>{c.costType==="fixed"?"/ 1催行":"/ 1名"}</span>
+                        </span>
+                      )}
+                      {c.costType==="slide" && <span style={{fontSize:12,color:'var(--muted)'}}>スライド</span>}
+                      {c.costType==="full-var" && <span style={{fontSize:12,color:'var(--amber)'}}>毎回手動</span>}
+                    </td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>
+                      {{"A":"A：施設へ月末一括","B":"B：施設へ都度・ガイド立替","C":"C：施設外・ガイド立替","D":"D：ガイド自身の経費"}[c.paymentType] || c.paymentType}
+                    </td>
                     <td className="actions">
                       <a href={`facility-cost-detail.html?facilityId=${fid}&id=${c.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
                     </td>
@@ -254,8 +300,10 @@ function App() {
 
   const [form, setForm] = useState(seed || {
     id: "", name: "", category: "体験施設",
+    facilityType: "external",
     prefecture: "大阪府", address: "",
     phone: "", email: "", contact: "",
+    loginId: "", loginNote: "",
     paymentType: PAYMENT_TYPES[0],
     notes: "", status: "有効",
   });

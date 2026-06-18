@@ -23,10 +23,10 @@ const { useState, useCallback } = React;
 // ── 費用区分・費用タイプ定義 ────────────────────────────────────────────────
 
 const COST_CATEGORIES = [
+  { key: "C", label: "C：施設外・ガイド立替",        desc: "施設マスター外の経費をガイドが立替（たこ焼き・タクシー等）" },
+  { key: "D", label: "D：ガイド自身の経費",          desc: "ガイドの交通費・その他経費" },
   { key: "A", label: "A：施設へ元払い（立替払い）", desc: "施設への支払いをガイドが立替えず、直接精算" },
   { key: "B", label: "B：施設へ・ガイド立替",       desc: "施設への支払いをガイドが一時立替" },
-  { key: "C", label: "C：施設外・ガイド立替",        desc: "施設マスター外の経費をガイドが立替" },
-  { key: "D", label: "D：ガイド自身の経費",          desc: "ガイドの交通費・人件費など" },
 ];
 
 const COST_TYPES = [
@@ -152,7 +152,7 @@ function App() {
   const seedTo = (typeof SEED !== "undefined" && SEED.tourOption) ? SEED.tourOption : {};
 
   const [name,       setName]       = useState("");
-  const [category,   setCategory]   = useState("A");
+  const [category,   setCategory]   = useState("C");
   const [costType,   setCostType]   = useState("固定費");
   const [unitPrice,  setUnitPrice]  = useState(0);
   const [note,       setNote]       = useState("");
@@ -226,8 +226,8 @@ function App() {
               <div className="form-section">
                 <div className="section-title">
                   <div>
-                    <h2>経費情報</h2>
-                    <p>費用区分・費用タイプを選択してから金額を設定してください。</p>
+                    <h2>単発経費 新規追加</h2>
+                    <p>施設マスターに登録しない単発の経費（飲食・タクシー等）を登録します。施設経費は施設マスターから選択してください。</p>
                   </div>
                 </div>
 

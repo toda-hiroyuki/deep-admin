@@ -1681,6 +1681,44 @@ const DEFAULT_SLIDE_TIERS = [
   { id: "st-2", minPax: 6, maxPax: 18, unitPrice: 800 },
 ];
 
+// 施設マスター（モック）
+const FACILITY_MASTER = [
+  {
+    id: "fac-1", name: "嵐山竹林体験センター", type: "external",
+    costs: [
+      { id: "c1", name: "入場料（大人）", costType: "per-person", unitPrice: 1500, paymentType: "A" },
+      { id: "c2", name: "竹細工体験料",  costType: "per-person", unitPrice: 2000, paymentType: "A" },
+      { id: "c3", name: "着物レンタル",  costType: "fixed",      unitPrice: 3500, paymentType: "B" },
+    ],
+  },
+  {
+    id: "fac-2", name: "伏見稲荷大社", type: "external",
+    costs: [
+      { id: "c4", name: "祈祷料（基本）", costType: "fixed",      unitPrice: 5000, paymentType: "A" },
+      { id: "c5", name: "お守り代",       costType: "per-person", unitPrice: 800,  paymentType: "B" },
+    ],
+  },
+  {
+    id: "fac-3", name: "金閣寺（鹿苑寺）", type: "partner",
+    costs: [
+      { id: "c6", name: "拝観料（大人）", costType: "per-person", unitPrice: 500, paymentType: "A" },
+    ],
+  },
+];
+
+const COST_TYPE_LABELS = {
+  "fixed":      "固定費",
+  "per-person": "変動・人数固定",
+  "slide":      "変動・スライド",
+  "full-var":   "完全変動",
+};
+const PAYMENT_TYPE_LABELS = {
+  "A": "A：施設へ月末一括",
+  "B": "B：施設へ都度・ガイド立替",
+  "C": "C：施設外・ガイド立替",
+  "D": "D：ガイド自身の経費",
+};
+
 function SlideTierTable({ tiers, onChange, readonly }) {
   const update = (id, patch) => onChange(tiers.map(r => r.id === id ? {...r, ...patch} : r));
   const remove = (id) => onChange(tiers.filter(r => r.id !== id));
@@ -1825,123 +1863,219 @@ function ExpenseRowForm({ row, onUpdate, onDone, onRemove, readonly }) {
   );
 }
 
+// 経費金額表示ヘルパー
+function CostAmountCell({ item }) {
+  if (item.costType === "per-person")
+    return <span style={{fontSize:13,fontWeight:600}}>¥{Number(item.unitPrice||0).toLocaleString()} <span style={{fontSize:11,color:'var(--muted)',fontWeight:400}}>/ 1名あたり</span></span>;
+  if (item.costType === "fixed")
+    return <span style={{fontSize:13,fontWeight:600}}>¥{Number(item.unitPrice||0).toLocaleString()} <span style={{fontSize:11,color:'var(--muted)',fontWeight:400}}>/ 1催行あたり</span></span>;
+  if (item.costType === "slide")
+    return <span style={{fontSize:12,color:'var(--muted)'}}>スライド（施設マスター参照）</span>;
+  return <span style={{fontSize:12,color:'var(--amber)'}}>毎回手動入力</span>;
+}
+
 function ExpensesTab({ t, update, readonly }) {
-  const [expenseRows, setExpenseRows] = useLState([
-    { id: "exp-1", name: "施設入場料", category: "A", costType: "変動・スライド", unitPrice: 0, note: "", slideTiers: DEFAULT_SLIDE_TIERS },
-    { id: "exp-2", name: "ガイド人件費", category: "D", costType: "固定費", unitPrice: 15000, note: "1催行あたり" },
-    { id: "exp-3", name: "交通費（ガイド）", category: "D", costType: "変動・人数割", unitPrice: 800, note: "" },
+  const { useState: useS } = React;
+
+  // ── 施設経費 ──
+  // facilityId → 選択した経費項目IDセット
+  const [facilityItems, setFacilityItems] = useLState([
+    { facilityId: "fac-1", costId: "c1", note: "" },
+    { facilityId: "fac-1", costId: "c2", note: "" },
   ]);
-  const [editingId, setEditingId] = useLState(null);
-  const [sampleN, setSampleN] = useLState(10);
+  const [facilityPickOpen, setFacilityPickOpen] = useLState(false);
+  const [pickFacilityId, setPickFacilityId] = useLState(FACILITY_MASTER[0].id);
 
-  const addRow = () => {
-    const newRow = { id: `exp-${Date.now()}`, name: "", category: "A", costType: "固定費", unitPrice: 0, note: "" };
-    setExpenseRows(prev => [...prev, newRow]);
-    setEditingId(newRow.id);
+  const pickedFacility = FACILITY_MASTER.find(f => f.id === pickFacilityId);
+  const alreadyAdded = new Set(facilityItems.filter(i => i.facilityId === pickFacilityId).map(i => i.costId));
+
+  const toggleCostItem = (costId) => {
+    if (alreadyAdded.has(costId)) {
+      setFacilityItems(prev => prev.filter(i => !(i.facilityId === pickFacilityId && i.costId === costId)));
+    } else {
+      setFacilityItems(prev => [...prev, { facilityId: pickFacilityId, costId, note: "" }]);
+    }
   };
-  const removeRow = (id) => { setExpenseRows(prev => prev.filter(r => r.id !== id)); setEditingId(null); };
-  const updateRow = (id, patch) => setExpenseRows(prev => prev.map(r => r.id === id ? {...r, ...patch} : r));
 
-  // 原価サマリー計算（人数指定）
-  const fixedTotal = expenseRows.filter(r => r.costType === "固定費").reduce((s, r) => s + Number(r.unitPrice||0), 0);
-  const perPersonFixed = expenseRows.filter(r => r.costType === "変動・人数割").reduce((s, r) => s + Number(r.unitPrice||0), 0);
-  const slideTotal = expenseRows.filter(r => r.costType === "変動・スライド").reduce((s, r) => {
-    const tiers = r.slideTiers || [];
-    const matched = tiers.find(tier => sampleN >= tier.minPax && (tier.maxPax == null || sampleN <= tier.maxPax));
-    return s + (matched ? Number(matched.unitPrice||0) * sampleN : 0);
+  // 施設経費 → 表示用に施設名・項目名を解決
+  const resolvedFacilityItems = facilityItems.map(item => {
+    const fac = FACILITY_MASTER.find(f => f.id === item.facilityId);
+    const cost = fac?.costs.find(c => c.id === item.costId);
+    return { ...item, facilityName: fac?.name || item.facilityId, cost };
+  }).filter(i => i.cost);
+
+  // 施設経費を施設ごとにグループ化
+  const facilityGroups = FACILITY_MASTER.reduce((acc, fac) => {
+    const items = resolvedFacilityItems.filter(i => i.facilityId === fac.id);
+    if (items.length) acc.push({ fac, items });
+    return acc;
+  }, []);
+
+  // ── 単発経費（施設マスターなし） ──
+  const [adHocItems, setAdHocItems] = useLState([
+    { id: "ah-1", name: "交通費（ガイド）", costType: "per-person", unitPrice: 800, paymentType: "C", note: "" },
+  ]);
+  const addAdHoc = () => setAdHocItems(prev => [...prev, { id: `ah-${Date.now()}`, name: "", costType: "fixed", unitPrice: 0, paymentType: "C", note: "" }]);
+  const removeAdHoc = (id) => setAdHocItems(prev => prev.filter(i => i.id !== id));
+
+  // ── 原価サマリー ──
+  const [sampleN, setSampleN] = useLState(10);
+  const calcCost = (items) => items.reduce((sum, item) => {
+    const cost = item.cost || item;
+    if (cost.costType === "fixed") return sum + Number(cost.unitPrice || 0);
+    if (cost.costType === "per-person") return sum + Number(cost.unitPrice || 0) * sampleN;
+    return sum;
   }, 0);
-  const grandTotal = fixedTotal + perPersonFixed * sampleN + slideTotal;
-
-  // 費用区分の凡例
-  const categoryLegend = [
-    { key: "A", label: "施設へ元払い" },
-    { key: "B", label: "施設へ・ガイド立替" },
-    { key: "C", label: "施設外・ガイド立替" },
-    { key: "D", label: "ガイド自身の経費" },
-  ];
+  const facilityTotal = calcCost(resolvedFacilityItems.map(i => i.cost));
+  const adHocTotal    = calcCost(adHocItems);
+  const grandTotal    = facilityTotal + adHocTotal;
 
   return (
-    <div className="form-section">
-      <SectionHead eyebrow="STEP 9" title="経費管理" desc="このTourOptionにかかる経費を管理します。費用区分・費用タイプを設定して原価計算・採算管理にご活用ください。" />
+    <div className="editor-content">
 
-      {/* 追加ボタン */}
-      {!readonly && (
-        <div style={{marginBottom:12}}>
-          <a href="tour-option-cost-add.html" className="btn primary sm">＋ 経費を追加</a>
+      {/* ── 施設経費 ── */}
+      <div className="form-section">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <SectionHead eyebrow="STEP 9" title="施設経費" desc="施設マスターに登録された経費項目を選択して紐づけます。" />
+          {!readonly && (
+            <button className="btn primary sm" onClick={() => setFacilityPickOpen(o => !o)}>
+              {facilityPickOpen ? "▲ 閉じる" : "＋ 施設経費を追加"}
+            </button>
+          )}
         </div>
-      )}
 
-      {/* 費用区分の凡例 */}
-      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}>
-        {categoryLegend.map(c => (
-          <div key={c.key} style={{display:'flex',alignItems:'center',gap:5,padding:'3px 10px',background:'var(--bg-sunken)',border:'1px solid var(--line)',borderRadius:20,fontSize:12}}>
-            <strong style={{color:'var(--accent)'}}>{c.key}</strong>
-            <span style={{color:'var(--muted)'}}>{c.label}</span>
+        {/* 施設選択パネル */}
+        {facilityPickOpen && !readonly && (
+          <div style={{marginBottom:16,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+            <div style={{background:'var(--bg-sunken)',padding:'10px 16px',borderBottom:'1px solid var(--line)',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+              <span style={{fontSize:13,fontWeight:600}}>施設を選択</span>
+              <div style={{position:'relative',display:'inline-flex',alignItems:'center'}}>
+                <select value={pickFacilityId} onChange={e => setPickFacilityId(e.target.value)}
+                  style={{paddingRight:24,appearance:'none',WebkitAppearance:'none',fontSize:13,height:'var(--field-h)',paddingLeft:8,border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',background:'#fff'}}>
+                  {FACILITY_MASTER.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                </select>
+                <span style={{position:'absolute',right:8,pointerEvents:'none',fontSize:10,color:'var(--muted)'}}>▼</span>
+              </div>
+            </div>
+            <div style={{padding:'12px 16px'}}>
+              {pickedFacility?.costs.map(cost => {
+                const checked = alreadyAdded.has(cost.id);
+                return (
+                  <label key={cost.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:'1px solid var(--line)',cursor:'pointer'}}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleCostItem(cost.id)} />
+                    <span style={{flex:1,fontWeight:600,fontSize:13}}>{cost.name}</span>
+                    <span style={{fontSize:12,color:'var(--muted)',minWidth:80}}>{COST_TYPE_LABELS[cost.costType] || cost.costType}</span>
+                    <span style={{fontSize:12,fontWeight:600,minWidth:90,textAlign:'right'}}>
+                      {cost.costType === "fixed" || cost.costType === "per-person" ? `¥${Number(cost.unitPrice).toLocaleString()}` : "—"}
+                    </span>
+                    <span style={{fontSize:11,color:'var(--muted)',minWidth:120}}>{PAYMENT_TYPE_LABELS[cost.paymentType] || cost.paymentType}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 施設経費一覧（施設ごとグループ） */}
+        {facilityGroups.length === 0 ? (
+          <div style={{padding:'24px 0',textAlign:'center',color:'var(--muted)',fontSize:13,border:'1px dashed var(--line)',borderRadius:'var(--radius)'}}>
+            施設経費が登録されていません
+          </div>
+        ) : facilityGroups.map(({ fac, items }) => (
+          <div key={fac.id} style={{marginBottom:12,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
+            <div style={{background:'var(--bg-sunken)',padding:'7px 14px',borderBottom:'1px solid var(--line)',display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:12,fontWeight:700}}>{fac.name}</span>
+              <span style={{fontSize:11,color:'var(--muted)',padding:'1px 7px',borderRadius:10,border:'1px solid var(--line)',background:'#fff'}}>{fac.type === "partner" ? "提携" : "外部"}</span>
+            </div>
+            <table className="list-table" style={{marginBottom:0}}>
+              <thead>
+                <tr>
+                  <th>経費項目名</th>
+                  <th style={{width:130}}>費用区分</th>
+                  <th style={{width:160}}>金額</th>
+                  <th style={{width:150}}>支払区分</th>
+                  {!readonly && <th className="actions" style={{width:56}}></th>}
+                </tr>
+              </thead>
+              <tbody>
+                {items.map(item => (
+                  <tr key={item.costId}>
+                    <td style={{fontWeight:600,fontSize:13}}>{item.cost.name}</td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>{COST_TYPE_LABELS[item.cost.costType] || item.cost.costType}</td>
+                    <td><CostAmountCell item={item.cost} /></td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>{PAYMENT_TYPE_LABELS[item.cost.paymentType] || item.cost.paymentType}</td>
+                    {!readonly && (
+                      <td className="actions">
+                        <button className="btn sm ghost" onClick={() => setFacilityItems(prev => prev.filter(i => !(i.facilityId === item.facilityId && i.costId === item.costId)))}>✕</button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ))}
       </div>
 
-      {/* 経費一覧 */}
-      <div className="table-wrap" style={{marginTop:4}}>
-        <table className="data-table" style={{minWidth:600}}>
-          <thead>
-            <tr>
-              <th style={{width:180}}>経費名</th>
-              <th style={{width:60,textAlign:'center'}}>区分</th>
-              <th style={{width:140}}>費用タイプ</th>
-              <th>金額 / 設定</th>
-              <th style={{width:80}}>備考</th>
-              {!readonly && <th style={{width:60}}></th>}
-            </tr>
-          </thead>
-          <tbody>
-            {expenseRows.map(row => (
-              <tr key={row.id}>
-                <td><strong style={{fontSize:13}}>{row.name || <span style={{color:'var(--muted)'}}>（未入力）</span>}</strong></td>
-                <td style={{textAlign:'center'}}>
-                  <span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:24,height:24,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:11,fontWeight:700}}>{row.category}</span>
-                </td>
-                <td><span className="badge outline" style={{fontSize:11}}>{row.costType}</span></td>
-                <td>
-                  {row.costType === "変動・スライド" && (
-                    <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                      {(row.slideTiers||[]).map((tier,i) => (
-                        <span key={i} style={{fontSize:12,color:'var(--ink)',whiteSpace:'nowrap'}}>
-                          {tier.minPax}〜{tier.maxPax ?? "∞"}名: ¥{Number(tier.unitPrice).toLocaleString()}/名
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {(row.costType === "固定費" || row.costType === "変動・人数割") && (
-                    <span style={{fontSize:13,fontWeight:600}}>
-                      ¥{Number(row.unitPrice||0).toLocaleString()}
-                      <span style={{fontSize:11,color:'var(--muted)',fontWeight:400,marginLeft:4}}>{row.costType === "固定費" ? "/ 1催行あたり" : "/ 1名あたり"}</span>
-                    </span>
-                  )}
-                  {row.costType === "変動・完全変動" && (
-                    <span style={{fontSize:12,color:'var(--amber)'}}>毎回手動入力</span>
-                  )}
-                </td>
-                <td style={{fontSize:12,color:'var(--muted)'}}>{row.note || "—"}</td>
-                {!readonly && (
-                  <td>
-                    <a href="tour-option-cost-edit.html" className="btn sm">編集</a>
-                  </td>
-                )}
-              </tr>
-            ))}
-            {!expenseRows.length && (
-              <tr>
-                <td colSpan={readonly ? 5 : 6} style={{textAlign:'center',color:'var(--muted)',padding:24}}>
-                  経費が登録されていません
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* ── 単発経費 ── */}
+      <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <SectionHead title="単発経費" desc="たこ焼き等の単発飲食費・タクシー代など、施設マスターに登録しない経費を登録します。" />
+          {!readonly && <button className="btn primary sm" onClick={addAdHoc}>＋ 単発経費を追加</button>}
+        </div>
+
+        {adHocItems.length === 0 ? (
+          <div style={{padding:'24px 0',textAlign:'center',color:'var(--muted)',fontSize:13,border:'1px dashed var(--line)',borderRadius:'var(--radius)'}}>
+            単発経費が登録されていません
+          </div>
+        ) : (
+          <div className="list-table-wrap">
+            <table className="list-table">
+              <thead>
+                <tr>
+                  <th>経費名</th>
+                  <th style={{width:130}}>費用区分</th>
+                  <th style={{width:160}}>金額</th>
+                  <th style={{width:150}}>支払区分</th>
+                  {!readonly && <th className="actions" style={{width:72}}></th>}
+                </tr>
+              </thead>
+              <tbody>
+                {adHocItems.map(item => (
+                  <tr key={item.id}>
+                    <td style={{fontWeight:600,fontSize:13}}>{item.name || <span style={{color:'var(--muted)'}}>（未入力）</span>}</td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>{COST_TYPE_LABELS[item.costType] || item.costType}</td>
+                    <td><CostAmountCell item={item} /></td>
+                    <td style={{fontSize:12,color:'var(--muted)'}}>{PAYMENT_TYPE_LABELS[item.paymentType] || item.paymentType}</td>
+                    {!readonly && (
+                      <td className="actions">
+                        <a href={`tour-option-cost-edit.html?id=${item.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* 原価サマリー */}
+      {/* ── ガイド人件費 ── */}
+      <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
+        <SectionHead title="ガイド人件費" />
+        <div style={{display:'flex',alignItems:'flex-start',gap:12,padding:'14px 16px',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:'var(--radius)',fontSize:13,color:'#92400e'}}>
+          <span style={{fontSize:18,flexShrink:0}}>ℹ</span>
+          <div>
+            <div style={{fontWeight:700,marginBottom:4}}>ガイド人件費はアサイン時に自動計算されます</div>
+            <div style={{fontSize:12,lineHeight:1.6}}>
+              ガイドスタッフごとに時給・交通費・その他経費が設定されており、このTourOptionへのアサイン確定時に「時給 × 所要時間」でコストが算出されます。
+              収支画面では <strong>時給分 / 交通費 / その他経費</strong> の3区分で集計されます。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 原価サマリー ── */}
       <div style={{marginTop:20,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
         <div style={{background:'var(--bg-sunken)',padding:'10px 16px',borderBottom:'1px solid var(--line)',display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
           <strong style={{fontSize:13}}>原価サマリー（目安）</strong>
@@ -1952,22 +2086,16 @@ function ExpensesTab({ t, update, readonly }) {
             style={{width:64,textAlign:'right',padding:'3px 6px',border:'1px solid var(--line-strong)',borderRadius:4,fontSize:13,background:'#fff'}}
           />
           <span style={{fontSize:11,color:'var(--muted)'}}>名での試算</span>
+          <span style={{fontSize:11,color:'var(--muted)',marginLeft:8}}>※ガイド人件費は含まれません</span>
         </div>
         <div style={{padding:'12px 16px',display:'flex',gap:32,flexWrap:'wrap'}}>
           <div>
-            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>固定費合計</div>
-            <strong style={{fontSize:18}}>¥{fixedTotal.toLocaleString()}</strong>
-            <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>/ 1催行あたり</span>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>施設経費合計</div>
+            <strong style={{fontSize:18}}>¥{facilityTotal.toLocaleString()}</strong>
           </div>
           <div>
-            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>変動費合計（人数割）</div>
-            <strong style={{fontSize:18}}>¥{(perPersonFixed * sampleN).toLocaleString()}</strong>
-            <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>（¥{perPersonFixed.toLocaleString()}/名 × {sampleN}名）</span>
-          </div>
-          <div>
-            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>変動費合計（スライド）</div>
-            <strong style={{fontSize:18}}>¥{slideTotal.toLocaleString()}</strong>
-            <span style={{fontSize:11,color:'var(--muted)',marginLeft:4}}>（{sampleN}名帯適用）</span>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>単発経費合計</div>
+            <strong style={{fontSize:18}}>¥{adHocTotal.toLocaleString()}</strong>
           </div>
           <div style={{borderLeft:'2px solid var(--line)',paddingLeft:32}}>
             <div style={{fontSize:11,color:'var(--muted)',marginBottom:2}}>原価合計目安（{sampleN}名催行時）</div>
