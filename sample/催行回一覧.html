@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>催行回一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --teal2: #0a7d6e;
+        --teal2-soft: #ccebe2;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav { background: var(--side-bg); color: var(--side-ink); padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line); }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+      .topbar .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 7px; }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; border: 1px solid var(--line-strong); font-weight: 700; font-size: 12px; }
+
+      /* ── Filter bar ── */
+      .filter-bar { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 16px 18px; }
+      .filter-grid { display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end; }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { appearance: none; padding-right: 28px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2.5 4.5L6 8l3.5-3.5' fill='none' stroke='%23756d63' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 9px center; }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .date-range .ctrl { width: 140px; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      .ms { position: relative; }
+      .ms-trigger { height: var(--field-h); min-width: 190px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); padding: 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+      .ms-trigger:hover { border-color: var(--ink-soft); }
+      .ms-trigger.open { border-color: var(--accent); box-shadow: var(--ring); }
+      .ms-trigger .caret { color: var(--muted); transition: transform 0.12s; }
+      .ms-trigger.open .caret { transform: rotate(180deg); }
+      .ms-count { font-size: 11px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); border-radius: 999px; padding: 0 7px; line-height: 18px; }
+      .ms-pop { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; min-width: 100%; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-pop); padding: 6px; }
+      .ms-opt { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border-radius: var(--radius-sm); font-size: 13px; white-space: nowrap; }
+      .ms-opt:hover { background: var(--surface-tint); }
+      .ms-opt input { width: 15px; height: 15px; accent-color: var(--accent); }
+
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+      .result-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); padding: 0 2px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+
+      /* ── Table ── */
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1); }
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1140px; background: var(--surface); font-variant-numeric: tabular-nums; }
+      thead th { position: sticky; top: 0; z-index: 1; background: var(--surface-tint); text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+      th.sortable { cursor: pointer; user-select: none; }
+      th.sortable:hover { color: var(--ink); }
+      th .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
+      th .sort-arrow.idle { color: var(--muted-soft); }
+      tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; font-size: 13px; }
+      tbody tr { transition: background 0.08s; cursor: pointer; }
+      tbody tr:hover { background: var(--surface-warm); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date { font-variant-numeric: tabular-nums; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+
+      /* capacity gauge */
+      .cap { display: flex; flex-direction: column; gap: 4px; min-width: 92px; }
+      .cap-top { display: flex; align-items: baseline; gap: 4px; font-variant-numeric: tabular-nums; }
+      .cap-cur { font-weight: 700; color: var(--ink); font-size: 14px; }
+      .cap-max { color: var(--muted); font-size: 12px; }
+      .cap-bar { height: 5px; border-radius: 999px; background: var(--bg-sunken); overflow: hidden; }
+      .cap-fill { height: 100%; border-radius: 999px; background: var(--accent); }
+      .cap-fill.low { background: var(--muted-soft); }
+      .cap-fill.full { background: var(--green); }
+
+      .link-cnt { display: flex; flex-wrap: wrap; gap: 4px; }
+      .cnt-chip { font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .cnt-chip.fix { background: var(--green-soft); color: var(--green); }
+      .cnt-chip.tmp { background: var(--amber-soft); color: var(--amber); }
+
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+      .status-pill.teal { background: var(--teal2-soft); color: var(--teal2); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .status-pill.dark { background: #5a5249; color: #fff; }
+
+      .guide { display: inline-flex; align-items: center; gap: 7px; }
+      .guide-av { width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+      .guide-name { font-weight: 600; color: var(--ink); }
+      .guide-tag { font-size: 10.5px; color: var(--green); font-weight: 600; }
+      .muted-dash { color: var(--muted-soft); }
+
+      .link-state { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+      .link-state .ls-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+      .link-state.fix { color: var(--green); }
+      .link-state.fix .ls-dot { background: var(--green); }
+      .link-state.tmp { color: var(--amber); }
+      .link-state.tmp .ls-dot { background: var(--amber); }
+
+      /* pagination */
+      .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 4px 0 8px; }
+      .page-btn { min-width: 34px; height: 34px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; }
+      .page-btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .page-btn.nav { font-weight: 500; color: var(--muted); }
+
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useEffect } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "sessions" }));
+
+      const ARRANGE_OPTIONS = ["未手配", "募集中", "アサイン済み", "一部確定", "確定済み", "要確認"];
+      const SESSION_STATUS_OPTIONS = ["未催行", "Operated", "Not Operated", "Aborted", "Cancelled（中止）"];
+      const LINK_OPTIONS = ["すべて", "仮紐付きのみ", "確定紐付け済みのみ"];
+
+      // 催行ステータス（行ごとのサンプル）：未催行=グレー / Operated=グリーン
+      const SESSION_STATUS = {
+        "TI-20260525-0900-G-WAK-001-2-PR-01": { label: "Operated", cls: "green" },
+        "TI-20260526-1300-G-GIF-017-1-GR-01": { label: "Not Operated", cls: "coral" },
+        "TI-20260527-0900-G-WAK-001-2-GR-01": { label: "Aborted", cls: "amber" },
+        "TI-20260528-1000-G-AIC-005-1-GR-01": { label: "Operated", cls: "green" },
+        "TI-20260528-1400-G-GIF-017-1-GR-01": { label: "Cancelled（中止）", cls: "dark" },
+        "TI-20260612-0900-G-AIC-005-1-PR-01": { label: "未催行", cls: "muted" },
+        "TI-20260614-0900-G-MIE-005-1-GR-01": { label: "未催行", cls: "muted" },
+      };
+
+      const ROWS = [
+        { id: "TI-20260525-0900-G-WAK-001-2-PR-01", date: "2026-05-25", time: "09:00", code: "G-WAK-001-2-PR", tour: "里山ハイキング",
+          cur: 6, max: 8, links: [{ t: "確定", n: 1 }], arrange: { label: "確定済み", cls: "green" },
+          guide: { name: "田中 誠", tag: null } },
+        { id: "TI-20260526-1300-G-GIF-017-1-GR-01", date: "2026-05-26", time: "13:00", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          cur: 2, max: 6, links: [{ t: "確定", n: 1 }], arrange: { label: "確定済み", cls: "green" },
+          guide: { name: "吉田 健太", tag: null } },
+        { id: "TI-20260527-0900-G-WAK-001-2-GR-01", date: "2026-05-27", time: "09:00", code: "G-WAK-001-2-GR", tour: "里山ハイキング",
+          cur: 4, max: 8, links: [{ t: "確定", n: 2 }], arrange: { label: "確定済み", cls: "green" },
+          guide: { name: "田中 誠", tag: null } },
+        { id: "TI-20260528-1000-G-AIC-005-1-GR-01", date: "2026-05-28", time: "10:00", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          cur: 8, max: 10, links: [{ t: "確定", n: 2 }], arrange: { label: "確定済み", cls: "green" },
+          guide: { name: "佐々木 美咲", tag: null } },
+        { id: "TI-20260528-1400-G-GIF-017-1-GR-01", date: "2026-05-28", time: "14:00", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          cur: 1, max: 6, links: [{ t: "仮", n: 1 }], arrange: { label: "未手配", cls: "muted" },
+          guide: null },
+        { id: "TI-20260612-0900-G-AIC-005-1-PR-01", date: "2026-06-12", time: "09:00", code: "G-AIC-005-1-PR", tour: "茶道体験",
+          cur: 3, max: 6, links: [{ t: "確定", n: 1 }], arrange: { label: "募集中", cls: "blue" },
+          guide: null },
+        { id: "TI-20260614-0900-G-MIE-005-1-GR-01", date: "2026-06-14", time: "09:00", code: "G-MIE-005-1-GR", tour: "漁村体験",
+          cur: 4, max: 6, links: [{ t: "確定", n: 2 }], arrange: { label: "要確認", cls: "amber" },
+          guide: { name: "中村 大輔", tag: null } },
+      ];
+
+      function Caret() {
+        return (
+          <svg className="caret" width="12" height="12" viewBox="0 0 12 12">
+            <path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      }
+
+      function MultiSelect({ options, selected, onToggle }) {
+        const [open, setOpen] = useState(false);
+        const ref = useRef(null);
+        useEffect(() => {
+          if (!open) return;
+          const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+          document.addEventListener("mousedown", onDoc);
+          return () => document.removeEventListener("mousedown", onDoc);
+        }, [open]);
+        const label = selected.length === 0 ? "すべて"
+          : selected.length === options.length ? "すべて選択中"
+          : selected.join(" / ");
+        return (
+          <div className="ms" ref={ref}>
+            <button type="button" className={`ms-trigger ${open ? "open" : ""}`} onClick={() => setOpen(o => !o)}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
+                {selected.length > 0 && <span className="ms-count">{selected.length}</span>}
+                <Caret />
+              </span>
+            </button>
+            {open && (
+              <div className="ms-pop">
+                {options.map(o => (
+                  <label key={o} className="ms-opt">
+                    <input type="checkbox" checked={selected.includes(o)} onChange={() => onToggle(o)} />
+                    <span>{o}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      function CapGauge({ cur, max, code }) {
+        const pct = Math.round((cur / max) * 100);
+        const isGroup = /-GR(-|$)/.test(code || "") || /GR$/.test(code || "");
+        let color;
+        if (isGroup) {
+          color = pct < 40 ? "#f59e0b" : pct <= 70 ? "#0a5e5a" : "#065f46";
+        } else {
+          color = "#0a5e5a";
+        }
+        return (
+          <div className="cap">
+            <div className="cap-top">
+              <span className="cap-cur">{cur}</span>
+              <span className="cap-max">/ {max}名</span>
+            </div>
+            <div className="cap-bar"><div className="cap-fill" style={{ width: pct + "%", background: color }}></div></div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [sessionIdQuery, setSessionIdQuery] = useState("");
+        const [bookingIdQuery, setBookingIdQuery] = useState("");
+        const [statusSel, setStatusSel] = useState([]);
+        const [sessSel, setSessSel] = useState([]);
+        const [guideQuery, setGuideQuery] = useState("");
+        const [from, setFrom] = useState("2026-05-25");
+        const [to, setTo] = useState("2026-06-30");
+        const [tourQuery, setTourQuery] = useState("");
+        const [linkFilter, setLinkFilter] = useState("すべて");
+        const [sortDir, setSortDir] = useState("asc");
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const toggleStatus = (o) => setStatusSel(s => s.includes(o) ? s.filter(x => x !== o) : [...s, o]);
+        const toggleSess = (o) => setSessSel(s => s.includes(o) ? s.filter(x => x !== o) : [...s, o]);
+        const toggleSort = () => setSortDir(d => (d === "asc" ? "desc" : "asc"));
+
+        const reset = () => {
+          setStatusSel([]); setFrom("2026-05-25"); setTo("2026-06-30");
+          setTourQuery(""); setLinkFilter("すべて");
+          setSessionIdQuery(""); setBookingIdQuery(""); setSessSel([]); setGuideQuery("");
+          showToast("フィルターをリセットしました");
+        };
+
+        const rows = [...ROWS].sort((a, b) => {
+          const av = a.date + a.time, bv = b.date + b.time;
+          return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                催行回は予約をまとめて運行する単位です。定員・手配状況・ガイドアサインをこの一覧で管理します。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>催行回一覧</h1>
+                </div>
+                <div className="topbar-right">
+                  <div className="top-date"><span className="dot"></span>2026年6月8日（月）</div>
+                  <div className="avatar" title="運営担当">OP</div>
+                </div>
+              </div>
+
+              <div className="filter-bar">
+                <div className="filter-grid">
+                  <div className="filter-field">
+                    <span className="filter-label">催行回ID</span>
+                    <input className="ctrl" style={{ width: 220 }} placeholder="例：TI-20260530-0900-..."
+                      value={sessionIdQuery} onChange={e => setSessionIdQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約ID / 外部予約番号</span>
+                    <input className="ctrl" style={{ width: 200 }} placeholder="例：BK-260529-00001"
+                      value={bookingIdQuery} onChange={e => setBookingIdQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">ツアー日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={from} onChange={e => setFrom(e.target.value)} />
+                      <span className="sep">〜</span>
+                      <input type="date" className="ctrl" value={to} onChange={e => setTo(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">TourOption</span>
+                    <input className="ctrl" style={{ width: 200 }} placeholder="コード・名称で検索"
+                      value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">催行ステータス</span>
+                    <MultiSelect options={SESSION_STATUS_OPTIONS} selected={sessSel} onToggle={toggleSess} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">担当ガイド</span>
+                    <input className="ctrl" style={{ width: 180 }} placeholder="ガイド名またはコード"
+                      value={guideQuery} onChange={e => setGuideQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">手配状況</span>
+                    <MultiSelect options={ARRANGE_OPTIONS} selected={statusSel} onToggle={toggleStatus} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">催行回紐付け</span>
+                    <select className="ctrl" style={{ width: 180 }} value={linkFilter} onChange={e => setLinkFilter(e.target.value)}>
+                      {LINK_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-actions">
+                    <button className="btn-link" onClick={reset}>リセット</button>
+                    <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="result-meta">
+                <span><strong>1–7</strong> / 7件</span>
+                <span>ツアー日時 {sortDir === "asc" ? "昇順" : "降順"}で表示中</span>
+              </div>
+
+              <div className="table-wrap">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>催行回ID</th>
+                        <th className="sortable" onClick={toggleSort}>
+                          ツアー日時<span className={`sort-arrow ${sortDir === "asc" ? "" : ""}`}>{sortDir === "asc" ? "↑" : "↓"}</span>
+                        </th>
+                        <th>TourOption</th>
+                        <th>現在人数/定員</th>
+                        <th>紐付き予約数</th>
+                        <th>催行ステータス</th>
+                        <th>手配状況</th>
+                        <th>担当ガイド名</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(r => (
+                        <tr key={r.id} onClick={() => showToast(`${r.id}：催行回詳細を開きます`)}>
+                          <td><span className="code-mono">{r.id}</span></td>
+                          <td className="cell-date">
+                            <div>{r.date.replace(/-/g, "/")}</div>
+                            <div className="time">{r.time}</div>
+                          </td>
+                          <td>
+                            <div className="code-mono">{r.code}</div>
+                            <div className="cell-sub">{r.tour}</div>
+                          </td>
+                          <td><CapGauge cur={r.cur} max={r.max} code={r.code} /></td>
+                          <td>
+                            <div className="link-cnt">
+                              {r.links.map((l, i) => (
+                                <span key={i} className={`cnt-chip ${l.t === "確定" ? "fix" : "tmp"}`}>{l.t}{l.n}件</span>
+                              ))}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`status-pill ${(SESSION_STATUS[r.id] || {}).cls || "muted"}`}>
+                              <span className="dot"></span>{(SESSION_STATUS[r.id] || {}).label || "—"}
+                            </span>
+                          </td>
+                          <td><span className={`status-pill ${r.arrange.cls}`}><span className="dot"></span>{r.arrange.label}</span></td>
+                          <td>
+                            {r.guide ? (
+                              <span className="guide">
+                                <span className="guide-av">{r.guide.name.slice(0, 1)}</span>
+                                <span>
+                                  <span className="guide-name">{r.guide.name}</span>
+                                  {r.guide.tag && <span className="guide-tag">（{r.guide.tag}）</span>}
+                                </span>
+                              </span>
+                            ) : <span className="muted-dash">—</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="pagination">
+                <button className="page-btn nav" onClick={() => showToast("前のページはありません")}>← 前へ</button>
+                <button className="page-btn active">1</button>
+                <button className="page-btn" onClick={() => showToast("2ページ目へ")}>2</button>
+                <button className="page-btn" onClick={() => showToast("3ページ目へ")}>3</button>
+                <button className="page-btn nav" onClick={() => showToast("2ページ目へ")}>次へ →</button>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

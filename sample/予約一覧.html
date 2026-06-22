@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>予約一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      .side-nav {
+        background: var(--side-bg);
+        color: var(--side-ink);
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: sticky;
+        top: 0;
+        height: 100vh; min-height: 0;
+        overflow-y: auto;
+        border-right: 1px solid var(--side-line);
+      }
+      .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--side-line);
+      }
+      .brand-mark {
+        width: 32px; height: 32px;
+        display: grid; place-items: center;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        border-radius: 8px;
+        letter-spacing: -0.02em;
+      }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label {
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--side-ink-soft);
+        padding: 0 8px 6px;
+      }
+      .nav-item {
+        appearance: none; border: 0; background: transparent;
+        color: var(--side-ink);
+        display: flex; align-items: center; gap: 10px;
+        min-height: 36px; padding: 6px 10px;
+        border-radius: 7px; text-align: left;
+        font-size: 13.5px; font-weight: 500;
+        position: relative; transition: background 0.12s;
+        width: 100%;
+      }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before {
+        content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px;
+        width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+      }
+      .nav-icon {
+        width: 22px; height: 22px; display: grid; place-items: center;
+        border-radius: 5px; background: rgba(255, 255, 255, 0.08);
+        font-size: 10px; font-weight: 700; letter-spacing: 0.02em;
+        color: var(--side-ink-soft); flex-shrink: 0;
+      }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count {
+        margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums;
+        color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06);
+        padding: 1px 6px; border-radius: 4px;
+      }
+      .side-note {
+        margin-top: auto; border-top: 1px solid var(--side-line);
+        padding-top: 16px; color: var(--side-ink-soft);
+        font-size: 11.5px; line-height: 1.55;
+      }
+      .side-note strong {
+        display: block; font-size: 10.5px; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--side-ink);
+        margin-bottom: 6px; font-weight: 700;
+      }
+
+      /* ── Workspace ── */
+      .workspace {
+        padding: 20px 24px;
+        display: flex; flex-direction: column; gap: 16px;
+        min-width: 0;
+      }
+      .topbar {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 16px;
+      }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+      .topbar .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date {
+        font-size: 12.5px; color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        display: flex; align-items: center; gap: 7px;
+      }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .avatar {
+        width: 34px; height: 34px; border-radius: 50%;
+        background: var(--accent-soft); color: var(--accent-strong);
+        display: grid; place-items: center; border: 1px solid var(--line-strong);
+        font-weight: 700; font-size: 12px;
+      }
+
+      /* ── Filter bar ── */
+      .filter-bar {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-1);
+        padding: 16px 18px;
+      }
+      .filter-grid {
+        display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end;
+      }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      .filter-label {
+        font-size: 11px; font-weight: 600; color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+      .ctrl {
+        height: var(--field-h);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--ink);
+        padding: 0 10px;
+        font-size: 13px;
+        transition: border-color 0.1s, box-shadow 0.1s;
+      }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { appearance: none; padding-right: 28px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2.5 4.5L6 8l3.5-3.5' fill='none' stroke='%23756d63' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat; background-position: right 9px center;
+      }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .date-range .ctrl { width: 140px; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      /* multi-select */
+      .ms { position: relative; }
+      .ms-trigger {
+        height: var(--field-h); min-width: 180px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
+        background: var(--surface); padding: 0 10px;
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        font-size: 13px;
+      }
+      .ms-trigger:hover { border-color: var(--ink-soft); }
+      .ms-trigger.open { border-color: var(--accent); box-shadow: var(--ring); }
+      .ms-trigger .caret { color: var(--muted); transition: transform 0.12s; }
+      .ms-trigger.open .caret { transform: rotate(180deg); }
+      .ms-count {
+        font-size: 11px; font-weight: 700; color: var(--accent-strong);
+        background: var(--accent-soft); border-radius: 999px;
+        padding: 0 7px; line-height: 18px;
+      }
+      .ms-pop {
+        position: absolute; top: calc(100% + 4px); left: 0; z-index: 30;
+        min-width: 100%; background: var(--surface);
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
+        box-shadow: var(--shadow-pop); padding: 6px;
+      }
+      .ms-opt {
+        display: flex; align-items: center; gap: 9px;
+        padding: 7px 9px; border-radius: var(--radius-sm);
+        font-size: 13px; white-space: nowrap;
+      }
+      .ms-opt:hover { background: var(--surface-tint); }
+      .ms-opt input { width: 15px; height: 15px; accent-color: var(--accent); }
+
+      /* checkbox filters */
+      .check-filter {
+        display: flex; align-items: center; gap: 8px;
+        height: var(--field-h); padding: 0 4px;
+        font-size: 13px; color: var(--ink-soft); user-select: none;
+      }
+      .check-filter input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+      /* buttons */
+      .btn {
+        height: var(--field-h); padding: 0 16px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        border-radius: var(--radius); border: 1px solid var(--line-strong);
+        background: var(--surface); font-size: 13px; font-weight: 600;
+        transition: background 0.1s, border-color 0.1s;
+      }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary {
+        background: var(--accent); border-color: var(--accent); color: #fff;
+      }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn-link {
+        background: none; border: 0; color: var(--accent);
+        font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h);
+      }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+      /* ── Result meta ── */
+      .result-meta {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 12.5px; color: var(--muted); padding: 0 2px;
+      }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+
+      /* ── Table ── */
+      .table-wrap {
+        border: 1px solid var(--line); border-radius: var(--radius-lg);
+        overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1);
+      }
+      .table-scroll { overflow-x: auto; }
+      table {
+        width: 100%; border-collapse: separate; border-spacing: 0;
+        min-width: 1180px; background: var(--surface);
+        font-variant-numeric: tabular-nums;
+      }
+      thead th {
+        position: sticky; top: 0; z-index: 1;
+        background: var(--surface-tint); text-align: left;
+        font-size: 10.5px; font-weight: 700; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 0.05em;
+        padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+      }
+      thead th.center { text-align: center; }
+      th.sortable { cursor: pointer; user-select: none; }
+      th.sortable:hover { color: var(--ink); }
+      th .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
+      th .sort-arrow.idle { color: var(--muted-soft); }
+      tbody td {
+        padding: 12px 14px; border-bottom: 1px solid var(--line-soft);
+        vertical-align: middle; font-size: 13px;
+      }
+      tbody td.center { text-align: center; }
+      tbody tr { transition: background 0.08s; cursor: pointer; }
+      tbody tr:hover { background: var(--surface-warm); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .code-mono {
+        font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 12px; color: var(--ink-soft); font-weight: 600;
+      }
+      .cell-strong { font-weight: 600; color: var(--ink); }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date { font-variant-numeric: tabular-nums; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .channel { display: inline-flex; align-items: center; gap: 6px; }
+      .channel .ch-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+      .ch-own { background: var(--accent); }
+      .ch-ota { background: var(--blue); }
+      .ch-agent { background: #614aa4; }
+      .ch-inquiry { background: var(--amber); }
+
+      /* badges / pills */
+      .status-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px;
+        border-radius: 999px; background: var(--bg-sunken); color: var(--muted);
+        white-space: nowrap;
+      }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 11.5px; font-weight: 600; padding: 2px 8px;
+        border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft);
+        white-space: nowrap;
+      }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Pagination ── */
+      .pagination {
+        display: flex; align-items: center; justify-content: center; gap: 4px;
+        padding: 4px 0 8px;
+      }
+      .page-btn {
+        min-width: 34px; height: 34px; padding: 0 10px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
+        background: var(--surface); font-size: 13px; font-weight: 600;
+        color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center;
+      }
+      .page-btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .page-btn.nav { font-weight: 500; color: var(--muted); }
+
+      /* ── Tabs ── */
+      .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+      .tab-btn { appearance: none; border: 0; background: transparent; padding: 11px 16px 13px; font-size: 14px; font-weight: 600; color: var(--muted); position: relative; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+      .tab-btn:hover { color: var(--ink-soft); }
+      .tab-btn.active { color: var(--accent-strong); }
+      .tab-btn.active::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2.5px; background: var(--accent); border-radius: 2px 2px 0 0; }
+      .tab-count { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 1px 7px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); }
+      .tab-count.alert { background: var(--amber-soft); color: var(--amber); }
+      .tab-count.coral { background: var(--coral-soft); color: var(--coral); }
+
+      /* ── Info banner ── */
+      .info-banner { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: var(--radius); font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+      .info-banner .ib-ic { flex: none; font-size: 15px; line-height: 1.4; }
+      .info-banner.amber { background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 28%, transparent); }
+      .empty-ok { padding: 30px 24px; text-align: center; color: var(--green); background: var(--green-soft); border: 1px solid color-mix(in srgb, var(--green) 25%, transparent); border-radius: var(--radius-lg); font-size: 14px; font-weight: 650; }
+      .deadline-soon { color: var(--coral); font-weight: 700; white-space: nowrap; }
+
+      /* ── Review tab ── */
+      .rv-table { min-width: 1040px; }
+      .row-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+      tr.expand-row > td { padding: 0; background: var(--bg-sunken); border-bottom: 1px solid var(--line-soft); }
+      .inline-form { display: flex; align-items: flex-end; gap: 14px; padding: 14px 16px; flex-wrap: wrap; }
+      .inline-form .if-field { display: flex; flex-direction: column; gap: 5px; }
+      .inline-form .if-field label { font-size: 11px; font-weight: 600; color: var(--muted); }
+      .inline-form .if-field .ctrl { width: 220px; }
+      .inline-form .if-actions { display: flex; gap: 8px; margin-left: auto; }
+      .btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+
+      /* ── Duplicate tab ── */
+      .dup-stack { display: flex; flex-direction: column; gap: 16px; }
+      .dup-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-1); overflow: hidden; }
+      .dup-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; background: var(--surface-warm); border-bottom: 1px solid var(--line-soft); }
+      .dup-head .dh-title { font-weight: 700; font-size: 13.5px; }
+      .dup-grid { display: grid; grid-template-columns: 160px 1fr 1fr; }
+      .dup-grid .dg { padding: 9px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; min-width: 0; }
+      .dup-grid .dg.head { background: var(--surface-tint); font-weight: 700; color: var(--accent-strong); font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 12px; }
+      .dup-grid .dg.lab { color: var(--muted); font-weight: 600; }
+      .dup-grid .dg.val { color: var(--ink); word-break: break-word; }
+      .dup-grid .dg.match { background: var(--amber-soft); }
+      .dup-grid .dg.match.val { color: var(--amber); font-weight: 700; }
+      .dup-grid > .dg:nth-last-child(-n+3) { border-bottom: 0; }
+      .dup-foot { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+      .dup-reason { font-size: 12.5px; color: var(--amber); font-weight: 650; display: flex; align-items: center; gap: 7px; }
+      .dup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .dup-resolve { padding: 16px 18px; border-top: 1px solid var(--line-soft); background: var(--bg-sunken); display: flex; flex-direction: column; gap: 15px; }
+      .drf-lab { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 7px; display: block; }
+      .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+      .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--ink-soft); background: var(--surface); cursor: pointer; user-select: none; }
+      .chip input { width: 15px; height: 15px; accent-color: var(--accent); }
+      .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); }
+      .drf-treat { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+      .drf-treat strong { color: var(--coral); }
+      .dup-processed { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius-lg); font-size: 13px; }
+      .dup-processed .dp-left { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); }
+
+      /* ── Import log tab ── */
+      .log-filters { display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end; }
+      .imp-table { min-width: 1080px; }
+      .lnk { color: var(--accent); font-weight: 600; cursor: pointer; }
+      .lnk:hover { color: var(--accent-strong); text-decoration: underline; }
+
+      /* ── Reveal (reduced-motion safe) ── */
+      @keyframes lstReveal { from { transform: translateY(-4px); } to { transform: none; } }
+      .reveal { }
+      @media (prefers-reduced-motion: no-preference) { .reveal { animation: lstReveal 0.2s ease; } }
+
+      /* ── Toast ── */
+      .toast {
+        position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px);
+        background: var(--ink); color: #fff; padding: 11px 18px;
+        border-radius: 999px; font-size: 13px; font-weight: 550;
+        box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none;
+        transition: opacity 0.2s, transform 0.2s; z-index: 60;
+        display: flex; align-items: center; gap: 9px;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useEffect } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "bookings" }));
+
+      const STATUS_OPTIONS = ["確定待ち", "確定予約", "キャンセル済み", "無効", "Completed", "No-show", "Guide_No-show", "Incompleted"];
+      const CHANNEL_OPTIONS = ["すべて", "自社サイト", "OTA", "問い合わせ", "旅行会社"];
+      const ARRANGE_OPTIONS = ["すべて", "未手配", "募集中", "確定済み", "要確認"];
+
+      // channel → dot class
+      function channelClass(ch) {
+        if (ch === "自社サイト") return "ch-own";
+        if (ch === "問い合わせ") return "ch-inquiry";
+        if (ch === "旅行会社") return "ch-agent";
+        return "ch-ota";
+      }
+
+      const ROWS = [
+        { id: "BK-260511-00001", guest: "田中 花子", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          booked: "2026-05-11", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "自社サイト",
+          status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+        { id: "BK-260601-00002", guest: "Smith John", code: "G-WAK-001-2-GR", tour: "里山ハイキング",
+          booked: "2026-06-01", date: "2026-06-15", time: "09:00", pax: "大人4 子供1", channel: "Viator",
+          status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "要確認", cls: "amber" }, flag: true, changed: true },
+        { id: "BK-260519-00003", guest: "佐藤 太郎", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          booked: "2026-05-19", date: "2026-06-02", time: "13:00", pax: "大人2", channel: "自社サイト",
+          status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" },
+          arrange: { label: "未手配", cls: "muted" }, flag: false, changed: false },
+        { id: "BK-260527-00004", guest: "Lee Minjun", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          booked: "2026-05-27", date: "2026-06-03", time: "14:00", pax: "大人3", channel: "Airbnb",
+          status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "募集中", cls: "blue" }, flag: false, changed: false },
+        { id: "BK-260507-00005", guest: "鈴木 一郎", code: "G-WAK-001-2-GR", tour: "里山ハイキング",
+          booked: "2026-05-07", date: "2026-05-28", time: "09:00", pax: "大人6", channel: "旅行会社",
+          status: { label: "キャンセル済み", cls: "coral" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "—", cls: "dash" }, flag: false, changed: false },
+        { id: "BK-260515-00006", guest: "Brown Emily", code: null, tour: "漁村体験",
+          booked: "2026-05-15", date: "2026-06-05", time: "07:00", pax: "大人2 子供2", channel: "GetYourGuide",
+          status: { label: "確定予約", cls: "green" }, link: { label: "未紐付け", cls: "muted" },
+          arrange: { label: "未手配", cls: "muted" }, flag: true, changed: false },
+        { id: "BK-260523-00007", guest: "山本 健二", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          booked: "2026-05-23", date: "2026-06-06", time: "10:00", pax: "大人1", channel: "問い合わせ",
+          status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" },
+          arrange: { label: "未手配", cls: "muted" }, flag: false, changed: false },
+        { id: "BK-260510-00008", guest: "Chen Wei", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          booked: "2026-05-10", date: "2026-06-07", time: "15:00", pax: "大人2", channel: "自社サイト",
+          status: { label: "確定予約", cls: "green" }, link: { label: "仮紐付け", cls: "amber" },
+          arrange: { label: "未手配", cls: "muted" }, flag: false, changed: false },
+        // ツアー実施後ステータスの例（過去ツアー日）
+        { id: "BK-260518-00016", guest: "Wilson Kate", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          booked: "2026-05-18", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "Viator",
+          status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+        { id: "BK-260521-00017", guest: "Dubois Marie", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          booked: "2026-05-21", date: "2026-06-03", time: "14:00", pax: "大人2", channel: "GetYourGuide",
+          status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+        { id: "BK-260524-00018", guest: "高橋 直樹", code: "G-MIE-005-1-PR", tour: "漁村体験",
+          booked: "2026-05-24", date: "2026-06-05", time: "07:00", pax: "大人2", channel: "自社サイト",
+          status: { label: "No-show", cls: "coral" }, link: { label: "確定紐付け", cls: "green" },
+          arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+      ];
+
+      // ── データ不備タブ：データ不備フラグが立つ予約 ──
+      const REVIEW_ROWS = [
+        { id: "BK-260515-00006", guest: "Brown Emily", code: "—（未設定）", date: "2026/06/05 07:00",
+          reason: "TourOptionマッピング未確定", status: { label: "要対応", cls: "coral" }, deadline: "2026/06/04", soon: true, owner: "OP" },
+        { id: "BK-260512-00021", guest: "Müller Anna", code: "G-AIC-005-1-GR", date: "2026/06/12 15:00",
+          reason: "TourOptionバージョン未確定（現在のTourOptionバージョン取得失敗）", status: { label: "確認中", cls: "blue" }, deadline: "2026/06/10", soon: true, owner: "MK" },
+        { id: "BK-260514-00022", guest: "Petrov Ivan", code: "G-WAK-001-2-GR", date: "2026/06/11 09:00",
+          reason: "商品条件スナップショット生成失敗", status: { label: "確認中", cls: "blue" }, deadline: "2026/06/09", soon: true, owner: "OP" },
+        { id: "BK-260603-00011", guest: "García Ana", code: "G-MIE-005-1-PR", date: "2026/06/03 07:00",
+          reason: "必須項目未入力（電話番号）", status: { label: "未確認", cls: "amber" }, deadline: "2026/06/02", soon: true, owner: "—" },
+      ];
+
+      // ── 重複疑いタブ：重複疑いフラグが立つ予約ペア ──
+      const DUP_FIELDS = [
+        { k: "guest", lab: "ゲスト名" },
+        { k: "date", lab: "ツアー日" },
+        { k: "time", lab: "開始時間" },
+        { k: "code", lab: "TourOption" },
+        { k: "channel", lab: "チャネル" },
+        { k: "ext", lab: "外部予約番号" },
+      ];
+      const DUP_PAIRS = [
+        { pid: "001",
+          a: { id: "BK-260601-00002", guest: "Smith John", date: "2026/06/15", time: "09:00", code: "G-WAK-001-2-GR", channel: "Viator", ext: "VTR-8923401" },
+          b: { id: "BK-260603-00015", guest: "Smith J.",   date: "2026/06/15", time: "09:00", code: "G-WAK-001-2-GR", channel: "Viator", ext: "VTR-8923388" },
+          matchKeys: ["date", "time", "code", "channel"], reason: "同一ゲスト・同一ツアー日時・同一TourOption（外部予約番号は別）" },
+      ];
+
+      // ── 取込ログタブ：OTA/Bokun等からの取込結果 ──
+      const RESULT = {
+        success: { label: "成功", cls: "green" },
+        warn:    { label: "警告", cls: "amber" },
+        error:   { label: "エラー", cls: "coral" },
+      };
+      const IMPORT_LOGS = [
+        { dt: "2026/06/01 08:12", src: "Bokun", channel: "Viator", ext: "VTR-8923401", result: "success", content: "予約IDを発行", bk: "BK-260601-00002" },
+        { dt: "2026/05/28 08:12", src: "Bokun", channel: "GetYourGuide", ext: "GYG-553120", result: "warn", content: "TourOption自動マッピング失敗", bk: "BK-260515-00006" },
+        { dt: "2026/05/27 19:40", src: "自社サイト", channel: "自社サイト", ext: "—", result: "success", content: "予約IDを発行", bk: "BK-260527-00004" },
+        { dt: "2026/05/27 11:05", src: "Bokun", channel: "Klook", ext: "KLK-778901", result: "error", content: "商品データ取得失敗（API 404）", bk: null },
+        { dt: "2026/05/26 22:31", src: "手動登録", channel: "問い合わせ", ext: "—", result: "success", content: "予約IDを発行", bk: "BK-260523-00007" },
+        { dt: "2026/06/03 09:18", src: "Bokun", channel: "Viator", ext: "VTR-8923388", result: "warn", content: "重複疑い：同一ゲスト・同一ツアー日の既存予約あり", bk: "BK-260603-00015" },
+      ];
+
+      function Caret() {
+        return (
+          <svg className="caret" width="12" height="12" viewBox="0 0 12 12">
+            <path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      }
+
+      function MultiSelect({ options, selected, onToggle }) {
+        const [open, setOpen] = useState(false);
+        const ref = useRef(null);
+        useEffect(() => {
+          if (!open) return;
+          const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+          document.addEventListener("mousedown", onDoc);
+          return () => document.removeEventListener("mousedown", onDoc);
+        }, [open]);
+        const label = selected.length === 0 ? "すべて"
+          : selected.length === options.length ? "すべて選択中"
+          : selected.join(" / ");
+        return (
+          <div className="ms" ref={ref}>
+            <button type="button" className={`ms-trigger ${open ? "open" : ""}`} onClick={() => setOpen(o => !o)}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
+                {selected.length > 0 && <span className="ms-count">{selected.length}</span>}
+                <Caret />
+              </span>
+            </button>
+            {open && (
+              <div className="ms-pop">
+                {options.map(o => (
+                  <label key={o} className="ms-opt">
+                    <input type="checkbox" checked={selected.includes(o)} onChange={() => onToggle(o)} />
+                    <span>{o}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      function SortArrow({ dir, active }) {
+        if (!active) return <span className="sort-arrow idle">▲▼</span>;
+        return <span className="sort-arrow">{dir === "asc" ? "▲" : "▼"}</span>;
+      }
+
+      function App() {
+        const [statusSel, setStatusSel] = useState([]);
+        const [idQuery, setIdQuery] = useState("");
+        const [from, setFrom] = useState("2026-06-01");
+        const [to, setTo] = useState("2026-06-30");
+        const [bookFrom, setBookFrom] = useState("2026-05-01");
+        const [bookTo, setBookTo] = useState("2026-05-31");
+        const [tourQuery, setTourQuery] = useState("");
+        const [channel, setChannel] = useState("すべて");
+        const [arrange, setArrange] = useState("すべて");
+        const [flagOnly, setFlagOnly] = useState(false);
+        const [changedOnly, setChangedOnly] = useState(false);
+        const [sortKey, setSortKey] = useState("tour");
+        const [sortDir, setSortDir] = useState("asc");
+        const [page, setPage] = useState(1);
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        // ── タブ ──
+        const [tab, setTab] = useState("all");
+        // データ不備
+        const [confirmedIds, setConfirmedIds] = useState([]);
+        const [reviewExpand, setReviewExpand] = useState(null);
+        const [reviewConfirmer, setReviewConfirmer] = useState("");
+        const [reviewWhen, setReviewWhen] = useState("2026-05-29T10:00");
+        // 重複疑い
+        const [dupResolved, setDupResolved] = useState({});
+        const [dupExpand, setDupExpand] = useState(null);
+        const [dupPrimary, setDupPrimary] = useState("A");
+        const [dupCause, setDupCause] = useState("guest");
+        const [dupReason, setDupReason] = useState("");
+        // 取込ログ
+        const [logSrc, setLogSrc] = useState("すべて");
+        const [logResult, setLogResult] = useState("all");
+        const [logFrom, setLogFrom] = useState("2026-05-01");
+        const [logTo, setLogTo] = useState("2026-05-31");
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        // タブ別の派生データ・操作
+        const reviewOpen = REVIEW_ROWS.filter(r => !confirmedIds.includes(r.id));
+        const dupOpen = DUP_PAIRS.filter(p => !dupResolved[p.pid]);
+        const filteredLogs = IMPORT_LOGS.filter(l =>
+          (logSrc === "すべて" || l.src === logSrc) &&
+          (logResult === "all" || l.result === logResult)
+        );
+        const confirmReview = (id) => {
+          setConfirmedIds(s => [...s, id]); setReviewExpand(null); setReviewConfirmer("");
+          showToast(`${id}：確認済みにしました（フラグ解除）`);
+        };
+        const startDupResolve = (pid) => {
+          setDupExpand(dupExpand === pid ? null : pid);
+          setDupPrimary("A"); setDupCause("guest"); setDupReason("");
+        };
+        const resolveDupSeparate = (pid) => {
+          setDupResolved(m => ({ ...m, [pid]: { kind: "separate" } }));
+          setDupExpand(null);
+          showToast(`重複疑いペア #${pid}：別予約として確定しました`);
+        };
+        const resolveDupMerge = (pid) => {
+          setDupResolved(m => ({ ...m, [pid]: { kind: "merge", primary: dupPrimary, cause: dupCause, reason: dupReason } }));
+          setDupExpand(null); setDupReason("");
+          showToast(`重複疑いペア #${pid}：重複と判定しました`);
+        };
+
+        const toggleStatus = (o) =>
+          setStatusSel(s => s.includes(o) ? s.filter(x => x !== o) : [...s, o]);
+
+        const toggleSort = (key) => {
+          if (sortKey === key) {
+            setSortDir(d => (d === "asc" ? "desc" : "asc"));
+          } else {
+            setSortKey(key);
+            setSortDir("asc");
+          }
+        };
+
+        const reset = () => {
+          setStatusSel([]); setIdQuery(""); setFrom("2026-06-01"); setTo("2026-06-30");
+          setBookFrom("2026-05-01"); setBookTo("2026-05-31");
+          setTourQuery(""); setChannel("すべて"); setArrange("すべて");
+          setFlagOnly(false); setChangedOnly(false);
+          showToast("フィルターをリセットしました");
+        };
+
+        const rows = [...ROWS].sort((a, b) => {
+          const av = sortKey === "booking" ? a.booked : a.date + a.time;
+          const bv = sortKey === "booking" ? b.booked : b.date + b.time;
+          return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+
+        const today = "2026年6月8日（月）";
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                当日・翌日案件は朝7時に自動更新されます。データ不備フラグは運営が内容確認のうえ「確認済み」にします。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>予約一覧</h1>
+                </div>
+                <div className="topbar-right">
+                  <button className="btn primary" onClick={() => { window.location.href = "予約登録.html"; }}>＋ 新規予約登録</button>
+                  <div className="top-date"><span className="dot"></span>{today}</div>
+                  <div className="avatar" title="運営担当">OP</div>
+                </div>
+              </div>
+
+              <div className="tab-bar">
+                <button className={`tab-btn ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>全予約</button>
+                <button className={`tab-btn ${tab === "review" ? "active" : ""}`} onClick={() => setTab("review")}>
+                  データ不備{reviewOpen.length > 0 && <span className="tab-count alert">{reviewOpen.length}</span>}
+                </button>
+                <button className={`tab-btn ${tab === "dup" ? "active" : ""}`} onClick={() => setTab("dup")}>
+                  重複疑い{dupOpen.length > 0 && <span className="tab-count coral">{dupOpen.length}</span>}
+                </button>
+                <button className={`tab-btn ${tab === "import" ? "active" : ""}`} onClick={() => setTab("import")}>取込ログ</button>
+              </div>
+
+              {tab === "all" && (
+              <React.Fragment>
+              <div className="filter-bar">
+                <div className="filter-grid">
+                  <div className="filter-field">
+                    <span className="filter-label">予約ID / 外部予約番号</span>
+                    <input className="ctrl" style={{ width: 230 }} placeholder="例：BK-260601-00001 または VTR-8923401"
+                      value={idQuery} onChange={e => setIdQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約ステータス</span>
+                    <MultiSelect options={STATUS_OPTIONS} selected={statusSel} onToggle={toggleStatus} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">ツアー日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={from} onChange={e => setFrom(e.target.value)} />
+                      <span className="sep">–</span>
+                      <input type="date" className="ctrl" value={to} onChange={e => setTo(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={bookFrom} onChange={e => setBookFrom(e.target.value)} />
+                      <span className="sep">–</span>
+                      <input type="date" className="ctrl" value={bookTo} onChange={e => setBookTo(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">TourOption</span>
+                    <input className="ctrl" style={{ width: 200 }} placeholder="コード・名称で検索"
+                      value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約元/チャネル</span>
+                    <select className="ctrl" style={{ width: 160 }} value={channel} onChange={e => setChannel(e.target.value)}>
+                      {CHANNEL_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">手配状況</span>
+                    <select className="ctrl" style={{ width: 140 }} value={arrange} onChange={e => setArrange(e.target.value)}>
+                      {ARRANGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <label className="check-filter">
+                    <input type="checkbox" checked={flagOnly} onChange={e => setFlagOnly(e.target.checked)} />
+                    データ不備のみ
+                  </label>
+                  <div className="filter-actions">
+                    <button className="btn-link" onClick={reset}>リセット</button>
+                    <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="result-meta">
+                <span><strong>1–11</strong> / 26件</span>
+                <span>{sortKey === "booking" ? "予約日" : "ツアー日時"} {sortDir === "asc" ? "昇順" : "降順"}で表示中</span>
+              </div>
+
+              <div className="table-wrap">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>予約ID</th>
+                        <th className="sortable" onClick={() => toggleSort("booking")}>
+                          予約日<SortArrow dir={sortDir} active={sortKey === "booking"} />
+                        </th>
+                        <th>ゲスト名</th>
+                        <th>TourOption</th>
+                        <th className="sortable" onClick={() => toggleSort("tour")}>
+                          ツアー日時<SortArrow dir={sortDir} active={sortKey === "tour"} />
+                        </th>
+                        <th>参加人数</th>
+                        <th>予約元/チャネル</th>
+                        <th>予約ステータス</th>
+                        <th>催行回紐付け</th>
+                        <th>手配状況</th>
+                        <th className="center">データ不備</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(r => (
+                        <tr key={r.id} onClick={() => (window.location.href = "予約詳細.html")}>
+                          <td><span className="code-mono">{r.id}</span></td>
+                          <td className="cell-date"><div>{r.booked.replace(/-/g, "/")}</div></td>
+                          <td><span className="cell-strong">{r.guest}</span></td>
+                          <td>
+                            {r.code
+                              ? <React.Fragment><div className="code-mono">{r.code}</div><div className="cell-sub">{r.tour}</div></React.Fragment>
+                              : <React.Fragment><span className="badge amber">⚠️ 未設定</span><div className="cell-sub">{r.tour}</div></React.Fragment>}
+                          </td>
+                          <td className="cell-date">
+                            <div>{r.date.replace(/-/g, "/")}</div>
+                            <div className="time">{r.time}</div>
+                          </td>
+                          <td className="pax">{r.pax}</td>
+                          <td>
+                            <span className="channel">
+                              <span className={`ch-dot ${channelClass(r.channel)}`}></span>{r.channel}
+                            </span>
+                          </td>
+                          <td><span className={`status-pill ${r.status.cls}`}><span className="dot"></span>{r.status.label}</span></td>
+                          <td><span className={`status-pill ${r.link.cls}`}><span className="dot"></span>{r.link.label}</span></td>
+                          <td>{r.arrange.cls === "dash" ? <span className="muted-dash">—</span> : <span className={`status-pill ${r.arrange.cls}`}><span className="dot"></span>{r.arrange.label}</span>}</td>
+                          <td className="center">
+                            {r.flag ? <span className="badge amber">⚠️ データ不備</span> : <span className="muted-dash">—</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="pagination">
+                <button className="page-btn nav" onClick={() => showToast("前のページはありません")}>← 前へ</button>
+                <button className="page-btn active">1</button>
+                <button className="page-btn" onClick={() => { setPage(2); showToast("2ページ目へ"); }}>2</button>
+                <button className="page-btn" onClick={() => { setPage(3); showToast("3ページ目へ"); }}>3</button>
+                <button className="page-btn nav" onClick={() => { setPage(2); showToast("2ページ目へ"); }}>次へ →</button>
+              </div>
+              </React.Fragment>
+              )}
+
+              {/* ════════ データ不備タブ ════════ */}
+              {tab === "review" && (
+                <React.Fragment>
+                  <div className="info-banner amber">
+                    <span className="ib-ic">⚠️</span>
+                    <span>データ不備フラグが立っている予約の一覧です。確認・修正が完了したら「確認済みにする」を押してフラグを解除してください。</span>
+                  </div>
+                  <div className="result-meta">
+                    <span>未対応 <strong>{reviewOpen.length}</strong> 件</span>
+                    <span>確認期限が近い順</span>
+                  </div>
+                  {reviewOpen.length === 0 ? (
+                    <div className="empty-ok">データ不備のある予約はすべて対応済みです。</div>
+                  ) : (
+                    <div className="table-wrap"><div className="table-scroll">
+                      <table className="rv-table">
+                        <thead>
+                          <tr>
+                            <th>予約ID</th><th>ゲスト名</th><th>TourOption</th><th>ツアー日時</th>
+                            <th>不備の内容</th><th>運営確認ステータス</th><th>確認期限</th><th>対応担当者</th><th>操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reviewOpen.map(r => (
+                            <React.Fragment key={r.id}>
+                              <tr>
+                                <td><span className="code-mono">{r.id}</span></td>
+                                <td><span className="cell-strong">{r.guest}</span></td>
+                                <td><span className="code-mono">{r.code}</span></td>
+                                <td className="cell-date">{r.date}</td>
+                                <td>{r.reason}</td>
+                                <td><span className={`status-pill ${r.status.cls}`}><span className="dot"></span>{r.status.label}</span></td>
+                                <td className={r.soon ? "deadline-soon" : "cell-date"}>{r.deadline}{r.soon && " ⚠"}</td>
+                                <td>{r.owner === "—" ? <span className="muted-dash">—</span> : r.owner}</td>
+                                <td>
+                                  <div className="row-actions">
+                                    <button className="btn sm primary" onClick={() => setReviewExpand(reviewExpand === r.id ? null : r.id)}>確認済みにする</button>
+                                    <button className="btn-link" onClick={() => (window.location.href = "予約詳細.html")}>詳細</button>
+                                  </div>
+                                </td>
+                              </tr>
+                              {reviewExpand === r.id && (
+                                <tr className="expand-row">
+                                  <td colSpan={9}>
+                                    <div className="inline-form reveal">
+                                      <div className="if-field">
+                                        <label>確認者</label>
+                                        <input className="ctrl" placeholder="担当者名を入力" value={reviewConfirmer} onChange={e => setReviewConfirmer(e.target.value)} />
+                                      </div>
+                                      <div className="if-field">
+                                        <label>確認日時</label>
+                                        <input className="ctrl" type="datetime-local" value={reviewWhen} onChange={e => setReviewWhen(e.target.value)} />
+                                      </div>
+                                      <div className="if-actions">
+                                        <button className="btn sm primary" disabled={!reviewConfirmer.trim()} onClick={() => confirmReview(r.id)}>確認済みにする</button>
+                                        <button className="btn sm" onClick={() => setReviewExpand(null)}>キャンセル</button>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div></div>
+                  )}
+                </React.Fragment>
+              )}
+
+              {/* ════════ 重複疑いタブ ════════ */}
+              {tab === "dup" && (
+                <React.Fragment>
+                  {dupOpen.length === 0 && (
+                    <div className="empty-ok">現在、重複疑いの予約はありません。</div>
+                  )}
+                  <div className="dup-stack">
+                    {DUP_PAIRS.map(p => {
+                      const res = dupResolved[p.pid];
+                      if (res) {
+                        const label = res.kind === "separate"
+                          ? "別予約として確定"
+                          : `重複と判定（正予約：予約${res.primary} / ${res.cause === "guest" ? "ゲスト二重予約" : "運営誤登録"}）`;
+                        return (
+                          <div className="dup-processed reveal" key={p.pid}>
+                            <span className="dp-left">
+                              <span className="status-pill green"><span className="dot"></span>処理済み</span>
+                              <span><strong>重複疑いペア #{p.pid}</strong> — {label}</span>
+                            </span>
+                            <button className="btn-link" onClick={() => setDupResolved(m => { const n = { ...m }; delete n[p.pid]; return n; })}>取り消す</button>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="dup-card" key={p.pid}>
+                          <div className="dup-head">
+                            <span className="dh-title">重複疑いペア #{p.pid}</span>
+                            <span className="status-pill coral"><span className="dot"></span>重複疑い</span>
+                          </div>
+                          <div className="dup-grid">
+                            <div className="dg lab"></div>
+                            <div className="dg head">予約A：{p.a.id}</div>
+                            <div className="dg head">予約B：{p.b.id}</div>
+                            {DUP_FIELDS.map(f => {
+                              const m = p.matchKeys.includes(f.k);
+                              return (
+                                <React.Fragment key={f.k}>
+                                  <div className="dg lab">{f.lab}</div>
+                                  <div className={`dg val ${m ? "match" : ""}`}>{p.a[f.k]}</div>
+                                  <div className={`dg val ${m ? "match" : ""}`}>{p.b[f.k]}</div>
+                                </React.Fragment>
+                              );
+                            })}
+                          </div>
+                          <div className="dup-foot">
+                            <span className="dup-reason">🔴 重複の可能性：{p.reason}</span>
+                            <div className="dup-actions">
+                              <button className="btn" onClick={() => resolveDupSeparate(p.pid)}>別予約として確定</button>
+                              <button className="btn primary" onClick={() => startDupResolve(p.pid)}>重複と判定</button>
+                            </div>
+                          </div>
+                          {dupExpand === p.pid && (
+                            <div className="dup-resolve reveal">
+                              <div>
+                                <span className="drf-lab">正予約の選択</span>
+                                <div className="chip-group">
+                                  {[{ v: "A", t: `予約A（${p.a.id}）` }, { v: "B", t: `予約B（${p.b.id}）` }].map(o => (
+                                    <label key={o.v} className={`chip ${dupPrimary === o.v ? "on" : ""}`}>
+                                      <input type="radio" name={`primary-${p.pid}`} checked={dupPrimary === o.v} onChange={() => setDupPrimary(o.v)} />{o.t}
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="drf-lab">重複の原因</span>
+                                <div className="chip-group">
+                                  {[{ v: "guest", t: "ゲスト二重予約" }, { v: "staff", t: "運営誤登録" }].map(o => (
+                                    <label key={o.v} className={`chip ${dupCause === o.v ? "on" : ""}`}>
+                                      <input type="radio" name={`cause-${p.pid}`} checked={dupCause === o.v} onChange={() => setDupCause(o.v)} />{o.t}
+                                    </label>
+                                  ))}
+                                </div>
+                                <div className="drf-treat">
+                                  重複側（正予約でない方）の処置：{dupCause === "guest"
+                                    ? <React.Fragment>ステータスを <strong>「キャンセル済み」</strong> に変更</React.Fragment>
+                                    : <React.Fragment>ステータスを <strong>「無効」</strong> に変更</React.Fragment>}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="drf-lab">判定理由</span>
+                                <textarea className="ctrl" style={{ minHeight: 64 }} placeholder="判定の根拠・経緯を入力" value={dupReason} onChange={e => setDupReason(e.target.value)}></textarea>
+                              </div>
+                              <div className="dup-actions" style={{ justifyContent: "flex-end" }}>
+                                <button className="btn" onClick={() => setDupExpand(null)}>キャンセル</button>
+                                <button className="btn primary" onClick={() => resolveDupMerge(p.pid)}>判定を確定する</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </React.Fragment>
+              )}
+
+              {/* ════════ 取込ログタブ ════════ */}
+              {tab === "import" && (
+                <React.Fragment>
+                  <div className="filter-bar">
+                    <div className="log-filters">
+                      <div className="filter-field">
+                        <span className="filter-label">取込元システム</span>
+                        <select className="ctrl" style={{ width: 160 }} value={logSrc} onChange={e => setLogSrc(e.target.value)}>
+                          <option>すべて</option><option>Bokun</option><option>自社サイト</option><option>手動登録</option>
+                        </select>
+                      </div>
+                      <div className="filter-field">
+                        <span className="filter-label">処理結果</span>
+                        <select className="ctrl" style={{ width: 140 }} value={logResult} onChange={e => setLogResult(e.target.value)}>
+                          <option value="all">すべて</option><option value="success">成功</option><option value="warn">警告</option><option value="error">エラー</option>
+                        </select>
+                      </div>
+                      <div className="filter-field">
+                        <span className="filter-label">取込日</span>
+                        <div className="date-range">
+                          <input type="date" className="ctrl" value={logFrom} onChange={e => setLogFrom(e.target.value)} />
+                          <span className="sep">–</span>
+                          <input type="date" className="ctrl" value={logTo} onChange={e => setLogTo(e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="result-meta">
+                    <span><strong>{filteredLogs.length}</strong> 件の取込ログ</span>
+                  </div>
+                  <div className="table-wrap"><div className="table-scroll">
+                    <table className="imp-table">
+                      <thead>
+                        <tr>
+                          <th>取込日時</th><th>取込元システム</th><th>販売チャネル</th><th>外部予約番号</th>
+                          <th>処理結果</th><th>内容</th><th>社内予約ID</th><th>操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredLogs.map((l, i) => (
+                          <tr key={i}>
+                            <td className="cell-date">{l.dt}</td>
+                            <td>{l.src}</td>
+                            <td><span className="channel"><span className={`ch-dot ${channelClass(l.channel)}`}></span>{l.channel}</span></td>
+                            <td>{l.ext === "—" ? <span className="muted-dash">—</span> : <span className="code-mono">{l.ext}</span>}</td>
+                            <td><span className={`status-pill ${RESULT[l.result].cls}`}><span className="dot"></span>{RESULT[l.result].label}</span></td>
+                            <td>{l.content}</td>
+                            <td>{l.bk ? <span className="lnk" onClick={() => (window.location.href = "予約詳細.html")}>{l.bk}</span> : <span className="muted-dash">—</span>}</td>
+                            <td>{!l.bk
+                              ? <button className="btn sm" onClick={() => { window.location.href = "予約登録.html"; }}>手動登録</button>
+                              : <span className="muted-dash">—</span>}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div></div>
+                </React.Fragment>
+              )}
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

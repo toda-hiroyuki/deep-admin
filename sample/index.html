@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>deep_Admin — 画面一覧</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font-feature-settings: "cv05" 1, "cv08" 1;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+      }
+      .page {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 56px 32px 80px;
+      }
+      .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-bottom: 44px;
+      }
+      .brand-mark {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 17px;
+        letter-spacing: -0.02em;
+      }
+      .brand-name { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+      h1 {
+        font-size: 30px;
+        font-weight: 680;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+      }
+      .lead {
+        font-size: 14.5px;
+        color: var(--muted);
+        margin: 0 0 40px;
+        max-width: 60ch;
+        line-height: 1.6;
+      }
+
+      .group { margin-bottom: 40px; }
+      .group-label {
+        font-size: 11px;
+        font-weight: 680;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0 0 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .group-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 14px;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px 18px 17px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+        box-shadow: 0 1px 2px rgba(45, 30, 12, 0.03);
+      }
+      .card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 6px 18px rgba(45, 30, 12, 0.08);
+        transform: translateY(-2px);
+      }
+      .card-icon {
+        width: 34px; height: 34px;
+        border-radius: 9px;
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 12px;
+        letter-spacing: 0.01em;
+      }
+      .card-title {
+        font-size: 14.5px;
+        font-weight: 640;
+        letter-spacing: -0.01em;
+      }
+      .card-sub {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .card-foot {
+        margin-top: 2px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .card-foot .arrow { transition: transform 0.12s; }
+      .card:hover .card-foot .arrow { transform: translateX(3px); }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="brand-block">
+        <div class="brand-mark">d.</div>
+        <div>
+          <div class="brand-name">deep_Admin</div>
+          <div class="brand-caption">DeepExperience 運営管理</div>
+        </div>
+      </div>
+
+      <h1>画面一覧</h1>
+      <p class="lead">各画面をクリックすると単独のページで開きます。サイドバーから関連画面へ移動することもできます。</p>
+
+      <div class="group">
+        <p class="group-label">予約オペレーション</p>
+        <div class="grid">
+          <a class="card" href="予約一覧.html">
+            <span class="card-icon">予</span>
+            <span class="card-title">予約一覧</span>
+            <span class="card-sub">予約の検索・絞り込み・並び替え。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="予約詳細.html">
+            <span class="card-icon">詳</span>
+            <span class="card-title">予約詳細</span>
+            <span class="card-sub">予約情報のハブ。編集・履歴・操作。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="予約登録.html">
+            <span class="card-icon">登</span>
+            <span class="card-title">予約登録</span>
+            <span class="card-sub">OTA・問い合わせ等の手動登録。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="未割り当て一覧.html">
+            <span class="card-icon">割</span>
+            <span class="card-title">未割り当て一覧</span>
+            <span class="card-sub">催行回未紐付けの予約一覧。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="予約割り当て.html">
+            <span class="card-icon">紐</span>
+            <span class="card-title">予約割り当て</span>
+            <span class="card-sub">既存催行回への紐付け・インライン作成。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="催行回一覧.html">
+            <span class="card-icon">催</span>
+            <span class="card-title">催行回一覧</span>
+            <span class="card-sub">催行回ごとの人数・手配状況。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="催行回詳細.html">
+            <span class="card-icon">回</span>
+            <span class="card-title">催行回詳細</span>
+            <span class="card-sub">紐付き予約・確定紐付け・手配状況。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="当日翌日案件一覧.html">
+            <span class="card-icon">日</span>
+            <span class="card-title">当日/翌日案件一覧</span>
+            <span class="card-sub">当日・翌日の案件とアラート。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="未手配一覧.html">
+            <span class="card-icon">未</span>
+            <span class="card-title">未手配一覧</span>
+            <span class="card-sub">ガイド手配が必要な案件の一覧。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="変更・キャンセル処理.html">
+            <span class="card-icon">変</span>
+            <span class="card-title">変更・キャンセル処理</span>
+            <span class="card-sub">日時変更・人数変更・キャンセルの5ステップ処理。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-label">ガイド管理</p>
+        <div class="grid">
+          <a class="card" href="ガイド一覧.html">
+            <span class="card-icon">ガ</span>
+            <span class="card-title">ガイド一覧</span>
+            <span class="card-sub">ガイドの検索・絞り込み。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="ガイド詳細.html">
+            <span class="card-icon">人</span>
+            <span class="card-title">ガイド詳細</span>
+            <span class="card-sub">基本情報・時給履歴・手配履歴。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="ガイド編集.html">
+            <span class="card-icon">編</span>
+            <span class="card-title">ガイド編集</span>
+            <span class="card-sub">ガイド情報の編集フォーム。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="ガイド登録.html">
+            <span class="card-icon">新</span>
+            <span class="card-title">ガイド登録</span>
+            <span class="card-sub">新規ガイドの登録フォーム。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="ガイド手配操作.html">
+            <span class="card-icon">手</span>
+            <span class="card-title">ガイド手配操作</span>
+            <span class="card-sub">直接アサイン・募集の開始。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="応募者一覧.html">
+            <span class="card-icon">応</span>
+            <span class="card-title">応募者一覧</span>
+            <span class="card-sub">募集への応募確認・アサイン。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-label">精算・経営</p>
+        <div class="grid">
+          <a class="card" href="月次精算管理.html">
+            <span class="card-icon">締</span>
+            <span class="card-title">月次締め確認</span>
+            <span class="card-sub">当月実施分の原価・粗利の確定。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="金額確認待ち一覧.html">
+            <span class="card-icon">取</span>
+            <span class="card-title">金額確認待ち一覧</span>
+            <span class="card-sub">取込予約の金額確認(保留方式)。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="OTA入金照合.html">
+            <span class="card-icon">照</span>
+            <span class="card-title">OTA入金照合</span>
+            <span class="card-sub">OTA振込とレポートの照合。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="収支一覧.html">
+            <span class="card-icon">収</span>
+            <span class="card-title">収支一覧</span>
+            <span class="card-sub">予約別・TourOption別・チャネル別の収支。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="精算確認.html">
+            <span class="card-icon">精</span>
+            <span class="card-title">精算確認</span>
+            <span class="card-sub">ガイド実績の確認・確定・差戻し。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="チャネル・手数料設定.html">
+            <span class="card-icon">手</span>
+            <span class="card-title">チャネル・手数料設定</span>
+            <span class="card-sub">チャネルマスタと手数料率。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-label">Product &amp; Sales</p>
+        <div class="grid">
+          <a class="card" href="TourOption.html">
+            <span class="card-icon">TO</span>
+            <span class="card-title">TourOption</span>
+            <span class="card-sub">ツアーの実体。一覧・作成・編集・確認。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="商品ページ.html">
+            <span class="card-icon">PG</span>
+            <span class="card-title">商品ページ</span>
+            <span class="card-sub">顧客向け表示。掲載TourOptionの管理。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="ガイド資料.html">
+            <span class="card-icon">GD</span>
+            <span class="card-title">ガイド資料</span>
+            <span class="card-sub">運営注意・行程などガイド向け資料。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="キャンセルポリシー文言.html">
+            <span class="card-icon">CP</span>
+            <span class="card-title">キャンセルポリシー文言</span>
+            <span class="card-sub">キャンセル時の表示文言テンプレート。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="group">
+        <p class="group-label">資料・統合ビュー</p>
+        <div class="grid">
+          <a class="card" href="変更・キャンセル_全条件別フロー_ビジュアル.html">
+            <span class="card-icon">図</span>
+            <span class="card-title">変更・キャンセル 全条件フロー</span>
+            <span class="card-sub">約50パターンの判定ツリー・早見表。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+          <a class="card" href="deep_Admin.html">
+            <span class="card-icon">∷</span>
+            <span class="card-title">deep_Admin（統合版）</span>
+            <span class="card-sub">Product &amp; Sales の全画面を1つのアプリで。</span>
+            <span class="card-foot">開く<span class="arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

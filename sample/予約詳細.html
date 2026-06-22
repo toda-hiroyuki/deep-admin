@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>予約詳細 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1160px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+      /* ── Detail header ── */
+      .detail-head { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 20px 22px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+      .head-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+      .id-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+      .id-row .bk-id { font-size: 24px; font-weight: 750; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+      .id-row .ext-id { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .head-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex-shrink: 0; }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .pill-label { font-size: 10px; color: var(--muted-soft); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-right: 2px; }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 13px; font-size: 12.5px; }
+      .btn .b-ic { font-size: 13px; opacity: 0.7; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-body { padding: 18px 20px; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; }
+
+      /* ── Definition grid ── */
+      .def-grid { display: grid; grid-template-columns: 200px 1fr; gap: 0; }
+      .def-grid .dt { color: var(--muted); font-size: 12.5px; font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+      .def-grid .dt:last-of-type, .def-grid .dd:last-of-type { border-bottom: 0; }
+      .def-grid .dd .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; margin-left: 8px; }
+      .def-grid .dd .quote { color: var(--ink-soft); font-style: italic; }
+      .def-grid .dd .strong { font-weight: 650; }
+      .ext-link { color: var(--accent); font-size: 13px; text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+      .ext-link:hover { border-bottom-color: var(--accent); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Two-column card grid ── */
+      .col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
+      /* ── Tables in cards ── */
+      table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); }
+
+      /* ── Flag banner ── */
+      .flag-banner { display: flex; align-items: center; gap: 10px; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-left: 3px solid var(--amber); border-radius: var(--radius); padding: 11px 14px; color: var(--amber); font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+
+      .field-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; font-size: 13px; }
+      .field-meta .lbl { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+
+      /* ── Memo textareas ── */
+      .memo-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+      .memo-field:last-of-type { margin-bottom: 0; }
+      .memo-field .filter-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      textarea.ctrl { min-height: 78px; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+      .ctrl { border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+
+      /* ── Modal ── */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(29, 26, 23, 0.42); backdrop-filter: blur(1.5px); display: grid; place-items: center; padding: 24px; z-index: 80; opacity: 0; pointer-events: none; transition: opacity 0.16s; }
+      .modal-overlay.show { opacity: 1; pointer-events: auto; }
+      .modal { width: 100%; max-width: 480px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); transform: translateY(10px) scale(0.99); transition: transform 0.16s; max-height: calc(100vh - 48px); display: flex; flex-direction: column; }
+      .modal-overlay.show .modal { transform: translateY(0) scale(1); }
+      .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); }
+      .modal-head .m-title { font-size: 15px; font-weight: 700; letter-spacing: -0.005em; }
+      .modal-close { width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: var(--muted); font-size: 18px; display: grid; place-items: center; }
+      .modal-close:hover { background: var(--surface-tint); color: var(--ink); }
+      .modal-body { padding: 18px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+      .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line-soft); }
+      .form-field { display: flex; flex-direction: column; gap: 6px; }
+      .form-field .f-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      .form-field .f-label .req { color: var(--coral); margin-left: 3px; }
+      .input-prefix { position: relative; display: flex; align-items: center; }
+      .input-prefix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-prefix .ctrl { padding-left: 24px; }
+      select.ctrl { height: var(--field-h); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; }
+      input[type="number"].ctrl, input[type="date"].ctrl, input[type="text"].ctrl { height: var(--field-h); }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      /* ── Toast ── */
+      /* ── Inline edit ── */
+      .def-grid .dd .ctrl { max-width: 320px; }
+      .def-grid .dd .ctrl.narrow { max-width: 220px; }
+      .def-grid .dd .ctrl.wide { max-width: 100%; }
+      .def-grid .dd textarea.ctrl { min-height: 58px; }
+      .edit-pair { display: flex; gap: 8px; flex-wrap: wrap; }
+      .edit-pair .ctrl { max-width: 170px; }
+      .locked-note { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--muted-soft); margin-left: 10px; }
+      .locked-note::before { content: ""; width: 11px; height: 11px; flex-shrink: 0; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z'/%3E%3C/svg%3E") center/contain no-repeat; }
+      .toggle { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+      .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .toggle .track { width: 40px; height: 23px; border-radius: 999px; background: var(--line-strong); transition: background 0.15s; flex-shrink: 0; }
+      .toggle .thumb { position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(45,30,12,0.25); transition: transform 0.15s; }
+      .toggle input:checked + .track { background: var(--accent); }
+      .toggle input:checked + .track + .thumb { transform: translateX(17px); }
+      .toggle .t-label { font-size: 13px; color: var(--ink-soft); }
+
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+
+      /* ── Page-level flag banners ── */
+      .alert-stack { display: flex; flex-direction: column; gap: 10px; }
+      .alert-banner { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; border-radius: var(--radius); border-left: 4px solid; }
+      .alert-banner.amber { background: var(--amber-soft); border-left-color: var(--amber); }
+      .alert-banner.coral { background: var(--coral-soft); border-left-color: var(--coral); }
+      .alert-banner .ab-body { flex: 1; min-width: 0; }
+      .alert-banner .ab-title { font-size: 13.5px; font-weight: 700; }
+      .alert-banner.amber .ab-title { color: var(--amber); }
+      .alert-banner.coral .ab-title { color: var(--coral); }
+      .alert-banner .ab-sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+      .alert-banner .ab-actions { display: flex; gap: 10px; align-items: flex-end; margin-top: 12px; flex-wrap: wrap; }
+      .alert-banner .ab-dismiss { background: none; border: 0; color: var(--muted); font-size: 17px; line-height: 1; padding: 2px 3px; flex: none; border-radius: 5px; }
+      .alert-banner .ab-dismiss:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
+      .ab-mini { display: flex; flex-direction: column; gap: 5px; }
+      .ab-mini label { font-size: 11px; font-weight: 600; color: var(--muted); }
+      .ab-mini .ctrl { height: 32px; width: 190px; background: var(--surface); }
+
+      /* ── 追加請求の管理 ── */
+      .add-charge-block { margin-top: 14px; }
+      .disclosure { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 650; padding: 4px 0; display: inline-flex; align-items: center; gap: 6px; }
+      .disclosure:hover { color: var(--accent-strong); }
+      .ac-panel { margin-top: 12px; border: 1px solid var(--line); border-left: 4px solid var(--amber); border-radius: var(--radius); background: var(--amber-bg); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+      .ac-panel .ac-title { font-size: 13.5px; font-weight: 800; color: var(--amber); display: flex; align-items: center; gap: 8px; }
+      .ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .ac-note { display: flex; gap: 9px; font-size: 12px; color: var(--ink-soft); line-height: 1.6; background: var(--blue-soft); border-radius: var(--radius); padding: 11px 13px; }
+      .ac-note .an-ic { flex: none; color: var(--blue); font-weight: 700; }
+      .ac-warn { display: flex; gap: 9px; font-size: 12.5px; color: var(--coral); font-weight: 600; line-height: 1.55; background: var(--coral-soft); border-radius: var(--radius); padding: 11px 13px; }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+
+      /* ── 変更・キャンセル履歴 前後詳細 ── */
+      .hist-toggle { background: none; border: 0; color: var(--accent); font-size: 12.5px; font-weight: 650; padding: 0; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+      .hist-toggle:hover { color: var(--accent-strong); }
+      tr.hist-detail-row > td { padding: 0; background: var(--bg-sunken); border-bottom: 1px solid var(--line-soft); }
+      .hist-detail { padding: 14px 16px; }
+      .ba-table { width: 100%; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+      .ba-table th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 13px; border-bottom: 1px solid var(--line); background: var(--surface-tint); }
+      .ba-table td { padding: 9px 13px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+      .ba-table tr:last-child td { border-bottom: 0; }
+      .ba-table td.ba-lab { color: var(--muted); font-weight: 600; width: 180px; }
+      .ba-table td.val-before { color: var(--muted); }
+      .ba-table td.val-after { color: var(--ink); font-weight: 650; }
+      .ba-table tr.changed td.val-after { background: var(--amber-soft); }
+      .ba-reason { margin-top: 10px; font-size: 12.5px; color: var(--ink-soft); }
+      .ba-reason .brl { color: var(--muted); font-weight: 600; margin-right: 6px; }
+
+      @keyframes dtlReveal { from { transform: translateY(-4px); } to { transform: none; } }
+      .reveal { }
+      @media (prefers-reduced-motion: no-preference) { .reveal { animation: dtlReveal 0.2s ease; } }
+
+      @media (max-width: 760px) {
+        .col-2 { grid-template-columns: 1fr; }
+        .def-grid { grid-template-columns: 130px 1fr; }
+        .ac-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "bookings" }));
+
+      // 追加請求ステータス定義
+      const AC_STATUS = {
+        unsent:    { label: "未送付", cls: "muted" },
+        invoiced:  { label: "請求済み（未払い）", cls: "amber" },
+        paid:      { label: "支払い済み", cls: "green" },
+        expired:   { label: "期限切れ", cls: "coral" },
+        cancelled: { label: "取消", cls: "muted" },
+      };
+
+      // 変更・キャンセル履歴（各イベントの変更前後詳細を保持）
+      const HISTORY = [
+        { type: "日時変更", typeCls: "blue", origin: "ゲスト都合", dt: "2026/06/05 10:15", by: "OP",
+          rows: [
+            { lab: "ツアー日", before: "2026/06/10（水）", after: "2026/06/15（月）", changed: true },
+            { lab: "開始時間", before: "09:00", after: "09:00", changed: false },
+            { lab: "旧催行回ID", before: "TI-20260610-0900-G-WAK-001-2-GR-01", after: "—", changed: true },
+            { lab: "新催行回ID", before: "—", after: "TI-20260615-0900-G-WAK-001-2-GR-01", changed: true },
+          ], reason: "ゲストの旅程変更" },
+        { type: "人数変更", typeCls: "green", origin: "ゲスト都合", dt: "2026/06/03 16:40", by: "MK",
+          rows: [
+            { lab: "参加人数", before: "大人2・子供1", after: "大人4・子供1", changed: true },
+            { lab: "販売金額", before: "¥25,000", after: "¥45,000", changed: true },
+            { lab: "追加請求額", before: "—", after: "¥20,000（決済リンク・支払い済み）", changed: true },
+          ], reason: "ゲストからの増員依頼" },
+      ];
+
+      function Def({ items }) {
+        return (
+          <div className="def-grid">
+            {items.map((it, i) => (
+              <React.Fragment key={i}>
+                <div className="dt">{it.k}</div>
+                <div className="dd">{it.v}</div>
+              </React.Fragment>
+            ))}
+          </div>
+        );
+      }
+
+      function Card({ no, title, action, foot, children }) {
+        return (
+          <section className="card" data-screen-label={title}>
+            <div className="card-head">
+              <div className="card-title"><span className="sec-no">{no}</span>{title}</div>
+              {action}
+            </div>
+            <div className="card-body">{children}</div>
+            {foot && <div className="card-foot">{foot}</div>}
+          </section>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [memoA, setMemoA] = useState("");
+        const [memoB, setMemoB] = useState("");
+        const [refundOpen, setRefundOpen] = useState(false);
+        const [refundMethod, setRefundMethod] = useState("Stripe返金");
+
+        // ── フラグ確認（変更1）──
+        const [dataFlag, setDataFlag] = useState(true);     // データ不備フラグ
+        const [dataFlagForm, setDataFlagForm] = useState(false);
+        const [dataFlagConfirmer, setDataFlagConfirmer] = useState("");
+        const [dataFlagWhen, setDataFlagWhen] = useState("2026-05-29T10:00");
+        const [dupFlag, setDupFlag] = useState(true);       // 重複疑いフラグ
+        // ── 追加請求管理（変更2）──
+        const hasAddCharge = true;                          // 追加請求レコードの有無
+        const [acOpen, setAcOpen] = useState(false);
+        const [acStatus, setAcStatus] = useState("paid");
+        const [acUrl, setAcUrl] = useState("");
+        const [acExpiry, setAcExpiry] = useState("");
+        const [acSent, setAcSent] = useState("");
+        const [acMethod, setAcMethod] = useState("email");
+        // ── 変更履歴の前後詳細展開（変更3）──
+        const [histOpen, setHistOpen] = useState(null);
+        // ── 催行回紐付け操作（グループツアーのみ・§3-8①-補足）──
+        const tourType = "group";                           // group=グループツアー / private=プライベートツアー
+        const [linkStatus, setLinkStatus] = useState("confirmed"); // unlinked | tentative | confirmed
+
+        // ── 予約基本情報 編集 ──
+        const [editBasic, setEditBasic] = useState(false);
+        const [basic, setBasic] = useState({ channel: "Viator", extNo: "VTR-8923401" });
+        const [basicDraft, setBasicDraft] = useState(basic);
+        const startBasic = () => { setBasicDraft(basic); setEditBasic(true); };
+        const saveBasic = () => { setBasic(basicDraft); setEditBasic(false); showToast("予約基本情報を保存しました"); };
+
+        // ── ゲスト情報 編集 ──
+        const [editGuest, setEditGuest] = useState(false);
+        const [guest, setGuest] = useState({
+          name: "Smith John", kana: "スミス ジョン", email: "smith.john@email.com",
+          phone: "+1-234-567-8900", nat: "米国 / 英語", allergy: "なし",
+          request: "Please arrange an English-speaking guide.",
+        });
+        const [guestDraft, setGuestDraft] = useState(guest);
+        const startGuest = () => { setGuestDraft(guest); setEditGuest(true); };
+        const saveGuest = () => { setGuest(guestDraft); setEditGuest(false); showToast("ゲスト情報を保存しました"); };
+
+        // ── 集合・ピックアップ情報 編集 ──
+        const [editMeet, setEditMeet] = useState(false);
+        const [meet, setMeet] = useState({
+          jp: "白山比咩神社 駐車場", en: "Hakusan Hime Shrine Parking",
+          map: "maps.google.com/?q=白山比咩神社", pickup: false, pickupPlace: "",
+        });
+        const [meetDraft, setMeetDraft] = useState(meet);
+        const startMeet = () => { setMeetDraft(meet); setEditMeet(true); };
+        const saveMeet = () => { setMeet(meetDraft); setEditMeet(false); showToast("集合・ピックアップ情報を保存しました"); };
+
+        const EditBtn = ({ onClick }) => (
+          <button className="btn sm" onClick={onClick}>編集</button>
+        );
+        const editFoot = (onSave, onCancel) => (
+          <React.Fragment>
+            <button className="btn primary" onClick={onSave}>保存</button>
+            <button className="btn" onClick={onCancel}>キャンセル</button>
+          </React.Fragment>
+        );
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                予約の詳細・手配状況・変更履歴を確認できます。手配や変更操作は各セクションのボタンから行います。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="crumbs">
+                <a href="#" onClick={e => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
+                <span className="sep">›</span>
+                <a href="予約一覧.html">予約一覧</a>
+                <span className="sep">›</span>
+                <span className="current">BK-260601-00002</span>
+              </div>
+
+              {/* ── フラグ確認バナー（変更1）── */}
+              {(dataFlag || dupFlag) && (
+                <div className="alert-stack">
+                  {dataFlag && (
+                    <div className="alert-banner amber">
+                      <div className="ab-body">
+                        <div className="ab-title">⚠️ データ不備フラグがONです：TourOptionマッピング未確定</div>
+                        {!dataFlagForm ? (
+                          <div className="ab-actions">
+                            <button className="btn sm" onClick={() => setDataFlagForm(true)}>確認済みにする</button>
+                          </div>
+                        ) : (
+                          <div className="ab-actions reveal">
+                            <div className="ab-mini">
+                              <label>確認者</label>
+                              <input className="ctrl" placeholder="担当者名を入力" value={dataFlagConfirmer} onChange={e => setDataFlagConfirmer(e.target.value)} />
+                            </div>
+                            <div className="ab-mini">
+                              <label>確認日時</label>
+                              <input type="datetime-local" className="ctrl" value={dataFlagWhen} onChange={e => setDataFlagWhen(e.target.value)} />
+                            </div>
+                            <button className="btn sm primary" disabled={!dataFlagConfirmer.trim()}
+                              onClick={() => { setDataFlag(false); setDataFlagForm(false); showToast("データ不備フラグを解除しました"); }}>確認済みにする</button>
+                            <button className="btn sm" onClick={() => setDataFlagForm(false)}>キャンセル</button>
+                          </div>
+                        )}
+                      </div>
+                      <button className="ab-dismiss" title="折りたたむ" onClick={() => setDataFlag(false)}>×</button>
+                    </div>
+                  )}
+                  {dupFlag && (
+                    <div className="alert-banner coral">
+                      <div className="ab-body">
+                        <div className="ab-title">🔴 重複疑いフラグがONです</div>
+                        <div className="ab-sub">類似予約：<span className="code-mono">BK-260603-00015</span>（同一ゲスト・同一ツアー日時・同一TourOption／外部予約番号は別）</div>
+                        <div className="ab-actions">
+                          <button className="btn sm" onClick={() => showToast("予約一覧の重複疑いタブへ移動します")}>重複疑い一覧で判定する</button>
+                        </div>
+                      </div>
+                      <button className="ab-dismiss" title="折りたたむ" onClick={() => setDupFlag(false)}>×</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── ① Header ── */}
+              <div className="detail-head" data-screen-label="予約詳細ヘッダー">
+                <div className="head-left">
+                  <div className="id-row">
+                    <span className="bk-id">BK-260601-00002</span>
+                    <span className="ext-id">外部予約番号 VTR-8923401</span>
+                  </div>
+                  <div className="badge-row">
+                    <span className="status-pill teal"><span className="pill-label">予約</span><span className="dot"></span>確定予約</span>
+                    <span className="status-pill green"><span className="pill-label">支払い</span><span className="dot"></span>支払い済み</span>
+                    <span className="status-pill teal"><span className="pill-label">催行回</span><span className="dot"></span>確定紐付け</span>
+                    <span className="status-pill amber"><span className="pill-label">手配</span><span className="dot"></span>要確認</span>
+                  </div>
+                </div>
+                <div className="head-actions">
+                  <button className="btn" onClick={() => { window.location.href = "変更・キャンセル処理.html"; }}>変更・キャンセル処理</button>
+                  <button className="btn" onClick={() => { window.location.href = "ガイド手配操作.html"; }}>手配操作を開く</button>
+                  <button className="btn" onClick={() => showToast("外部予約管理画面を開きます")}>外部予約管理画面を開く</button>
+                </div>
+              </div>
+
+              {/* ── ①-補足 催行回紐付け操作（グループツアーのみ）── */}
+              {tourType === "group" && (
+                <Card no="＋" title="催行回紐付け操作"
+                  action={
+                    linkStatus === "unlinked"
+                      ? <span className="status-pill muted"><span className="dot"></span>未紐付け</span>
+                      : linkStatus === "tentative"
+                      ? <span className="status-pill amber"><span className="dot"></span>仮紐付け</span>
+                      : <span className="status-pill teal"><span className="dot"></span>確定紐付け</span>
+                  }>
+                  <div className="field-meta">
+                    <span className="lbl">表示状態（プロトタイプ確認用）</span>
+                    <button className={`btn sm${linkStatus === "unlinked" ? " primary" : ""}`} onClick={() => setLinkStatus("unlinked")}>未紐付け</button>
+                    <button className={`btn sm${linkStatus === "tentative" ? " primary" : ""}`} onClick={() => setLinkStatus("tentative")}>仮紐付け</button>
+                    <button className={`btn sm${linkStatus === "confirmed" ? " primary" : ""}`} onClick={() => setLinkStatus("confirmed")}>確定紐付け</button>
+                  </div>
+                  {linkStatus === "unlinked" && (
+                    <div className="field-meta" style={{ marginBottom: 0 }}>
+                      <span className="lbl">この予約はまだ催行回に紐付いていません。</span>
+                      <button className="btn primary" onClick={() => { window.location.href = "予約割り当て.html"; }}>催行回に割り当てる</button>
+                    </div>
+                  )}
+                  {linkStatus === "tentative" && (
+                    <div className="field-meta" style={{ marginBottom: 0 }}>
+                      <span className="lbl">催行回に仮紐付け中です。確定するとガイド手配を開始できます。</span>
+                      <button className="btn" onClick={() => { window.location.href = "予約割り当て.html"; }}>催行回を変更する</button>
+                      <button className="btn primary" onClick={() => setLinkStatus("confirmed")}>確定紐付けにする</button>
+                    </div>
+                  )}
+                  {linkStatus === "confirmed" && (
+                    <div className="field-meta" style={{ marginBottom: 0 }}>
+                      <span className="lbl muted-dash">確定紐付け済みです。確定後は催行回の変更はできません。</span>
+                    </div>
+                  )}
+                </Card>
+              )}
+
+              {/* ── ② & ③ ── */}
+              <div className="col-2">
+                <Card no="2" title="予約基本情報"
+                  action={!editBasic && <EditBtn onClick={startBasic} />}
+                  foot={editBasic && editFoot(saveBasic, () => setEditBasic(false))}>
+                  <div className="def-grid">
+                    <div className="dt">TourOption</div>
+                    <div className="dd">
+                      <span className="code-mono">G-WAK-001-2-GR</span><span className="sub">里山ハイキング</span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">TourOptionバージョン</div>
+                    <div className="dd">
+                      <span className="strong">v3（2026-04-01〜・現在のTourOptionバージョン）</span>
+                      <span className="sub" title="予約作成時に確定（ピン留め）したTourOptionバージョン。変更・キャンセルでも書き換えません。催行回はこのバージョンIDが一致する回のみ同乗できます">予約時に確定したTourOptionバージョン（TourOption ID: TO-3920）</span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">ツアー日時</div>
+                    <div className="dd">
+                      <span className="strong">2026/06/15（月）09:00〜12:00</span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">参加人数</div>
+                    <div className="dd">
+                      <span>大人4・子供1<span className="sub">（計5名）</span></span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">予約元 / チャネル</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <select className="ctrl narrow" value={basicDraft.channel}
+                            onChange={e => setBasicDraft({ ...basicDraft, channel: e.target.value })}>
+                            <option>Viator</option>
+                            <option>GetYourGuide</option>
+                            <option>Klook</option>
+                            <option>Airbnb</option>
+                            <option>自社サイト</option>
+                          </select>
+                        : basic.channel}
+                    </div>
+
+                    <div className="dt">外部予約番号</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <input type="text" className="ctrl narrow code-mono" value={basicDraft.extNo}
+                            onChange={e => setBasicDraft({ ...basicDraft, extNo: e.target.value })} />
+                        : <span className="code-mono">{basic.extNo}</span>}
+                    </div>
+
+                    <div className="dt">予約受付方式</div>
+                    <div className="dd">即時確定</div>
+                    <div className="dt">予約作成日時</div>
+                    <div className="dd">2026/06/01 14:32</div>
+                    <div className="dt">確定日時</div>
+                    <div className="dd">2026/06/01 14:32</div>
+                  </div>
+                </Card>
+
+                <Card no="3" title="ゲスト情報"
+                  action={!editGuest && <EditBtn onClick={startGuest} />}
+                  foot={editGuest && editFoot(saveGuest, () => setEditGuest(false))}>
+                  <div className="def-grid">
+                    <div className="dt">予約者名</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <span className="edit-pair">
+                            <input type="text" className="ctrl" placeholder="氏名" value={guestDraft.name}
+                              onChange={e => setGuestDraft({ ...guestDraft, name: e.target.value })} />
+                            <input type="text" className="ctrl" placeholder="カナ" value={guestDraft.kana}
+                              onChange={e => setGuestDraft({ ...guestDraft, kana: e.target.value })} />
+                          </span>
+                        : <span>{guest.name}<span className="sub">（{guest.kana}）</span></span>}
+                    </div>
+
+                    <div className="dt">連絡先メール</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl code-mono" value={guestDraft.email}
+                            onChange={e => setGuestDraft({ ...guestDraft, email: e.target.value })} />
+                        : <span className="code-mono">{guest.email}</span>}
+                    </div>
+
+                    <div className="dt">電話番号</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl narrow code-mono" value={guestDraft.phone}
+                            onChange={e => setGuestDraft({ ...guestDraft, phone: e.target.value })} />
+                        : <span className="code-mono">{guest.phone}</span>}
+                    </div>
+
+                    <div className="dt">国籍 / 使用言語</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl narrow" value={guestDraft.nat}
+                            onChange={e => setGuestDraft({ ...guestDraft, nat: e.target.value })} />
+                        : guest.nat}
+                    </div>
+
+                    <div className="dt">アレルギー・配慮事項</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl" placeholder="なし" value={guestDraft.allergy}
+                            onChange={e => setGuestDraft({ ...guestDraft, allergy: e.target.value })} />
+                        : (guest.allergy && guest.allergy !== "なし"
+                            ? guest.allergy : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">ゲスト要望</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <textarea className="ctrl wide" value={guestDraft.request}
+                            onChange={e => setGuestDraft({ ...guestDraft, request: e.target.value })}></textarea>
+                        : (guest.request
+                            ? <span className="quote">"{guest.request}"</span> : <span className="muted-dash">なし</span>)}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* ── ④ ── */}
+              <Card no="4" title="集合・ピックアップ情報"
+                action={!editMeet && <EditBtn onClick={startMeet} />}
+                foot={editMeet && editFoot(saveMeet, () => setEditMeet(false))}>
+                <div className="def-grid">
+                  <div className="dt">集合場所（日本語）</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <input type="text" className="ctrl wide" value={meetDraft.jp}
+                          onChange={e => setMeetDraft({ ...meetDraft, jp: e.target.value })} />
+                      : meet.jp}
+                  </div>
+
+                  <div className="dt">集合場所（英語）</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <input type="text" className="ctrl wide" value={meetDraft.en}
+                          onChange={e => setMeetDraft({ ...meetDraft, en: e.target.value })} />
+                      : meet.en}
+                  </div>
+
+                  <div className="dt">Google Map URL</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <input type="text" className="ctrl wide code-mono" value={meetDraft.map}
+                          onChange={e => setMeetDraft({ ...meetDraft, map: e.target.value })} />
+                      : <a className="ext-link" href="#" onClick={e => { e.preventDefault(); showToast("地図リンクを開きます"); }}>{meet.map}</a>}
+                  </div>
+
+                  <div className="dt">ピックアップ</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <label className="toggle">
+                          <input type="checkbox" checked={meetDraft.pickup}
+                            onChange={e => setMeetDraft({ ...meetDraft, pickup: e.target.checked })} />
+                          <span className="track"></span>
+                          <span className="thumb"></span>
+                          <span className="t-label">{meetDraft.pickup ? "あり" : "なし"}</span>
+                        </label>
+                      : (meet.pickup ? "あり" : <span className="muted-dash">なし</span>)}
+                  </div>
+
+                  {(editMeet ? meetDraft.pickup : meet.pickup) && (
+                    <React.Fragment>
+                      <div className="dt">ピックアップ場所</div>
+                      <div className="dd">
+                        {editMeet
+                          ? <input type="text" className="ctrl wide" placeholder="ピックアップ場所を入力（例：金沢駅 東口ロータリー）" value={meetDraft.pickupPlace}
+                              onChange={e => setMeetDraft({ ...meetDraft, pickupPlace: e.target.value })} />
+                          : (meet.pickupPlace ? meet.pickupPlace : <span className="muted-dash">未設定</span>)}
+                      </div>
+                    </React.Fragment>
+                  )}
+                </div>
+              </Card>
+
+              {/* ── ⑤ ── */}
+              <Card no="5" title="ガイド手配情報"
+                action={<span className="status-pill amber"><span className="dot"></span>要確認</span>}
+                foot={<button className="btn primary" onClick={() => { window.location.href = "ガイド手配操作.html"; }}>手配操作を開く</button>}>
+                <div className="flag-banner">⚠ 再手配要否を確認してください</div>
+                <div className="field-meta">
+                  <span className="lbl">変更理由区分</span>
+                  <span className="badge blue">日時変更</span>
+                  <span className="lbl" style={{ marginLeft: 10 }}>精算ステータス</span>
+                  <span className="badge">見込み設定済み</span>
+                </div>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>ガイド名</th>
+                      <th>役割</th>
+                      <th>手配ステータス</th>
+                      <th>確定日時</th>
+                      <th>適用時給</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="strong">田中 誠</td>
+                      <td>メインガイド</td>
+                      <td><span className="status-pill teal"><span className="dot"></span>確定</span></td>
+                      <td>2026/05/10</td>
+                      <td>¥3,500/h</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Card>
+
+              {/* ── ⑥ ── */}
+              <Card no="6" title="支払いサマリー"
+                foot={<button className="btn" onClick={() => setRefundOpen(true)}>返金処理を記録</button>}>
+                <Def items={[
+                  { k: "販売金額", v: <span className="strong">¥45,000</span> },
+                  { k: "当初支払い額", v: <span>¥25,000<span className="sub">（2026/06/01）</span></span> },
+                  { k: "決済元", v: "Viator" },
+                  ...(hasAddCharge ? [
+                    { k: "追加請求", v: <span>¥20,000<span className="sub">（人数変更による増額 2026/06/03・決済リンク）</span></span> },
+                    { k: "追加請求ステータス", v: <span className={`badge ${AC_STATUS[acStatus].cls}`}>{AC_STATUS[acStatus].label}</span> },
+                  ] : []),
+                  { k: "支払い済み合計", v: <span className="strong">¥45,000<span className="sub">（当初 ¥25,000 ＋ 追加請求 ¥20,000）</span></span> },
+                  { k: "返金", v: <span className="muted-dash">なし</span> },
+                ]} />
+                {hasAddCharge && (
+                  <div className="add-charge-block">
+                    <button className="disclosure" onClick={() => setAcOpen(o => !o)}>{acOpen ? "▲" : "▼"} 詳細を管理する</button>
+                    {acOpen && (
+                      <div className="ac-panel reveal">
+                        <div className="ac-title">💳 追加請求の管理</div>
+                        <div className="form-field">
+                          <label className="f-label">追加請求ステータス</label>
+                          <select className="ctrl" value={acStatus} onChange={e => setAcStatus(e.target.value)}>
+                            <option value="unsent">未送付</option>
+                            <option value="invoiced">請求済み（未払い）</option>
+                            <option value="paid">支払い済み</option>
+                            <option value="expired">期限切れ</option>
+                            <option value="cancelled">取消</option>
+                          </select>
+                        </div>
+                        {(acStatus === "invoiced" || acStatus === "paid" || acStatus === "expired") && (
+                          <div className="ac-grid reveal">
+                            <div className="form-field"><label className="f-label">決済リンク URL</label><input className="ctrl" placeholder="https://buy.stripe.com/..." value={acUrl} onChange={e => setAcUrl(e.target.value)} /></div>
+                            <div className="form-field"><label className="f-label">リンク有効期限</label><input type="date" className="ctrl" value={acExpiry} onChange={e => setAcExpiry(e.target.value)} /></div>
+                            <div className="form-field"><label className="f-label">送付日時</label><input type="datetime-local" className="ctrl" value={acSent} onChange={e => setAcSent(e.target.value)} /></div>
+                            <div className="form-field"><label className="f-label">送付手段</label>
+                              <select className="ctrl" value={acMethod} onChange={e => setAcMethod(e.target.value)}>
+                                <option value="email">メール</option><option value="line">LINE</option><option value="whatsapp">WhatsApp</option><option value="other">その他</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+                        {acStatus === "expired" && (
+                          <div className="ac-warn">⚠️ 決済リンクの有効期限が切れています。Stripe 管理画面で新しいリンクを発行してください。</div>
+                        )}
+                        <div className="ac-note"><span className="an-ic">ℹ️</span><span>決済リンクは Stripe 管理画面で発行し URL を記録してください。送付後にステータスを「請求済み」に更新してください。</span></div>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <button className="btn primary" onClick={() => showToast("追加請求の管理内容を保存しました")}>保存する</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+
+              {/* ── ⑦ ── */}
+              <Card no="7" title="変更・キャンセル履歴"
+                foot={<button className="btn" onClick={() => { window.location.href = "変更・キャンセル処理.html"; }}>変更・キャンセル処理を行う</button>}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>変更種別</th>
+                      <th>発生元</th>
+                      <th>処理日時</th>
+                      <th>処理者</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {HISTORY.map((h, i) => (
+                      <React.Fragment key={i}>
+                        <tr>
+                          <td><span className={`badge ${h.typeCls}`}>{h.type}</span></td>
+                          <td>{h.origin}</td>
+                          <td>{h.dt}</td>
+                          <td>{h.by}</td>
+                          <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            <button className="hist-toggle" onClick={() => setHistOpen(histOpen === i ? null : i)}>
+                              {histOpen === i ? "▲ 閉じる" : "▼ 詳細を見る"}
+                            </button>
+                          </td>
+                        </tr>
+                        {histOpen === i && (
+                          <tr className="hist-detail-row">
+                            <td colSpan={5}>
+                              <div className="hist-detail reveal">
+                                <table className="ba-table">
+                                  <thead><tr><th>項目</th><th>変更前</th><th>変更後</th></tr></thead>
+                                  <tbody>
+                                    {h.rows.map((r, j) => (
+                                      <tr key={j} className={r.changed ? "changed" : ""}>
+                                        <td className="ba-lab">{r.lab}</td>
+                                        <td className="val-before">{r.before}</td>
+                                        <td className="val-after">{r.after}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                {h.reason && <div className="ba-reason"><span className="brl">変更理由</span>{h.reason}</div>}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+
+              {/* ── ⑧ ── */}
+              <Card no="8" title="社内メモ"
+                foot={<button className="btn primary" onClick={() => showToast("メモを保存しました")}>保存</button>}>
+                <div className="memo-field">
+                  <label className="filter-label">社内メモ（ガイド非公開）</label>
+                  <textarea className="ctrl" placeholder="社内向けメモを入力…" value={memoA} onChange={e => setMemoA(e.target.value)}></textarea>
+                </div>
+                <div className="memo-field">
+                  <label className="filter-label">ガイド共有メモ</label>
+                  <textarea className="ctrl" placeholder="ガイドと共有するメモを入力…" value={memoB} onChange={e => setMemoB(e.target.value)}></textarea>
+                </div>
+              </Card>
+            </main>
+
+            <div className={`modal-overlay ${refundOpen ? "show" : ""}`}
+              onMouseDown={e => { if (e.target === e.currentTarget) setRefundOpen(false); }}>
+              <div className="modal" role="dialog" aria-modal="true" aria-label="返金処理を記録">
+                <div className="modal-head">
+                  <span className="m-title">返金処理を記録</span>
+                  <button className="modal-close" aria-label="閉じる" onClick={() => setRefundOpen(false)}>×</button>
+                </div>
+                <div className="modal-body">
+                  <div className="form-field">
+                    <label className="f-label">返金額<span className="req">*</span></label>
+                    <div className="input-prefix">
+                      <span className="pfx">¥</span>
+                      <input type="number" className="ctrl" placeholder="0" defaultValue="45000" />
+                    </div>
+                  </div>
+                  <div className="form-field">
+                    <label className="f-label">返金方法<span className="req">*</span></label>
+                    <select className="ctrl" value={refundMethod} onChange={e => setRefundMethod(e.target.value)}>
+                      <option>Stripe返金</option>
+                      <option>銀行振込</option>
+                      <option>OTA経由</option>
+                      <option>その他</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label className="f-label">実行日<span className="req">*</span></label>
+                    <input type="date" className="ctrl" defaultValue="2026-06-03" />
+                  </div>
+                  {refundMethod === "Stripe返金" && (
+                    <div className="form-field">
+                      <label className="f-label">Stripe返金参照ID</label>
+                      <input type="text" className="ctrl" placeholder="re_xxxxxxxxxxxx" />
+                    </div>
+                  )}
+                  <div className="form-field">
+                    <label className="f-label">返金ステータス</label>
+                    <select className="ctrl" defaultValue="未処理">
+                      <option>未処理</option>
+                      <option>完了</option>
+                      <option>不要</option>
+                      <option>OTA返金済み（Deep対応不要）</option>
+                      <option>要確認</option>
+                      <option>特別対応中</option>
+                    </select>
+                  </div>
+                  <div className="form-field">
+                    <label className="f-label">メモ</label>
+                    <textarea className="ctrl" placeholder="返金に関するメモを入力…"></textarea>
+                  </div>
+                </div>
+                <div className="modal-foot">
+                  <button className="btn" onClick={() => setRefundOpen(false)}>キャンセル</button>
+                  <button className="btn primary" onClick={() => { setRefundOpen(false); showToast("返金処理を記録しました"); }}>記録する</button>
+                </div>
+              </div>
+            </div>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

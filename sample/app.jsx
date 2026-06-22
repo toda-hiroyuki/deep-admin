@@ -44,13 +44,18 @@ function validate(tourOpt, mode, strict) {
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
-  const [resource, setResource] = useState("tourOption");
-  const [view, setView] = useState("detail"); // "list" | "detail"
+  // When a standalone per-screen page sets window.DEEP_SCREEN, lock this app to
+  // that single resource and let the sidebar navigate across the separate files.
+  const LOCKED = (typeof window !== "undefined" && window.DEEP_SCREEN) || null;
+
+  const [resource, setResource] = useState(LOCKED || "tourOption");
+  const [view, setView] = useState(LOCKED ? "list" : "detail"); // "list" | "detail"
   const [mode, setMode] = useState("edit");
   const [tab, setTab] = useState("sales");
   const [selectedLink, setSelectedLink] = useState("link-01");
   const [selectedDoc, setSelectedDoc] = useState("doc-001");
   const [selectedTemplate, setSelectedTemplate] = useState((SEED.cancelTemplates && SEED.cancelTemplates[0] && SEED.cancelTemplates[0].id) || null);
+  const [navSignal, setNavSignal] = useState(0); // bumped when the active sidebar item is re-clicked (lets ProductPageFlow reset to its list)
 
   // Domain state — single source of truth, all forms write here, preview reads from here
   const [tourOption, setTourOption] = useState(SEED.tourOption);
@@ -80,6 +85,7 @@ function App() {
   const handleSetResource = useCallback((r) => {
     setResource(r);
     setView("list");
+    setNavSignal(s => s + 1);
   }, []);
 
   const openDetail = useCallback((rowMode = "edit") => {
@@ -166,11 +172,19 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar resource={resource} setResource={handleSetResource}
+      <Sidebar resource={resource} setResource={handleSetResource} locked={LOCKED}
         counts={{ to: (SEED.tourOptionList||[]).length, pg: (SEED.productPageList||[]).length, gd: guideDocs.length, ct: cancelTemplates.length }} />
 
       <main className="workspace">
-        {view === "list" ? (
+        {resource === "productPage" ? (
+          <ProductPageFlow navSignal={navSignal} />
+        ) : resource === "tourOption" ? (
+          <TourOptionFlow navSignal={navSignal} />
+        ) : resource === "guideDoc" ? (
+          <GuideDocFlow navSignal={navSignal} />
+        ) : resource === "cancelTemplate" ? (
+          <CancelPolicyFlow navSignal={navSignal} />
+        ) : view === "list" ? (
           <ListShell
             resource={resource}
             headerLabel={headerLabel}
@@ -353,13 +367,21 @@ function AccentPicker({ value, onChange }) {
 
 // ── Sidebar ────────────────────────────────────────────────────────────────
 
-function Sidebar({ resource, setResource, counts }) {
+function Sidebar({ resource, setResource, counts, locked }) {
   const items = [
-    { key: "tourOption",  icon: "TO", label: "TourOption", count: counts.to, hint: "ツアーの実体" },
-    { key: "productPage", icon: "PG", label: "商品ページ",   count: counts.pg, hint: "顧客表示" },
-    { key: "guideDoc",    icon: "GD", label: "ガイド資料",   count: counts.gd, hint: "運営注意・行程" },
-    { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言" },
+    { key: "tourOption",  icon: "TO", label: "TourOption", count: counts.to, hint: "ツアーの実体", href: "TourOption.html" },
+    { key: "productPage", icon: "PG", label: "商品ページ",   count: counts.pg, hint: "顧客表示", href: "商品ページ.html" },
+    { key: "guideDoc",    icon: "GD", label: "ガイド資料",   count: counts.gd, hint: "運営注意・行程", href: "ガイド資料.html" },
+    { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー文言", count: counts.ct, hint: "キャンセル文言", href: "キャンセルポリシー文言.html" },
   ];
+  const handleClick = (it) => {
+    if (locked) {
+      if (it.key !== resource) { window.location.href = it.href; return; }
+      setResource(it.key); // same screen → reset to list view
+      return;
+    }
+    setResource(it.key);
+  };
   return (
     <aside className="side-nav">
       <div className="brand-block">
@@ -376,7 +398,7 @@ function Sidebar({ resource, setResource, counts }) {
           {items.map(it => (
             <button key={it.key}
               className={`nav-item ${resource === it.key ? "active" : ""}`}
-              onClick={() => setResource(it.key)}>
+              onClick={() => handleClick(it)}>
               <span className="nav-icon">{it.icon}</span>
               <span style={{flex:1,minWidth:0}}>
                 <div>{it.label}</div>

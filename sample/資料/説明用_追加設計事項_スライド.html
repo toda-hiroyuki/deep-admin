@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>追加設計事項（前提＋B-1〜B-6） — deep_Admin</title>
+<style>
+  :root{
+    --bg:#fbf7f0; --bg-sunken:#f4efe5; --surface:#ffffff; --surface-tint:#f7f3eb;
+    --ink:#1d1a17; --ink-soft:#3d3833; --muted:#756d63; --muted-soft:#9a9389;
+    --line:#e8e0d3; --line-strong:#d4cabb;
+    --accent:#0a5e5a; --accent-strong:#064a47; --accent-soft:#d6ebe8;
+    --amber:#8e5b00; --amber-soft:#f4e3bd; --amber-line:#e6cf94;
+    --side:#0f2e2b; --side-ink:#f3ebdb; --side-soft:#aac3bf;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,"Segoe UI","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
+    background:var(--bg); color:var(--ink);
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+
+  /* ── 進捗バー ── */
+  #progress{position:fixed; top:0; left:0; height:3px; background:var(--accent); width:0; z-index:50; transition:width .18s ease;}
+
+  /* ── スライド ── */
+  .deck{position:fixed; inset:0;}
+  .slide{
+    position:absolute; inset:0; display:none;
+    flex-direction:column; justify-content:center;
+    padding:64px 7vw 84px; opacity:0;
+  }
+  .slide.active{display:flex; opacity:1; animation:fade .22s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  .phase-tag{
+    position:absolute; top:30px; left:7vw; font-size:12px; font-weight:700;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--accent);
+    background:var(--accent-soft); padding:5px 12px; border-radius:999px;
+  }
+
+  /* ── タイトル/章扉 ── */
+  .slide.title, .slide.section{justify-content:center;}
+  .brand{display:flex; align-items:center; gap:12px; margin-bottom:30px;}
+  .brand .m{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:17px;}
+  .brand .n{font-size:15px;font-weight:700;}
+  .brand .c{font-size:12px;color:var(--muted);margin-top:1px;}
+  h1{font-size:clamp(30px,4.6vw,56px); font-weight:760; letter-spacing:-.02em; line-height:1.12; margin:0 0 16px;}
+  .subtitle{font-size:clamp(15px,1.7vw,21px); color:var(--ink-soft); max-width:48ch; line-height:1.5;}
+  .titlemeta{margin-top:34px; font-size:13.5px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap;}
+  .titlemeta span{background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:5px 13px;}
+
+  .secnum{font-size:clamp(60px,12vw,150px); font-weight:800; line-height:.9; color:var(--accent-soft); letter-spacing:-.04em;}
+  .sectitle{font-size:clamp(28px,4vw,46px); font-weight:740; letter-spacing:-.02em; margin:4px 0 14px;}
+  .seclist{font-size:clamp(14px,1.5vw,18px); color:var(--muted); line-height:1.9;}
+  .seclist b{color:var(--ink-soft); font-weight:650;}
+
+  /* ── 通常スライド見出し ── */
+  h2{font-size:clamp(24px,3vw,38px); font-weight:740; letter-spacing:-.02em; margin:0; line-height:1.15;}
+  .screen-head{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:6px;}
+  .star{color:var(--amber); font-size:.6em; vertical-align:middle; font-weight:700; margin-left:8px; background:var(--amber-soft); padding:3px 9px; border-radius:6px; letter-spacing:.02em;}
+  .open-chips{display:flex; gap:8px; margin-left:auto;}
+  .open-chip{
+    font-size:13px; font-weight:650; text-decoration:none; color:#fff; background:var(--accent);
+    padding:7px 14px; border-radius:8px; white-space:nowrap; border:1px solid var(--accent-strong);
+    transition:background .12s, transform .12s;
+  }
+  .open-chip:hover{background:var(--accent-strong); transform:translateY(-1px);}
+  .open-chip.ghost{background:var(--surface); color:var(--accent); border-color:var(--line-strong);}
+
+  .role{font-size:clamp(15px,1.7vw,20px); color:var(--ink-soft); line-height:1.55; margin:10px 0 22px; max-width:64ch;}
+
+  .cols{display:grid; grid-template-columns:1.15fr .95fr; gap:30px; align-items:start;}
+  @media (max-width:900px){ .cols{grid-template-columns:1fr; gap:18px;} }
+  .col h3{font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--muted); margin:0 0 12px;}
+  ul.feat{list-style:none; margin:0; padding:0;}
+  ul.feat li{position:relative; padding:0 0 0 22px; margin-bottom:11px; font-size:clamp(14px,1.45vw,17px); line-height:1.5; color:var(--ink-soft);}
+  ul.feat li::before{content:""; position:absolute; left:2px; top:.62em; width:7px; height:7px; border-radius:2px; background:var(--accent);}
+  ul.feat li b{color:var(--ink); font-weight:680;}
+
+  .callout{border-radius:11px; padding:14px 16px; font-size:clamp(13px,1.4vw,16px); line-height:1.5; margin-bottom:12px;}
+  .callout .lbl{display:block; font-size:11.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; margin-bottom:5px;}
+  .callout.hi{background:var(--accent-soft); border:1px solid #b9ddd8; color:var(--accent-strong);}
+  .callout.hi .lbl{color:var(--accent);}
+  .callout.warn{background:var(--amber-soft); border:1px solid var(--amber-line); color:#6b4400;}
+  .callout.warn .lbl{color:var(--amber);}
+  .callout b{font-weight:720;}
+
+  .src{margin-top:auto; padding-top:22px; font-size:13px; color:var(--muted);}
+  .src b{color:var(--ink-soft); font-weight:650;}
+  .src .file{font-family:"SFMono-Regular",Consolas,monospace; font-size:12px; color:var(--accent); background:var(--surface-tint); padding:2px 7px; border-radius:5px;}
+
+  /* ── 表 ── */
+  table{border-collapse:collapse; width:100%; font-size:clamp(12.5px,1.35vw,15.5px); background:var(--surface);}
+  caption{caption-side:top; text-align:left; font-size:13px; color:var(--muted); margin-bottom:10px;}
+  th,td{border:1px solid var(--line); padding:9px 13px; text-align:left; vertical-align:top; line-height:1.45;}
+  th{background:var(--bg-sunken); font-weight:700; color:var(--ink-soft); white-space:nowrap;}
+  td b{font-weight:680;}
+  .warn-cell{color:#6b4400; background:#fcf4e2;}
+  .ok-cell{color:var(--accent-strong);}
+
+  /* ── ライフサイクル図 ── */
+  .flow{display:flex; flex-direction:column; gap:6px; max-width:880px;}
+  .flow .pre{font-size:13.5px; color:var(--muted); background:var(--surface-tint); border:1px dashed var(--line-strong); border-radius:10px; padding:11px 16px;}
+  .flow .step{display:flex; align-items:center; gap:16px; background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:13px 17px; box-shadow:0 1px 2px rgba(45,30,12,.03);}
+  .flow .step .no{flex-shrink:0; width:30px; height:30px; border-radius:8px; background:var(--accent); color:#fff; font-weight:800; display:grid; place-items:center; font-size:14px;}
+  .flow .step .lab{font-weight:700; font-size:clamp(14px,1.5vw,18px); min-width:148px;}
+  .flow .step .scr{font-size:clamp(12.5px,1.35vw,15px); color:var(--muted);}
+  .flow .arrow{align-self:flex-start; margin-left:33px; color:var(--accent); font-size:15px; line-height:.8;}
+  .flow .cross{background:var(--amber-soft); border-color:var(--amber-line);}
+  .flow .cross .no{background:var(--amber);}
+
+  /* ── ステータス背骨 ── */
+  .tracks{display:flex; flex-direction:column; gap:14px; max-width:980px;}
+  .track{display:flex; align-items:center; gap:16px;}
+  .track .k{width:84px; flex-shrink:0; font-weight:700; font-size:14px; color:var(--accent-strong); text-align:right;}
+  .chips{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .chip{background:var(--surface); border:1px solid var(--line-strong); border-radius:999px; padding:6px 13px; font-size:clamp(12.5px,1.35vw,15px); white-space:nowrap;}
+  .chip.term{background:var(--accent); color:#fff; border-color:var(--accent-strong);}
+  .sep{color:var(--muted-soft); font-size:13px;}
+
+  /* ── チェックリスト ── */
+  .checklist{display:grid; grid-template-columns:1fr 1fr; gap:8px 34px; max-width:1100px; font-size:clamp(12.5px,1.3vw,15px);}
+  @media (max-width:900px){ .checklist{grid-template-columns:1fr;} }
+  .ck{display:flex; gap:11px; align-items:baseline; padding:6px 0; border-bottom:1px solid var(--line);}
+  .ck .ix{flex-shrink:0; width:34px; font-weight:700; color:var(--accent); font-size:13px;}
+  .ck .nm{font-weight:600; color:var(--ink-soft);}
+  .ck .dc{color:var(--muted-soft); font-size:12.5px; margin-left:auto; white-space:nowrap;}
+
+  .lead-note{font-size:clamp(13px,1.45vw,16.5px); color:var(--ink-soft); background:var(--surface); border-left:4px solid var(--accent); padding:13px 18px; border-radius:0 10px 10px 0; margin-top:24px; max-width:80ch; line-height:1.6;}
+  .lead-note b{color:var(--accent-strong);}
+
+  /* ── フッターHUD ── */
+  #hud{position:fixed; bottom:0; left:0; right:0; height:50px; display:flex; align-items:center; gap:14px; padding:0 7vw; z-index:40; pointer-events:none;}
+  #hud .nav{display:flex; gap:8px; pointer-events:auto;}
+  #hud button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer;font-size:15px;line-height:1;}
+  #hud button:hover{border-color:var(--accent); color:var(--accent);}
+  #hud .title-now{font-size:12.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #hud .count{margin-left:auto; font-size:12.5px; color:var(--muted); pointer-events:auto;}
+  #hud .count b{color:var(--ink);}
+  #hud .hint{font-size:11px;color:var(--muted-soft);}
+
+  /* ── 一覧オーバーレイ ── */
+  #overview{position:fixed; inset:0; background:rgba(15,46,43,.96); z-index:100; display:none; padding:48px 6vw; overflow-y:auto;}
+  #overview.show{display:block;}
+  #overview h3{color:var(--side-ink); font-size:14px; letter-spacing:.06em; text-transform:uppercase; margin:0 0 18px;}
+  .ovgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px;}
+  .ovcard{text-align:left; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); border-radius:9px; padding:11px 13px; color:var(--side-ink); cursor:pointer; font-size:13px; line-height:1.3;}
+  .ovcard:hover{background:rgba(255,255,255,.14);}
+  .ovcard .oi{font-size:10.5px; color:var(--side-soft); display:block; margin-bottom:3px; letter-spacing:.04em;}
+  #overview .close{position:absolute; top:24px; right:6vw; background:transparent; border:1px solid rgba(255,255,255,.3); color:var(--side-ink); border-radius:8px; padding:7px 14px; cursor:pointer; font-size:13px;}
+</style>
+</head>
+<body>
+  <div id="progress"></div>
+  <div class="deck" id="deck"></div>
+
+  <div id="hud">
+    <div class="nav">
+      <button onclick="go(idx-1)" title="前へ (←)">‹</button>
+      <button onclick="go(idx+1)" title="次へ (→)">›</button>
+      <button onclick="toggleOverview()" title="一覧 (Esc)">▦</button>
+    </div>
+    <span class="title-now" id="titleNow"></span>
+    <span class="hint">← → / Space で移動 ・ Esc で一覧</span>
+    <span class="count"><b id="cur">1</b> / <span id="tot">0</span></span>
+  </div>
+
+  <div id="overview">
+    <button class="close" onclick="toggleOverview()">閉じる ✕</button>
+    <h3>スライド一覧（クリックでジャンプ）</h3>
+    <div class="ovgrid" id="ovgrid"></div>
+  </div>
+
+<script>
+const A = "../"; // このファイルは admin/資料/ 配下。画面プロトは1つ上の admin/ にある
+
+// ── スライド定義 ──────────────────────────────────────────
+const slides = [
+  { kind:"title",
+    title:"追加設計事項",
+    subtitle:"前提として未説明の「TourOptionバージョン／商品条件スナップショット」と、画面ウォークスルー以降に設計資料へ追加した6項目（B-1〜B-6）を、1枚ずつまとめる。",
+    meta:["deep_Admin","2026-06-18","前提：用語の二層","B-1〜B-6：追加設計","← → で進む"]
+  },
+
+  { kind:"section", num:"A", title:"前提：TourOptionバージョン と 商品条件スナップショット",
+    list:["用語の<b>二層</b>（L1／L2）と束ね鍵","催行回マッチング＝<b>TourOptionバージョン一致</b>","版管理 <b>OD-1〜OD-6</b>と分裂リスク","※ B-1（特例拡張）が L2 スナップショットを操作対象にするため前提"] },
+
+  { kind:"html", phase:"A. 前提", ov:"用語", open:[{href:"予約割り当て.html",label:"↗ 予約割り当て"},{href:"催行回詳細.html",label:"↗ 催行回詳細"}],  title:"用語の二層：TourOptionバージョン と 商品条件スナップショット",
+    body:`<p class="role">催行回束ね（マッチング）の前提となる<b>最重要の用語整理</b>。「バージョン」と呼ばれてきた概念は2層に分かれ、<b>混同しないこと</b>が束ね鍵設計の前提。<span class="src"><b>正本</b>：商品・販売設計資料 §5・§15</span></p>
+    <table><thead><tr><th>層</th><th>名称（最新）</th><th>実体</th><th>用途</th><th>旧称</th></tr></thead><tbody>
+    <tr><td><b>L1</b></td><td>TourOptionバージョン</td><td><b>TourOption ID</b>（提供内容の改訂版）</td><td class="ok-cell"><b>催行回束ね鍵の正本</b>（本物のバージョン）</td><td>「版」</td></tr>
+    <tr><td><b>L2</b></td><td>商品条件スナップショット</td><td>予約成立時点の価格/ポリシー/行程の<b>予約時点スナップショット</b></td><td>金額・ポリシーの<b>再現専用</b>（束ね鍵には使わない）</td><td>「商品バージョン」</td></tr>
+    </tbody></table>
+    <div class="callout hi"><span class="lbl">TourOptionコード書式</span><b>{区分}-{地域3}-{番号3}-{枝番}-{種別}</b>。4番目は<b>「枝番」</b>＝同テーマの<b>派生商品</b>（バージョンではない）。<b>コードはバージョンを持たず</b>、改訂版は<b>同一コードの別ID</b>（レコード単位で重複しうる）＝コード一致では一意にならない。</div>
+    <div class="lead-note">予約は予約作成（バージョン解決）時点で<b>TourOption ID（L1）にピン留め</b>し、変更・キャンセルでも書き換えない。予約は L1 と L2 の両方を保持するが、<b>束ね鍵に使うのは L1（TourOption ID）のみ</b>。日時変更差額＝現在版価格 vs 予約時点スナップショット価格、キャンセル料＝予約時点ポリシー×判定日時（＝L2の用途）。</div>`
+  },
+
+  { kind:"html", phase:"A. 前提", ov:"束ね鍵", open:[{href:"予約割り当て.html",label:"↗ 予約割り当て"}],  title:"催行回マッチング＝TourOptionバージョン一致",
+    body:`<p class="role">催行回の束ね鍵は<b>TourOption ID（TourOptionバージョン）一致</b>に一本化する整理（2026-06-15時点）。<span class="src"><b>正本</b>：商品・販売設計資料 §5／ハンドオフメモ §3-D・§4</span></p>
+    <div class="tracks">
+      <div class="track"><span class="k">束ね鍵</span><div class="chips"><span class="chip term">TourOption ID（TourOptionバージョン）</span><span class="sep">＋</span><span class="chip">ツアー日時</span><span class="sep">＋</span><span class="chip">ゲスト言語</span><span class="sep">の</span><span class="chip">完全一致</span></div></div>
+    </div>
+    <ul class="feat" style="margin-top:18px;max-width:84ch">
+      <li>束ね鍵＝<b>TourOption ID＋ツアー日時＋ゲスト言語の完全一致</b>に一本化する整理（2026-06-15時点）。</li>
+      <li><b>コード一致は誤り</b>。コードは商品系統の不変識別子で、改訂版は同一コードの別ID＝レコード単位で重複しうる。</li>
+      <li>現行 <span class="src"><span class="file">予約割り当て.html</span></span> は反映済み（除外UIは「TourOptionバージョンが異なるため同乗不可（同一コード・同一日時・同一言語）」と表示）。</li>
+    </ul>
+    <div class="callout warn"><span class="lbl">⚠ 最大リスク：TourOptionバージョン分裂</span>商品改訂で<b>同日・同時刻・同言語の客がバージョンごとに別催行回へ強制分割</b>され、最少催行人数未達による催行不成立・ガイド二重手配・リソース二重消費を招く構造的副作用。OD-1で頻度最小化＋OD-4の手配メモ共催＋OD-6の透明化で対処。</div>`
+  },
+
+  { kind:"html", phase:"A. 前提", ov:"版管理", open:[{href:"催行回詳細.html",label:"↗ 催行回詳細"},{href:"予約詳細.html",label:"↗ 予約詳細"}],  title:"TourOptionバージョン管理：OD-1〜OD-6",
+    body:`<p class="role">提供内容の改訂版（L1＝TourOptionバージョン）の運用ルール。<b>OD＝Open Decision（要判断事項）</b>。<b>2026-06-15時点の整理は次のとおり</b>。<span class="src"><b>正本</b>：商品・販売設計資料 §5・§15／ハンドオフメモ §3-D・§4</span></p>
+    <table><thead><tr><th>論点</th><th>現時点の整理</th></tr></thead><tbody>
+    <tr><td><b>OD-1</b> 増分トリガー</td><td><b>提供内容の実体改訂時のみ</b>新TourOptionバージョン。価格/販売条件/キャンセルポリシーは<b>同一ID内の有効期間付き子レコード</b>でバージョンを増やさない</td></tr>
+    <tr><td><b>OD-2</b> 提供内容の所在</td><td>提供内容は<b>TourOptionバージョン固定</b>。催行回ごとの上書きは不可</td></tr>
+    <tr><td><b>OD-3</b> 引き直し</td><td>バージョン引き直しは<b>MVP対象外</b></td></tr>
+    <tr><td><b>OD-4</b> 分裂催行回</td><td>手配メモ運用の<b>弱い共催</b>を許容</td></tr>
+    <tr><td><b>OD-5</b> 販売中の制御</td><td>同一コード内で<b>販売中＝1件強制</b>。新バージョン昇格で旧バージョンを新規受付停止へ自動遷移＋子レコード自動継承</td></tr>
+    <tr><td><b>OD-6</b> 可読性</td><td>必要画面のみ<b>人間可読バージョンラベル</b>を補助表示（予約割り当て/催行回詳細/予約詳細に反映済み）</td></tr>
+    </tbody></table>
+    <div class="lead-note">要点：<b>催行回はTourOption ID（バージョン）を必須保持・バージョン混在禁止</b>。インライン新規催行回は<b>予約の固定バージョンを継承</b>（最新バージョンではない）。</div>`
+  },
+
+  { kind:"section", num:"B", title:"ウォークスルー以降に追加した設計（B-1〜B-6）",
+    list:["B-1 特例による上限拡張（§4-9 新設）","B-2 増員フローへの反映（UC-03・増6）","B-3 OTAペナルティの原価計上一本化","B-4 支払いステータス 登録時4値／登録後9値","B-5 グループ：ガイド報酬を人数按分配賦","B-6 追加請求ステータス(AC_STATUS)＋返金責務分界"] },
+
+  { kind:"html", phase:"B-1 特例拡張", ov:"B-1 上限", open:[{href:"予約割り当て.html",label:"↗ 予約割り当て"},{href:"催行回詳細.html",label:"↗ 催行回詳細"}],  title:"特例による上限拡張（ソフト上限のみ）＝§4-9 新設",
+    body:`<p class="role">受入可否を決める上限を<b>3つ</b>に整理。<b>ソフト（業務）上限だけは運営が特例で拡張可</b>、<b>ハード（物理＝リソース上限）は拡張不可</b>と整理。<span class="src"><b>正本</b>：リソース管理・催行回設計資料 §4-9</span></p>
+    <table><thead><tr><th>上限</th><th>区分</th><th>値の出どころ</th><th>特例拡張</th></tr></thead><tbody>
+    <tr><td><b>1予約あたり最大人数</b></td><td>ソフト（業務）</td><td>商品条件スナップショット（予約単位）</td><td class="ok-cell">可（当該予約のみ）</td></tr>
+    <tr><td><b>催行回定員</b></td><td>ソフト（業務）</td><td>催行回スナップショット</td><td class="ok-cell">可（当該催行回のみ）</td></tr>
+    <tr><td><b>リソース上限</b></td><td>ハード（物理）</td><td>リソースレコード</td><td class="warn-cell">不可（免除しない）</td></tr>
+    </tbody></table>
+    <div class="callout hi"><span class="lbl">スコープ＝その1件に閉じる</span>定員拡張は<b>当該催行回スナップショットのみ</b>、1予約上限拡張は<b>当該予約スナップショットのみ</b>を書き換え、TourOptionマスタや他レコードに波及しない。</div>
+    <div class="callout warn"><span class="lbl">⚠ リソース上限は免除しない</span>定員を伸ばしてもリソース上限チェックは通常実行。<b>人数単位リソース（自転車・座席）</b>は空きが無ければ受入不可、<b>催行回単位リソース（マンパワー・チャーター車）</b>は1催行回=1消費で定員拡張の影響を受けない。</div>`
+  },
+
+  { kind:"html", phase:"B-1 特例拡張", ov:"B-1 種別差", open:[{href:"予約割り当て.html",label:"↗ 予約割り当て"}],  title:"特例拡張：ツアー種別による形 ／ 承認・記録",
+    body:`<div class="cols"><div class="col"><h3>グループツアー</h3><ul class="feat">
+    <li>1催行回＝複数予約。<b>「1予約あたり最大人数」と「催行回定員」が独立</b>し、各々特例拡張できる</li>
+    <li>定員超過の基本対応は<b>別催行回への分割／新規作成</b>。特例定員拡張は<b>同一催行回に留める必要がある場合の例外手段</b></li>
+    </ul></div><div class="col"><h3>プライベートツアー</h3><ul class="feat">
+    <li>1催行回＝1予約のため<b>両上限が同値に潰れる</b></li>
+    <li>催行回定員を独立に拡張する操作は持たず、<b>受入上限は「1予約あたり最大人数」のみ</b></li>
+    <li>分割という代替が無く、選択肢は<b>「特例拡張」か「お断り」の二択</b></li>
+    </ul></div></div>
+    <div class="callout hi"><span class="lbl">承認・記録</span>特例拡張は<b>例外承認</b>として扱い、<b>理由・承認者・拡張前後の上限値</b>を変更・キャンセル履歴に記録（期限後の日時変更等の例外承認と同じ運用）。いずれの種別でも<b>リソース上限（ハード）は対象外で免除しない</b>。</div>`
+  },
+
+  { kind:"html", phase:"B-2 増員フロー", ov:"B-2 増員", open:[{href:"変更・キャンセル処理.html",label:"↗ 変更・キャンセル処理"}],  title:"増員フローへの反映（UC-03・増6）",
+    body:`<p class="role">B-1を増員ユースケースに織り込み、定員超過時の選択肢を更新。<span class="src"><b>正本</b>：変更・キャンセル_ユースケース UC-03／全条件別フロー分析 増5・増6</span></p>
+    <table><thead><tr><th>ケース</th><th>超過する上限</th><th>区分</th><th>対応</th></tr></thead><tbody>
+    <tr><td><b>増5</b></td><td>リソース上限超過</td><td>ハード</td><td class="warn-cell">処理不可（メインフロー復帰せず）</td></tr>
+    <tr><td><b>増6</b></td><td>催行回定員超過</td><td>ソフト</td><td class="ok-cell"><b>不可 / 別催行回へ分割 / 特例拡張</b> の3択</td></tr>
+    </tbody></table>
+    <div class="callout warn"><span class="lbl">⚠ ゲートの順序</span>特例拡張は<b>ソフト上限（定員）のみ</b>。<b>リソース上限（ハード）は手順4で別途ゲート</b>するため、リソースに空きが無ければ特例拡張しても受け入れられない（§4-9）。チャネル差は返金処理がないため影響しない。</div>`
+  },
+
+  { kind:"html", phase:"B-3 OTAペナルティ", ov:"B-3 ペナルティ", open:[{href:"精算確認.html",label:"↗ 精算確認"}],  title:"OTAペナルティ（運営都合違約金）の原価計上を一本化",
+    body:`<p class="role">運営都合キャンセルでOTAから課される違約金の扱いを整理。<span class="src"><b>正本</b>：ガイド手配設計資料 §10-4／支払い・決済管理 §4-1</span></p>
+    <ul class="feat" style="max-width:90ch">
+    <li>ガイド手配 <b>§10-4「運営費精算」に独立科目「OTAペナルティ（運営都合違約金）」＋備考を新設</b>。チャネル手数料とは別の原価として粗利から差し引く</li>
+    <li><b>原価計上は運営費精算側に一本化</b>。支払い側・変更／キャンセルレコードには重複計上しない</li>
+    <li>支払いステータス <b>「Penalty Applied」は状態の表現に留め、原価を持たせない</b>（二重計上防止）</li>
+    </ul>
+    <div class="callout hi"><span class="lbl">既存データ移行</span>稼働後の新規は§10-4独立科目で記録／既存で分離可なら振り分け／<b>分離不可なら手数料込みのまま「手数料ペナルティ込み（移行）」フラグ</b>付与（手数料率分析時は除外）。ネット受取額・粗利はどちらの記録法でも同値のため移行は成立。</div>`
+  },
+
+  { kind:"html", phase:"B-4 支払いステータス", ov:"B-4 支払い", open:[{href:"予約登録.html",label:"↗ 予約登録"},{href:"予約詳細.html",label:"↗ 予約詳細"}],  title:"支払いステータス：登録時は4値／登録後に9値へ",
+    body:`<p class="role">支払いステータスの正式値セットは<b>9値</b>だが、<b>予約登録時点では4値のみ選択可</b>と整理。残りは登録後に付与。<span class="src"><b>正本</b>：運営管理 §2-1／予約登録 設計資料</span></p>
+    <div class="tracks">
+      <div class="track"><span class="k">登録時</span><div class="chips"><span class="chip term">未払い</span><span class="chip term">支払い済み</span><span class="chip term">支払い不要</span><span class="chip term">要確認</span><span class="sep">の4値のみ選択可</span></div></div>
+      <div class="track"><span class="k">登録後</span><div class="chips"><span class="chip">Partially Paid</span><span class="chip">部分返金済み</span><span class="chip">全額返金済み</span><span class="chip">Chargeback / Disputed</span><span class="chip">Penalty Applied</span></div></div>
+    </div>
+    <div class="callout hi"><span class="lbl">付与の経路</span>返金・係争・分割入金・ペナルティ系は、<b>入金照合・返金処理などの後続処理を経て更新</b>される（登録フォームでは選ばせない）。</div>`
+  },
+
+  { kind:"html", phase:"B-5 原価配賦", ov:"B-5 配賦", open:[{href:"月次精算管理.html",label:"↗ 月次精算管理"},{href:"収支一覧.html",label:"↗ 収支一覧"}],  title:"グループツアー：ガイド報酬を人数按分で月次配賦",
+    body:`<p class="role">グループ（複数予約が1催行回を共有）の原価配賦方針を更新。<b>記録粒度＝催行回単位／表示粒度＝予約別</b>を分けて扱う。<span class="src"><b>正本</b>：売上・原価管理設計資料 §6-2</span></p>
+    <table><thead><tr><th>原価科目</th><th>発生単位</th><th>月次の予約別表示</th></tr></thead><tbody>
+    <tr><td><b>ガイド報酬</b></td><td>催行回単位</td><td class="ok-cell"><b>人数按分（予約人数 ÷ 催行回合計人数）で配賦表示</b>（MVP対応済み）</td></tr>
+    <tr><td><b>施設費（固定）</b></td><td>催行回単位</td><td>催行回単位で記録、<b>予約配賦はMVP後に決定</b>（据え置き）</td></tr>
+    </tbody></table>
+    <div class="callout hi"><span class="lbl">将来拡張の更新</span>「グループツアーの原価配賦」は<b>「ガイド報酬を除く」</b>に修正（ガイド報酬は人数按分で月次表示に反映済み）。</div>`
+  },
+
+  { kind:"html", phase:"B-6 追加請求・返金", ov:"B-6 請求/返金", open:[{href:"変更・キャンセル処理.html",label:"↗ 変更・キャンセル処理"},{href:"予約詳細.html",label:"↗ 予約詳細"}],  title:"追加請求ステータス(AC_STATUS) ／ 返金ステータスの責務分界",
+    body:`<p class="role">増員時の追加請求の回収管理を新設し、返金ステータスの管理責務を明確化。<span class="src"><b>正本</b>：運営管理 §3-11-2</span></p>
+    <div class="tracks">
+      <div class="track"><span class="k">AC_STATUS</span><div class="chips"><span class="chip">未送付</span><span class="sep">→</span><span class="chip">請求済み（未払い）</span><span class="sep">→</span><span class="chip term">支払い済み</span><span class="sep">／</span><span class="chip">期限切れ</span><span class="chip">取消</span></div></div>
+    </div>
+    <ul class="feat" style="max-width:90ch;margin-top:16px">
+      <li>増員・<b>直販扱いのOTA当日現地増員</b>で追加請求が出る場合の決済リンク発行〜回収を管理。<b>OTA経由の通常増員はOTA次回精算で調整するため対象外</b></li>
+    </ul>
+    <div class="callout hi"><span class="lbl">返金ステータス（§2-1の6値）の責務分界</span>6値は減員・キャンセルの<b>処理結果として作られた返金レコードの進捗管理</b>で、表示・更新は<b>変更・キャンセル履歴／予約詳細（§3-8）側の責務</b>。<b>変更・キャンセル処理画面は返金額の確定までを扱い、6値の遷移管理は行わない</b>。</div>`
+  },
+
+  { kind:"title",
+    title:"まとめ：説明の順序",
+    subtitle:"① 前提＝用語の二層（L1 TourOptionバージョン／L2 商品条件スナップショット）→ ② B-1 特例拡張（§4-9）→ B-2 増員フロー → ③ B-3 OTAペナルティ → B-4 支払いステータス4値/9値 → ④ B-5 ガイド報酬按分 → B-6 AC_STATUS・返金責務。B-1がL2スナップショットを操作対象にするため、前提を最初に置く。",
+    meta:["前提 → 上限/増員 → 原価/支払い → 集計/請求","正本：各スライド右下の該当節を参照"]
+  },
+];
+
+// ── レンダリング ───────────────────────────────────────────
+const deck = document.getElementById("deck");
+function chip(href,label){ return `<a class="open-chip ghost" href="${A}${encodeURI(href)}" target="_blank" rel="noopener">${label}</a>`; }
+
+slides.forEach((s,i)=>{
+  const el = document.createElement("section");
+  el.className = "slide " + (s.kind==="title"?"title":s.kind==="section"?"section":"");
+  let h = "";
+  if(s.phase) h += `<div class="phase-tag">${s.phase}</div>`;
+
+  if(s.kind==="title"){
+    h += `<div class="brand"><div class="m">d.</div><div><div class="n">deep_Admin</div><div class="c">DeepExperience 運営管理</div></div></div>`;
+    h += `<h1>${s.title}</h1><div class="subtitle">${s.subtitle}</div>`;
+    if(s.meta) h += `<div class="titlemeta">${s.meta.map(m=>`<span>${m}</span>`).join("")}</div>`;
+  }
+  else if(s.kind==="section"){
+    h += `<div class="secnum">${s.num}</div><div class="sectitle">${s.title}</div>`;
+    h += `<div class="seclist">${s.list.map(x=>"・"+x).join("<br>")}</div>`;
+  }
+  else if(s.kind==="html"){
+    if(s.open && s.open.length){
+      h += `<div class="screen-head"><h2>${s.title}</h2><div class="open-chips">${s.open.map(o=>chip(o.href,o.label)).join("")}</div></div>`;
+    } else {
+      h += `<h2>${s.title}</h2>`;
+    }
+    h += s.body;
+  }
+  else if(s.kind==="screen"){
+    h += `<div class="screen-head"><h2>${s.title}${s.star?`<span class="star">★ ${s.star}</span>`:""}</h2>`;
+    h += `<div class="open-chips">`;
+    h += `<a class="open-chip" href="${A}${encodeURI(s.file)}" target="_blank" rel="noopener">↗ 画面を開く</a>`;
+    if(s.file2) h += chip(s.file2.href, s.file2.label);
+    h += `</div></div>`;
+    h += `<div class="role">${s.role}</div>`;
+    h += `<div class="cols"><div class="col"><h3>主な機能</h3><ul class="feat">${s.feat.map(f=>`<li>${f}</li>`).join("")}</ul></div><div class="col">`;
+    if(s.hi) h += `<div class="callout hi"><span class="lbl">重要ポイント</span>${s.hi}</div>`;
+    if(s.warn) h += `<div class="callout warn"><span class="lbl">⚠ 落とし穴 / 確定方針</span>${s.warn}</div>`;
+    h += `</div></div>`;
+    h += `<div class="src"><b>管轄資料</b>：${s.src}　／　<span class="file">${s.file}</span></div>`;
+  }
+  el.innerHTML = h;
+  deck.appendChild(el);
+});
+
+// ── ナビゲーション ─────────────────────────────────────────
+const els = Array.from(document.querySelectorAll(".slide"));
+const total = els.length;
+let idx = 0;
+document.getElementById("tot").textContent = total;
+
+function go(n){
+  idx = Math.max(0, Math.min(total-1, n));
+  els.forEach((e,i)=>e.classList.toggle("active", i===idx));
+  document.getElementById("cur").textContent = idx+1;
+  document.getElementById("progress").style.width = ((idx)/(total-1)*100)+"%";
+  const s = slides[idx];
+  document.getElementById("titleNow").textContent =
+    (s.phase?s.phase+" ・ ":"") + (s.title? s.title.replace(/<[^>]+>/g," ") : "");
+  if(location.hash !== "#"+(idx+1)) history.replaceState(null,"","#"+(idx+1));
+}
+
+document.addEventListener("keydown",(e)=>{
+  if(document.getElementById("overview").classList.contains("show")){
+    if(e.key==="Escape") toggleOverview(); return;
+  }
+  switch(e.key){
+    case "ArrowRight": case "PageDown": case " ": go(idx+1); e.preventDefault(); break;
+    case "ArrowLeft": case "PageUp": go(idx-1); e.preventDefault(); break;
+    case "Home": go(0); break;
+    case "End": go(total-1); break;
+    case "Escape": case "g": case "o": toggleOverview(); break;
+  }
+});
+
+// ── 一覧オーバーレイ ──
+const ovgrid = document.getElementById("ovgrid");
+slides.forEach((s,i)=>{
+  const b = document.createElement("button");
+  b.className = "ovcard";
+  const t = s.title? s.title.replace(/<[^>]+>/g," ") : (s.kind==="title"?"タイトル":"");
+  b.innerHTML = `<span class="oi">${i+1}. ${s.phase||(s.kind==="title"?"":"資料")}</span>${t}`;
+  b.onclick = ()=>{ toggleOverview(); go(i); };
+  ovgrid.appendChild(b);
+});
+function toggleOverview(){ document.getElementById("overview").classList.toggle("show"); }
+
+// ハッシュから初期位置
+const start = parseInt((location.hash||"#1").slice(1),10);
+go(isNaN(start)?0:start-1);
+</script>
+</body>
+</html>

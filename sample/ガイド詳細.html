@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ガイド詳細 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--coral); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1160px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+      /* ── Detail header ── */
+      .detail-head { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 20px 22px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+      .head-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+      .head-ava { width: 54px; height: 54px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 750; font-size: 22px; border: 1px solid var(--line-strong); flex-shrink: 0; }
+      .head-id-block { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+      .id-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+      .id-row .g-code { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); padding: 2px 9px; border-radius: var(--radius-sm); letter-spacing: 0.01em; }
+      .id-row .g-kanji { font-size: 24px; font-weight: 750; letter-spacing: -0.01em; }
+      .badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .head-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill .pill-label { font-size: 10px; color: inherit; opacity: 0.7; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-right: 1px; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted-soft); }
+      .badge.cancel { background: var(--bg-sunken); color: var(--muted-soft); text-decoration: line-through; }
+      .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 13px; font-size: 12.5px; }
+      .btn .b-ic { font-size: 14px; opacity: 0.85; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-title .sec-note { font-size: 11.5px; font-weight: 500; color: var(--muted); }
+      .card-body { padding: 6px 20px 8px; }
+
+      /* ── Tab bar ── */
+      .tab-shell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .tab-bar { display: flex; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--line); background: var(--surface-warm); overflow-x: auto; }
+      .tab-bar::-webkit-scrollbar { height: 0; }
+      .tab { appearance: none; border: 0; background: transparent; color: var(--muted); padding: 13px 15px 11px; font-size: 13.5px; font-weight: 600; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.1s; position: relative; }
+      .tab:hover { color: var(--ink-soft); }
+      .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent); font-weight: 700; }
+      .tab .tab-count { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted-soft); margin-left: 5px; background: var(--bg-sunken); padding: 0 6px; border-radius: 999px; font-weight: 600; }
+      .tab.active .tab-count { background: var(--accent-soft); color: var(--accent-strong); }
+      .tab-panel { padding: 20px 22px 24px; }
+      .panel-title { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 0 0 2px; letter-spacing: -0.005em; }
+      .panel-sub { font-size: 12px; color: var(--muted); margin: 0 0 14px; }
+
+      /* ── Definition grid ── */
+      .def-grid { display: grid; grid-template-columns: 220px 1fr; gap: 0; }
+      .def-grid.wide-label { grid-template-columns: 260px 1fr; }
+      .def-grid .dt { color: var(--muted); font-size: 12.5px; font-weight: 600; padding: 11px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: flex-start; }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); min-width: 0; }
+      .def-grid .dt:last-of-type, .def-grid .dd:last-of-type { border-bottom: 0; }
+      .def-grid .dd .code-mono, .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; margin-left: 8px; }
+      .def-grid .dd .strong { font-weight: 650; }
+      .def-grid .dd .longtext { line-height: 1.6; color: var(--ink-soft); max-width: 640px; text-wrap: pretty; }
+      .muted-dash { color: var(--muted-soft); }
+      .yes-mark { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--green); }
+      .yes-mark::before { content: "✓"; font-size: 12px; font-weight: 800; }
+
+      /* ── Tag list ── */
+      .tag-list { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .area-tag { display: inline-flex; align-items: center; font-size: 12.5px; font-weight: 600; padding: 4px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); border: 1px solid rgba(10, 94, 90, 0.16); }
+
+      /* ── Rank chip ── */
+      .rank { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+      .rank.r-S { background: var(--accent-soft); color: var(--accent-strong); }
+      .rank.r-A { background: var(--blue-soft); color: var(--blue); }
+      .rank.r-B { background: var(--amber-soft); color: var(--amber); }
+      .rank.r-C { background: var(--bg-sunken); color: var(--muted); }
+      .rank-row { display: inline-flex; align-items: center; gap: 9px; }
+      .rank-row .r-cap { font-size: 12px; color: var(--muted); }
+
+      /* ── Tables ── */
+      table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table thead th.right { text-align: right; }
+      .data-table tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody td.right { text-align: right; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table tbody tr.cancelled td { color: var(--muted-soft); background: var(--surface-tint); }
+      .data-table tbody tr.cancelled td .code-mono,
+      .data-table tbody tr.cancelled td .strike { text-decoration: line-through; color: var(--muted-soft); }
+      .data-table .strong { font-weight: 650; color: var(--ink); }
+      .yen { font-variant-numeric: tabular-nums; font-weight: 650; }
+      .yen .per { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .table-cap { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin: 0 0 9px; display: flex; align-items: baseline; gap: 8px; }
+      .table-cap .cap-note { font-size: 11.5px; font-weight: 500; color: var(--muted); }
+      .table-scroll { overflow-x: auto; }
+      .lang-prof { color: var(--ink-soft); }
+
+      /* ── Sensitive / mask ── */
+      .sens-banner { display: flex; align-items: center; gap: 10px; background: var(--surface-tint); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 11px 14px 11px 13px; margin-bottom: 16px; font-size: 12.5px; color: var(--ink-soft); }
+      .sens-banner .sb-ic { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); }
+      .sens-banner .sb-txt { flex: 1; min-width: 0; }
+      .sens-banner .sb-txt b { color: var(--ink); font-weight: 700; }
+      .mask-val { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 0.12em; color: var(--muted); font-size: 13px; }
+      .sens-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: var(--amber); background: var(--amber-soft); padding: 1px 7px; border-radius: 4px; margin-left: 8px; letter-spacing: 0.02em; vertical-align: middle; }
+
+      /* ── Stat strip (報酬単価) ── */
+      .stat-strip { display: flex; align-items: baseline; gap: 12px; padding: 14px 16px; background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 18px; }
+      .stat-strip .ss-lab { font-size: 12px; font-weight: 600; color: var(--muted); }
+      .stat-strip .ss-val { font-size: 26px; font-weight: 750; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+      .stat-strip .ss-unit { font-size: 12.5px; color: var(--muted); font-weight: 550; }
+
+      /* ── Rate header (現在の時給 + 更新) ── */
+      .rate-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius); flex-wrap: wrap; }
+      .rate-now { display: flex; flex-direction: column; gap: 4px; }
+      .rate-now-lab { font-size: 12px; font-weight: 600; color: var(--muted); }
+      .rate-now-val { font-size: 28px; font-weight: 750; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; line-height: 1; }
+      .rate-now-unit { font-size: 13px; color: var(--muted); font-weight: 550; margin-left: 6px; }
+
+      /* ── Inline form ── */
+      .inline-form { margin-top: 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface-warm); overflow: hidden; }
+      .inline-form .if-head { font-size: 13px; font-weight: 700; color: var(--ink-soft); padding: 12px 16px; border-bottom: 1px solid var(--line-soft); background: var(--surface-tint); }
+      .inline-form .if-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; padding: 16px; }
+      .inline-form .if-foot { display: flex; gap: 8px; padding: 0 16px 16px; }
+      .form-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .form-field.full { grid-column: 1 / -1; }
+      .form-field .f-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+      .form-field .f-label .req { color: var(--coral); }
+      .form-field .f-label .opt { font-size: 10.5px; font-weight: 600; color: var(--muted-soft); background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 11px; font-size: 13px; width: 100%; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      textarea.ctrl { height: auto; min-height: 72px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+      .input-affix { position: relative; display: flex; align-items: center; }
+      .input-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .sfx { position: absolute; right: 11px; color: var(--muted); font-size: 12px; pointer-events: none; }
+      .ctrl.has-pfx { padding-left: 24px; }
+      .ctrl.has-sfx { padding-right: 30px; }
+
+      /* ── Empty ── */
+      .empty-note { color: var(--muted-soft); font-size: 13px; font-style: normal; padding: 4px 0; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+
+      @media (max-width: 760px) {
+        .def-grid, .def-grid.wide-label { grid-template-columns: 140px 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "guides" }));
+
+      const TABS = [
+        { key: "basic",   label: "基本情報" },
+        { key: "personal",label: "個人情報" },
+        { key: "skill",   label: "資格・スキル" },
+        { key: "area",    label: "対応エリア/言語" },
+        { key: "rate",    label: "報酬単価" },
+        { key: "pay",     label: "支払い情報" },
+        { key: "hire",    label: "採用情報" },
+        { key: "memo",    label: "メモ" },
+        { key: "history", label: "手配履歴", count: 3 },
+      ];
+
+      // ── Read-only definition grid ──
+      function Def({ items, wide }) {
+        return (
+          <div className={`def-grid ${wide ? "wide-label" : ""}`}>
+            {items.map((it, i) => (
+              <React.Fragment key={i}>
+                <div className="dt">{it.k}</div>
+                <div className="dd">{it.v}</div>
+              </React.Fragment>
+            ))}
+          </div>
+        );
+      }
+
+      const Dash = () => <span className="muted-dash">—</span>;
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [tab, setTab] = useState("basic");
+        const [revealPay, setRevealPay] = useState(false);
+
+        // 報酬単位（読み取り専用）：1時間あたり（デフォルト）/ 1ツアーあたり
+        // 設計根拠：ガイド情報設計資料 §5-2（将来のB2B対応に備えてフィールドを持つ）
+        const rewardUnit = "1時間あたり"; // "1時間あたり" | "1ツアーあたり"
+
+        // ── 時給更新（インライン編集） ──
+        const [rateOpen, setRateOpen] = useState(false);
+        const [rateHist, setRateHist] = useState([
+          { start: "2026-04-01", rate: 3000, reason: "年次見直し", by: "田中（運営）", at: "2026-03-25 10:12" },
+          { start: "2025-01-01", rate: 2800, reason: "採用時設定", by: "鈴木（運営）", at: "2024-12-20 14:30" },
+        ]);
+        const [fRate, setFRate] = useState("");
+        const [fStart, setFStart] = useState("");
+        const [fReason, setFReason] = useState("");
+        const currentRate = rateHist[0].rate;
+
+        const openRateForm = () => {
+          setFRate(String(currentRate));
+          setFStart("");
+          setFReason("");
+          setRateOpen(true);
+        };
+        const saveRate = () => {
+          if (!fRate.trim() || !fStart) { showToast("新しい時給と適用開始日を入力してください"); return; }
+          const entry = {
+            start: fStart,
+            rate: Number(String(fRate).replace(/[^0-9.]/g, "")),
+            reason: fReason.trim() || "—",
+            by: "田中（運営）",
+            at: "2026-06-04 09:00",
+          };
+          setRateHist([entry, ...rateHist]);
+          setRateOpen(false);
+          showToast("時給を更新しました");
+        };
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        // ── Tab panels (all read-only) ──
+        const renderTab = () => {
+          switch (tab) {
+            case "basic":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">基本情報</p>
+                  <p className="panel-sub">ガイドの識別情報・連絡先を表示します。</p>
+                  <Def items={[
+                    { k: "ガイドID", v: <span className="code-mono">G-042</span> },
+                    { k: "漢字姓名", v: <span className="strong">山田 太郎</span> },
+                    { k: "カタカナ姓名", v: "ヤマダ タロウ" },
+                    { k: "ローマ字姓名", v: "Taro Yamada" },
+                    { k: "Tel", v: <span className="code-mono">090-1234-5678</span> },
+                    { k: "Email", v: <span className="code-mono">t.yamada@example.com</span> },
+                    { k: "WhatsAppコミュニティ参加", v: <span className="yes-mark">済</span> },
+                    { k: "個別連絡希望", v: <Dash /> },
+                    { k: "連絡手段メモ", v: <span>LINEグループ「Deep Guides Tokyo」</span> },
+                  ]} />
+                </React.Fragment>
+              );
+
+            case "personal":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">個人情報</p>
+                  <p className="panel-sub">国籍・住所などの個人情報を表示します。</p>
+                  <Def items={[
+                    { k: "国籍", v: "日本" },
+                    { k: "生年月日", v: <span className="code-mono">1988-03-15</span> },
+                    { k: "都道府県", v: "東京都" },
+                    { k: "市区町村", v: "新宿区" },
+                    { k: "住所（それ以降）", v: "西新宿1-2-3 ○○マンション401" },
+                    { k: "住所（全体）", v: "東京都新宿区西新宿1-2-3 ○○マンション401" },
+                  ]} />
+                </React.Fragment>
+              );
+
+            case "skill":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">資格・スキル</p>
+                  <p className="panel-sub">案内士資格・スキルランク・経歴を表示します。</p>
+                  <Def items={[
+                    { k: "全国案内士資格", v: <span><span className="yes-mark">有</span><span className="sub">資格番号 2015-12345 / 取得 2015年</span></span> },
+                    { k: "地域案内士資格", v: <span className="muted-dash">無</span> },
+                    { k: "ガイドスキルランク", v: <span className="rank-row"><span className="rank r-A">A</span><span className="r-cap">標準ランク</span></span> },
+                    { k: "面接時ガイド経験", v: <span className="longtext">外資系ホテルでのコンシェルジュ経験5年。英語・中国語ガイド多数実績あり。</span> },
+                  ]} wide />
+                </React.Fragment>
+              );
+
+            case "area":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">対応エリア / 言語</p>
+                  <p className="panel-sub">手配可能なエリアと対応言語・習熟度を表示します。</p>
+                  <Def items={[
+                    { k: "対応エリア", v: (
+                      <span className="tag-list">
+                        <span className="area-tag">東京都</span>
+                        <span className="area-tag">神奈川県</span>
+                        <span className="area-tag">埼玉県</span>
+                      </span>
+                    ) },
+                  ]} />
+                  <div style={{ marginTop: 18 }}>
+                    <p className="table-cap">対応言語<span className="cap-note">言語ごとの習熟度</span></p>
+                    <table className="data-table">
+                      <thead>
+                        <tr><th>言語</th><th>習熟度</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr><td className="strong">英語</td><td className="lang-prof">ネイティブ相当</td></tr>
+                        <tr><td className="strong">中国語（普通話）</td><td className="lang-prof">流暢</td></tr>
+                        <tr><td className="strong">日本語</td><td className="lang-prof">ネイティブ</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </React.Fragment>
+              );
+
+            case "rate":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">報酬単価</p>
+                  <p className="panel-sub">基本報酬単価の確認・更新と変更履歴を表示します。</p>
+
+                  <div className="rate-head">
+                    <div className="rate-now">
+                      <span className="rate-now-lab">現在の基本報酬単価</span>
+                      <span className="rate-now-val">¥{currentRate.toLocaleString("ja-JP")}<span className="rate-now-unit">/ 時間（報酬単位: {rewardUnit}）</span></span>
+                    </div>
+                    {!rateOpen && (
+                      <button className="btn primary" onClick={openRateForm}>
+                        <span className="b-ic">✎</span>時給を更新する
+                      </button>
+                    )}
+                  </div>
+
+                  {rateOpen && (
+                    <div className="inline-form">
+                      <div className="if-head">時給を更新</div>
+                      <div className="if-grid">
+                        <div className="form-field">
+                          <label className="f-label">新しい時給<span className="req">*</span></label>
+                          <div className="input-affix">
+                            <span className="pfx">¥</span>
+                            <input type="number" className="ctrl has-pfx has-sfx" placeholder="0"
+                              value={fRate} onChange={e => setFRate(e.target.value)} />
+                            <span className="sfx">/h</span>
+                          </div>
+                        </div>
+                        <div className="form-field">
+                          <label className="f-label">適用開始日<span className="req">*</span></label>
+                          <input type="date" className="ctrl" value={fStart} onChange={e => setFStart(e.target.value)} />
+                        </div>
+                        <div className="form-field full">
+                          <label className="f-label">変更理由メモ<span className="opt">任意</span></label>
+                          <textarea className="ctrl" placeholder="変更理由を入力…" value={fReason} onChange={e => setFReason(e.target.value)}></textarea>
+                        </div>
+                      </div>
+                      <div className="if-foot">
+                        <button className="btn primary" onClick={saveRate}>保存</button>
+                        <button className="btn" onClick={() => setRateOpen(false)}>キャンセル</button>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="table-cap" style={{ marginTop: 20 }}>時給変更履歴<span className="cap-note">適用開始日の新しい順</span></p>
+                  <div className="table-scroll">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>適用開始日</th>
+                          <th className="right">時給</th>
+                          <th>変更理由</th>
+                          <th>変更担当者</th>
+                          <th>変更日時</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rateHist.map((h, i) => (
+                          <tr key={i}>
+                            <td>
+                              <span className="code-mono">{h.start}</span>
+                              {i === 0 && <span className="badge green" style={{ marginLeft: 8 }}><span className="dot"></span>最新</span>}
+                            </td>
+                            <td className="right"><span className="yen">¥{h.rate.toLocaleString("ja-JP")}</span></td>
+                            <td>{h.reason}</td>
+                            <td>{h.by}</td>
+                            <td><span className="code-mono">{h.at}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </React.Fragment>
+              );
+
+            case "pay": {
+              const sens = (real) => revealPay
+                ? <span className="code-mono">{real}</span>
+                : <span className="mask-val">{"●".repeat(real.length)}</span>;
+              return (
+                <React.Fragment>
+                  <p className="panel-title">支払い情報</p>
+                  <p className="panel-sub">振込先口座・インボイス登録番号を表示します。</p>
+                  <div className="sens-banner">
+                    <svg className="sb-ic" viewBox="0 0 16 16" fill="currentColor"><path d="M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z"/></svg>
+                    <span className="sb-txt"><b>機微情報</b>のため、支店番号・口座番号はマスク表示しています。</span>
+                    <button className="btn sm" onClick={() => { setRevealPay(v => !v); showToast(revealPay ? "口座情報を再度マスクしました" : "口座情報を表示しました"); }}>
+                      {revealPay ? "マスクする" : "表示する"}
+                    </button>
+                  </div>
+                  <Def items={[
+                    { k: "銀行名", v: "三菱UFJ銀行" },
+                    { k: "支店番号", v: <span>{sens("001")}<span className="sens-tag">機微</span></span> },
+                    { k: "支店名", v: "新宿支店" },
+                    { k: "口座種別", v: "普通" },
+                    { k: "口座番号", v: <span>{sens("1234567")}<span className="sens-tag">機微</span></span> },
+                    { k: "口座名義", v: "ヤマダ タロウ" },
+                    { k: "インボイス登録番号", v: <span className="code-mono">T1234567890123</span> },
+                  ]} />
+                </React.Fragment>
+              );
+            }
+
+            case "hire":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">採用情報</p>
+                  <p className="panel-sub">採用・面接に関する記録です（手配担当は参照のみ）。</p>
+                  <Def items={[
+                    { k: "面接日", v: <span className="code-mono">2022-05-10</span> },
+                    { k: "職業", v: "会社員（副業でガイド）" },
+                    { k: "面接時info", v: <span className="longtext">英語・中国語ともに高いレベル。接客経験豊富で即戦力。週末中心の稼働希望。</span> },
+                  ]} wide />
+                </React.Fragment>
+              );
+
+            case "memo":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">メモ</p>
+                  <p className="panel-sub">運営スタッフ向けの社内メモです。</p>
+                  <Def items={[
+                    { k: "スタッフメモ", v: <span className="longtext">夏季は多忙のため6〜8月は月2回程度の稼働。事前に確認が必要。</span> },
+                    { k: "稼働状況変更理由", v: <span className="empty-note">記録なし</span> },
+                  ]} wide />
+                </React.Fragment>
+              );
+
+            case "history":
+              return (
+                <React.Fragment>
+                  <p className="panel-title">手配履歴</p>
+                  <p className="panel-sub">過去の手配一覧です（参照のみ）。</p>
+                  <div className="table-scroll">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>催行回ID</th>
+                          <th>催行日時</th>
+                          <th>TourOptionコード</th>
+                          <th>役割</th>
+                          <th>ガイド確認ステータス</th>
+                          <th>手配ステータス</th>
+                          <th>精算ステータス</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><span className="code-mono">TI-20260515-1000-G-TOK-001-1-PR-01</span></td>
+                          <td><span className="code-mono">2026/05/15 10:00</span></td>
+                          <td><span className="code-mono">G-TOK-001-1-PR</span></td>
+                          <td className="strong">メインガイド</td>
+                          <td><span className="badge green"><span className="dot"></span>確認済み</span></td>
+                          <td><span className="badge teal"><span className="dot"></span>確定</span></td>
+                          <td><span className="badge teal"><span className="dot"></span>確定</span></td>
+                        </tr>
+                        <tr>
+                          <td><span className="code-mono">TI-20260508-1400-G-TOK-003-2-GR-01</span></td>
+                          <td><span className="code-mono">2026/05/08 14:00</span></td>
+                          <td><span className="code-mono">G-TOK-003-2-GR</span></td>
+                          <td className="strong">メインガイド</td>
+                          <td><span className="badge green"><span className="dot"></span>確認済み</span></td>
+                          <td><span className="badge teal"><span className="dot"></span>確定</span></td>
+                          <td><span className="badge amber"><span className="dot"></span>確認待ち</span></td>
+                        </tr>
+                        <tr className="cancelled">
+                          <td><span className="code-mono">TI-20260422-1000-G-TOK-002-1-PR-01</span></td>
+                          <td><span className="code-mono">2026/04/22 10:00</span></td>
+                          <td><span className="code-mono">G-TOK-002-1-PR</span></td>
+                          <td><span className="strike">サブガイド</span></td>
+                          <td><span className="muted-dash">—</span></td>
+                          <td><span className="badge cancel">キャンセル</span></td>
+                          <td><span className="muted-dash">—</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </React.Fragment>
+              );
+
+            default:
+              return null;
+          }
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                ガイドの登録情報を確認できます。内容を変更する場合は「編集する」から編集画面を開いてください。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="crumbs">
+                <a href="ガイド一覧.html">ガイド一覧</a>
+                <span className="sep">›</span>
+                <span className="current">G-042　山田太郎</span>
+              </div>
+
+              {/* ── Header ── */}
+              <div className="detail-head" data-screen-label="ガイド詳細ヘッダー">
+                <div className="head-left">
+                  <div className="head-ava">山</div>
+                  <div className="head-id-block">
+                    <div className="id-row">
+                      <span className="g-code">G-042</span>
+                      <span className="g-kanji">山田 太郎</span>
+                    </div>
+                    <div className="badge-row">
+                      <span className="status-pill green"><span className="pill-label">稼働</span><span className="dot"></span>アクティブ</span>
+                      <span className="status-pill teal"><span className="dot"></span>スキルランク A</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="head-actions">
+                  <a className="btn primary" href="ガイド編集.html">
+                    <span className="b-ic">✎</span>編集する
+                  </a>
+                </div>
+              </div>
+
+              {/* ── Tabbed read-only detail ── */}
+              <section className="tab-shell" data-screen-label="ガイド詳細">
+                <div className="tab-bar" role="tablist">
+                  {TABS.map(t => (
+                    <button key={t.key} role="tab" aria-selected={tab === t.key}
+                      className={`tab ${tab === t.key ? "active" : ""}`}
+                      onClick={() => setTab(t.key)}>
+                      {t.label}
+                      {t.count != null && <span className="tab-count">{t.count}</span>}
+                    </button>
+                  ))}
+                </div>
+                <div className="tab-panel" role="tabpanel">
+                  {renderTab()}
+                </div>
+              </section>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

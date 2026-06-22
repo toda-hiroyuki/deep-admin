@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>変更・キャンセル 全条件別フロー</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.6;color:#1e293b;background:#f1f5f9}
+.page{max-width:1120px;margin:0 auto;padding:24px 16px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#0f2850 0%,#1d4ed8 100%);color:white;padding:28px 36px;border-radius:12px;margin-bottom:20px}
+.header h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.header p{opacity:.8;font-size:12px;line-height:1.8}
+
+/* Nav pills */
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.nav a{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;background:white;color:#475569;border:1px solid #e2e8f0;transition:.15s}
+.nav a:hover{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}
+
+/* Section card */
+.section{background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.section-hd{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #f1f5f9}
+.section-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.section-hd h2{font-size:17px;font-weight:700}
+.pattern-badge{margin-left:auto;background:#eff6ff;color:#1d4ed8;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
+
+/* Condition badges */
+.b{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid}
+.b-direct{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.b-ota{background:#ffedd5;color:#c2410c;border-color:#fb923c}
+.b-priv{background:#ede9fe;color:#6d28d9;border-color:#a78bfa}
+.b-grp{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
+.b-free{background:#dcfce7;color:#15803d;border-color:#86efac}
+.b-paid{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.b-ops{background:#fef3c7;color:#92400e;border-color:#fde68a}
+.b-guest{background:#e0f2fe;color:#075985;border-color:#7dd3fc}
+.b-ota-src{background:#fdf4ff;color:#7e22ce;border-color:#d8b4fe}
+.b-pending{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.b-confirmed{background:#fefce8;color:#854d0e;border-color:#fef08a}
+.b-nodiff{background:#f0fdf4;color:#166534;border-color:#86efac}
+.b-diff{background:#fffbeb;color:#92400e;border-color:#fde68a}
+
+/* Condition axes grid */
+.axes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:16px}
+.axis-card{border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px}
+.axis-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin-bottom:6px}
+.axis-title{font-weight:700;font-size:12px;margin-bottom:6px;color:#334155}
+.tag-row{display:flex;flex-wrap:wrap;gap:4px}
+
+/* Pattern matrix */
+.matrix{width:100%;border-collapse:collapse;font-size:11.5px;margin:12px 0}
+.matrix th{background:#f8fafc;padding:7px 10px;text-align:left;font-weight:600;color:#64748b;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+.matrix td{padding:6px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.matrix tr:last-child td{border-bottom:none}
+.matrix tr:hover td{background:#fafbfc}
+.pid{font-weight:700;color:#94a3b8;font-size:11px}
+.diff-cell{font-size:11px;color:#475569}
+
+/* Flow list */
+.flow{list-style:none;position:relative;padding:4px 0}
+.flow::before{content:'';position:absolute;left:15px;top:32px;bottom:12px;width:2px;background:#e2e8f0}
+.flow-item{display:flex;gap:14px;margin-bottom:10px}
+.fn{width:30px;height:30px;border-radius:50%;background:#2563eb;color:white;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1}
+.fn-sys{background:#6d28d9}
+.fb{flex:1;padding-top:5px}
+.ft{font-size:13px;margin-bottom:4px}
+
+/* Branch callouts */
+.branches{display:grid;gap:6px;margin:6px 0}
+.branches-2{grid-template-columns:1fr 1fr}
+.branches-3{grid-template-columns:1fr 1fr 1fr}
+.br{border-radius:7px;padding:7px 10px;font-size:11.5px;border-left:3px solid}
+.br strong{display:block;margin-bottom:2px;font-size:11px}
+.br-priv{background:#f5f3ff;border-color:#7c3aed;color:#4c1d95}
+.br-grp-stay{background:#ecfdf5;border-color:#059669;color:#064e3b}
+.br-grp-cancel{background:#fff1f2;border-color:#f43f5e;color:#881337}
+.br-direct{background:#eff6ff;border-color:#3b82f6;color:#1e40af}
+.br-ota{background:#fff7ed;border-color:#f97316;color:#9a3412}
+.br-free{background:#f0fdf4;border-color:#22c55e;color:#14532d}
+.br-paid{background:#fef2f2;border-color:#ef4444;color:#7f1d1d}
+.br-warn{background:#fffbeb;border-color:#eab308;color:#713f12}
+.br-neutral{background:#f8fafc;border-color:#94a3b8;color:#334155}
+
+/* Sys flow block */
+.sys{background:#fafafa;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:11.5px;margin:6px 0}
+.sys-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7c3aed;margin-bottom:6px}
+.sys ul{padding-left:14px}
+.sys li{margin-bottom:2px;color:#334155}
+.sys li::marker{color:#a78bfa}
+
+/* Sub section */
+.sub{border-left:3px solid #e2e8f0;padding-left:16px;margin:16px 0}
+.sub-hd{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:10px}
+
+/* Impact summary table */
+.impact{width:100%;border-collapse:collapse;font-size:11.5px}
+.impact th{background:#0f2850;color:white;padding:8px 10px;text-align:center;font-size:11px}
+.impact td{padding:7px 10px;border:1px solid #e2e8f0;text-align:center}
+.impact tr:nth-child(even) td{background:#f8fafc}
+.impact td:first-child{text-align:left;font-weight:600;color:#334155}
+.yes{background:#fef9c3;color:#854d0e;font-weight:700}
+.no{color:#cbd5e1}
+
+/* Mermaid */
+.mermaid-wrap{overflow-x:auto;text-align:center;padding:20px;background:white;border-radius:10px;border:1px solid #e2e8f0}
+
+/* Note */
+.note{background:#f0f9ff;border-left:3px solid #38bdf8;border-radius:4px;padding:8px 12px;font-size:11.5px;color:#0c4a6e;margin:8px 0}
+.note-warn{background:#fffbeb;border-left-color:#f59e0b;color:#78350f}
+
+.divider{border:0;border-top:2px dashed #e2e8f0;margin:20px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:640px){.two,.branches-2,.branches-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>変更・キャンセル 全条件別フロー分析</h1>
+  <p>日時変更・人数増員・人数減員・全件キャンセルの業務フロー＋システム処理フローを、<br>販売チャネル／ツアー種別／催行回状況／商品差額／発生元／キャンセル期限の全組み合わせで整理</p>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <a href="#axes">条件軸</a>
+  <a href="#tree">判定ツリー</a>
+  <a href="#s-date">§2 日時変更</a>
+  <a href="#s-inc">§3 人数増員</a>
+  <a href="#s-dec">§4 人数減員</a>
+  <a href="#s-cancel">§5 全件キャンセル</a>
+  <a href="#s-impact">差分まとめ</a>
+</div>
+
+<!-- ===== 1. CONDITION AXES ===== -->
+<div class="section" id="axes">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#eff6ff">🔑</div>
+    <h2>1. フローを変える8つの条件軸</h2>
+  </div>
+  <div class="axes-grid">
+    <div class="axis-card">
+      <div class="axis-label">軸 A</div>
+      <div class="axis-title">処理種別</div>
+      <div class="tag-row">
+        <span class="b b-confirmed">日時変更</span>
+        <span class="b b-confirmed">人数増員</span>
+        <span class="b b-confirmed">人数減員</span>
+        <span class="b b-confirmed">全件キャンセル</span>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 B</div>
+      <div class="axis-title">販売チャネル <small style="color:#94a3b8">→ 返金処理に影響</small></div>
+      <div class="tag-row">
+        <span class="b b-direct">🔵 自社サイト直販</span>
+        <span class="b b-ota">🟠 OTA経由</span>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 C</div>
+      <div class="axis-title">ツアー種別 <small style="color:#94a3b8">→ 催行回の扱いに影響</small></div>
+      <div class="tag-row">
+        <span class="b b-priv">🟣 プライベート</span>
+        <span class="b b-grp">🟢 グループ</span>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 D</div>
+      <div class="axis-title">旧催行回に別予約が残るか <small style="color:#94a3b8">グループのみ</small></div>
+      <div class="tag-row">
+        <span class="b b-grp">残る（1件以上）</span>
+        <span class="b b-paid">0件になる</span>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#94a3b8">※プライベートは常に0件（1催行回=1予約）</div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 E</div>
+      <div class="axis-title">商品条件スナップショット差額 <small style="color:#94a3b8">主に日時変更で分岐</small></div>
+      <div class="tag-row">
+        <span class="b b-nodiff">差額なし</span>
+        <span class="b b-diff">差額あり</span>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 F</div>
+      <div class="axis-title">発生元区分 <small style="color:#94a3b8">主に全件キャンセルで分岐</small></div>
+      <div class="tag-row">
+        <span class="b b-guest">ゲスト都合</span>
+        <span class="b b-ops">運営都合</span>
+        <span class="b b-ota-src">OTA経由</span>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 G</div>
+      <div class="axis-title">キャンセルポリシー期限 <small style="color:#94a3b8">減員・ゲスト都合Cxlで分岐</small></div>
+      <div class="tag-row">
+        <span class="b b-free">✅ 無料期限内</span>
+        <span class="b b-paid">⚠️ 有料期限後</span>
+      </div>
+    </div>
+    <div class="axis-card">
+      <div class="axis-label">軸 H</div>
+      <div class="axis-title">予約ステータス <small style="color:#94a3b8">全件キャンセルのみ分岐</small></div>
+      <div class="tag-row">
+        <span class="b b-pending">確定待ち</span>
+        <span class="b b-confirmed">確定予約</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. DECISION TREE ===== -->
+<div class="section" id="tree">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#f0fdf4">🌳</div>
+    <h2>2. フロー判定ツリー</h2>
+  </div>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart TD
+    START(["🔀 変更・キャンセル依頼を受ける"]):::start --> A{処理種別は？}
+
+    A -->|📅 日時変更| B1["§2 日時変更へ"]:::sec
+    A -->|📈 人数増員| B2["§3 人数増員へ"]:::sec
+    A -->|📉 人数減員| B3["§4 人数減員へ"]:::sec
+    A -->|❌ 全件キャンセル| C{予約ステータス？}
+
+    C -->|確定待ち| D1["§5-1<br/>キャンセル料なし<br/>一律処理"]:::free
+    C -->|確定予約| D2{発生元区分？}
+
+    D2 -->|ゲスト都合| E1{キャンセル<br>期限は？}
+    D2 -->|運営都合| E2["§5-2<br/>キャンセル料0%<br/>全額返金"]:::ops
+    D2 -->|OTA経由| E3["§5-3<br/>OTA側でキャンセル済み<br/>社内処理のみ"]:::ota
+
+    E1 -->|無料期限内| F1["§5-4a<br/>キャンセル料0%<br/>全額返金"]:::free
+    E1 -->|有料期限後| F2["§5-4b<br/>ポリシー適用<br/>キャンセル料発生"]:::paid
+
+    B1 --> G0{無料キャンセル<br/>期限内？<br/>※ゲスト都合のみ<br/>（運営都合は対象外）}
+    G0 -->|無料期限内| G1{ツアー種別？}
+    G0 -->|有料期限後| H0["日時変更は受付不可<br/>キャンセル扱い（§5-4）へ<br/>※例外承認時のみ継続"]:::warn
+    G1 -->|プライベート| H1["旧催行回→無効化<br/>新催行回→自動生成"]:::priv
+    G1 -->|グループ| H2{旧催行回に<br/>別予約あり？}
+    H2 -->|残る| I1["旧催行回→存続<br/>人数更新のみ"]:::grp
+    H2 -->|0件になる| I2["旧催行回→無効化<br/>ガイド手配キャンセル"]:::paid2
+
+    B2 --> G2{リソース/定員OK？}
+    G2 -->|OK| J1["増員確定<br/>追加請求記録"]:::free
+    G2 -->|NG| J2["増員不可<br/>記録のみ"]:::warn
+
+    B3 --> G3{キャンセル<br/>期限は？}
+    G3 -->|無料期限内| K1["キャンセル料0%<br/>全額返金対象"]:::free
+    G3 -->|有料期限後| K2["ポリシー適用<br/>キャンセル料発生"]:::paid
+
+    classDef start fill:#0f2850,color:#fff,stroke:none
+    classDef sec fill:#dbeafe,color:#1e3a8a,stroke:#93c5fd
+    classDef free fill:#dcfce7,color:#14532d,stroke:#86efac
+    classDef paid fill:#fee2e2,color:#7f1d1d,stroke:#fca5a5
+    classDef paid2 fill:#fff1f2,color:#881337,stroke:#fda4af
+    classDef ops fill:#fef3c7,color:#78350f,stroke:#fde68a
+    classDef ota fill:#fdf4ff,color:#581c87,stroke:#d8b4fe
+    classDef priv fill:#ede9fe,color:#4c1d95,stroke:#a78bfa
+    classDef grp fill:#d1fae5,color:#064e3b,stroke:#6ee7b7
+    classDef warn fill:#fff7ed,color:#7c2d12,stroke:#fdba74
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3. 日時変更 ===== -->
+<div class="section" id="s-date">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#dbeafe">📅</div>
+    <h2>§2 日時変更</h2>
+    <span class="pattern-badge">12パターン</span>
+  </div>
+
+  <!-- Pattern matrix -->
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th>#</th><th>チャネル</th><th>ツアー種別</th><th>旧催行回に別予約</th><th>商品差額</th><th>フロー上の差分ポイント</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="pid">日1</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td><span class="b b-nodiff">なし</span></td><td class="diff-cell">標準フロー</td></tr>
+      <tr><td class="pid">日2</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td><span class="b b-diff">あり</span></td><td class="diff-cell">差額対応方針の選択 → 直販で追加請求/返金処理</td></tr>
+      <tr><td class="pid">日3</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td><span class="b b-nodiff">なし</span></td><td class="diff-cell">差額処理なし（OTA振込で調整）</td></tr>
+      <tr><td class="pid">日4</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td><span class="b b-diff">あり</span></td><td class="diff-cell">差額はメモ記録のみ（OTA振込で調整）</td></tr>
+      <tr><td class="pid">日5</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-nodiff">なし</span></td><td class="diff-cell">旧催行回存続・仮紐付け変更</td></tr>
+      <tr><td class="pid">日6</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-diff">あり</span></td><td class="diff-cell">旧催行回存続 + 差額対応方針 + 直販処理</td></tr>
+      <tr><td class="pid">日7</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-nodiff">なし</span></td><td class="diff-cell">旧催行回存続・OTA差額処理なし</td></tr>
+      <tr><td class="pid">日8</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-diff">あり</span></td><td class="diff-cell">旧催行回存続 + 差額メモ記録</td></tr>
+      <tr><td class="pid">日9</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td><span class="b b-nodiff">なし</span></td><td class="diff-cell">旧催行回無効化・ガイドキャンセル</td></tr>
+      <tr><td class="pid">日10</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td><span class="b b-diff">あり</span></td><td class="diff-cell">旧催行回無効化 + 差額対応方針 + 直販処理</td></tr>
+      <tr><td class="pid">日11</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td><span class="b b-nodiff">なし</span></td><td class="diff-cell">旧催行回無効化 + OTA差額処理なし</td></tr>
+      <tr><td class="pid">日12</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td><span class="b b-diff">あり</span></td><td class="diff-cell">旧催行回無効化 + 差額メモ記録</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+
+  <!-- Business flow -->
+  <div class="sub-hd">👤 業務フロー（運営担当者）</div>
+  <ul class="flow">
+    <li class="flow-item">
+      <div class="fn">1</div>
+      <div class="fb"><div class="ft">対象予約を開く</div></div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">2</div>
+      <div class="fb">
+        <div class="ft"><strong>【重要】キャンセルポリシーの期限を確認する</strong></div>
+        <div class="branches branches-2">
+          <div class="br br-free"><strong>✅ 無料キャンセル期限内</strong>日時変更可能。STEP 3へ続く</div>
+          <div class="br br-paid"><strong>🚫 有料キャンセル期限後 → 日時変更は不可</strong>キャンセル期限を過ぎた後の日時変更は受け付けない。ゲストには「キャンセル料が発生するキャンセル扱い」または「例外承認」を判断する。→ §5-4 ゲスト都合キャンセル（有料期限後）へ移行</div>
+        </div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">3</div>
+      <div class="fb">
+        <div class="ft">TourOptionの「日程変更可否」を確認</div>
+        <div class="br br-warn">⚠️ <strong>不可の場合</strong>例外承認の要否を判断。承認するなら理由を記録してSTEP 4へ</div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">4</div>
+      <div class="fb"><div class="ft">発生元区分・変更理由を入力</div></div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">5</div>
+      <div class="fb"><div class="ft">変更後の日時を入力</div></div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">6</div>
+      <div class="fb">
+        <div class="ft">現時点のTourOption価格を確認（予約時点の販売価格と照合）</div>
+        <div class="branches branches-2">
+          <div class="br br-free"><strong>🟢 差額なし（E=なし）</strong>差額なしを記録してSTEP 7へ</div>
+          <div class="br br-paid"><strong>🟡 差額あり（E=あり）</strong>対応方針を選択・記録<br>→ 追加請求 / 差額返金 / 変更なし</div>
+        </div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">7</div>
+      <div class="fb">
+        <div class="ft">新日時でのリソース空きを確認（上限チェック）</div>
+        <div class="br br-warn">⚠️ <strong>空きなし</strong>変更不可として記録。ゲストに連絡し別日時を検討</div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">8</div>
+      <div class="fb">
+        <div class="ft">（グループのみ）新日時で紐付け可能な催行回を確認</div>
+        <div class="br br-warn">⚠️ <strong>適切な催行回なし</strong>新規催行回を作成してから紐付け</div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">9</div>
+      <div class="fb"><div class="ft">変更を承認・実行</div></div>
+    </li>
+  </ul>
+
+  <hr class="divider">
+
+  <!-- System flow -->
+  <div class="sub-hd">⚙️ システム処理フロー</div>
+  <div class="sys">
+    <div class="sys-title">共通処理（全12パターン）</div>
+    <ul>
+      <li>予約のツアー日・開始時間を更新（差額対応方針に応じて販売金額も更新）</li>
+      <li>旧日時のリソース消費を解放</li>
+      <li>新日時のリソースを確保</li>
+      <li>再手配要否フラグ = ON、変更理由区分 = 「日時変更」</li>
+      <li>変更・キャンセル履歴を保存</li>
+    </ul>
+  </div>
+  <div class="branches branches-3">
+    <div class="br br-priv"><strong>🟣 プライベートツアー（日1〜4）</strong>
+      旧催行回を無効化（Cancelled）<br>
+      旧催行回のガイド手配→「キャンセル」・通知フラグON<br>
+      新催行回を自動生成・即「確定紐付け」</div>
+    <div class="br br-grp-stay"><strong>🟢 グループ × 別予約残る（日5〜8）</strong>
+      旧催行回から当該予約を解除→人数更新<br>
+      旧催行回は存続・ガイド手配維持・再手配フラグON<br>
+      新催行回に仮紐付け（または新規作成）</div>
+    <div class="br br-grp-cancel"><strong>🔴 グループ × 0件になる（日9〜12）</strong>
+      旧催行回から当該予約を解除→有効0件<br>
+      旧催行回を自動無効化（Cancelled）<br>
+      旧ガイド手配→「キャンセル」・通知フラグON<br>
+      新催行回に仮紐付け（または新規作成）</div>
+  </div>
+
+  <div class="note" style="background:#fdf4ff;border-left:3px solid #a855f7;color:#581c87;margin-top:10px">
+    <strong>🔄 元ガイドの優先再アサイン確認フロー（旧催行回が無効化されるケース：プライベート全件 / グループ×0件）</strong><br>
+    新催行回が作成されたあと、ガイド手配担当者が以下を確認する：<br>
+    ① システムが新催行回のガイド手配に「旧催行回アサイン済みガイド：〇〇」を表示する<br>
+    ② 担当者がそのガイドに新日時の空き状況を直接確認する<br>
+    ③ 空きあり → 同じガイドを優先的に新催行回へアサイン（ガイドの合意を得て確定）<br>
+    ④ 空きなし → 通常の新規ガイド選定フローへ。手配ステータス「未手配（要選定）」として開始<br>
+    <span style="font-size:11px;color:#7e22ce">※グループ×別予約残る（日5〜8）の場合：旧催行回は存続するため元ガイドは旧催行回に残る。新催行回のガイドは新規選定から開始する</span>
+  </div>
+
+  <div class="sys" style="margin-top:12px">
+    <div class="sys-title">処理後 — 差額・返金処理</div>
+  </div>
+  <div class="branches branches-2">
+    <div class="br br-direct"><strong>🔵 直販 × 差額なし</strong>チャネル手数料・決済手数料を自動再計算（変化なし）</div>
+    <div class="br br-ota"><strong>🟠 OTA × 差額なし</strong>Deep側の金額処理なし</div>
+    <div class="br br-direct"><strong>🔵 直販 × 差額あり（追加請求）</strong>追加請求レコードを作成。チャネル手数料・決済手数料を差額分で再計算</div>
+    <div class="br br-direct"><strong>🔵 直販 × 差額あり（差額返金）</strong>返金レコードを作成・返金ステータス「未処理」。手数料を再計算</div>
+    <div class="br br-ota"><strong>🟠 OTA × 差額あり</strong>差額はOTA次回振込で調整。Deep側処理なし。差額をメモ記録</div>
+    <div class="br br-neutral"><strong>直販/OTA × 差額あり（変更なし）</strong>販売金額を維持。対応方針「変更なし」として記録のみ</div>
+  </div>
+
+  <div class="note-warn" style="margin-top:12px">
+    <strong>⚠️ 追加請求（差額あり・追加請求選択）でゲストが支払わなかった場合の対応フロー</strong><br>
+    追加請求を確定後、一定期間を過ぎてもゲストが支払わない場合、運営判断で以下のいずれかを選択する：<br>
+    <strong>a. 日時変更を取り消す</strong>：変更前の状態に戻す（旧催行回を再有効化・新催行回を無効化・リソースを元に戻す）。実質キャンセル扱いになる場合はキャンセルポリシーを適用する<br>
+    <strong>b. 未収のまま変更を維持</strong>：変更は成立させ、差額を売掛として管理。別途督促・回収を進める<br>
+    <strong>c. 差額を免除（例外対応）</strong>：対応方針を「変更なし」に変更し差額ゼロとして処理する。例外承認の記録が必要<br>
+    → 選択した対応内容と理由をシステムに記録し、変更履歴を更新する
+  </div>
+</div>
+
+<!-- ===== 4. 人数増員 ===== -->
+<div class="section" id="s-inc">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#d1fae5">📈</div>
+    <h2>§3 人数増員</h2>
+    <span class="pattern-badge">4パターン（+処理不可1・特例復帰1）</span>
+  </div>
+
+  <table class="matrix">
+    <thead>
+      <tr><th>#</th><th>チャネル</th><th>ツアー種別</th><th>リソース/定員</th><th>フロー上の差分ポイント</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="pid">増1</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td>✅ 範囲内</td><td class="diff-cell">追加請求額を支払い管理側で請求</td></tr>
+      <tr><td class="pid">増2</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td>✅ 範囲内</td><td class="diff-cell">追加請求はOTA振込で調整（Deep側処理なし）</td></tr>
+      <tr><td class="pid">増3</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td>✅ 範囲内</td><td class="diff-cell">催行回定員チェック追加。追加請求処理</td></tr>
+      <tr><td class="pid">増4</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td>✅ 範囲内</td><td class="diff-cell">催行回定員チェック追加。OTA振込で調整</td></tr>
+      <tr><td class="pid">増5</td><td>—</td><td>—</td><td>❌ リソース上限超過</td><td class="diff-cell"><strong>処理不可</strong>：増員不可として記録</td></tr>
+      <tr><td class="pid">増6</td><td>—</td><td><span class="b b-grp">グループ</span></td><td>⚠️ 催行回定員超過（ソフト）</td><td class="diff-cell">増員不可／別催行回へ分割／<strong>特例承認で定員拡張</strong>のいずれかを手動判断（特例拡張で本フロー復帰可。ソフト上限のみ・リソース上限は免除しない）</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+  <div class="sub-hd">👤 業務フロー</div>
+  <ul class="flow">
+    <li class="flow-item"><div class="fn">1</div><div class="fb"><div class="ft">増員依頼を受ける（ゲスト / OTA経由）</div></div></li>
+    <li class="flow-item"><div class="fn">2</div><div class="fb"><div class="ft">変更後の参加人数を入力</div></div></li>
+    <li class="flow-item">
+      <div class="fn">3</div>
+      <div class="fb">
+        <div class="ft">変更後人数のTiered Pricingを確認し、追加請求額を算出</div>
+        <div class="br br-neutral" style="font-size:11px">追加請求額 = 変更後合計金額（変更後人数×変更後Tiered単価） − 元の販売金額</div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">4</div>
+      <div class="fb">
+        <div class="ft">追加人数分のリソース空きを確認（上限チェック）</div>
+        <div class="br br-warn">⚠️ <strong>空きなし（増5）</strong>増員不可として記録</div>
+      </div>
+    </li>
+    <li class="flow-item">
+      <div class="fn">5</div>
+      <div class="fb">
+        <div class="ft">（グループのみ）催行回の定員を超えないか確認</div>
+        <div class="br br-warn">⚠️ <strong>定員超過（増6）</strong>増員不可、別催行回への分割、または<strong>特例承認で当該催行回の定員のみ拡張</strong>して受入のいずれかを手動判断</div>
+        <div class="br br-neutral" style="font-size:11px">特例拡張はソフト上限（定員）のみ。リソース上限（ハード）は免除せず手順4で別途ゲートする（特例拡張ならメインフロー復帰可）</div>
+      </div>
+    </li>
+    <li class="flow-item"><div class="fn">6</div><div class="fb"><div class="ft">増員を承認・実行</div></div></li>
+  </ul>
+
+  <hr class="divider">
+  <div class="sub-hd">⚙️ システム処理フロー</div>
+  <div class="sys">
+    <div class="sys-title">共通処理</div>
+    <ul>
+      <li>予約の参加人数・販売金額を更新</li>
+      <li>追加請求額を記録（変更後合計金額 − 元の販売金額）</li>
+      <li>追加人数分のリソースを確保</li>
+      <li>催行回の現在人数を加算</li>
+      <li>再手配要否フラグ = ON、変更理由区分 = 「増員」</li>
+      <li>変更履歴を保存（Tiered Price算出根拠・追加請求額を含む）</li>
+      <li>処理後自動更新：販売金額増分・チャネル手数料・ゲスト立替経費（増員分加算）を自動再計算</li>
+    </ul>
+  </div>
+  <div class="branches branches-2">
+    <div class="br br-direct"><strong>🔵 直販（増1・増3）</strong>決済手数料を自動再計算（増員追加請求分に新たな手数料）。追加請求額を支払い管理側で請求処理</div>
+    <div class="br br-ota"><strong>🟠 OTA（増2・増4）</strong>
+      <em>通常（キャンセル期限前）：</em>ゲストがOTA側で自ら人数を変更し、OTAが最新価格で請求する。Deep側の処理なし。<br>
+      <strong>⚠️ 例外：当日現地で増員が判明した場合</strong><br>
+      キャンセル期限後またはツアー当日のためOTA側での変更手続きができない。ゲストに直接追加請求を行い、Deep側で請求レコードを作成・決済を処理する（直販と同じフロー）</div>
+  </div>
+</div>
+
+<!-- ===== 5. 人数減員 ===== -->
+<div class="section" id="s-dec">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#fee2e2">📉</div>
+    <h2>§4 人数減員（部分キャンセル）</h2>
+    <span class="pattern-badge">8パターン</span>
+  </div>
+
+  <div class="note">グループツアーの場合も「催行回に別予約が残るか」は人数減員には影響しない。人数が減るだけで催行回無効化の判定は行わない（0件 = 全件キャンセル時のみ）</div>
+
+  <table class="matrix">
+    <thead>
+      <tr><th>#</th><th>チャネル</th><th>ツアー種別</th><th>キャンセル期限</th><th>フロー上の差分ポイント</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="pid">減1</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td><span class="b b-free">無料期限内</span></td><td class="diff-cell">キャンセル料0%・全額返金レコード作成（直販）</td></tr>
+      <tr><td class="pid">減2</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td><span class="b b-paid">有料期限後</span></td><td class="diff-cell">ポリシー適用・返金レコード作成（直販）</td></tr>
+      <tr><td class="pid">減3</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td><span class="b b-free">無料期限内</span></td><td class="diff-cell">キャンセル料0%・OTA返金済み記録</td></tr>
+      <tr><td class="pid">減4</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td><span class="b b-paid">有料期限後</span></td><td class="diff-cell">ポリシー適用・OTA返金済み記録（Deep処理なし）</td></tr>
+      <tr><td class="pid">減5</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-free">無料期限内</span></td><td class="diff-cell">催行回人数更新 + キャンセル料0% + 直販返金</td></tr>
+      <tr><td class="pid">減6</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">有料期限後</span></td><td class="diff-cell">催行回人数更新 + ポリシー適用 + 直販返金</td></tr>
+      <tr><td class="pid">減7</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-free">無料期限内</span></td><td class="diff-cell">催行回人数更新 + キャンセル料0% + OTA返金</td></tr>
+      <tr><td class="pid">減8</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">有料期限後</span></td><td class="diff-cell">催行回人数更新 + ポリシー適用 + OTA返金</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+  <div class="sub-hd">👤 業務フロー</div>
+  <ul class="flow">
+    <li class="flow-item"><div class="fn">1</div><div class="fb"><div class="ft">減員依頼を受ける（ゲスト / OTA経由）</div></div></li>
+    <li class="flow-item"><div class="fn">2</div><div class="fb"><div class="ft">減員後の参加人数（または減員人数）を入力</div></div></li>
+    <li class="flow-item">
+      <div class="fn">3</div>
+      <div class="fb">
+        <div class="ft">減員後人数のTiered Pricingを確認・キャンセル対象金額を算出</div>
+        <div class="br br-neutral" style="font-size:11px">
+          減員後合計金額 = 減員後人数 × 減員後Tiered単価<br>
+          キャンセル対象金額 = 元の販売金額 − 減員後合計金額<br>
+          ※減員で価格帯が上がる場合、キャンセル対象金額がマイナスになることがある→運営判断
+        </div>
+      </div>
+    </li>
+    <li class="flow-item"><div class="fn">4</div><div class="fb"><div class="ft">キャンセル料判定日時（現在日時）を確認・記録</div></div></li>
+    <li class="flow-item"><div class="fn">5</div><div class="fb"><div class="ft">予約時点のキャンセルポリシー（商品条件スナップショット）を参照</div></div></li>
+    <li class="flow-item">
+      <div class="fn">6</div>
+      <div class="fb">
+        <div class="ft">キャンセル料を確認・入力</div>
+        <div class="branches branches-2">
+          <div class="br br-free"><strong>✅ 無料期限内（減1・3・5・7）</strong>キャンセル料率 0%<br>返金額 = キャンセル対象金額の全額</div>
+          <div class="br br-paid"><strong>⚠️ 有料期限後（減2・4・6・8）</strong>適用キャンセル料率を確認（ポリシー次第で30%・50%・70%・100%など様々）<br>キャンセル料 = キャンセル対象金額 × 料率<br>返金額 = キャンセル対象金額 − キャンセル料<br><span style="font-size:11px;color:#6b7280">※「有料期限後」でも料率が100%でなければ返金は発生する。料率100%の場合のみ返金額=0（返金ステータス「不要」）</span></div>
+        </div>
+      </div>
+    </li>
+    <li class="flow-item"><div class="fn">7</div><div class="fb"><div class="ft">減員を承認・実行</div></div></li>
+  </ul>
+
+  <hr class="divider">
+  <div class="sub-hd">⚙️ システム処理フロー</div>
+  <div class="sys">
+    <div class="sys-title">共通処理</div>
+    <ul>
+      <li>予約の参加人数・販売金額を更新</li>
+      <li>減員人数分のリソースを解放</li>
+      <li>催行回の現在人数を減算（無効化はしない）</li>
+      <li>キャンセル料・返金額・適用ポリシーIDをレコードに記録</li>
+      <li>再手配要否フラグ = ON、変更理由区分 = 「減員」</li>
+      <li>変更履歴を保存（Tiered Price算出根拠・キャンセル対象金額・料率・返金額を含む）</li>
+      <li>処理後自動更新：販売金額減分・チャネル手数料・ゲスト立替経費（減員分減算）を自動再計算</li>
+    </ul>
+  </div>
+
+  <div class="branches branches-2" style="margin-top:8px">
+    <div class="br br-direct"><strong>🔵 直販 × 無料期限内（減1・5）</strong>返金レコード作成（全額）。返金ステータス「未処理」。決済手数料の確認・記録</div>
+    <div class="br br-direct"><strong>🔵 直販 × 有料期限後（減2・6）</strong>返金レコード作成（キャンセル料差引後）。返金ステータス「未処理」</div>
+    <div class="br br-ota"><strong>🟠 OTA × 無料期限内（減3・7）</strong>返金はOTAが処理。返金ステータス「OTA返金済み（Deep対応不要）」として記録</div>
+    <div class="br br-ota"><strong>🟠 OTA × 有料期限後（減4・8）</strong>キャンセル料・返金額をDeep側で記録。OTA側ポリシーと差異があればメモ。返金はOTA処理</div>
+  </div>
+</div>
+
+<!-- ===== 6. 全件キャンセル ===== -->
+<div class="section" id="s-cancel">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#fee2e2">❌</div>
+    <h2>§5 全件キャンセル</h2>
+    <span class="pattern-badge">24パターン</span>
+  </div>
+
+  <!-- 5-1: 確定待ち -->
+  <div class="sub">
+    <div class="sub-hd"><span class="b b-pending">H: 確定待ち</span> §5-1 確定待ちのキャンセル <small style="font-weight:400;color:#94a3b8">— 3パターン</small></div>
+    <div class="note-warn" style="font-size:11.5px">確定待ちはどの発生元・どのチャネル・どのタイミングでもキャンセル料なし・返金不要（販売未確定のため）</div>
+    <table class="matrix" style="margin-top:10px">
+      <thead><tr><th>#</th><th>ツアー種別</th><th>催行回の状況</th><th>差分ポイント</th></tr></thead>
+      <tbody>
+        <tr><td class="pid">キャ確1</td><td><span class="b b-priv">プライベート</span></td><td>催行回が確定紐付け済み</td><td class="diff-cell">催行回を無効化・ガイド手配キャンセル</td></tr>
+        <tr><td class="pid">キャ確2</td><td><span class="b b-grp">グループ</span></td><td>仮紐付けあり</td><td class="diff-cell">仮紐付けを解除 → 残数で催行回無効化 or 存続判定</td></tr>
+        <tr><td class="pid">キャ確3</td><td><span class="b b-grp">グループ</span></td><td>未紐付け</td><td class="diff-cell">催行回操作なし</td></tr>
+      </tbody>
+    </table>
+    <ul class="flow" style="margin-top:12px">
+      <li class="flow-item"><div class="fn">1</div><div class="fb"><div class="ft">発生元区分・キャンセル理由を入力</div></div></li>
+      <li class="flow-item"><div class="fn">2</div><div class="fb"><div class="ft">キャンセル料率 0%・返金不要として記録</div></div></li>
+      <li class="flow-item"><div class="fn">3</div><div class="fb"><div class="ft">キャンセルを確定</div></div></li>
+    </ul>
+    <div class="sys" style="margin-top:10px">
+      <div class="sys-title">システム処理（共通）</div>
+      <ul><li>予約ステータスを「キャンセル済み」に更新</li><li>仮確保リソースを解放</li></ul>
+    </div>
+    <div class="branches branches-3" style="margin-top:6px">
+      <div class="br br-priv"><strong>🟣 プライベート（キャ確1）</strong>催行回を無効化（Cancelled）<br>ガイド手配→「キャンセル」・通知フラグON</div>
+      <div class="br br-grp-stay"><strong>🟢 グループ×仮紐付けあり（キャ確2）</strong>仮紐付けを解除→現在人数更新<br>0件→催行回無効化・ガイドキャンセル<br>1件以上→存続・再手配フラグON</div>
+      <div class="br br-neutral"><strong>グループ×未紐付け（キャ確3）</strong>催行回操作なし<br>ガイド手配が始まっていれば「キャンセル」に更新</div>
+    </div>
+  </div>
+
+  <!-- 5-2: 運営都合 -->
+  <div class="sub" style="margin-top:16px">
+    <div class="sub-hd"><span class="b b-pending">H: 確定予約</span><span class="b b-ops" style="margin-left:4px">F: 運営都合</span> §5-2 <small style="font-weight:400;color:#94a3b8">— 6パターン</small></div>
+    <div class="note-warn" style="font-size:11.5px">キャンセル料なし・全額返金。キャンセル期限に関係なく一律。チャネルは返金処理のみに影響</div>
+    <table class="matrix" style="margin-top:10px">
+      <thead><tr><th>#</th><th>チャネル</th><th>ツアー種別</th><th>旧催行回に別予約</th><th>差分ポイント</th></tr></thead>
+      <tbody>
+        <tr><td class="pid">キャ運1</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td class="diff-cell">催行回無効化・直販全額返金</td></tr>
+        <tr><td class="pid">キャ運2</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td class="diff-cell">催行回無効化・OTA返金記録</td></tr>
+        <tr><td class="pid">キャ運3</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td class="diff-cell">催行回存続・再手配フラグ・直販全額返金</td></tr>
+        <tr><td class="pid">キャ運4</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td class="diff-cell">催行回存続・再手配フラグ・OTA返金記録</td></tr>
+        <tr><td class="pid">キャ運5</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td class="diff-cell">催行回無効化・ガイドキャンセル・直販全額返金</td></tr>
+        <tr><td class="pid">キャ運6</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td class="diff-cell">催行回無効化・ガイドキャンセル・OTA返金記録</td></tr>
+      </tbody>
+    </table>
+    <ul class="flow" style="margin-top:12px">
+      <li class="flow-item"><div class="fn">1</div><div class="fb"><div class="ft">発生元区分「運営都合」を選択</div></div></li>
+      <li class="flow-item"><div class="fn">2</div><div class="fb"><div class="ft">キャンセル理由を入力（悪天候 / 施設都合 / ガイド確保不可 / 安全上の理由）</div></div></li>
+      <li class="flow-item"><div class="fn">3</div><div class="fb"><div class="ft">キャンセル料率 0%・全額返金対象として確認（判定日時に関係なく）</div></div></li>
+      <li class="flow-item"><div class="fn">4</div><div class="fb"><div class="ft">反映先（リソース・催行回・ガイド手配）の自動判定結果を確認</div></div></li>
+      <li class="flow-item"><div class="fn">5</div><div class="fb"><div class="ft">キャンセルを実行</div></div></li>
+      <li class="flow-item"><div class="fn">6</div><div class="fb"><div class="ft">【STEP 5】全財務項目の一括確認・確定</div></div></li>
+    </ul>
+    <div class="sys" style="margin-top:10px">
+      <div class="sys-title">システム処理（共通）</div>
+      <ul><li>予約ステータスを「キャンセル済み」に更新</li><li>リソース消費を全量解放</li></ul>
+    </div>
+    <div class="branches branches-3" style="margin-top:6px">
+      <div class="br br-priv"><strong>🟣 プライベート（キャ運1・2）</strong>催行回を自動無効化（Cancelled）<br>ガイド手配→「キャンセル」・通知フラグON</div>
+      <div class="br br-grp-stay"><strong>🟢 グループ×別予約残る（キャ運3・4）</strong>旧催行回から予約を解除→人数更新（存続）<br>ガイド手配は維持・再手配フラグON</div>
+      <div class="br br-grp-cancel"><strong>🔴 グループ×0件（キャ運5・6）</strong>旧催行回から解除→0件→自動無効化<br>ガイド手配→「キャンセル」・通知フラグON</div>
+    </div>
+    <div class="branches branches-2" style="margin-top:6px">
+      <div class="br br-direct"><strong>🔵 直販（キャ運1・3・5）</strong>返金レコード作成（返金額=全額、キャンセル料=0）。返金ステータス「未処理」</div>
+      <div class="br br-ota"><strong>🟠 OTA（キャ運2・4・6）</strong>ゲストへの返金はOTAが処理。返金ステータス「OTA返金済み（Deep対応不要）」として記録<br>
+        <strong>⚠️ 運営都合キャンセルのため、OTAからペナルティが発生する可能性がある</strong><br>
+        → キャンセル後にOTAへペナルティの有無・金額を確認する<br>
+        → 判明した場合は独立した「OTAペナルティ」項目として記録する（チャネル手数料とは別の追加コスト。原価として管理）<br>
+        → ペナルティの有無・算出基準はOTA・チャネルの契約ごとに異なるため、チャネル設定または契約書で確認する
+      </div>
+    </div>
+    <div class="note-warn" style="margin-top:6px;font-size:11.5px">
+      【全財務項目確認（STEP 5）でのOTA確認タスク】運営都合キャンセルがOTA経由予約の場合、財務確定前にOTAへのペナルティ確認を必ずタスクリストに含める。金額未確定の場合は「要確認」状態で保存し、判明後に更新する
+    </div>
+  </div>
+
+  <!-- 5-3: OTA経由 -->
+  <div class="sub" style="margin-top:16px">
+    <div class="sub-hd"><span class="b b-pending">H: 確定予約</span><span class="b b-ota-src" style="margin-left:4px">F: OTA経由（第三者都合）</span> §5-3 <small style="font-weight:400;color:#94a3b8">— 3パターン</small></div>
+    <div class="note" style="font-size:11.5px">OTA側でキャンセル処理済み。DeepはOTA通知を受けて社内処理のみ。チャネルは必然的にOTA経由</div>
+    <table class="matrix" style="margin-top:10px">
+      <thead><tr><th>#</th><th>ツアー種別</th><th>旧催行回に別予約</th><th>差分ポイント</th></tr></thead>
+      <tbody>
+        <tr><td class="pid">キャOTA1</td><td><span class="b b-priv">プライベート</span></td><td>—（常に0件）</td><td class="diff-cell">催行回無効化・ガイドキャンセル</td></tr>
+        <tr><td class="pid">キャOTA2</td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td class="diff-cell">催行回存続・人数更新</td></tr>
+        <tr><td class="pid">キャOTA3</td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件になる</span></td><td class="diff-cell">催行回無効化・ガイドキャンセル</td></tr>
+      </tbody>
+    </table>
+    <ul class="flow" style="margin-top:12px">
+      <li class="flow-item"><div class="fn">1</div><div class="fb"><div class="ft">OTA管理画面またはメール通知でキャンセルを確認</div></div></li>
+      <li class="flow-item"><div class="fn">2</div><div class="fb"><div class="ft">Deep側で対象予約を特定（外部予約番号・TourOptionコードなどで検索）</div></div></li>
+      <li class="flow-item"><div class="fn">3</div><div class="fb"><div class="ft">発生元区分「第三者都合」を選択</div></div></li>
+      <li class="flow-item"><div class="fn">4</div><div class="fb"><div class="ft">OTA側のキャンセル処理日時・ポリシー適用状況をメモに記録。Deep側ポリシーと差異があればメモ</div></div></li>
+      <li class="flow-item"><div class="fn">5</div><div class="fb"><div class="ft">返金ステータス = 「OTA返金済み（Deep対応不要）」として記録</div></div></li>
+      <li class="flow-item"><div class="fn">6</div><div class="fb"><div class="ft">キャンセルを実行</div></div></li>
+    </ul>
+    <div class="branches branches-3" style="margin-top:10px">
+      <div class="br br-priv"><strong>🟣 プライベート（キャOTA1）</strong>催行回を自動無効化<br>ガイド手配→「キャンセル」・通知フラグON</div>
+      <div class="br br-grp-stay"><strong>🟢 グループ×別予約残る（キャOTA2）</strong>旧催行回から解除→人数更新（催行回存続）<br>ガイド手配は維持・再手配フラグON</div>
+      <div class="br br-grp-cancel"><strong>🔴 グループ×0件（キャOTA3）</strong>旧催行回から解除→0件→自動無効化<br>ガイド手配→「キャンセル」・通知フラグON</div>
+    </div>
+  </div>
+
+  <!-- 5-4: ゲスト都合 -->
+  <div class="sub" style="margin-top:16px">
+    <div class="sub-hd"><span class="b b-pending">H: 確定予約</span><span class="b b-guest" style="margin-left:4px">F: ゲスト都合</span> §5-4 <small style="font-weight:400;color:#94a3b8">— 12パターン（最も条件が多い）</small></div>
+    <table class="matrix" style="margin-top:10px">
+      <thead><tr><th>#</th><th>チャネル</th><th>ツアー種別</th><th>旧催行回</th><th>キャンセル期限</th><th>差分ポイント</th></tr></thead>
+      <tbody>
+        <tr><td class="pid">キャゲ1</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td>—（0件）</td><td><span class="b b-free">無料</span></td><td class="diff-cell">催行回無効化・キャンセル料0%・直販全額返金</td></tr>
+        <tr><td class="pid">キャゲ2</td><td><span class="b b-direct">直販</span></td><td><span class="b b-priv">プライベート</span></td><td>—（0件）</td><td><span class="b b-paid">有料</span></td><td class="diff-cell">催行回無効化・ポリシー適用・直販返金</td></tr>
+        <tr><td class="pid">キャゲ3</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td>—（0件）</td><td><span class="b b-free">無料</span></td><td class="diff-cell">催行回無効化・キャンセル料0%・OTA返金記録</td></tr>
+        <tr><td class="pid">キャゲ4</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-priv">プライベート</span></td><td>—（0件）</td><td><span class="b b-paid">有料</span></td><td class="diff-cell">催行回無効化・ポリシー適用・OTA返金記録</td></tr>
+        <tr><td class="pid">キャゲ5</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-free">無料</span></td><td class="diff-cell">催行回存続・キャンセル料0%・直販全額返金</td></tr>
+        <tr><td class="pid">キャゲ6</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-paid">有料</span></td><td class="diff-cell">催行回存続・ポリシー適用・直販返金</td></tr>
+        <tr><td class="pid">キャゲ7</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-free">無料</span></td><td class="diff-cell">催行回存続・キャンセル料0%・OTA返金記録</td></tr>
+        <tr><td class="pid">キャゲ8</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-grp">残る</span></td><td><span class="b b-paid">有料</span></td><td class="diff-cell">催行回存続・ポリシー適用・OTA返金記録</td></tr>
+        <tr><td class="pid">キャゲ9</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件</span></td><td><span class="b b-free">無料</span></td><td class="diff-cell">催行回無効化・キャンセル料0%・直販全額返金</td></tr>
+        <tr><td class="pid">キャゲ10</td><td><span class="b b-direct">直販</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件</span></td><td><span class="b b-paid">有料</span></td><td class="diff-cell">催行回無効化・ポリシー適用・直販返金</td></tr>
+        <tr><td class="pid">キャゲ11</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件</span></td><td><span class="b b-free">無料</span></td><td class="diff-cell">催行回無効化・キャンセル料0%・OTA返金記録</td></tr>
+        <tr><td class="pid">キャゲ12</td><td><span class="b b-ota">OTA</span></td><td><span class="b b-grp">グループ</span></td><td><span class="b b-paid">0件</span></td><td><span class="b b-paid">有料</span></td><td class="diff-cell">催行回無効化・ポリシー適用・OTA返金記録</td></tr>
+      </tbody>
+    </table>
+
+    <ul class="flow" style="margin-top:12px">
+      <li class="flow-item"><div class="fn">1</div><div class="fb"><div class="ft">発生元区分「ゲスト都合」を選択・キャンセル理由を入力</div></div></li>
+      <li class="flow-item"><div class="fn">2</div><div class="fb"><div class="ft">キャンセル料判定日時（現在日時）を記録</div></div></li>
+      <li class="flow-item"><div class="fn">3</div><div class="fb"><div class="ft">予約時点のキャンセルポリシー（商品条件スナップショット）を参照</div></div></li>
+      <li class="flow-item">
+        <div class="fn">4</div>
+        <div class="fb">
+          <div class="ft">キャンセル料を確認・入力</div>
+          <div class="branches branches-2">
+            <div class="br br-free"><strong>✅ 無料期限内（キャゲ1・3・5・7・9・11）</strong>キャンセル料率 0%<br>全額返金として確認</div>
+            <div class="br br-paid"><strong>⚠️ 有料期限後（キャゲ2・4・6・8・10・12）</strong>現在日時とツアー日の差分から料率を確認<br>キャンセル料 = 販売金額 × 料率<br>返金額 = 販売金額 − キャンセル料<br>※返金不可フラグ付き商品→料率100%・返金額0</div>
+          </div>
+        </div>
+      </li>
+      <li class="flow-item"><div class="fn">5</div><div class="fb"><div class="ft">反映先（リソース・催行回・ガイド手配）の自動判定結果を確認</div></div></li>
+      <li class="flow-item"><div class="fn">6</div><div class="fb"><div class="ft">キャンセルを実行</div></div></li>
+      <li class="flow-item"><div class="fn">7</div><div class="fb"><div class="ft">【STEP 5】全財務項目の一括確認・確定</div></div></li>
+    </ul>
+
+    <div class="sys" style="margin-top:10px">
+      <div class="sys-title">システム処理（共通）</div>
+      <ul><li>予約ステータスを「キャンセル済み」に更新</li><li>リソース消費を全量解放</li></ul>
+    </div>
+    <div class="branches branches-3" style="margin-top:6px">
+      <div class="br br-priv"><strong>🟣 プライベート（キャゲ1〜4）</strong>催行回を自動無効化（Cancelled）<br>ガイド手配→「キャンセル」・通知フラグON</div>
+      <div class="br br-grp-stay"><strong>🟢 グループ×別予約残る（キャゲ5〜8）</strong>旧催行回から解除→人数更新（存続）<br>ガイド手配は維持・再手配フラグON</div>
+      <div class="br br-grp-cancel"><strong>🔴 グループ×0件（キャゲ9〜12）</strong>旧催行回から解除→0件→自動無効化<br>ガイド手配→「キャンセル」・通知フラグON</div>
+    </div>
+    <div class="branches" style="grid-template-columns:1fr 1fr 1fr 1fr;display:grid;gap:6px;margin-top:6px">
+      <div class="br br-direct"><strong>🔵 直販×無料（キャゲ1・5・9）</strong>返金レコード作成（全額）<br>返金ステータス「未処理」</div>
+      <div class="br br-direct"><strong>🔵 直販×有料（キャゲ2・6・10）</strong>返金レコード作成（差引後）<br>返金ステータス「未処理」<br>料率100%→「不要」</div>
+      <div class="br br-ota"><strong>🟠 OTA×無料（キャゲ3・7・11）</strong>返金はOTAが処理<br>「OTA返金済み（Deep対応不要）」として記録</div>
+      <div class="br br-ota"><strong>🟠 OTA×有料（キャゲ4・8・12）</strong>キャンセル料・返金額をDeepで記録<br>OTA側差異メモ。返金はOTA処理</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 7. IMPACT SUMMARY ===== -->
+<div class="section" id="s-impact">
+  <div class="section-hd">
+    <div class="section-icon" style="background:#f1f5f9">📊</div>
+    <h2>§6 差分が出るポイント 早見表</h2>
+  </div>
+  <table class="impact">
+    <thead>
+      <tr>
+        <th style="text-align:left">処理ポイント</th>
+        <th>軸C<br>ツアー種別</th>
+        <th>軸D<br>別予約残るか</th>
+        <th>軸B<br>チャネル</th>
+        <th>軸E<br>商品差額</th>
+        <th>軸F<br>発生元</th>
+        <th>軸G<br>キャンセル期限</th>
+        <th>軸H<br>予約ステータス</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>旧催行回の処理（存続 or 無効化）</td>
+        <td class="yes">◎</td><td class="yes">◎</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+      </tr>
+      <tr>
+        <td>ガイド手配のキャンセル vs 維持</td>
+        <td class="yes">◎</td><td class="yes">◎</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+      </tr>
+      <tr>
+        <td>新催行回の作成方式</td>
+        <td class="yes">◎</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+      </tr>
+      <tr>
+        <td>価格差額対応方針の選択ステップ</td>
+        <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">◎</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+      </tr>
+      <tr>
+        <td>返金処理の主体（Deep vs OTA）</td>
+        <td class="no">—</td><td class="no">—</td><td class="yes">◎</td><td class="no">—</td><td class="yes">△</td><td class="no">—</td><td class="no">—</td>
+      </tr>
+      <tr>
+        <td>キャンセル料の発生有無</td>
+        <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">◎</td><td class="yes">◎</td><td class="yes">◎</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:11px;color:#94a3b8">◎ = 直接影響する条件　△ = 間接的に影響する条件　— = 影響しない</div>
+  <div class="note" style="margin-top:10px"><strong>軸A（処理種別）のみで決まる項目</strong>（上表の条件C〜Hには依存しない）:<br>・<strong>財務確定フロー</strong> … 変更（日時・人数）=処理後に自動更新／キャンセル=処理後に全財務項目の一括確認ステップ<br>・<strong>リソース再確保の要否</strong> … 日時変更のときのみ必要（増減員・キャンセルでは新規のリソース確保は発生しない）</div>
+
+  <hr class="divider">
+  <div style="font-weight:700;font-size:13px;margin-bottom:10px">注意事項</div>
+  <div class="note" style="margin-bottom:6px"><strong>①</strong> プライベートツアーは軸D（別予約残るか）による分岐が存在しない。1催行回=1予約の原則のため常に0件扱い</div>
+  <div class="note" style="margin-bottom:6px"><strong>②</strong> OTA経由（F=第三者都合）のキャンセルは、チャネルも必然的にB=OTA。ただしゲスト都合・運営都合のキャンセルがOTA経由チャネルの予約に発生することはある</div>
+  <div class="note" style="margin-bottom:6px"><strong>③</strong> 日時変更後にキャンセルが発生した場合のキャンセル料期限計算は「変更後のツアー日」を基準にする（変更前のツアー日は使わない）</div>
+  <div class="note" style="margin-bottom:6px"><strong>④</strong> 財務確定フローは処理種別で決まる。変更（日時・人数）=処理後に自動更新。キャンセル=処理後に全財務項目の一括確認ステップあり</div>
+  <div class="note"><strong>⑤</strong> 催行回の0件判定は実行時に行う。他の予約の状況次第で変わるため、システムが有効予約件数を確認して自動判定する</div>
+</div>
+
+</div><!-- /page -->
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    primaryColor: '#dbeafe',
+    primaryTextColor: '#1e3a8a',
+    primaryBorderColor: '#93c5fd',
+    lineColor: '#94a3b8',
+    secondaryColor: '#f1f5f9',
+    tertiaryColor: '#f8fafc',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontSize: '13px'
+  },
+  flowchart: { curve: 'basis', padding: 20 }
+});
+</script>
+</body>
+</html>

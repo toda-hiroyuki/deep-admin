@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>精算確認 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --teal-blue: #1f7a78;
+        --teal-blue-soft: #d3eceb;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --shadow-foot: 0 -4px 18px rgba(45, 30, 12, 0.07);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 42px; height: calc(100vh - 42px); min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1120px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.outline { background: var(--surface); border-color: var(--accent); color: var(--accent-strong); }
+      .btn.outline:hover { background: var(--accent-soft); border-color: var(--accent); }
+      .btn.danger { background: var(--surface); border-color: var(--coral); color: var(--coral); }
+      .btn.danger:hover { background: var(--coral-soft); border-color: var(--coral); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 12.5px; font-weight: 600; padding: 0; height: auto; }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 18px 20px; }
+      .card-body.flush { padding: 0; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+      /* ── ② Case summary strip ── */
+      .case-card { background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: center; }
+      .case-item { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+      .case-item .ci-lab { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-soft); }
+      .case-item .ci-val { font-size: 13.5px; font-weight: 650; color: var(--ink); }
+      .case-item .ci-val.mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      .mono-inline { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; font-weight: 650; color: var(--ink-soft); }
+      .case-div { width: 1px; align-self: stretch; background: var(--line-strong); }
+
+      /* ── Guide tabs (③) ── */
+      .seg { display: inline-flex; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 2px; }
+      .seg button { border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 13px; border-radius: 6px; transition: background 0.1s, color 0.1s; white-space: nowrap; }
+      .seg button:hover { color: var(--ink-soft); }
+      .seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+
+      /* ── Comparison table ── */
+      .cmp-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+      .cmp-table thead th { text-align: right; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 18px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .cmp-table thead th.lab-col { text-align: left; }
+      .cmp-table tbody td { padding: 12px 18px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; text-align: right; }
+      .cmp-table tbody td.lab { text-align: left; font-weight: 650; color: var(--ink); }
+      .cmp-table tbody td.lab .lab-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+      .cmp-table td.plan { color: var(--muted); width: 150px; }
+      .cmp-table td.act { color: var(--ink); width: 190px; font-weight: 600; }
+      .cmp-table td.diff { width: 140px; font-weight: 700; }
+      .cmp-table tr.row-same td { background: var(--bg-sunken); }
+      .cmp-table tr.row-diff td { background: var(--amber-soft); }
+      .cmp-table tr.row-neutral td { background: var(--surface); }
+      .cmp-table tr.total-row td { background: var(--surface-tint); border-top: 2px solid var(--line-strong); border-bottom: 0; }
+      .cmp-table tr.total-row td.lab { font-size: 14px; font-weight: 800; }
+      .cmp-table tr.total-row .act-total { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; color: var(--accent-strong); }
+      .cmp-table tr.total-row .plan-total { font-size: 14px; font-weight: 700; }
+      .cmp-table .diff-plus { color: var(--amber); }
+      .cmp-table .diff-minus { color: var(--green); }
+      .cmp-table .diff-none { color: var(--muted-soft); font-weight: 600; }
+      .cmp-table .same-note { color: var(--muted-soft); font-size: 11.5px; font-weight: 500; margin-left: 4px; }
+      .cmp-table .plan-unit, .cmp-table .act-unit { font-size: 11.5px; color: var(--muted-soft); margin-left: 1px; font-weight: 500; }
+      .cmp-table tr.cancelled-row td.act { color: var(--muted-soft); font-style: italic; font-weight: 500; }
+      .cmp-table .reward-amt { color: var(--accent-strong); }
+
+      /* note disclosure row */
+      .note-toggle { background: none; border: 0; color: var(--accent); font-size: 11.5px; font-weight: 650; padding: 4px 0 0; display: inline-flex; align-items: center; gap: 5px; }
+      .note-toggle:hover { color: var(--accent-strong); }
+      tr.note-row td { background: var(--surface) !important; padding: 0 18px 14px !important; border-bottom: 1px solid var(--line-soft); text-align: left !important; }
+      .note-box { background: var(--bg-sunken); border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: var(--radius); padding: 11px 14px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+      .note-box .nb-head { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+
+      /* actual input (修正入力) */
+      .input-affix { position: relative; display: inline-flex; align-items: center; width: 130px; }
+      .input-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .ctrl { height: 34px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      .input-affix .ctrl { padding-left: 22px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+      .unit-input { position: relative; display: inline-flex; align-items: center; width: 110px; }
+      .unit-input .ctrl { text-align: right; padding-right: 34px; font-variant-numeric: tabular-nums; font-weight: 650; }
+      .unit-input .sfx { position: absolute; right: 11px; color: var(--muted); font-size: 12px; pointer-events: none; }
+      textarea.ctrl { width: 100%; height: auto; min-height: 70px; padding: 9px 11px; resize: vertical; line-height: 1.55; }
+      select.ctrl { height: var(--field-h); appearance: none; min-width: 200px; padding-right: 30px; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; }
+
+      /* banner inside cards */
+      .gs-banner { display: flex; gap: 11px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radius); font-size: 12.5px; line-height: 1.55; margin-bottom: 16px; }
+      .gs-banner .gb-ic { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+      .gs-banner .gb-title { font-weight: 700; }
+      .gs-banner.info { background: var(--surface-tint); border: 1px solid var(--line); color: var(--ink-soft); }
+      .gs-banner.info .gb-ic { background: var(--bg-sunken); color: var(--muted); }
+      .gs-banner.coral { background: var(--coral-soft); border: 1px solid #ecccc3; color: #8f3322; }
+      .gs-banner.coral .gb-ic { background: var(--coral); color: #fff; }
+      .gs-banner.amber { background: var(--amber-bg); border: 1px solid var(--amber-soft); color: var(--amber); }
+      .gs-banner.amber .gb-ic { background: var(--amber); color: #fff; }
+      .section-foot-note { font-size: 12px; color: var(--muted); padding: 12px 20px; border-top: 1px solid var(--line-soft); background: var(--surface-warm); line-height: 1.55; }
+
+      .edit-reason { margin-top: 16px; padding: 14px 16px; background: var(--blue-soft); border: 1px solid #cdddf5; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; }
+      .edit-reason .er-lab { font-size: 12px; font-weight: 700; color: #274b85; }
+
+      /* ── ⑤ Settlement summary ── */
+      .sum-card { padding: 0; }
+      .sum-line { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 11px 20px; border-bottom: 1px solid var(--line-soft); font-size: 14px; }
+      .sum-line.sub { padding: 7px 20px 7px 38px; font-size: 12.5px; color: var(--muted); background: var(--surface-warm); }
+      .sum-line.sub .sl-lab::before { content: "└ "; color: var(--muted-soft); }
+      .sum-line .sl-lab { font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+      .sum-line .sl-val { font-weight: 700; font-variant-numeric: tabular-nums; flex: 0 0 auto; white-space: nowrap; }
+      .sum-line.head .sl-lab { font-weight: 800; color: var(--ink); }
+      .sum-line.head .sl-val { font-size: 16px; font-weight: 800; }
+      .sum-line.diff-line { border-bottom: 0; padding: 15px 20px; }
+      .sum-line.diff-line.has-diff { background: var(--amber-soft); }
+      .sum-line.diff-line.no-diff { background: var(--green-soft); }
+      .sum-line.diff-line .sl-lab { font-weight: 800; }
+      .sum-line.diff-line.has-diff .sl-val { color: var(--amber); font-size: 18px; font-weight: 800; }
+      .sum-line.diff-line.no-diff .sl-val { color: var(--green); font-size: 15px; font-weight: 800; }
+      .sum-group-gap { height: 8px; background: var(--surface-warm); border-bottom: 1px solid var(--line-soft); }
+
+      /* ── ⑦ Sticky footer ── */
+      .settle-footer { position: sticky; bottom: 0; margin: 8px -24px 0; padding: 14px 24px; background: var(--surface); border-top: 1px solid var(--line-strong); box-shadow: var(--shadow-foot); display: flex; align-items: center; gap: 12px; z-index: 40; }
+      .settle-footer .sf-status { display: flex; align-items: center; gap: 9px; margin-right: auto; font-size: 12.5px; color: var(--muted); }
+      .settle-footer .sf-status strong { color: var(--ink-soft); font-weight: 650; }
+
+      /* ── ⑧ history ── */
+      .hist-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .hist-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 16px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .hist-table thead th.right { text-align: right; }
+      .hist-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+      .hist-table tbody td.right { text-align: right; }
+      .hist-table tbody tr:last-child td { border-bottom: 0; }
+      .hist-table tbody tr.current td { background: var(--accent-soft); font-weight: 700; }
+      .hist-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .disclosure { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 650; padding: 0; display: inline-flex; align-items: center; gap: 7px; }
+      .disclosure:hover { color: var(--accent-strong); }
+
+      /* ── Modal ── */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(29, 26, 23, 0.46); display: none; place-items: center; padding: 24px; z-index: 90; }
+      .modal-overlay.show { display: grid; }
+      .modal { width: 100%; max-width: 460px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); display: flex; flex-direction: column; }
+      @media (prefers-reduced-motion: no-preference) { .modal-overlay.show .modal { animation: modalIn 0.16s ease; } }
+      @keyframes modalIn { from { transform: translateY(10px) scale(0.99); } to { transform: none; } }
+      .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); }
+      .modal-head .m-title { font-size: 15px; font-weight: 700; letter-spacing: -0.005em; }
+      .modal-close { width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: var(--muted); font-size: 18px; display: grid; place-items: center; }
+      .modal-close:hover { background: var(--surface-tint); color: var(--ink); }
+      .modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+      .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line-soft); }
+      .form-field { display: flex; flex-direction: column; gap: 6px; }
+      .form-field .f-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      .form-field .f-label .req { color: var(--coral); margin-left: 3px; }
+      .toggle { position: relative; display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+      .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .toggle .track { width: 38px; height: 22px; border-radius: 999px; background: var(--line-strong); transition: background 0.15s; flex-shrink: 0; }
+      .toggle .thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(45,30,12,0.25); transition: transform 0.15s; }
+      .toggle input:checked + .track { background: var(--accent); }
+      .toggle input:checked + .track + .thumb { transform: translateX(16px); }
+      .toggle .t-label { font-size: 12.5px; color: var(--ink-soft); }
+
+      /* ── Scenario bar (dev/QA only) ── */
+      body { padding-top: 42px; }
+      .scenario-bar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+        height: 42px; display: flex; align-items: center; gap: 14px;
+        padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8;
+        font-size: 11.5px; color: #6b6b6b; overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+      }
+      .scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
+      .scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
+      .scenario-bar .sb-cap { color: #8a8a8a; }
+      .sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
+      .sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; }
+      .sb-seg button + button { border-left: 1px solid #e4dfd4; }
+      .sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
+      .sb-seg button.on { background: var(--accent); color: #fff; }
+      .scenario-bar .sb-check { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #6b6b6b; white-space: nowrap; cursor: pointer; }
+      .scenario-bar .sb-check input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; }
+      .scenario-bar .sb-spacer { margin-left: auto; }
+      @media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; min-height: 0; } }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; visibility: hidden; z-index: 100; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; visibility: visible; }
+      @media (prefers-reduced-motion: no-preference) { .toast.show { animation: toastIn 0.2s ease; } }
+      @keyframes toastIn { from { transform: translateX(-50%) translateY(12px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+
+      @media (max-width: 820px) {
+        .case-div { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+const { useState, useRef } = React;
+
+/* ── helpers ── */
+const yen = (n) => "¥" + Math.round(Number(n) || 0).toLocaleString("ja-JP");
+const num = (v) => { const n = Number(String(v).replace(/[^0-9.\-]/g, "")); return isNaN(n) ? 0 : n; };
+const signYen = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
+const signHours = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n) + "時間";
+
+/* ── 統一ナビ（ACTIVE_KEY = sessions）── */
+const NAV = [
+  { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+  { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+  { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+  { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+  { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+  { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+  { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+  { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+  { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+  { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+  { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+  { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+  { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+  { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+  { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+  { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+].map(n => ({ ...n, active: n.key === "sessions" }));
+
+const NAV_GROUPS = [
+  { grp: "ops",    label: "予約オペレーション" },
+  { grp: "guide",  label: "ガイド管理" },
+  { grp: "pay",    label: "精算・経営" },
+  { grp: "master", label: "商品管理" },
+];
+
+/* ── ガイド精算データ（見込み plan + 実績シナリオ actuals）── */
+const GUIDES = [
+  {
+    id: "main", name: "田中 誠", code: "G-008", role: "メインガイド", initials: "田", rate: 3500,
+    plan: { hours: 3, meal: 500, expense: 0, commute: 0, guestAdv: 2000 },
+    actuals: {
+      diff: { hours: 3, meal: 500, expense: 1200, commute: 960, guestAdv: 2000 },
+      all:  { hours: 3, meal: 800, expense: 1500, commute: 1200, guestAdv: 2500 },
+    },
+    notes: {
+      hours: "悪天候（強風）で下山ルートを安全な迂回路に変更し、予定より30分超過しました。",
+      expense: "入場料が値上げされ、見込みより¥1,200増えました。",
+      commute: "公共交通機関の遅延により、振替ルートを利用したため通勤交通費が発生しました。",
+    },
+  },
+  {
+    id: "sub", name: "山田ガイド", role: "サブガイド", initials: "山", rate: 3000,
+    plan: { hours: 3, meal: 500, expense: 0, commute: 0, guestAdv: 0 },
+    actuals: {
+      diff: { hours: 3, meal: 500, expense: 0, commute: 500, guestAdv: 0 },
+      all:  { hours: 3, meal: 700, expense: 800, commute: 600, guestAdv: 0 },
+    },
+    notes: {
+      commute: "サポート要員として現地集合したため、片道分の交通費を申請しています。",
+    },
+  },
+];
+
+const GUIDE_ROWS = [
+  { key: "hours",    label: "催行時間",                sub: "規定時間で固定・ガイドは備考のみ記入可",  type: "time" },
+  { key: "rate",     label: "適用時給",                sub: "基本時給（参照値）",                      type: "rateRef" },
+  { key: "reward",   label: "ガイド時給報酬",          sub: "適用時給 × 催行時間（自動計算）",        type: "reward" },
+  { key: "meal",     label: "飲食費補助",              sub: "ツアー中の飲食補助",                      type: "money" },
+  { key: "expense",  label: "ガイド経費・その他経費",  sub: "ガイド業務に必要な経費（レシート提出不要）", type: "money" },
+  { key: "commute",  label: "通勤交通費",              sub: "集合場所までの往復交通費",                type: "money", noEstimate: true },
+  { key: "guestAdv", label: "ゲスト立替経費（立替の返金）", sub: "立替の返金としてガイドへ支払う",      type: "money", passthrough: true },
+];
+
+const OP_ROWS = [
+  { key: "otaFee",   label: "OTAチャネル手数料",            sub: "OTA経由予約の販売手数料",            plan: 15000 },
+  { key: "penalty",  label: "OTAペナルティ（運営都合違約金）", sub: "運営都合キャンセル等による違約金", plan: null },
+  { key: "facility", label: "施設費",                        sub: "会場・施設の利用料",                  plan: 5000 },
+  { key: "other",    label: "その他運営費",                  sub: "上記以外の運営実費",                  plan: 0 },
+];
+
+const SETTLE_TYPE_LABEL = { first: "初回精算", rechange: "変更による再精算", cancel: "キャンセルによる精算" };
+
+/* ── ガイド精算の計算 ── */
+function guideCalc(g, variant, cancel, edits) {
+  const plan = g.plan;
+  const base = variant === "none" ? plan : g.actuals[variant];
+  const eff = {};
+  ["hours", "meal", "expense", "commute", "guestAdv"].forEach(k => {
+    if (cancel) { eff[k] = 0; return; }
+    const ov = edits[g.id] && edits[g.id][k];
+    eff[k] = (ov !== undefined && ov !== "") ? num(ov) : base[k];
+  });
+  const planReward = g.rate * plan.hours;
+  const actReward = cancel ? 0 : g.rate * eff.hours;
+  const planTotal = planReward + plan.meal + plan.expense + plan.commute + plan.guestAdv;
+  const actTotal = cancel ? 0 : actReward + eff.meal + eff.expense + eff.commute + eff.guestAdv;
+  return { plan, base, eff, planReward, actReward, planTotal, actTotal };
+}
+
+function Card({ no, title, hint, action, foot, flush, children, label }) {
+  return (
+    <section className="card" data-screen-label={label || title}>
+      <div className="card-head">
+        <div className="card-title">
+          {no && <span className="sec-no">{no}</span>}{title}
+          {hint && <span className="sec-hint">{hint}</span>}
+        </div>
+        {action}
+      </div>
+      <div className={`card-body ${flush ? "flush" : ""}`}>{children}</div>
+      {foot}
+    </section>
+  );
+}
+
+function App() {
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+  const showToast = (msg) => {
+    if (typeof setToast !== "function") { console.log(msg); return; }
+    setToast(msg);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2400);
+  };
+
+  /* ── シナリオ（開発・確認用）── */
+  const [settleType, setSettleType] = useState("first");   // first | rechange | cancel
+  const [variant, setVariant] = useState("diff");           // diff | none | all
+  const [otaCheck, setOtaCheck] = useState(false);
+  const [multiGuide, setMultiGuide] = useState(false);
+  const [cancelCheck, setCancelCheck] = useState(false);
+
+  const cancel = settleType === "cancel" || cancelCheck;
+  const effType = cancel ? "cancel" : settleType;
+
+  /* ── 画面状態 ── */
+  const [phase, setPhase] = useState("pending");            // pending | confirmed | returned
+  const [activeGuide, setActiveGuide] = useState("main");
+  const [editMode, setEditMode] = useState(false);
+  const [edits, setEdits] = useState({});                   // {guideId: {key: val}}
+  const [editReason, setEditReason] = useState("");
+  const [opEdits, setOpEdits] = useState({});
+  const [opMemo, setOpMemo] = useState("");
+  const [opComment, setOpComment] = useState("");
+  const [openNotes, setOpenNotes] = useState({});
+  const [histOpen, setHistOpen] = useState(false);
+  const [modal, setModal] = useState(null);                 // null | confirm | return
+  const [returnReason, setReturnReason] = useState("");
+  const [notifyGuide, setNotifyGuide] = useState(true);
+
+  const resetPhase = () => { setPhase("pending"); setEditMode(false); setEdits({}); setEditReason(""); };
+
+  const shownGuides = multiGuide ? GUIDES : [GUIDES[0]];
+  const curGuide = (multiGuide ? GUIDES.find(g => g.id === activeGuide) : GUIDES[0]) || GUIDES[0];
+
+  const setEdit = (gid, key, val) => setEdits(prev => ({ ...prev, [gid]: { ...(prev[gid] || {}), [key]: val } }));
+  const hasGuideEdits = Object.values(edits).some(o => o && Object.values(o).some(v => v !== undefined && v !== ""));
+
+  /* ── 運営費 ── */
+  const opVal = (key, plan) => {
+    const v = opEdits[key];
+    return (v !== undefined && v !== "") ? num(v) : (plan == null ? 0 : plan);
+  };
+  const opActTotal = (cancel || !otaCheck) ? 0 : OP_ROWS.reduce((s, r) => s + opVal(r.key, r.plan), 0);
+  const opPlanTotal = OP_ROWS.reduce((s, r) => s + (r.plan == null ? 0 : r.plan), 0);
+  const hasOpDiff = !cancel && OP_ROWS.some(r => {
+    const v = opEdits[r.key];
+    return v !== undefined && v !== "" && num(v) !== (r.plan == null ? 0 : r.plan);
+  });
+
+  /* ── 集計 ── */
+  const calcs = shownGuides.map(g => ({ g, c: guideCalc(g, variant, cancel, edits) }));
+  const sum = (fn) => calcs.reduce((s, x) => s + fn(x.c, x.g), 0);
+  const guideActTotal = sum(c => c.actTotal);
+  const guidePlanTotal = sum(c => c.planTotal);
+  const rewardSum = sum(c => c.actReward);
+  const mealSum = sum(c => c.eff.meal);
+  const expenseSum = sum(c => c.eff.expense);
+  const commuteSum = sum(c => c.eff.commute);
+  const guestAdvSum = sum(c => c.eff.guestAdv);
+  const grandDiff = (guideActTotal + opActTotal) - (guidePlanTotal + (otaCheck ? opPlanTotal : 0));
+
+  /* ── 精算ステータスバッジ ── */
+  const phasePill = phase === "confirmed"
+    ? <span className="status-pill green"><span className="dot"></span>確定</span>
+    : phase === "returned"
+    ? <span className="status-pill blue"><span className="dot"></span>実績入力待ち</span>
+    : <span className="status-pill amber"><span className="dot"></span>確認待ち</span>;
+
+  const doConfirm = () => { setPhase("confirmed"); setModal(null); setEditMode(false); showToast("精算を確定しました"); };
+  const doReturn = () => {
+    if (!returnReason.trim()) return;
+    setPhase("returned"); setModal(null);
+    showToast(notifyGuide ? "ガイドに再入力を依頼しました" : "精算を差戻しました（通知なし）");
+  };
+
+  /* ── ② 案件サマリー項目 ── */
+  const guideSummary = multiGuide
+    ? <span>{GUIDES[0].name}<span style={{ color: "var(--muted)", fontWeight: 500 }}> 他1名</span></span>
+    : `${GUIDES[0].name}（G-008・メインガイド）`;
+  const caseItems = [
+    { lab: "ツアー日時", val: "2026/06/15（月）09:00〜12:00（3時間）" },
+    { lab: "TourOption", val: <span><span className="mono-inline">G-WAK-001-2-GR</span> 里山ハイキング</span> },
+    { lab: "担当ガイド", val: guideSummary },
+    { lab: "催行回ID", val: "TI-20260615-0900-G-WAK-001-2-GR-01", mono: true },
+    { lab: "予約ID", val: "BK-260601-00002", mono: true },
+    { lab: "精算種別", val: <span className={`badge ${cancel ? "coral" : "muted"}`}>{SETTLE_TYPE_LABEL[effType]}</span> },
+    { lab: "精算ステータス", val: phasePill },
+  ];
+
+  return (
+    <React.Fragment>
+      {/* ── シナリオ選択バー（開発・確認用）── */}
+      <div className="scenario-bar">
+        <span className="sb-label">🎛 シナリオ選択</span>
+        <div className="sb-group">
+          <span className="sb-cap">精算種別</span>
+          <span className="sb-seg">
+            {[["first", "初回精算"], ["rechange", "変更による再精算"], ["cancel", "キャンセルによる精算"]].map(([k, l]) => (
+              <button key={k} className={settleType === k ? "on" : ""} onClick={() => { setSettleType(k); resetPhase(); }}>{l}</button>
+            ))}
+          </span>
+        </div>
+        <div className="sb-group">
+          <span className="sb-cap">差異の有無</span>
+          <span className="sb-seg">
+            {[["diff", "差異あり"], ["none", "差異なし"], ["all", "全項目差異あり"]].map(([k, l]) => (
+              <button key={k} className={variant === k ? "on" : ""} onClick={() => { setVariant(k); resetPhase(); }}>{l}</button>
+            ))}
+          </span>
+        </div>
+        <label className="sb-check"><input type="checkbox" checked={otaCheck} onChange={e => { setOtaCheck(e.target.checked); resetPhase(); }} />OTA経由予約</label>
+        <label className="sb-check"><input type="checkbox" checked={multiGuide} onChange={e => { setMultiGuide(e.target.checked); setActiveGuide("main"); resetPhase(); }} />複数ガイド</label>
+        <label className="sb-check"><input type="checkbox" checked={cancelCheck} onChange={e => { setCancelCheck(e.target.checked); resetPhase(); }} />キャンセル精算</label>
+      </div>
+
+      <div className="app-shell">
+        <nav className="side-nav">
+          <div className="brand-block">
+            <div className="brand-mark">DE</div>
+            <div>
+              <div className="brand-name">DeepExperience</div>
+              <div className="brand-caption">運営管理</div>
+            </div>
+          </div>
+          {NAV_GROUPS.map(({ grp, label }) => (
+            <div className="nav-group" key={grp}>
+              <div className="nav-section-label">{label}</div>
+              {NAV.filter(n => n.group === grp).map(n => (
+                <button key={n.key} className={`nav-item${n.active ? " active" : ""}`}
+                  onClick={() => n.href && !n.active ? (window.location.href = n.href) : showToast(`「${n.label}」へ移動します`)}>
+                  <span className="nav-icon">{n.icon}</span>
+                  <span>{n.label}</span>
+                  {n.count != null && <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div className="side-note">
+            <strong>運用メモ</strong>
+            ガイドが入力した実績と見込みを比較し、精算を確定します。差異のある項目を確認のうえ、確定または差戻しを行ってください。
+          </div>
+        </nav>
+
+        <main className="workspace">
+          <div className="crumbs">
+            <a href="#" onClick={e => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
+            <span className="sep">›</span>
+            <a href="催行回詳細.html">催行回詳細</a>
+            <span className="sep">›</span>
+            <span className="current">精算確認</span>
+          </div>
+          <div className="page-title">
+            <h1>精算確認</h1>
+            <span className="sub">ガイド実績と見込みを比較し、精算を確定します</span>
+          </div>
+
+          {/* ── ② 案件サマリー ── */}
+          <div className="case-card" data-screen-label="② 案件サマリー">
+            {caseItems.map((it, i) => (
+              <div className="case-item" key={i}>
+                <span className="ci-lab">{it.lab}</span>
+                <span className={`ci-val${it.mono ? " mono" : ""}`}>{it.val}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* ── ③ ガイド精算 ── */}
+          <Card no="3" title="ガイド精算" hint="業務委託報酬" label="③ ガイド精算"
+            action={
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {multiGuide && (
+                  <div className="seg" role="tablist" aria-label="ガイド選択">
+                    {GUIDES.map(g => (
+                      <button key={g.id} className={activeGuide === g.id ? "on" : ""} onClick={() => setActiveGuide(g.id)}>
+                        {g.name}（{g.id === "main" ? "メイン" : "サブ"}）
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {!cancel && phase !== "confirmed" && (
+                  <button className={`btn sm ${editMode ? "outline" : ""}`} onClick={() => setEditMode(m => !m)}>
+                    {editMode ? "修正入力を終了" : "修正入力"}
+                  </button>
+                )}
+              </div>
+            }
+            flush
+            foot={
+              <div className="card-foot">
+                {cancel
+                  ? <React.Fragment>
+                      <span style={{ marginRight: "auto", display: "inline-flex", alignItems: "center", gap: 9, color: "var(--muted)", fontSize: 12.5 }}>ガイドへの支払合計<span className="badge muted">{yen(0)}</span></span>
+                    </React.Fragment>
+                  : <React.Fragment>
+                      <span style={{ marginRight: "auto", display: "inline-flex", alignItems: "center", gap: 9, color: "var(--muted)", fontSize: 12.5 }}>
+                        ガイドへの支払合計（ゲスト立替の返金を含む）
+                        <span className="badge muted">見込み {yen(guideCalc(curGuide, variant, cancel, edits).planTotal)}</span>
+                        <span className="badge amber">実績 {yen(guideCalc(curGuide, variant, cancel, edits).actTotal)}</span>
+                      </span>
+                    </React.Fragment>}
+              </div>
+            }>
+            <div style={{ padding: "18px 20px 0" }}>
+              {cancel
+                ? <div className="gs-banner coral"><span className="gb-ic">!</span><div><span className="gb-title">催行回中止 — 精算額ゼロ</span><br />この催行回はキャンセルとなったため、ガイド精算額はゼロです。発生済み経費を精算する場合はキャンセル処理（精算確定）から登録します。</div></div>
+                : <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">{GUIDE_ROWS.length}項目の見込みとガイド入力（実績）を比較します</span><br />差異のある項目は<span style={{ background: "var(--amber-soft)", padding: "0 4px", borderRadius: 3, color: "var(--amber)", fontWeight: 700 }}>ハイライト</span>表示されます。催行時間はガイド入力不可（備考のみ）のため、延長を認める場合は「修正入力」から運営が変更します。</div></div>}
+            </div>
+
+            <table className="cmp-table">
+              <thead>
+                <tr>
+                  <th className="lab-col">項目</th>
+                  <th>見込み</th>
+                  <th>ガイド入力（実績）</th>
+                  <th>差異</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const c = guideCalc(curGuide, variant, cancel, edits);
+                  const out = [];
+                  GUIDE_ROWS.forEach(row => {
+                    let planNode, actNode, diffNode, rowCls;
+                    const noteKey = curGuide.id + row.key;
+                    const hasNote = !!curGuide.notes[row.key];
+
+                    if (row.type === "rateRef") {
+                      planNode = <span>{yen(curGuide.rate)}<span className="plan-unit">/時</span></span>;
+                      actNode = <span className="muted-dash">—</span>;
+                      diffNode = <span className="diff-none">—</span>;
+                      rowCls = "row-neutral";
+                    } else if (row.type === "time") {
+                      const d = c.eff.hours - c.plan.hours;
+                      planNode = <span>{c.plan.hours}<span className="plan-unit">時間</span><span className="same-note">（規定時間）</span></span>;
+                      if (cancel) { actNode = <span>0時間（催行回中止）</span>; }
+                      else if (editMode) {
+                        actNode = <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><span className="unit-input"><input className="ctrl" inputMode="decimal" placeholder={String(c.plan.hours)}
+                          value={edits[curGuide.id] && edits[curGuide.id].hours !== undefined ? edits[curGuide.id].hours : ""}
+                          onChange={e => setEdit(curGuide.id, "hours", e.target.value)} /><span className="sfx">時間</span></span><span className="same-note" style={{ margin: 0 }}>運営のみ修正可</span></span>;
+                      } else if (d !== 0) {
+                        actNode = <span>{c.eff.hours}<span className="act-unit">時間</span><span className="same-note">（運営修正）</span></span>;
+                      } else { actNode = <span>{c.eff.hours}<span className="act-unit">時間</span><span className="same-note">（ガイド入力不可・備考のみ）</span></span>; }
+                      diffNode = cancel ? <span className="diff-none">—</span> : (d === 0 ? <span className="diff-none">—</span> : <span className={d > 0 ? "diff-plus" : "diff-minus"}>{signHours(d)}</span>);
+                      rowCls = cancel ? "cancelled-row row-neutral" : (d !== 0 ? "row-diff" : "row-same");
+                    } else if (row.type === "reward") {
+                      const d = c.actReward - c.planReward;
+                      planNode = <span>{yen(c.planReward)}</span>;
+                      actNode = cancel ? <span>{yen(0)}</span> : <span className="reward-amt" style={{ fontWeight: 700 }}>{yen(c.actReward)}</span>;
+                      diffNode = cancel ? <span className="diff-none">—</span> : (d === 0 ? <span className="diff-none">—</span> : <span className={d > 0 ? "diff-plus" : "diff-minus"}>{signYen(d)}</span>);
+                      rowCls = cancel ? "cancelled-row row-neutral" : (d !== 0 ? "row-diff" : "row-same");
+                    } else { // money
+                      const pv = c.plan[row.key];
+                      const av = c.eff[row.key];
+                      const d = av - pv;
+                      if (row.noEstimate) {
+                        planNode = <span>{yen(pv)}<span className="same-note">（見込みなし）</span></span>;
+                        diffNode = <span className="diff-none">—</span>;
+                        rowCls = cancel ? "cancelled-row row-neutral" : "row-neutral";
+                      } else {
+                        planNode = <span>{yen(pv)}</span>;
+                        diffNode = cancel ? <span className="diff-none">—</span> : (d === 0 ? <span className="diff-none">—</span> : <span className={d > 0 ? "diff-plus" : "diff-minus"}>{signYen(d)}</span>);
+                        rowCls = cancel ? "cancelled-row row-neutral" : (d !== 0 ? "row-diff" : "row-same");
+                      }
+                      if (cancel) { actNode = <span>0円（催行回中止）</span>; }
+                      else if (editMode) {
+                        actNode = <span className="input-affix"><span className="pfx">¥</span><input className="ctrl" inputMode="numeric" placeholder={String(c.base[row.key])}
+                          value={edits[curGuide.id] && edits[curGuide.id][row.key] !== undefined ? edits[curGuide.id][row.key] : ""}
+                          onChange={e => setEdit(curGuide.id, row.key, e.target.value)} /></span>;
+                      } else {
+                        actNode = <span>{yen(av)}{!row.noEstimate && d === 0 ? <span className="same-note">（差異なし）</span> : null}</span>;
+                      }
+                    }
+
+                    const changed = row.type === "money" ? (c.eff[row.key] - c.plan[row.key]) !== 0
+                      : row.type === "time" ? (c.eff.hours - c.plan.hours) !== 0
+                      : row.type === "reward" ? (c.actReward - c.planReward) !== 0 : false;
+                    const showNoteToggle = hasNote && !cancel && (row.key === "hours" || changed);
+                    out.push(
+                      <tr key={row.key} className={rowCls}>
+                        <td className="lab">
+                          {row.label}
+                          <span className="lab-sub">{row.sub}</span>
+                          {showNoteToggle && (
+                            <button className="note-toggle" onClick={() => setOpenNotes(p => ({ ...p, [noteKey]: !p[noteKey] }))}>
+                              {openNotes[noteKey] ? "▲ ガイドの備考を閉じる" : "▼ ガイドの備考を見る"}
+                            </button>
+                          )}
+                        </td>
+                        <td className="plan">{planNode}</td>
+                        <td className="act">{actNode}</td>
+                        <td className="diff">{diffNode}</td>
+                      </tr>
+                    );
+                    if (showNoteToggle && openNotes[noteKey]) {
+                      out.push(
+                        <tr key={row.key + "-note"} className="note-row">
+                          <td colSpan="4">
+                            <div className="note-box">
+                              <div className="nb-head">{row.label}のガイド備考（読み取り専用）</div>
+                              {curGuide.notes[row.key]}
+                              {row.key === "hours" && <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--muted)" }}>※ 催行時間の延長は悪天候などの不可抗力に限り運営が判断します。認める場合は「修正入力」で催行時間を変更してください（ガイド時給報酬が自動再計算されます）。</div>}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  });
+                  // total row
+                  out.push(
+                    <tr key="total" className="total-row">
+                      <td className="lab">ガイドへの支払合計<span className="lab-sub" style={{ fontWeight: 500 }}>ゲスト立替の返金を含む（自動計算）</span></td>
+                      <td className="plan"><span className="plan-total">{yen(c.planTotal)}</span></td>
+                      <td className="act"><span className="act-total">{yen(c.actTotal)}</span></td>
+                      <td className="diff">{cancel ? <span className="diff-none">—</span> : (c.actTotal - c.planTotal === 0 ? <span className="diff-none">—</span> : <span className={c.actTotal - c.planTotal > 0 ? "diff-plus" : "diff-minus"} style={{ fontSize: 14 }}>{signYen(c.actTotal - c.planTotal)}</span>)}</td>
+                    </tr>
+                  );
+                  return out;
+                })()}
+              </tbody>
+            </table>
+
+            {editMode && !cancel && hasGuideEdits && (
+              <div style={{ padding: "0 20px 18px" }}>
+                <div className="edit-reason">
+                  <span className="er-lab">⚑ 運営による修正理由（修正フラグON）</span>
+                  <textarea className="ctrl" placeholder="ガイド入力値を運営が修正した理由を記録してください（監査用）"
+                    value={editReason} onChange={e => setEditReason(e.target.value)} />
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* ── ④ 運営費精算 ── */}
+          {otaCheck && (
+            <Card no="4" title="運営費精算" hint="OTA手数料・施設費等" label="④ 運営費精算"
+              flush
+              foot={<div className="section-foot-note">見込みと一致する項目は入力不要です。実績が確定した項目のみ入力してください。空欄の項目は見込み額を使用します。</div>}>
+              {cancel
+                ? <div style={{ padding: "18px 20px" }}><div className="gs-banner coral"><span className="gb-ic">!</span><div><span className="gb-title">催行回中止 — 運営費精算なし</span><br />この催行回はキャンセルとなったため、運営費精算額はゼロです。</div></div></div>
+                : <React.Fragment>
+                    <table className="cmp-table">
+                      <thead>
+                        <tr><th className="lab-col">項目</th><th>見込み</th><th>実績（運営入力）</th><th>差異</th></tr>
+                      </thead>
+                      <tbody>
+                        {OP_ROWS.map(r => {
+                          const v = opEdits[r.key];
+                          const filled = v !== undefined && v !== "";
+                          const planV = r.plan == null ? null : r.plan;
+                          const eff = opVal(r.key, r.plan);
+                          const d = filled ? eff - (planV == null ? 0 : planV) : 0;
+                          const isDiff = filled && d !== 0;
+                          return (
+                            <tr key={r.key} className={isDiff ? "row-diff" : "row-neutral"}>
+                              <td className="lab">{r.label}<span className="lab-sub">{r.sub}</span></td>
+                              <td className="plan">{planV == null ? <span className="muted-dash">—</span> : yen(planV)}</td>
+                              <td className="act">
+                                <span className="input-affix"><span className="pfx">¥</span>
+                                  <input className="ctrl" inputMode="numeric" placeholder={planV == null ? "0" : String(planV)}
+                                    value={v !== undefined ? v : ""} onChange={e => setOpEdits(p => ({ ...p, [r.key]: e.target.value }))} />
+                                </span>
+                              </td>
+                              <td className="diff">{!filled || d === 0 ? <span className="diff-none">—</span> : <span className={d > 0 ? "diff-plus" : "diff-minus"}>{signYen(d)}</span>}</td>
+                            </tr>
+                          );
+                        })}
+                        <tr className="total-row">
+                          <td className="lab">運営費合計<span className="lab-sub" style={{ fontWeight: 500 }}>実績ベースの合計（自動計算）</span></td>
+                          <td className="plan"><span className="plan-total">{yen(opPlanTotal)}</span></td>
+                          <td className="act"><span className="act-total">{yen(opActTotal)}</span></td>
+                          <td className="diff">{opActTotal - opPlanTotal === 0 ? <span className="diff-none">—</span> : <span className={opActTotal - opPlanTotal > 0 ? "diff-plus" : "diff-minus"} style={{ fontSize: 14 }}>{signYen(opActTotal - opPlanTotal)}</span>}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    {hasOpDiff && (
+                      <div style={{ padding: "0 20px 18px" }}>
+                        <div className="edit-reason" style={{ background: "var(--surface-tint)", borderColor: "var(--line)" }}>
+                          <span className="er-lab" style={{ color: "var(--ink-soft)" }}>見込みと異なる金額の備考</span>
+                          <textarea className="ctrl" placeholder="見込みと差異が生じた理由を記録してください（任意）" value={opMemo} onChange={e => setOpMemo(e.target.value)} />
+                        </div>
+                      </div>
+                    )}
+                  </React.Fragment>}
+            </Card>
+          )}
+
+          {/* ── ⑤ 精算サマリー ── */}
+          <Card no="5" title="精算サマリー" label="⑤ 精算サマリー" flush>
+            {cancel
+              ? <div style={{ padding: "18px 20px" }}>
+                  <div className="gs-banner coral" style={{ marginBottom: 0 }}><span className="gb-ic">!</span><div><span className="gb-title">この催行回はキャンセルとなったため、精算額はゼロです。</span><br />ガイドへの支払・運営費ともに ¥0 で確定します。</div></div>
+                </div>
+              : <div className="sum-card">
+                  <div className="sum-line head"><span className="sl-lab">ガイドへの支払合計</span><span className="sl-val">{yen(guideActTotal)}</span></div>
+                  <div className="sum-line sub"><span className="sl-lab">ガイド時給報酬</span><span className="sl-val">{yen(rewardSum)}</span></div>
+                  <div className="sum-line sub"><span className="sl-lab">飲食費補助</span><span className="sl-val">{yen(mealSum)}</span></div>
+                  <div className="sum-line sub"><span className="sl-lab">ガイド経費・その他経費</span><span className="sl-val">{yen(expenseSum)}</span></div>
+                  <div className="sum-line sub"><span className="sl-lab">通勤交通費</span><span className="sl-val">{yen(commuteSum)}</span></div>
+                  <div className="sum-line sub"><span className="sl-lab">ゲスト立替経費（立替の返金）</span><span className="sl-val">{yen(guestAdvSum)}</span></div>
+                  <div style={{ padding: "10px 20px", borderBottom: "1px solid var(--line-soft)", background: "var(--surface-warm)", fontSize: 11.5, lineHeight: 1.6, color: "var(--muted)" }}>※ ゲスト立替はガイドへ実際に支払う（立替の返金）ため支払合計に含みます。利益計算上は元本が売上と相殺されます（立替分に課金されるチャネル手数料のみ実コストとして残ります）。</div>
+                  {otaCheck && <div className="sum-group-gap"></div>}
+                  {otaCheck && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）OTAチャネル手数料</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("otaFee", 15000))}</span></div>}
+                  {otaCheck && opVal("penalty", null) > 0 && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）OTAペナルティ</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("penalty", null))}</span></div>}
+                  {otaCheck && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）施設費</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("facility", 5000))}</span></div>}
+                  {otaCheck && opVal("other", 0) > 0 && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）その他運営費</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("other", 0))}</span></div>}
+                  {otaCheck && <div style={{ padding: "8px 20px", borderBottom: "1px solid var(--line-soft)", background: "var(--surface-warm)", fontSize: 11.5, color: "var(--muted)" }}>OTAチャネル手数料・施設費は運営費（§④）であり、ガイドへの支払合計とは別枠の参考表示です。</div>}
+                  <div className={`sum-line diff-line ${grandDiff === 0 ? "no-diff" : "has-diff"}`}>
+                    <span className="sl-lab">見込み合計との差異</span>
+                    <span className="sl-val">{grandDiff === 0 ? "見込み通り" : signYen(grandDiff)}</span>
+                  </div>
+                </div>}
+          </Card>
+
+          {/* ── ⑥ 運営コメント ── */}
+          <Card no="6" title="運営コメント" label="⑥ 運営コメント">
+            <div className="form-field">
+              <label className="f-label">運営コメント（ガイドへのメモ・差戻し理由）</label>
+              <textarea className="ctrl" placeholder="確定時または差戻し時のメモを記録します（任意）" value={opComment} onChange={e => setOpComment(e.target.value)} />
+            </div>
+          </Card>
+
+          {/* ── ⑧ 精算履歴 ── */}
+          <Card no="7" title="精算履歴" hint="この手配に紐付く精算レコード" label="⑦ 精算履歴"
+            action={<button className="disclosure" onClick={() => setHistOpen(o => !o)}>{histOpen ? "▲ 折りたたむ" : "▼ 履歴を表示"}</button>}
+            flush={histOpen}>
+            {histOpen
+              ? <table className="hist-table">
+                  <thead>
+                    <tr><th>精算ID</th><th>精算種別</th><th>精算ステータス</th><th className="right">ガイドへの支払合計</th><th>作成日時</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr className="current">
+                      <td><span className="code-mono">ST-001</span></td>
+                      <td>{SETTLE_TYPE_LABEL[effType]}</td>
+                      <td>{phase === "confirmed" ? "確定（現在）" : phase === "returned" ? "実績入力待ち（現在）" : "確認待ち（現在）"}</td>
+                      <td className="right">{yen(cancel ? 0 : guideActTotal)}</td>
+                      <td>2026/06/15 12:00</td>
+                    </tr>
+                    <tr>
+                      <td><span className="code-mono">ST-000</span></td>
+                      <td><span className="muted-dash">—</span></td>
+                      <td>見込み設定済み</td>
+                      <td className="right">{yen(guidePlanTotal)}<span style={{ color: "var(--muted)", fontSize: 11.5 }}>（見込み）</span></td>
+                      <td>2026/06/01 09:00</td>
+                    </tr>
+                  </tbody>
+                </table>
+              : <div style={{ color: "var(--muted)", fontSize: 12.5 }}>この手配に紐付く全精算レコードを時系列で表示します。</div>}
+          </Card>
+
+          {/* ── ⑦ アクションフッター（スティッキー）── */}
+          <div className="settle-footer">
+            <div className="sf-status">
+              精算ステータス {phasePill}
+              {phase === "confirmed" && <span style={{ color: "var(--green)", fontWeight: 650 }}>✓ 確定済み</span>}
+              {phase === "returned" && <span style={{ color: "var(--blue)", fontWeight: 650 }}>↩ ガイドへ差戻し済み</span>}
+            </div>
+            <button className="btn danger" disabled={phase === "confirmed"} onClick={() => { setReturnReason(""); setNotifyGuide(true); setModal("return"); }}>差戻し（ガイドに再入力を依頼）</button>
+            <button className="btn primary" disabled={phase === "confirmed"} onClick={() => setModal("confirm")}>
+              {cancel ? "精算を確定する（¥0）" : "精算を確定する"} →
+            </button>
+          </div>
+        </main>
+      </div>
+
+      {/* ── 確定モーダル ── */}
+      <div className={`modal-overlay ${modal === "confirm" ? "show" : ""}`} onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
+        <div className="modal">
+          <div className="modal-head"><span className="m-title">精算を確定する</span><button className="modal-close" onClick={() => setModal(null)}>×</button></div>
+          <div className="modal-body">
+            <p style={{ margin: 0 }}>精算を確定します。確定後は運営が修正した場合を除き変更できません。よろしいですか？</p>
+            <div style={{ display: "flex", gap: 12, padding: "10px 12px", background: "var(--surface-tint)", borderRadius: "var(--radius)", fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700 }}>ガイドへの支払合計</div><div style={{ fontSize: 17, fontWeight: 800 }}>{yen(cancel ? 0 : guideActTotal)}</div></div>
+              <div style={{ flex: 1 }}><div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700 }}>見込みとの差異</div><div style={{ fontSize: 17, fontWeight: 800, color: grandDiff === 0 || cancel ? "var(--green)" : "var(--amber)" }}>{cancel ? "—" : (grandDiff === 0 ? "見込み通り" : signYen(grandDiff))}</div></div>
+            </div>
+          </div>
+          <div className="modal-foot">
+            <button className="btn" onClick={() => setModal(null)}>キャンセル</button>
+            <button className="btn primary" onClick={doConfirm}>確定する</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 差戻しモーダル ── */}
+      <div className={`modal-overlay ${modal === "return" ? "show" : ""}`} onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
+        <div className="modal">
+          <div className="modal-head"><span className="m-title">ガイドに再入力を依頼（差戻し）</span><button className="modal-close" onClick={() => setModal(null)}>×</button></div>
+          <div className="modal-body">
+            <p style={{ margin: 0 }}>精算ステータスを「実績入力待ち」に戻し、ガイドに実績の再入力を依頼します。</p>
+            <div className="form-field">
+              <label className="f-label">差戻し理由<span className="req">＊</span></label>
+              <textarea className="ctrl" placeholder="どの項目をどう修正してほしいかを具体的に記載してください" value={returnReason} onChange={e => setReturnReason(e.target.value)} />
+            </div>
+            <label className="toggle">
+              <input type="checkbox" checked={notifyGuide} onChange={e => setNotifyGuide(e.target.checked)} />
+              <span className="track"></span><span className="thumb"></span>
+              <span className="t-label">ガイドに通知する</span>
+            </label>
+          </div>
+          <div className="modal-foot">
+            <button className="btn" onClick={() => setModal(null)}>キャンセル</button>
+            <button className="btn danger" disabled={!returnReason.trim()} onClick={doReturn}>差戻す</button>
+          </div>
+        </div>
+      </div>
+
+      <div className={`toast ${toast ? "show" : ""}`}><span className="t-dot"></span>{toast}</div>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

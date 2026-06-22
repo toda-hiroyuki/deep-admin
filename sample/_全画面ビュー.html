@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>deep_Admin — 全画面ビュー（遷移確認用）</title>
+<style>
+  :root {
+    --bg: #fbf7f0; --side-bg: #0f2e2b; --side-ink: #f3ebdb; --side-ink-soft: #aac3bf;
+    --side-line: rgba(255,255,255,0.12); --accent: #0a5e5a; --accent-soft: #d6ebe8;
+    --ink: #1d1a17; --muted: #756d63; --line: #e8e0d3; --amber: #8e5b00; --amber-soft: #f4e3bd;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: "Inter", -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+    background: var(--bg); color: var(--ink); font-size: 13.5px;
+    display: grid; grid-template-columns: 252px minmax(0,1fr); grid-template-rows: 100vh;
+  }
+
+  /* ── 左: 画面リスト ── */
+  .panel {
+    background: var(--side-bg); color: var(--side-ink); display: flex; flex-direction: column;
+    border-right: 1px solid var(--side-line); min-height: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 14px 14px 12px; border-bottom: 1px solid var(--side-line); flex-shrink: 0; }
+  .brand-mark { width: 30px; height: 30px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 12px; border-radius: 8px; }
+  .brand-name { font-size: 13px; font-weight: 700; }
+  .brand-cap { font-size: 10.5px; color: var(--side-ink-soft); margin-top: 1px; }
+  .search { padding: 10px 12px; flex-shrink: 0; }
+  .search input {
+    width: 100%; height: 30px; border-radius: 6px; border: 1px solid var(--side-line);
+    background: rgba(255,255,255,0.07); color: var(--side-ink); padding: 0 10px; font-size: 12px;
+  }
+  .search input::placeholder { color: var(--side-ink-soft); }
+  .search input:focus { outline: none; border-color: var(--accent); }
+  .list { overflow-y: auto; padding: 4px 8px 20px; flex: 1; min-height: 0; }
+  .grp { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 12px 8px 5px; }
+  .item {
+    display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    border: 0; background: transparent; color: var(--side-ink); cursor: pointer;
+    padding: 6px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.3;
+  }
+  .item:hover { background: rgba(255,255,255,0.07); }
+  .item.active { background: rgba(255,255,255,0.13); font-weight: 700; }
+  .item .ico {
+    width: 20px; height: 20px; flex-shrink: 0; display: grid; place-items: center;
+    background: rgba(255,255,255,0.09); color: var(--side-ink-soft); border-radius: 5px;
+    font-size: 9px; font-weight: 700;
+  }
+  .item.active .ico { background: var(--accent); color: #fff; }
+  .item .sub { margin-left: auto; font-size: 9.5px; color: var(--side-ink-soft); }
+  .hidden { display: none !important; }
+
+  /* ── 右: ツールバー + iframe ── */
+  .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .toolbar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    background: #fff; border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .tb-btn {
+    height: 30px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 12.5px; color: var(--ink); white-space: nowrap;
+  }
+  .tb-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tb-now { font-size: 12.5px; color: var(--muted); margin-left: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tb-now b { color: var(--ink); }
+  .tb-note {
+    margin-left: auto; font-size: 11px; color: var(--amber); background: var(--amber-soft);
+    border-radius: 5px; padding: 3px 8px; white-space: nowrap;
+  }
+  iframe { border: 0; width: 100%; flex: 1; min-height: 0; background: #fff; }
+</style>
+</head>
+<body>
+  <aside class="panel">
+    <div class="brand">
+      <div class="brand-mark">d.</div>
+      <div>
+        <div class="brand-name">全画面ビュー</div>
+        <div class="brand-cap">deep_Admin 遷移確認用シェル</div>
+      </div>
+    </div>
+    <div class="search"><input id="filter" type="text" placeholder="画面名で絞り込み…" /></div>
+    <nav class="list" id="list"></nav>
+  </aside>
+
+  <div class="main">
+    <div class="toolbar">
+      <button class="tb-btn" onclick="history.back()" title="ひとつ前の画面へ（枠内の遷移にも効く）">◀ 戻る</button>
+      <button class="tb-btn" onclick="history.forward()">進む ▶</button>
+      <button class="tb-btn" onclick="reloadFrame()">⟳ 再読込</button>
+      <button class="tb-btn" onclick="openTab()" title="リストで選択した画面を単体タブで開く">↗ 単体で開く</button>
+      <span class="tb-now">表示中: <b id="now">ポータル（画面一覧）</b></span>
+      <span class="tb-note">枠内のリンク・ボタンで画面間遷移できます</span>
+    </div>
+    <iframe id="frame" src="index.html"></iframe>
+  </div>
+
+<script>
+  // 画面リスト（href は本ファイル(admin/)からの相対パス）
+  const GROUPS = [
+    ["予約オペレーション", [
+      ["ポータル（画面一覧）", "index.html", "TOP"],
+      ["予約一覧", "予約一覧.html", "予"],
+      ["予約詳細", "予約詳細.html", "詳"],
+      ["予約登録", "予約登録.html", "登"],
+      ["未割り当て一覧", "未割り当て一覧.html", "割"],
+      ["予約割り当て", "予約割り当て.html", "紐"],
+      ["催行回一覧", "催行回一覧.html", "催"],
+      ["催行回詳細", "催行回詳細.html", "回"],
+      ["当日/翌日案件一覧", "当日翌日案件一覧.html", "日"],
+      ["未手配一覧", "未手配一覧.html", "未"],
+      ["変更・キャンセル処理", "変更・キャンセル処理.html", "変"],
+    ]],
+    ["ガイド管理", [
+      ["ガイド一覧", "ガイド一覧.html", "ガ"],
+      ["ガイド詳細", "ガイド詳細.html", "人"],
+      ["ガイド編集", "ガイド編集.html", "編"],
+      ["ガイド登録", "ガイド登録.html", "新"],
+      ["ガイド手配操作", "ガイド手配操作.html", "手"],
+      ["応募者一覧", "応募者一覧.html", "応"],
+    ]],
+    ["精算・経営", [
+      ["月次締め確認", "月次精算管理.html", "締"],
+      ["金額確認待ち一覧", "金額確認待ち一覧.html", "取"],
+      ["OTA入金照合", "OTA入金照合.html", "照"],
+      ["収支一覧", "収支一覧.html", "収"],
+      ["精算確認", "精算確認.html", "精"],
+      ["チャネル・手数料設定", "チャネル・手数料設定.html", "CH"],
+    ]],
+    ["Product & Sales（standalone版）", [
+      ["TourOption", "TourOption (standalone).html", "TO"],
+      ["商品ページ", "商品ページ (standalone).html", "PG"],
+      ["ガイド資料", "ガイド資料 (standalone).html", "GD"],
+      ["キャンセルポリシー文言", "キャンセルポリシー文言 (standalone).html", "CP"],
+      ["deep_Admin 統合版", "deep_Admin (standalone).html", "∷"],
+    ]],
+    ["資料", [
+      ["変更・キャンセル 全条件フロー", "変更・キャンセル_全条件別フロー_ビジュアル.html", "図"],
+    ]],
+    ["admin_toda（エンジニア版）", [
+      ["toda: 画面一覧", "../admin_toda/index.html", "TOP"],
+      ["toda: TourOption一覧", "../admin_toda/tour-options.html", "TO"],
+      ["toda: TourOption詳細", "../admin_toda/tour-option-detail.html", "TO"],
+      ["toda: TourOption追加", "../admin_toda/tour-option-add.html", "TO"],
+      ["toda: TourOption編集", "../admin_toda/tour-option-edit.html", "TO"],
+      ["toda: TourOption価格", "../admin_toda/tour-option-price.html", "TO"],
+      ["toda: チャネルURL追加", "../admin_toda/tour-channel-detail.html", "CH"],
+      ["toda: 商品ページ一覧", "../admin_toda/products.html", "PG"],
+      ["toda: 商品ページ詳細", "../admin_toda/product-detail.html", "PG"],
+      ["toda: ツアー行程一覧", "../admin_toda/tour-schedules.html", "程"],
+      ["toda: ツアー行程登録・編集", "../admin_toda/tour-schedule-detail.html", "程"],
+      ["toda: ｷｬﾝｾﾙﾎﾟﾘｼｰ一覧", "../admin_toda/cancel-policies.html", "CP"],
+      ["toda: ｷｬﾝｾﾙﾎﾟﾘｼｰ詳細", "../admin_toda/cancel-policy-detail.html", "CP"],
+      ["toda: ガイド資料一覧", "../admin_toda/guide-materials.html", "GD"],
+      ["toda: ガイド資料詳細", "../admin_toda/guide-material-detail.html", "GD"],
+    ]],
+  ];
+
+  const frame = document.getElementById("frame");
+  const nowEl = document.getElementById("now");
+  const listEl = document.getElementById("list");
+  let current = { label: "ポータル（画面一覧）", href: "index.html" };
+  const items = []; // {btn, label, href}
+
+  GROUPS.forEach(([gname, screens]) => {
+    const h = document.createElement("div");
+    h.className = "grp"; h.textContent = gname;
+    listEl.appendChild(h);
+    screens.forEach(([label, href, ico]) => {
+      const b = document.createElement("button");
+      b.className = "item";
+      b.innerHTML = '<span class="ico">' + ico + "</span><span>" + label + "</span>";
+      b.onclick = () => go(label, href, b);
+      listEl.appendChild(b);
+      items.push({ btn: b, grpEl: h, label, href });
+    });
+  });
+
+  function go(label, href, btn) {
+    current = { label, href };
+    frame.src = encodeURI(href);
+    setActive(btn);
+    nowEl.textContent = label;
+  }
+  function setActive(btn) {
+    items.forEach(i => i.btn.classList.toggle("active", i.btn === btn));
+  }
+  function reloadFrame() {
+    try { frame.contentWindow.location.reload(); }
+    catch (e) { frame.src = encodeURI(current.href); }
+  }
+  function openTab() { window.open(encodeURI(current.href), "_blank"); }
+
+  // 枠内リンクで遷移したときの追跡（file:// ではブラウザ制限で読めない場合がある）
+  frame.addEventListener("load", () => {
+    let name = null;
+    try {
+      const p = frame.contentWindow.location.pathname;
+      name = decodeURIComponent(p.split("/").pop());
+    } catch (e) { /* クロスオリジン制限 */ }
+    if (name) {
+      const hit = items.find(i => i.href.split("/").pop() === name);
+      if (hit) { current = { label: hit.label, href: hit.href }; setActive(hit.btn); nowEl.textContent = hit.label; return; }
+      nowEl.textContent = name;
+    } else if (nowEl.textContent === current.label) {
+      // 初回ロードはそのまま
+    } else {
+      nowEl.textContent = current.label + "（枠内で遷移中）";
+    }
+  });
+
+  // 絞り込み
+  document.getElementById("filter").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    const grpVisible = new Map();
+    items.forEach(i => {
+      const show = !q || i.label.toLowerCase().includes(q) || i.href.toLowerCase().includes(q);
+      i.btn.classList.toggle("hidden", !show);
+      grpVisible.set(i.grpEl, (grpVisible.get(i.grpEl) || false) || show);
+    });
+    grpVisible.forEach((vis, el) => el.classList.toggle("hidden", !vis));
+  });
+
+  // 初期アクティブ
+  setActive(items[0].btn);
+</script>
+</body>
+</html>

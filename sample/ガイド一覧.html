@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ガイド一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--coral); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 22px 26px 56px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+      .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .page-head .pt h1 { margin: 0; font-size: 23px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-head .pt .sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 30px; padding: 0 13px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+      .btn:disabled:hover { background: var(--surface); border-color: var(--line-strong); }
+
+      /* ── Card ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+
+      /* ── Filter bar ── */
+      .filter-bar { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; }
+      .filter-field .ff-lab { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: 36px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { min-width: 132px; padding-right: 28px; cursor: pointer; }
+      .search-field { flex: 1 1 280px; min-width: 240px; }
+      .search-wrap { position: relative; display: flex; align-items: center; }
+      .search-wrap .s-ic { position: absolute; left: 11px; color: var(--muted-soft); font-size: 14px; pointer-events: none; }
+      .search-wrap .ctrl { width: 100%; padding-left: 32px; }
+
+      /* ── Table ── */
+      .table-scroll { overflow-x: auto; }
+      .data-table { width: 100%; min-width: 1040px; border-collapse: separate; border-spacing: 0; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 11px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table thead th.right { text-align: right; }
+      .data-table tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; white-space: nowrap; }
+      .data-table tbody td.right { text-align: right; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table tbody tr { transition: background 0.08s; }
+      .data-table tbody tr:hover { background: var(--surface-warm); }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .data-table .empty-row td { text-align: center; color: var(--muted-soft); padding: 40px 14px; font-size: 13px; }
+
+      .guide-cell { display: inline-flex; align-items: center; gap: 9px; }
+      .g-ava { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 12px; border: 1px solid var(--line-strong); flex-shrink: 0; }
+      .g-name { font-weight: 650; color: var(--ink); }
+      .sub-text { color: var(--muted); font-size: 12.5px; }
+      .romaji { color: var(--ink-soft); font-size: 12.5px; }
+      .yen { font-variant-numeric: tabular-nums; font-weight: 650; }
+      .yen .per { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 1px; }
+
+      /* ── Tags ── */
+      .tag-row { display: inline-flex; align-items: center; gap: 5px; }
+      .tag { display: inline-flex; align-items: center; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); border: 1px solid var(--line); white-space: nowrap; }
+      .tag.more { background: transparent; color: var(--muted); border-color: var(--line-strong); }
+
+      /* ── Status & rank badges ── */
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+      .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .badge.st-active { background: var(--green-soft); color: var(--green); }
+      .badge.st-paused { background: var(--amber-soft); color: var(--amber); }
+      .badge.st-retired { background: var(--bg-sunken); color: var(--muted); }
+      .rank { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; font-size: 13px; font-weight: 800; letter-spacing: -0.02em; }
+      .rank.r-S { background: var(--accent-soft); color: var(--accent-strong); }
+      .rank.r-A { background: var(--blue-soft); color: var(--blue); }
+      .rank.r-B { background: var(--amber-soft); color: var(--amber); }
+      .rank.r-C { background: var(--bg-sunken); color: var(--muted); }
+
+      .btn-link { background: none; border: 1px solid var(--line-strong); color: var(--accent-strong); font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: var(--radius); text-decoration: none; display: inline-block; }
+      .btn-link:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+      /* ── Pagination ── */
+      .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 20px; border-top: 1px solid var(--line-soft); background: var(--surface-warm); flex-wrap: wrap; }
+      .pager .count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .pager .count b { color: var(--ink-soft); font-weight: 700; }
+      .pager .pg-btns { display: flex; gap: 8px; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "guides" }));
+
+      const STATUS = {
+        active:  { label: "アクティブ", cls: "st-active" },
+        paused:  { label: "一時停止",  cls: "st-paused" },
+        retired: { label: "退会",      cls: "st-retired" },
+      };
+
+      const GUIDES = [
+        { code: "G-001", kanji: "吉田 健太", kana: "ヨシダ ケンタ", romaji: "Yoshida Kenta", initials: "吉", areas: ["金沢市", "石川県"], langs: ["英語", "中国語"], rank: "S", rate: 3200, status: "active" },
+        { code: "G-002", kanji: "田中 美咲", kana: "タナカ ミサキ", romaji: "Tanaka Misaki", initials: "田", areas: ["金沢市"], langs: ["英語"], rank: "A", rate: 2400, status: "active" },
+        { code: "G-005", kanji: "李 智妍",   kana: "イ ジヨン",     romaji: "Lee Jiyeon",    initials: "李", areas: ["大阪府", "京都市"], langs: ["韓国語", "英語"], rank: "B", rate: 2000, status: "paused" },
+        { code: "G-010", kanji: "山本 涼",   kana: "ヤマモト リョウ", romaji: "Yamamoto Ryo",  initials: "山", areas: ["京都市"], langs: ["英語", "スペイン語", "フランス語"], rank: "A", rate: 2600, status: "active" },
+        { code: "G-021", kanji: "佐藤 隆",   kana: "サトウ タカシ",   romaji: "Sato Takashi",  initials: "佐", areas: ["東京都"], langs: ["英語"], rank: "C", rate: 1800, status: "retired" },
+      ];
+
+      const AREA_OPTS = ["石川県", "金沢市", "大阪府", "京都市", "東京都"];
+      const LANG_OPTS = ["英語", "中国語", "韓国語", "スペイン語", "フランス語"];
+      const RANK_OPTS = ["S", "A", "B", "C"];
+
+      const yen = (n) => "¥" + Number(n).toLocaleString("ja-JP");
+
+      function Tags({ items, max }) {
+        const shown = items.slice(0, max);
+        const rest = items.length - shown.length;
+        return (
+          <span className="tag-row">
+            {shown.map((t, i) => <span className="tag" key={i}>{t}</span>)}
+            {rest > 0 && <span className="tag more">+{rest}</span>}
+          </span>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const [q, setQ] = useState("");
+        const [fStatus, setFStatus] = useState("all");
+        const [fArea, setFArea] = useState("all");
+        const [fLang, setFLang] = useState("all");
+        const [fRank, setFRank] = useState("all");
+
+        const norm = (s) => s.toLowerCase();
+        const rows = GUIDES.filter(g => {
+          const hay = norm(`${g.code} ${g.kanji} ${g.kana} ${g.romaji}`);
+          return (q.trim() === "" || hay.includes(norm(q.trim()))) &&
+            (fStatus === "all" || g.status === fStatus) &&
+            (fArea === "all" || g.areas.includes(fArea)) &&
+            (fLang === "all" || g.langs.includes(fLang)) &&
+            (fRank === "all" || g.rank === fRank);
+        });
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                ガイドの稼働状況・対応エリア・言語・スキルランクを管理します。基本時給は催行回のガイド精算（見込み）の初期値に使用されます。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="page-head">
+                <div className="pt">
+                  <h1>ガイド一覧</h1>
+                  <div className="sub">登録ガイドの稼働状況・対応条件・単価を管理します</div>
+                </div>
+                <a className="btn primary" href="ガイド登録.html" style={{ textDecoration: "none" }}>＋ ガイドを登録</a>
+              </div>
+
+              <section className="card" data-screen-label="ガイド一覧">
+                <div className="filter-bar">
+                  <div className="filter-field search-field">
+                    <span className="ff-lab">検索</span>
+                    <span className="search-wrap">
+                      <span className="s-ic">⌕</span>
+                      <input className="ctrl" placeholder="ガイドID・氏名（漢字／カナ／ローマ字）で検索"
+                        value={q} onChange={e => setQ(e.target.value)} />
+                    </span>
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">稼働状況</span>
+                    <select className="ctrl" value={fStatus} onChange={e => setFStatus(e.target.value)}>
+                      <option value="all">すべて</option>
+                      <option value="active">アクティブ</option>
+                      <option value="paused">一時停止</option>
+                      <option value="retired">退会</option>
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">対応エリア</span>
+                    <select className="ctrl" value={fArea} onChange={e => setFArea(e.target.value)}>
+                      <option value="all">すべて</option>
+                      {AREA_OPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">対応言語</span>
+                    <select className="ctrl" value={fLang} onChange={e => setFLang(e.target.value)}>
+                      <option value="all">すべて</option>
+                      {LANG_OPTS.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">スキルランク</span>
+                    <select className="ctrl" value={fRank} onChange={e => setFRank(e.target.value)}>
+                      <option value="all">すべて</option>
+                      {RANK_OPTS.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="table-scroll">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>ガイドID</th>
+                        <th>氏名（漢字）</th>
+                        <th>カタカナ</th>
+                        <th>ローマ字</th>
+                        <th>対応エリア</th>
+                        <th>対応言語</th>
+                        <th>ランク</th>
+                        <th className="right">基本時給</th>
+                        <th>稼働状況</th>
+                        <th className="right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.length === 0 ? (
+                        <tr className="empty-row"><td colSpan={10}>条件に一致するガイドが見つかりません</td></tr>
+                      ) : rows.map(g => (
+                        <tr key={g.code}>
+                          <td><span className="code-mono">{g.code}</span></td>
+                          <td>
+                            <span className="guide-cell">
+                              <span className="g-ava">{g.initials}</span>
+                              <span className="g-name">{g.kanji}</span>
+                            </span>
+                          </td>
+                          <td><span className="sub-text">{g.kana}</span></td>
+                          <td><span className="romaji">{g.romaji}</span></td>
+                          <td><Tags items={g.areas} max={1} /></td>
+                          <td><Tags items={g.langs} max={2} /></td>
+                          <td><span className={`rank r-${g.rank}`}>{g.rank}</span></td>
+                          <td className="right"><span className="yen">{yen(g.rate)}<span className="per">/h</span></span></td>
+                          <td><span className={`badge ${STATUS[g.status].cls}`}><span className="dot"></span>{STATUS[g.status].label}</span></td>
+                          <td className="right">
+                            <a className="btn-link" href="ガイド詳細.html">詳細</a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pager">
+                  <span className="count">全 <b>{rows.length}</b> 件中 <b>{rows.length === 0 ? 0 : 1}</b>–<b>{rows.length}</b> 件を表示</span>
+                  <div className="pg-btns">
+                    <button className="btn sm" disabled onClick={() => showToast("前のページ")}>← 前へ</button>
+                    <button className="btn sm" disabled onClick={() => showToast("次のページ")}>次へ →</button>
+                  </div>
+                </div>
+              </section>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>未手配一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .tt-wrap { display: inline-block; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+      .topbar .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 7px; }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; border: 1px solid var(--line-strong); font-weight: 700; font-size: 12px; }
+
+      /* ── Alert banner ── */
+      .alert-banner {
+        display: flex; align-items: center; gap: 12px;
+        background: var(--amber-bg); border: 1px solid var(--amber-soft);
+        border-left: 3px solid var(--amber); border-radius: var(--radius);
+        padding: 12px 16px; color: var(--amber); font-size: 13.5px; font-weight: 550;
+      }
+      .alert-banner .alert-icon { width: 22px; height: 22px; flex-shrink: 0; display: grid; place-items: center; background: var(--amber); color: #fff; border-radius: 50%; font-size: 13px; font-weight: 800; }
+      .alert-banner b { font-weight: 750; }
+
+      /* ── Filter bar ── */
+      .filter-bar { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 16px 18px; }
+      .filter-grid { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; }
+      .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .date-range .ctrl { width: 150px; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      .check-row { display: flex; align-items: center; gap: 16px; height: var(--field-h); }
+      .check-opt { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); user-select: none; }
+      .check-opt input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+      /* ── Result meta ── */
+      .result-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); padding: 0 2px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+
+      /* ── Table ── */
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1); }
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1200px; background: var(--surface); font-variant-numeric: tabular-nums; }
+      thead th { position: sticky; top: 0; z-index: 1; background: var(--surface-tint); text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+      thead th.center { text-align: center; }
+      th .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
+      tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; font-size: 13px; }
+      tbody td.center { text-align: center; }
+      tbody tr { transition: background 0.08s; }
+      tbody tr:hover { background: var(--surface-warm); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .cell-strong { font-weight: 600; color: var(--ink); }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date { font-variant-numeric: tabular-nums; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .req-text { font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; }
+      .req-text .req-lang { font-weight: 600; color: var(--ink); }
+      .req-text .req-area { color: var(--muted); }
+
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "unarranged" }));
+
+      const ROWS = [
+        { session: "TI-20260608-1000-G-GIF-017-1-GR-01", bookings: 2, date: "2026-06-08", time: "10:00", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          pax: "大人4 子供1", arrange: { label: "未手配", cls: "muted" }, reason: null,
+          lang: "英語", area: "金沢市", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260609-0900-G-WAK-001-2-PR-01", bookings: 1, date: "2026-06-09", time: "09:00", code: "G-WAK-001-2-PR", tour: "里山ハイキング（プライベート）",
+          pax: "大人4", arrange: { label: "未手配", cls: "muted" }, reason: null,
+          lang: "英語", area: "石川県", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260611-0900-G-WAK-001-2-GR-01", bookings: 2, date: "2026-06-11", time: "09:00", code: "G-WAK-001-2-GR", tour: "里山ハイキング",
+          pax: "大人6 子供1", arrange: { label: "要確認", cls: "amber" }, reason: "日時変更",
+          lang: "英語", area: "石川県", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260614-1000-G-AIC-005-1-GR-01", bookings: 3, date: "2026-06-14", time: "10:00", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          pax: "大人10", arrange: { label: "要確認", cls: "amber" }, reason: "増員",
+          lang: "日本語", area: "愛知県", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260620-1400-G-GIF-017-1-GR-01", bookings: 1, date: "2026-06-20", time: "14:00", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          pax: "大人3", arrange: { label: "未手配", cls: "muted" }, reason: null,
+          lang: "英語", area: "金沢市", link: { label: "仮紐付け", cls: "amber" } },
+      ];
+
+      function App() {
+        const [from, setFrom] = useState("2026-06-08");
+        const [to, setTo] = useState("");
+        const [tourQuery, setTourQuery] = useState("");
+        const [arrUn, setArrUn] = useState(true);
+        const [arrCheck, setArrCheck] = useState(true);
+        const [linkTmp, setLinkTmp] = useState(true);
+        const [linkFix, setLinkFix] = useState(true);
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const reset = () => {
+          setFrom("2026-06-08"); setTo(""); setTourQuery("");
+          setArrUn(true); setArrCheck(true); setLinkTmp(true); setLinkFix(true);
+          showToast("フィルターをリセットしました");
+        };
+
+        const rows = [...ROWS].sort((a, b) =>
+          (a.date + a.time).localeCompare(b.date + b.time));
+        const totalBookings = ROWS.reduce((s, r) => s + r.bookings, 0);
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                仮紐付け以上で手配が未完了の案件を表示します。手配の開始は確定紐付け後に可能です。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>未手配一覧</h1>
+                </div>
+                <div className="topbar-right">
+                  <div className="top-date"><span className="dot"></span>2026年6月8日（月）</div>
+                  <div className="avatar" title="運営担当">OP</div>
+                </div>
+              </div>
+
+              <div className="alert-banner">
+                <span className="alert-icon">!</span>
+                <span>未手配・要確認の案件が <b>5 件</b> あります。ツアー日が近い順に表示しています。</span>
+              </div>
+
+              <div className="filter-bar">
+                <div className="filter-grid">
+                  <div className="filter-field">
+                    <span className="filter-label">ツアー日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={from} onChange={e => setFrom(e.target.value)} />
+                      <span className="sep">〜</span>
+                      <input type="date" className="ctrl" value={to} onChange={e => setTo(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">TourOption</span>
+                    <input className="ctrl" style={{ width: 200 }} placeholder="コード・名称で検索"
+                      value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">手配状況</span>
+                    <div className="check-row">
+                      <label className="check-opt"><input type="checkbox" checked={arrUn} onChange={e => setArrUn(e.target.checked)} />未手配</label>
+                      <label className="check-opt"><input type="checkbox" checked={arrCheck} onChange={e => setArrCheck(e.target.checked)} />要確認</label>
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">催行回紐付け</span>
+                    <div className="check-row">
+                      <label className="check-opt"><input type="checkbox" checked={linkTmp} onChange={e => setLinkTmp(e.target.checked)} />仮紐付け</label>
+                      <label className="check-opt"><input type="checkbox" checked={linkFix} onChange={e => setLinkFix(e.target.checked)} />確定紐付け</label>
+                    </div>
+                  </div>
+                  <div className="filter-actions">
+                    <button className="btn-link" onClick={reset}>リセット</button>
+                    <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="result-meta">
+                <span><strong>5</strong> 件の未手配・要確認案件</span>
+                <span>ツアー日時 昇順で表示中</span>
+              </div>
+
+              <div className="table-wrap">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>催行回ID</th>
+                        <th className="center">予約数</th>
+                        <th>ツアー日時<span className="sort-arrow">↑</span></th>
+                        <th>TourOption</th>
+                        <th>参加人数</th>
+                        <th>手配状況</th>
+                        <th>変更理由区分</th>
+                        <th>ガイド要件</th>
+                        <th>催行回紐付け</th>
+                        <th className="center">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(r => (
+                        <tr key={r.session}>
+                          <td><span className="code-mono">{r.session}</span></td>
+                          <td className="center"><span className="badge">{r.bookings}件</span></td>
+                          <td className="cell-date">
+                            <div>{r.date.replace(/-/g, "/")}</div>
+                            <div className="time">{r.time}</div>
+                          </td>
+                          <td>
+                            <div className="code-mono">{r.code}</div>
+                            <div className="cell-sub">{r.tour}</div>
+                          </td>
+                          <td className="pax">{r.pax}</td>
+                          <td><span className={`status-pill ${r.arrange.cls}`}><span className="dot"></span>{r.arrange.label}</span></td>
+                          <td>{r.reason ? <span className="badge blue">{r.reason}</span> : <span className="muted-dash">—</span>}</td>
+                          <td>
+                            <div className="req-text">
+                              <span className="req-lang">{r.lang} / {r.area}</span>
+                            </div>
+                          </td>
+                          <td><span className={`status-pill ${r.link.cls}`}><span className="dot"></span>{r.link.label}</span></td>
+                          <td className="center">
+                            {r.link.label === "仮紐付け"
+                              ? <span className="tt-wrap" title="確定紐付け後に手配を開始できます">
+                                  <button className="btn primary sm" disabled>手配する</button>
+                                </span>
+                              : <button className="btn primary sm" onClick={() => (window.location.href = "ガイド手配操作.html")}>手配する</button>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

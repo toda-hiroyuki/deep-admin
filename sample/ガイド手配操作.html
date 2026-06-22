@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ガイド手配操作 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1100px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .rank-chip { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; font-size: 12px; font-weight: 800; background: var(--bg-sunken); color: var(--ink-soft); }
+      .rank-chip.s { background: var(--amber-soft); color: var(--amber); }
+      .rank-chip.a { background: var(--accent-soft); color: var(--accent-strong); }
+      .rank-chip.b { background: var(--blue-soft); color: var(--blue); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 18px 20px; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; }
+      .card-foot.end { justify-content: flex-end; }
+
+      /* ── Definition grid ── */
+      .def-grid { display: grid; grid-template-columns: 150px 1fr; gap: 0; }
+      .def-grid.target { grid-template-columns: 150px 1fr 150px 1fr; }
+      .def-grid .dt { color: var(--muted); font-size: 12px; font-weight: 600; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .def-grid .dd .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; }
+      .def-grid .dd .strong { font-weight: 650; }
+      @media (max-width: 820px) { .def-grid.target { grid-template-columns: 140px 1fr; } }
+
+      /* ── ① Method tabs (large) ── */
+      .method-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .method-tab { appearance: none; text-align: left; border: 1.5px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; transition: border-color 0.12s, background 0.12s, box-shadow 0.12s; position: relative; }
+      .method-tab:hover { border-color: var(--ink-soft); }
+      .method-tab.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--ring); }
+      .method-tab .mt-ic { width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center; background: var(--bg-sunken); color: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: 0.02em; flex-shrink: 0; }
+      .method-tab.active .mt-ic { background: var(--accent); color: #fff; }
+      .method-tab .mt-title { font-size: 15px; font-weight: 700; letter-spacing: -0.005em; display: flex; align-items: center; gap: 8px; }
+      .method-tab .mt-desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+      .method-tab.active .mt-desc { color: var(--accent-strong); }
+      .mt-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: grid; place-items: center; margin-left: auto; flex-shrink: 0; color: #fff; font-size: 11px; }
+      .method-tab.active .mt-check { background: var(--accent); border-color: var(--accent); }
+
+      /* ── Filter / form fields ── */
+      .filter-row { display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end; }
+      .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; }
+      textarea.ctrl { min-height: 80px; padding: 10px 12px; resize: vertical; line-height: 1.5; height: auto; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+
+      /* ── Tables in cards ── */
+      .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table thead th.center { text-align: center; }
+      .data-table tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody td.center { text-align: center; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table tbody tr { transition: background 0.08s; }
+      .data-table tbody tr:hover { background: var(--surface-warm); }
+      .data-table tbody tr.is-selected { background: var(--accent-soft); }
+      .data-table tbody tr.is-selected:hover { background: var(--accent-soft); }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .data-table .g-name { font-weight: 650; color: var(--ink); }
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .result-meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+
+      /* ── Assign form ── */
+      .assign-grid { display: grid; grid-template-columns: 150px 1fr; gap: 14px 18px; align-items: center; }
+      .assign-grid .a-label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+      .assign-grid .a-label .req { color: var(--coral); margin-left: 3px; }
+      .assign-grid .a-val { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .assign-grid .a-val.block { display: block; }
+      .assign-grid .a-val .span-full { grid-column: 1 / -1; }
+      .guide-chip { display: inline-flex; align-items: center; gap: 9px; }
+      .guide-chip .g-ava { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 12px; border: 1px solid var(--line-strong); }
+      .guide-chip .g-name { font-weight: 650; }
+      .guide-chip .g-code { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); }
+      .rate-input { display: flex; align-items: center; gap: 8px; }
+      .input-affix { position: relative; display: inline-flex; align-items: center; width: 160px; }
+      .input-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .sfx { position: absolute; right: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .ctrl { padding-left: 22px; padding-right: 26px; font-variant-numeric: tabular-nums; }
+      .ref-note { font-size: 12px; color: var(--muted); }
+      .ref-note .ref-tag { color: var(--accent-strong); font-weight: 600; }
+      .assign-divider { border: 0; border-top: 1px solid var(--line-soft); margin: 16px 0; }
+      .memo-block { margin-top: 16px; }
+      .memo-block .filter-label { font-size: 12px; color: var(--ink-soft); margin-bottom: 7px; display: block; }
+
+      /* ── Radio group ── */
+      .radio-row { display: flex; flex-direction: column; gap: 8px; }
+      .radio-opt { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: var(--ink-soft); user-select: none; cursor: pointer; }
+      .radio-opt input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+      .radio-opt .ro-sub { color: var(--muted); font-size: 12px; }
+      .deadline-field { margin-top: 12px; padding: 14px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); display: flex; flex-direction: column; gap: 7px; max-width: 320px; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "unarranged" }));
+
+      const GUIDES = [
+        { code: "G-001", name: "吉田 健太", initials: "吉", rank: "S", langs: "英語・中国語", areas: "金沢市・石川県", rate: "3,200", rateType: "基本" },
+        { code: "G-008", name: "田中 誠", initials: "田", rank: "A", langs: "日本語・英語", areas: "石川県・富山県", rate: "3,500", rateType: "基本" },
+        { code: "G-012", name: "山田 花子", initials: "山", rank: "B", langs: "英語", areas: "石川県", rate: "3,000", rateType: "基本" },
+        { code: "G-015", name: "Brown James", initials: "BJ", rank: "A", langs: "英語・フランス語", areas: "石川県・福井県", rate: "3,800", rateType: "基本" },
+      ];
+
+      function Card({ no, title, hint, action, foot, footEnd, children, label }) {
+        return (
+          <section className="card" data-screen-label={label || title}>
+            <div className="card-head">
+              <div className="card-title">
+                {no && <span className="sec-no">{no}</span>}{title}
+                {hint && <span className="sec-hint">{hint}</span>}
+              </div>
+              {action}
+            </div>
+            <div className="card-body">{children}</div>
+            {foot && <div className={`card-foot ${footEnd ? "end" : ""}`}>{foot}</div>}
+          </section>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [method, setMethod] = useState("direct");          // direct | recruit
+        const [selected, setSelected] = useState("G-008");      // selected guide id (default 田中 誠)
+        // assign form
+        const [role, setRole] = useState("メインガイド");
+        const [rate, setRate] = useState("3,500");
+        const [assignMemo, setAssignMemo] = useState("");
+        const [assigned, setAssigned] = useState(null);  // アサイン済み(ガイド確認待ち): {name, code, role, rate} | null
+        const [reassignReason, setReassignReason] = useState("日時変更");  // 再手配の変更理由区分
+        // search filters
+        const [fArea, setFArea] = useState("石川県");
+        const [fLang, setFLang] = useState("英語");
+        const [fRank, setFRank] = useState("すべて");
+        const [fName, setFName] = useState("");
+        // recruit form
+        const [rLang, setRLang] = useState("英語");
+        const [rArea, setRArea] = useState("石川県");
+        const [rRole, setRRole] = useState("メインのみ");        // メインのみ | サブのみ | メイン＋サブ同時
+        const [deadline, setDeadline] = useState("none");        // none | set
+        const [deadlineAt, setDeadlineAt] = useState("");
+        const [recruitMemo, setRecruitMemo] = useState("");
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const selectedGuide = GUIDES.find(g => g.code === selected);
+        // §7-1/§12-3: メインがアサイン済みのときのみサブを選べる。メイン不在なら1件目=メイン固定。
+        const hasMain = assigned && assigned.role === "メインガイド";
+        const effectiveRole = hasMain ? role : "メインガイド";
+
+        const pickGuide = (g) => {
+          setSelected(g.code);
+          setRate(g.rate);
+          showToast(`${g.name}（${g.code}）を選択しました`);
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                ガイドを直接アサインするか、登録ガイドへ募集をかけて応募を待つかを選択できます。手配確定後は本案件が未手配一覧から外れます。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="crumbs">
+                <span>予約オペレーション</span>
+                <span className="sep">›</span>
+                <a href="未手配一覧.html">未手配一覧</a>
+                <span className="sep">›</span>
+                <span className="current">ガイド手配操作</span>
+              </div>
+              <div className="page-title">
+                <h1>ガイド手配操作</h1>
+                <span className="sub">対象催行回にガイドを手配します</span>
+              </div>
+
+              {/* ── 対象催行回情報 ── */}
+              <Card title="対象催行回情報"
+                action={assigned
+                  ? <span className="status-pill teal"><span className="dot"></span>アサイン済み</span>
+                  : <span className="status-pill muted"><span className="dot"></span>未手配</span>}
+                label="対象催行回情報">
+                <div className="def-grid target">
+                  <div className="dt">催行回ID</div>
+                  <div className="dd" style={{ gridColumn: "2 / -1" }}><span className="code-mono">TI-20260609-0900-G-WAK-001-2-PR-01</span></div>
+                  <div className="dt">TourOption</div>
+                  <div className="dd"><span className="code-mono">G-WAK-001-2-PR</span><span className="sub">里山ハイキング</span></div>
+                  <div className="dt">ツアー日時</div>
+                  <div className="dd"><span className="strong">2026/06/09（火）09:00〜12:00</span></div>
+                  <div className="dt">参加人数</div>
+                  <div className="dd">大人4<span className="sub">（計4名）</span></div>
+                  <div className="dt">ゲスト言語</div>
+                  <div className="dd"><span className="badge teal">英語</span></div>
+                  <div className="dt">現在の手配状況</div>
+                  <div className="dd">{assigned
+                    ? <span className="status-pill teal"><span className="dot"></span>アサイン済み<span className="sub" style={{ fontWeight: 400 }}>（ガイド確認待ち）</span></span>
+                    : <span className="status-pill muted"><span className="dot"></span>未手配</span>}</div>
+                </div>
+
+                {/* 既存の手配レコード一覧（§3-9① / 複数ガイド手配の起点） */}
+                <div style={{ marginTop: 18 }}>
+                  <div className="result-meta" style={{ marginBottom: 8 }}>
+                    既存の手配レコード <strong>{assigned ? 1 : 0}</strong> 件
+                    <span className="ref-note">／ メイン・サブの複数ガイド手配はこの一覧に行を追加して管理します</span>
+                  </div>
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>ガイド名</th>
+                          <th>役割</th>
+                          <th>手配ステータス</th>
+                          <th>ガイド確認ステータス</th>
+                          <th>確定日時</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {assigned ? (
+                          <tr>
+                            <td className="g-name">{assigned.name}<span className="code-mono" style={{ marginLeft: 8 }}>{assigned.code}</span></td>
+                            <td><span className="badge teal">{assigned.role}</span></td>
+                            <td><span className="status-pill teal"><span className="dot"></span>アサイン済み</span></td>
+                            <td><span className="badge">未確認</span></td>
+                            <td><span className="muted-dash">—</span></td>
+                          </tr>
+                        ) : (
+                          <tr>
+                            <td colSpan="5" className="center" style={{ color: "var(--muted)" }}>手配レコードなし</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Card>
+
+              {/* ── ① 手配方式の選択 ── */}
+              <Card no="1" title="手配方式の選択" label="① 手配方式の選択">
+                <div className="method-tabs">
+                  <button className={`method-tab ${method === "direct" ? "active" : ""}`}
+                    onClick={() => setMethod("direct")}>
+                    <span className="mt-ic">直接</span>
+                    <span>
+                      <span className="mt-title">直接アサイン</span>
+                      <span className="mt-desc">登録ガイドから検索し、特定のガイドをこの場でアサインします。</span>
+                    </span>
+                    <span className="mt-check">{method === "direct" ? "✓" : ""}</span>
+                  </button>
+                  <button className={`method-tab ${method === "recruit" ? "active" : ""}`}
+                    onClick={() => setMethod("recruit")}>
+                    <span className="mt-ic">募集</span>
+                    <span>
+                      <span className="mt-title">募集をかける</span>
+                      <span className="mt-desc">条件に合うガイドへ募集を通知し、応募・受託を待ちます。</span>
+                    </span>
+                    <span className="mt-check">{method === "recruit" ? "✓" : ""}</span>
+                  </button>
+                </div>
+              </Card>
+
+              {/* ── 直接アサイン ── */}
+              {method === "direct" && (
+                <React.Fragment>
+                  {/* ② ガイド検索 */}
+                  <Card no="2" title="ガイド検索" label="② ガイド検索"
+                    foot={<button className="btn primary" onClick={() => showToast("検索条件で再検索しました")}>検索</button>} footEnd>
+                    <div className="filter-row" style={{ marginBottom: 18 }}>
+                      <div className="filter-field" style={{ width: 150 }}>
+                        <span className="filter-label">対応エリア</span>
+                        <select className="ctrl" value={fArea} onChange={e => setFArea(e.target.value)}>
+                          <option>石川県</option>
+                          <option>富山県</option>
+                          <option>福井県</option>
+                          <option>すべて</option>
+                        </select>
+                      </div>
+                      <div className="filter-field" style={{ width: 140 }}>
+                        <span className="filter-label">対応言語</span>
+                        <select className="ctrl" value={fLang} onChange={e => setFLang(e.target.value)}>
+                          <option>英語</option>
+                          <option>日本語</option>
+                          <option>フランス語</option>
+                          <option>すべて</option>
+                        </select>
+                      </div>
+                      <div className="filter-field" style={{ width: 130 }}>
+                        <span className="filter-label">スキルランク</span>
+                        <select className="ctrl" value={fRank} onChange={e => setFRank(e.target.value)}>
+                          <option>すべて</option>
+                          <option>S</option>
+                          <option>A</option>
+                          <option>B</option>
+                          <option>C</option>
+                        </select>
+                      </div>
+                      <div className="filter-field" style={{ width: 220 }}>
+                        <span className="filter-label">氏名 / ガイドID</span>
+                        <input className="ctrl" placeholder="氏名・IDで検索"
+                          value={fName} onChange={e => setFName(e.target.value)} />
+                      </div>
+                    </div>
+
+                    <div className="result-meta"><strong>3</strong> 件のガイドが条件に一致</div>
+                    <div className="table-wrap">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>ガイド名</th>
+                            <th>ガイドID</th>
+                            <th className="center">スキルランク</th>
+                            <th>対応言語</th>
+                            <th>対応エリア</th>
+                            <th>基本時給</th>
+                            <th className="center">選択</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {GUIDES.map(g => {
+                            const isSel = g.code === selected;
+                            return (
+                              <tr key={g.code} className={isSel ? "is-selected" : ""}>
+                                <td className="g-name">{g.name}</td>
+                                <td><span className="code-mono">{g.code}</span></td>
+                                <td className="center"><span className={`rank-chip ${g.rank.toLowerCase()}`}>{g.rank}</span></td>
+                                <td>{g.langs}</td>
+                                <td>{g.areas}</td>
+                                <td>¥{g.rate}/h</td>
+                                <td className="center">
+                                  <button className={`btn sm ${isSel ? "selected" : ""}`} onClick={() => pickGuide(g)}>
+                                    {isSel ? "選択中" : "選択"}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Card>
+
+                  {/* ③ アサイン設定 */}
+                  {selectedGuide && (
+                    <Card no="3" title="アサイン設定" hint={`${selectedGuide.name} を選択中`} label="③ アサイン設定"
+                      foot={
+                        assigned ? (
+                          <button className="btn" onClick={() => { setAssigned(null); showToast("アサインを解除しました"); }}>アサインを解除</button>
+                        ) : (
+                          <React.Fragment>
+                            <button className="btn primary" onClick={() => { setAssigned({ name: selectedGuide.name, code: selectedGuide.code, role: effectiveRole, rate }); showToast(`${selectedGuide.name} をアサインしました`); }}>アサインする</button>
+                            <button className="btn" onClick={() => showToast("アサインをキャンセルしました")}>キャンセル</button>
+                          </React.Fragment>
+                        )
+                      } footEnd>
+                      {assigned && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", marginBottom: 14, borderRadius: 8, background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46", fontSize: 13, fontWeight: 600 }}>
+                          <span>✅ {assigned.name}（{assigned.code}）をアサイン済み・{assigned.role}（ガイド確認待ち）</span>
+                          <span style={{ fontWeight: 400, color: "#047857" }}>— ガイドの確認前であればアサインを解除して別のガイドに変更できます</span>
+                        </div>
+                      )}
+                      <div className="assign-grid">
+                        <div className="a-label">ガイド</div>
+                        <div className="a-val">
+                          <span className="guide-chip">
+                            <span className="g-ava">{selectedGuide.initials}</span>
+                            <span className="g-name">{selectedGuide.name}</span>
+                            <span className="g-code">{selectedGuide.code}</span>
+                          </span>
+                          <span className={`rank-chip ${selectedGuide.rank.toLowerCase()}`}>{selectedGuide.rank}</span>
+                        </div>
+
+                        <div className="a-label">役割<span className="req">*</span></div>
+                        <div className="a-val">
+                          <select className="ctrl" style={{ width: 220 }} value={effectiveRole} onChange={e => setRole(e.target.value)} disabled={!hasMain}>
+                            <option>メインガイド</option>
+                            <option disabled={!hasMain}>サブガイド</option>
+                          </select>
+                          {!hasMain && <span className="ref-note">1件目はメインガイド固定（サブはメイン手配後に選択可）</span>}
+                        </div>
+
+                        <div className="a-label">適用時給<span className="req">*</span></div>
+                        <div className="a-val">
+                          <span className="rate-input">
+                            <span className="input-affix">
+                              <span className="pfx">¥</span>
+                              <input className="ctrl" value={rate} onChange={e => setRate(e.target.value)} />
+                              <span className="sfx">/h</span>
+                            </span>
+                          </span>
+                          <span className="ref-note"><span className="ref-tag">基本時給</span>を初期表示。アサイン時に記録し、ガイド確認で確定します</span>
+                        </div>
+                      </div>
+
+                      <hr className="assign-divider" />
+
+                      <div className="memo-block" style={{ marginTop: 0 }}>
+                        <label className="filter-label">手配メモ</label>
+                        <textarea className="ctrl" placeholder="ガイドへの申し送り事項など"
+                          value={assignMemo} onChange={e => setAssignMemo(e.target.value)}></textarea>
+                      </div>
+                    </Card>
+                  )}
+                </React.Fragment>
+              )}
+
+              {/* ── 募集をかける ── */}
+              {method === "recruit" && (
+                <Card no="2" title="募集設定" label="募集をかける"
+                  foot={
+                    <React.Fragment>
+                      <button className="btn primary" onClick={() => { window.location.href = "応募者一覧.html"; }}>募集を開始する</button>
+                      <button className="btn" onClick={() => showToast("募集をキャンセルしました")}>キャンセル</button>
+                    </React.Fragment>
+                  } footEnd>
+                  <div className="assign-grid" style={{ alignItems: "start" }}>
+                    <div className="a-label" style={{ paddingTop: 8 }}>募集役割<span className="req">*</span></div>
+                    <div className="a-val">
+                      <select className="ctrl" style={{ width: 220 }} value={rRole} onChange={e => setRRole(e.target.value)}>
+                        <option>メインのみ</option>
+                        <option>サブのみ</option>
+                        <option>メイン＋サブ同時</option>
+                      </select>
+                    </div>
+
+                    <div className="a-label" style={{ paddingTop: 8 }}>言語条件<span className="req">*</span></div>
+                    <div className="a-val">
+                      <select className="ctrl" style={{ width: 220 }} value={rLang} onChange={e => setRLang(e.target.value)}>
+                        <option>英語</option>
+                        <option>日本語</option>
+                        <option>フランス語</option>
+                        <option>指定なし</option>
+                      </select>
+                    </div>
+
+                    <div className="a-label" style={{ paddingTop: 8 }}>エリア条件<span className="req">*</span></div>
+                    <div className="a-val">
+                      <select className="ctrl" style={{ width: 220 }} value={rArea} onChange={e => setRArea(e.target.value)}>
+                        <option>石川県</option>
+                        <option>富山県</option>
+                        <option>福井県</option>
+                        <option>指定なし</option>
+                      </select>
+                    </div>
+
+                    <div className="a-label" style={{ paddingTop: 2 }}>応募締切<span className="req">*</span></div>
+                    <div className="a-val block">
+                      <div className="radio-row">
+                        <label className="radio-opt">
+                          <input type="radio" name="deadline" checked={deadline === "none"} onChange={() => setDeadline("none")} />
+                          <span>なし（急募）<span className="ro-sub"> ／ 応募が来次第、随時確認してアサインできます。急募の場合に適しています。</span></span>
+                        </label>
+                        <label className="radio-opt">
+                          <input type="radio" name="deadline" checked={deadline === "set"} onChange={() => setDeadline("set")} />
+                          <span>あり（日時指定）<span className="ro-sub"> ／ 締切までの応募から選定</span></span>
+                        </label>
+                      </div>
+                      {deadline === "set" && (
+                        <div className="deadline-field">
+                          <label className="filter-label">締切日時</label>
+                          <input type="datetime-local" className="ctrl" value={deadlineAt} onChange={e => setDeadlineAt(e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <hr className="assign-divider" />
+
+                  <div className="memo-block" style={{ marginTop: 0 }}>
+                    <label className="filter-label">手配メモ</label>
+                    <textarea className="ctrl" placeholder="募集ガイドへの申し送り事項・集合場所の補足など"
+                      value={recruitMemo} onChange={e => setRecruitMemo(e.target.value)}></textarea>
+                  </div>
+                </Card>
+              )}
+
+              {/* ── ④ 再手配 ── */}
+              <Card no="4" title="再手配" hint="既存手配のキャンセル＋新規作成" label="④ 再手配"
+                foot={
+                  <button className="btn" disabled={!assigned}
+                    onClick={() => { setAssigned(null); showToast(`既存手配をキャンセルし、再手配（${reassignReason}）を開始します`); }}>
+                    既存手配をキャンセルして再手配
+                  </button>
+                } footEnd>
+                <p className="ref-note" style={{ marginTop: 0, marginBottom: 14 }}>
+                  ガイドのキャンセルや予約変更で再手配が必要な場合は、既存の手配レコードをキャンセルにして新しい手配レコードを作成します（既存レコードは履歴として保持）。
+                </p>
+                <div className="assign-grid">
+                  <div className="a-label">変更理由区分<span className="req">*</span></div>
+                  <div className="a-val">
+                    <select className="ctrl" style={{ width: 220 }} value={reassignReason} onChange={e => setReassignReason(e.target.value)}>
+                      <option>日時変更</option>
+                      <option>増員</option>
+                      <option>減員</option>
+                    </select>
+                    <span className="ref-note">再手配要否フラグONの理由を記録します</span>
+                  </div>
+                </div>
+              </Card>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
