@@ -339,10 +339,9 @@
       };
 
       const profitOf = (r, all) => netOf(r) - guideRewardOf(r, all) - num(r.facility) - num(r.facilityCancel);
-      const facilityMissing = (r) => !filled(r.facility);
       const otaPending = (r) => isOta(r) && r.ota !== "matched";
       const guidePending = (r) => r.guide !== "confirmed";
-      const isAttention = (r) => facilityMissing(r) || guidePending(r) || otaPending(r);
+      const isAttention = (r) => guidePending(r) || otaPending(r);
 
       function App() {
         const [toast, setToast] = useState(null);
@@ -356,7 +355,7 @@
         const [month, setMonth] = useState(DATA_MONTH);
         const [rows, setRows] = useState(ROWS_SEED);
         const [fChannel, setFChannel] = useState("all");
-        const [tFacility, setTFacility] = useState(false);
+
         const [tGuide, setTGuide] = useState(false);
         const [tOta, setTOta] = useState(false);
         const [closed, setClosed] = useState(false);
@@ -381,8 +380,7 @@
 
         const display = monthRows.filter(r =>
           (fChannel === "all" || r.channel === fChannel) &&
-          (!tFacility || facilityMissing(r)) &&
-          (!tGuide || guidePending(r)) &&
+(!tGuide || guidePending(r)) &&
           (!tOta || otaPending(r))
         );
 
@@ -529,12 +527,7 @@
                   <div className="filter-field">
                     <span className="ff-lab">絞り込み</span>
                     <div className="toggles">
-                      <label className="toggle">
-                        <input type="checkbox" checked={tFacility} onChange={e => setTFacility(e.target.checked)} />
-                        <span className="track"></span>
-                        <span className="t-label">施設費・未確定のみ表示</span>
-                      </label>
-                      <label className="toggle">
+<label className="toggle">
                         <input type="checkbox" checked={tGuide} onChange={e => setTGuide(e.target.checked)} />
                         <span className="track"></span>
                         <span className="t-label">ガイド精算・未確定のみ表示</span>
@@ -589,7 +582,6 @@
                           const ch = CHANNEL[r.channel];
                           const gm = GUIDE_META[r.guide];
                           const om = r.ota ? OTA_META[r.ota] : null;
-                          const facMiss = facilityMissing(r);
                           return (
                             <tr key={r.id} className={att ? "attention" : "confirmed"}>
                               <td><span className="code-mono">{r.id}</span></td>
@@ -613,22 +605,11 @@
                                   </span>
                                 )}
                               </td>
-                              <td className="right edit edit-cell">
-                                <span className="num-input">
-                                  <span className="pfx">¥</span>
-                                  <input className={facMiss ? "miss" : ""} inputMode="numeric" placeholder="未入力" disabled={closed}
-                                    value={r.facility} onChange={e => setField(r.id, "facility", e.target.value)} />
-                                </span>
-                                {facMiss && <span className="miss-flag">要入力</span>}
+                              <td className="right">
+                                {filled(r.facility) ? <span className="money">{yen(r.facility)}</span> : <span className="muted-dash">—</span>}
                               </td>
-                              <td className="right edit edit-cell">
-                                {r.changed
-                                  ? <span className="num-input">
-                                      <span className="pfx">¥</span>
-                                      <input inputMode="numeric" placeholder="0" disabled={closed}
-                                        value={r.facilityCancel} onChange={e => setField(r.id, "facilityCancel", e.target.value)} />
-                                    </span>
-                                  : <span className="muted-dash">—</span>}
+                              <td className="right">
+                                {r.changed && filled(r.facilityCancel) ? <span className="money">{yen(r.facilityCancel)}</span> : <span className="muted-dash">—</span>}
                               </td>
                               <td className="right calc"><span className="money calc-val">{yen(profitOf(r, monthRows))}</span></td>
                               <td><span className={`badge ${gm.cls}`}><span className="dot"></span>{gm.label}</span></td>
