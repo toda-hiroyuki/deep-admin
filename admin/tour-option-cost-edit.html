@@ -23,17 +23,17 @@ const { useState, useCallback } = React;
 // ── 費用区分・費用タイプ定義 ────────────────────────────────────────────────
 
 const COST_CATEGORIES = [
-  { key: "C", label: "C：施設外・ガイド立替",        desc: "施設マスター外の経費をガイドが立替（たこ焼き・タクシー等）" },
-  { key: "D", label: "D：ガイド自身の経費",          desc: "ガイドの交通費・その他経費" },
-  { key: "A", label: "A：施設へ元払い（立替払い）", desc: "施設への支払いをガイドが立替えず、直接精算" },
-  { key: "B", label: "B：施設へ・ガイド立替",       desc: "施設への支払いをガイドが一時立替" },
+  { key: "C", label: "C：ガイドが現地立替（後日精算）", desc: "施設マスター外の経費をガイドが立替（たこ焼き・タクシー等）" },
+  { key: "D", label: "D：お客様が現地直接払い",         desc: "お客様が現地で直接支払う経費" },
+  { key: "A", label: "A：施設へ月末一括（会社払い）",   desc: "月末に会社から施設へ一括精算" },
+  { key: "B", label: "B：施設へ都度払い（会社払い）",   desc: "都度、会社から施設へ直接支払い" },
 ];
 
 const COST_TYPES = [
-  { key: "固定費",         label: "固定費",         desc: "参加人数に関わらず一定" },
-  { key: "変動・人数割",   label: "変動・人数割",   desc: "単価 × 人数" },
-  { key: "変動・スライド", label: "変動・スライド", desc: "人数帯によって単価が変わる" },
-  { key: "変動・完全変動", label: "変動・完全変動", desc: "毎回金額が異なる（手動入力）" },
+  { key: "固定費（1催行）",       label: "固定費（1催行）",       desc: "参加人数に関わらず一定" },
+  { key: "変動・人数比例（1名）", label: "変動・人数比例（1名）", desc: "単価 × 人数" },
+  { key: "変動・スライド",        label: "変動・スライド",        desc: "人数帯によって単価が変わる" },
+  { key: "完全変動（要入力）",    label: "完全変動（要入力）",    desc: "毎回金額が異なる（手動入力）" },
 ];
 
 // サンプルの既存データ（実際はURLパラメータで取得）
@@ -172,7 +172,7 @@ function App() {
   const validate = () => {
     const e = {};
     if (!name.trim()) e.name = "経費名は必須です";
-    if ((costType === "固定費" || costType === "変動・人数割") && !unitPrice) e.unitPrice = "金額を入力してください";
+    if ((costType === "固定費（1催行）" || costType === "変動・人数比例（1名）") && !unitPrice) e.unitPrice = "金額を入力してください";
     return e;
   };
 
@@ -286,11 +286,11 @@ function App() {
                   </div>
 
                   {/* 金額（固定費 / 変動・人数割） */}
-                  {(costType === "固定費" || costType === "変動・人数割") && (
+                  {(costType === "固定費（1催行）" || costType === "変動・人数比例（1名）") && (
                     <div className="field">
                       <label className="field-label">
                         <span className="req" />
-                        <span>{costType === "固定費" ? "金額（1催行あたり）" : "単価（1名あたり）"}</span>
+                        <span>{costType === "固定費（1催行）" ? "金額（1催行あたり）" : "単価（1名あたり）"}</span>
                       </label>
                       <div style={{display:"flex",alignItems:"center",gap:6}}>
                         <span style={{color:"var(--muted)",fontSize:13}}>¥</span>
@@ -303,7 +303,7 @@ function App() {
                   )}
 
                   {/* 完全変動の注意 */}
-                  {costType === "変動・完全変動" && (
+                  {costType === "完全変動（要入力）" && (
                     <div className="field-wide">
                       <div style={{padding:"10px 14px",background:"#fff8e1",border:"1px solid #f5c842",borderRadius:"var(--radius)",fontSize:12,color:"#7a6800"}}>
                         完全変動費は毎回の催行時に金額を手動入力します。ここでは金額の設定は不要です。

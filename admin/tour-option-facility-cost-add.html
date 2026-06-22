@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>施設経費を追加 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const COST_TYPE_LABELS = {
+  "fixed":      "固定費（1催行）",
+  "per-person": "変動・人数比例（1名）",
+  "slide":      "変動・スライド",
+  "full-var":   "完全変動（要入力）",
+};
+
+const PAYMENT_TYPE_LABELS = {
+  "A": "A：施設へ月末一括（会社払い）",
+  "B": "B：施設へ都度払い（会社払い）",
+  "C": "C：ガイドが現地立替（後日精算）",
+  "D": "D：お客様が現地直接払い",
+};
+
+const FACILITY_MASTER = [
+  {
+    id: "fac-1", name: "嵐山竹林体験センター", type: "external",
+    costs: [
+      { id: "c1", name: "入場料（大人）", costType: "per-person", unitPrice: 1500, paymentType: "A" },
+      { id: "c2", name: "竹細工体験料",  costType: "per-person", unitPrice: 2000, paymentType: "A" },
+      { id: "c3", name: "着物レンタル",  costType: "fixed",      unitPrice: 3500, paymentType: "B" },
+    ],
+  },
+  {
+    id: "fac-2", name: "伏見稲荷大社", type: "external",
+    costs: [
+      { id: "c4", name: "祈祷料（基本）", costType: "fixed",      unitPrice: 5000, paymentType: "A" },
+      { id: "c5", name: "お守り代",       costType: "per-person", unitPrice: 800,  paymentType: "B" },
+    ],
+  },
+  {
+    id: "fac-3", name: "金閣寺（鹿苑寺）", type: "partner",
+    costs: [
+      { id: "c6", name: "拝観料（大人）", costType: "per-person", unitPrice: 500, paymentType: "A" },
+    ],
+  },
+  {
+    id: "fac-4", name: "京町家体験 山田屋", type: "partner",
+    costs: [
+      { id: "c7", name: "体験料",       costType: "per-person", unitPrice: 3000, paymentType: "A" },
+      { id: "c8", name: "貸切料金",     costType: "fixed",      unitPrice: 10000, paymentType: "A" },
+    ],
+  },
+  {
+    id: "fac-5", name: "宇治茶農家 田中園", type: "partner",
+    costs: [
+      { id: "c9",  name: "茶摘み体験料", costType: "per-person", unitPrice: 2500, paymentType: "A" },
+      { id: "c10", name: "試飲セット",   costType: "per-person", unitPrice: 800,  paymentType: "C" },
+    ],
+  },
+];
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const items = [
+    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption" },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ" },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設管理" },
+    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">Manage</div>
+        <div className="nav-group">
+          {items.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${it.key === "tourOption" ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App() {
+  const params   = new URLSearchParams(window.location.search);
+  const backUrl  = params.get("back") || "tour-option-detail.html?tab=expenses";
+
+  const [facilityId, setFacilityId] = useState(FACILITY_MASTER[0].id);
+  const [checked,    setChecked]    = useState({});
+  const [saved,      setSaved]      = useState(false);
+
+  const facility = FACILITY_MASTER.find(f => f.id === facilityId);
+
+  const toggle = (costId) => {
+    setChecked(prev => ({ ...prev, [costId]: !prev[costId] }));
+  };
+
+  const handleFacilityChange = (id) => {
+    setFacilityId(id);
+    setChecked({});
+  };
+
+  const checkedCount = Object.values(checked).filter(Boolean).length;
+
+  const handleSave = () => {
+    if (checkedCount === 0) return;
+    setSaved(true);
+    setTimeout(() => { window.location.href = backUrl; }, 800);
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <main className="workspace">
+
+        {/* Topbar */}
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="tour-options.html" className="crumb-link">TourOption一覧</a>
+              <span className="sep">/</span>
+              <a href={backUrl} className="crumb-link">TourOption編集</a>
+              <span className="sep">/</span>
+              <span className="current">施設経費を追加</span>
+            </div>
+            <div className="title-row">
+              <button className="btn ghost sm back-btn"
+                onClick={() => { window.location.href = backUrl; }}>
+                ← 経費管理に戻る
+              </button>
+              <h1>施設経費を追加</h1>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <button className="btn" onClick={() => { window.location.href = backUrl; }}>キャンセル</button>
+            <button className="btn primary" onClick={handleSave} disabled={checkedCount === 0}>
+              {saved
+                ? "✓ 追加しました"
+                : checkedCount > 0
+                  ? `選択した ${checkedCount} 件を追加`
+                  : "経費項目を選択してください"
+              }
+            </button>
+          </div>
+        </div>
+
+        {/* エディタ */}
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            <div className="editor-content">
+
+              {/* 施設選択 */}
+              <div className="form-section">
+                <div className="section-title">
+                  <div>
+                    <h2>施設を選択</h2>
+                    <p>施設マスターから施設を選択し、紐づける経費項目にチェックを入れてください。</p>
+                  </div>
+                </div>
+
+                <div className="field">
+                  <label className="field-label">
+                    <span className="req" />
+                    <span>施設名</span>
+                  </label>
+                  <div style={{position:"relative",display:"inline-flex",alignItems:"center",minWidth:320}}>
+                    <select
+                      value={facilityId}
+                      onChange={e => handleFacilityChange(e.target.value)}
+                      style={{width:"100%",paddingRight:28,appearance:"none",WebkitAppearance:"none"}}
+                    >
+                      {FACILITY_MASTER.map(f => (
+                        <option key={f.id} value={f.id}>{f.name}</option>
+                      ))}
+                    </select>
+                    <span style={{position:"absolute",right:10,pointerEvents:"none",fontSize:10,color:"var(--muted)"}}>▼</span>
+                  </div>
+                  {facility && (
+                    <div style={{marginTop:6,fontSize:12,color:"var(--muted)"}}>
+                      種別：{facility.type === "partner" ? "提携施設" : "外部施設"}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 経費項目一覧 */}
+              <div className="form-section" style={{marginTop:"var(--sp-5)"}}>
+                <div className="section-title">
+                  <div>
+                    <h2>経費項目を選択</h2>
+                    <p>追加する経費項目にチェックを入れてください。</p>
+                  </div>
+                </div>
+
+                {facility && facility.costs.length === 0 ? (
+                  <div style={{padding:"24px 0",textAlign:"center",color:"var(--muted)",fontSize:13,border:"1px dashed var(--line)",borderRadius:"var(--radius)"}}>
+                    この施設には登録された経費項目がありません
+                  </div>
+                ) : (
+                  <div className="list-table-wrap">
+                    <table className="list-table">
+                      <thead>
+                        <tr>
+                          <th style={{width:40}}></th>
+                          <th>経費項目名</th>
+                          <th style={{width:160}}>費用区分</th>
+                          <th style={{width:160}}>金額</th>
+                          <th>支払区分</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {facility && facility.costs.map(cost => {
+                          const isChecked = !!checked[cost.id];
+                          return (
+                            <tr
+                              key={cost.id}
+                              className="list-row"
+                              style={{
+                                background: isChecked ? "var(--accent-tint, #eff6ff)" : undefined,
+                                cursor: "pointer",
+                              }}
+                              onClick={() => toggle(cost.id)}
+                            >
+                              <td style={{textAlign:"center"}}>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => toggle(cost.id)}
+                                  onClick={e => e.stopPropagation()}
+                                  style={{width:16,height:16,cursor:"pointer"}}
+                                />
+                              </td>
+                              <td style={{fontWeight:600,fontSize:13}}>{cost.name}</td>
+                              <td style={{fontSize:12,color:"var(--muted)"}}>
+                                {COST_TYPE_LABELS[cost.costType] || cost.costType}
+                              </td>
+                              <td>
+                                {(cost.costType === "fixed" || cost.costType === "per-person") ? (
+                                  <span style={{fontWeight:600,fontSize:13}}>
+                                    ¥{Number(cost.unitPrice).toLocaleString()}
+                                    <span style={{fontSize:11,color:"var(--muted)",fontWeight:400,marginLeft:4}}>
+                                      {cost.costType === "fixed" ? "/ 1催行" : "/ 1名"}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span style={{fontSize:12,color:"var(--muted)"}}>—</span>
+                                )}
+                              </td>
+                              <td style={{fontSize:12,color:"var(--muted)"}}>
+                                {PAYMENT_TYPE_LABELS[cost.paymentType] || cost.paymentType}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* フッターアクション */}
+              <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:16}}>
+                <button className="btn ghost" onClick={() => { window.location.href = backUrl; }}>キャンセル</button>
+                <button className="btn primary" onClick={handleSave} disabled={checkedCount === 0}>
+                  {saved
+                    ? "✓ 追加しました"
+                    : checkedCount > 0
+                      ? `選択した ${checkedCount} 件を追加`
+                      : "経費項目を選択してください"
+                  }
+                </button>
+              </div>
+
+            </div>
+          </section>
+        </div>
+
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
