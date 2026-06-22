@@ -3,405 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OTA入金照合 — DeepExperience 運営管理</title>
+    <title>OTA入金照合 | deep_Admin</title>
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    <template id="__bundler_thumbnail" data-bg-color="#0a5e5a">
-      <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-        <rect width="1200" height="800" fill="#0a5e5a"/>
-        <rect x="330" y="250" width="540" height="300" rx="28" fill="#ffffff"/>
-        <text x="600" y="465" fill="#0a5e5a" font-family="Inter, sans-serif" font-size="150" font-weight="800" text-anchor="middle">OTA</text>
-      </svg>
-    </template>
+    <link rel="stylesheet" href="css/common.css" />
     <style>
-      :root {
-        --bg: #fbf7f0;
-        --bg-sunken: #f4efe5;
-        --surface: #ffffff;
-        --surface-warm: #fffdf8;
-        --surface-tint: #f7f3eb;
-        --ink: #1d1a17;
-        --ink-soft: #3d3833;
-        --muted: #756d63;
-        --muted-soft: #9a9389;
-        --line: #e8e0d3;
-        --line-strong: #d4cabb;
-        --line-soft: #efe9dc;
-        --side-bg: #0f2e2b;
-        --side-ink: #f3ebdb;
-        --side-ink-soft: #aac3bf;
-        --side-line: rgba(255, 255, 255, 0.12);
-        --accent: #0a5e5a;
-        --accent-strong: #064a47;
-        --accent-soft: #d6ebe8;
-        --blue: #2a5db0;
-        --blue-soft: #e1ebfa;
-        --coral: #ba4530;
-        --coral-soft: #f6dfd8;
-        --coral-bg: #fdf1ee;
-        --amber: #8e5b00;
-        --amber-soft: #f4e3bd;
-        --amber-bg: #fdf4dd;
-        --green: #1f6440;
-        --green-soft: #d6ecdd;
-        --green-bg: #f1f8f3;
-        --radius: 6px;
-        --radius-sm: 4px;
-        --radius-lg: 10px;
-        --field-h: 38px;
-        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
-        --shadow-2: 0 1px 2px rgba(45, 30, 12, 0.05), 0 6px 24px rgba(45, 30, 12, 0.06);
-        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
-        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
-        font-feature-settings: "ss01", "cv11";
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; }
-      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
-      button, input, select, textarea { font: inherit; color: inherit; }
-      button { cursor: pointer; }
-      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
-      .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
-
-      /* ── Shell ── */
-      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
-      .side-nav {
-        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
-        display: flex; flex-direction: column; gap: 20px;
-        position: sticky; top: 0; height: 100vh; min-height: 0; border-right: 1px solid var(--side-line); overflow-y: auto;
-      }
-      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
-      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
-      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
-      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
-      .nav-group { display: flex; flex-direction: column; gap: 2px; }
-      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
-      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
-      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
-      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
-      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
-      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
-      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
-      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
-      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
-      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
-      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
-
-      /* ── Badges & pills ── */
-      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
-      .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-      .badge.blue { background: var(--blue-soft); color: var(--blue); }
-      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
-      .badge.amber { background: var(--amber-soft); color: var(--amber); }
-      .badge.green { background: var(--green-soft); color: var(--green); }
-      .badge.coral { background: var(--coral-soft); color: var(--coral); }
-      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
-      .badge.sq { border-radius: 4px; }
-      .muted-dash { color: var(--muted-soft); }
-
-      /* ── Buttons ── */
-      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
-      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
-      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
-      .btn.lg { height: 42px; padding: 0 22px; font-size: 14px; }
-      .btn.sm { height: 30px; padding: 0 11px; font-size: 12px; }
-      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-      .btn:disabled:hover { background: var(--surface); border-color: var(--line-strong); }
-      .btn.primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
-      .lnk { background: none; border: 1px solid var(--line-strong); color: var(--accent-strong); font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius); white-space: nowrap; transition: background 0.1s, border-color 0.1s; }
-      .lnk:hover { background: var(--accent-soft); border-color: var(--accent); }
-      .lnk.danger { color: var(--coral); }
-      .lnk.danger:hover { background: var(--coral-soft); border-color: var(--coral); }
-      .text-link { background: none; border: 0; color: var(--accent); font-size: 12px; font-weight: 600; padding: 0; cursor: pointer; }
-      .text-link:hover { text-decoration: underline; }
-
-      /* ── Inputs ── */
-      .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-      .field-label { font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: 0.01em; display: flex; align-items: center; gap: 6px; }
-      .field-label .req { width: 5px; height: 5px; background: var(--coral); border-radius: 50%; display: inline-block; }
-      .field-label .opt { font-size: 10.5px; color: var(--muted-soft); font-weight: 500; letter-spacing: 0.04em; }
-      .ctrl { width: 100%; height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 11px; font-size: 13.5px; transition: border-color 0.1s, box-shadow 0.1s; }
-      .ctrl::placeholder { color: var(--muted-soft); }
-      .ctrl:hover { border-color: var(--ink-soft); }
-      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
-      textarea.ctrl { height: auto; min-height: 72px; padding: 9px 11px; resize: vertical; line-height: 1.55; font-family: inherit; }
-      select.ctrl { padding-right: 30px; cursor: pointer; appearance: none;
+      .ota-status-row { display: flex; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+      .ota-status-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+      .ota-status-item b { font-variant-numeric: tabular-nums; }
+      .ota-status-item.warn b { color: var(--amber); }
+      .ota-status-item.err b { color: var(--coral); }
+      .ota-status-item.ok b { color: var(--green); }
+      .list-filters { display: flex; gap: 10px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+      .filter-select { height: 34px; border: 1px solid var(--line-strong); border-radius: var(--radius, 6px); background: var(--surface); color: var(--ink); padding: 0 28px 0 10px; font-size: 13px; cursor: pointer; appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat; background-position: right 11px center; }
-      input.ctrl[readonly] { background: var(--surface-tint); color: var(--ink-soft); border-color: var(--line); cursor: default; }
-      input.ctrl[readonly]:hover { border-color: var(--line); }
-      .num-affix { position: relative; display: flex; align-items: center; }
-      .num-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; font-weight: 600; }
-      .num-affix input { padding-left: 24px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
-
-      /* ── 2-pane layout ── */
-      .ota-wrap { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-width: 0; }
-      .ota-list {
-        background: var(--bg-sunken); border-right: 1px solid var(--line);
-        position: sticky; top: 0; height: 100vh; overflow-y: auto;
-        display: flex; flex-direction: column;
-      }
-      .ota-list-head { padding: 18px 16px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg-sunken); z-index: 2; }
-      .ota-list-head h1 { margin: 0 0 12px; font-size: 17px; font-weight: 750; letter-spacing: -0.01em; }
-      .ota-list-filters { display: flex; flex-direction: column; gap: 8px; }
-      .seg-tabs { display: inline-flex; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 2px; gap: 2px; }
-      .seg-tabs button { flex: 1; border: 0; background: transparent; padding: 5px 6px; border-radius: 4px; font-size: 11.5px; font-weight: 600; color: var(--muted); transition: all 0.1s; white-space: nowrap; }
-      .seg-tabs button:hover { color: var(--ink); }
-      .seg-tabs button.on { background: var(--accent); color: #fff; }
-      .ota-cards { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-      .deposit-card {
-        background: var(--surface); border: 1px solid var(--line); border-left: 3px solid transparent;
-        border-radius: var(--radius); padding: 12px 13px; cursor: pointer; transition: border-color 0.1s, box-shadow 0.1s; text-align: left; width: 100%; display: flex; flex-direction: column; gap: 6px;
-      }
-      .deposit-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-1); }
-      .deposit-card.active { border-left-color: var(--accent); border-color: var(--line-strong); box-shadow: var(--shadow-1); }
-      .dc-row1 { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-      .dc-month { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
-      .dc-row1 .badge:last-child { margin-left: auto; }
-      .dc-amount { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
-      .dc-amount .dc-date { font-size: 11.5px; font-weight: 600; color: var(--amber); margin-left: 7px; }
-      .dc-period { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-      .dc-progress { font-size: 11px; color: var(--muted); display: flex; gap: 9px; }
-      .dc-progress b { font-weight: 700; font-variant-numeric: tabular-nums; }
-      .dc-progress .pg-warn b { color: var(--amber); }
-      .dc-progress .pg-coral b { color: var(--coral); }
-      .dc-progress .pg-green b { color: var(--green); }
-
-      /* ── Main area ── */
-      .ota-main { background: var(--bg); padding: 22px 26px 60px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
-      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-      .crumbs .sep { color: var(--muted-soft); }
-      .crumbs a { color: var(--muted); text-decoration: none; }
-      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
-      .crumbs .current { color: var(--ink); font-weight: 600; }
-
-      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
-      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
-      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
-      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
-      .card-body { padding: 18px 20px; }
-
-      /* ── Empty placeholder for main ── */
-      .main-empty { display: grid; place-items: center; min-height: 60vh; }
-      .main-empty .me-inner { text-align: center; max-width: 360px; color: var(--muted); }
-      .main-empty .me-ic { width: 56px; height: 56px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; margin: 0 auto 16px; font-size: 22px; color: var(--muted-soft); box-shadow: var(--shadow-1); }
-      .main-empty .me-main { font-size: 15px; font-weight: 700; color: var(--ink-soft); }
-      .main-empty .me-sub { font-size: 12.5px; margin-top: 6px; line-height: 1.6; }
-
-      /* ── New deposit form ── */
-      .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-      .form-grid .full { grid-column: 1 / -1; }
-      .calc-readout { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: var(--field-h); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-tint); padding: 0 12px; font-variant-numeric: tabular-nums; }
-      .calc-readout .cr-val { font-size: 15px; font-weight: 750; }
-      .calc-readout.ok .cr-val { color: var(--green); }
-      .calc-readout.diff { background: var(--amber-bg); border-color: var(--amber-soft); }
-      .calc-readout.diff .cr-val { color: var(--amber); }
-      .form-actions { display: flex; gap: 10px; align-items: center; padding-top: 18px; margin-top: 4px; border-top: 1px solid var(--line-soft); }
-
-      /* ── Summary card ── */
-      .sum-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
-      .sum-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 16px 20px 14px; flex-wrap: wrap; }
-      .sum-title { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-      .sum-title h2 { margin: 0; font-size: 17px; font-weight: 750; letter-spacing: -0.01em; }
-      .sum-meta { display: flex; gap: 18px; margin-top: 7px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
-      .sum-meta b { color: var(--ink-soft); font-weight: 650; }
-      .sum-figures { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line-soft); }
-      .sum-fig { padding: 14px 20px; border-right: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 4px; }
-      .sum-fig:last-child { border-right: 0; }
-      .sum-fig .sf-lab { font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-      .sum-fig .sf-val { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-      .sum-fig.diff-fig .sf-val.ok { color: var(--green); }
-      .sum-fig.diff-fig .sf-val.bad { color: var(--coral); }
-      .sum-progress { padding: 14px 20px 16px; border-top: 1px solid var(--line-soft); background: var(--surface-warm); }
-      .sp-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-      .sp-top .sp-label { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; }
-      .sp-top .sp-label b { font-variant-numeric: tabular-nums; }
-      .sp-top .sp-pct { font-size: 12.5px; font-weight: 700; color: var(--accent-strong); font-variant-numeric: tabular-nums; }
-      .sp-bar { height: 7px; background: var(--bg-sunken); border-radius: 4px; overflow: hidden; }
-      .sp-bar .sp-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
-      .sp-counts { display: flex; gap: 16px; margin-top: 10px; font-size: 12px; color: var(--muted); }
-      .sp-counts b { font-weight: 700; font-variant-numeric: tabular-nums; }
-      .sp-counts .c-muted b { color: var(--muted); }
-      .sp-counts .c-coral b { color: var(--coral); }
-      .sp-counts .c-green b { color: var(--green); }
-
-      /* ── Edit basic info inline ── */
-      .edit-panel { padding: 0 20px 18px; }
-      .edit-panel .ep-inner { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 16px; background: var(--surface-warm); }
-
-      /* ── Reconcile table ── */
-      .recon-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
-      .recon-toolbar .rt-title { font-size: 13.5px; font-weight: 700; }
-      .add-row-form { padding: 16px 20px; background: var(--green-bg); border-bottom: 1px solid var(--line); }
-      .add-row-form .arf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-      .add-row-form .arf-actions { display: flex; gap: 9px; justify-content: flex-end; margin-top: 14px; }
-
-      .tbl-scroll { overflow-x: auto; }
-      .recon-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 980px; font-variant-numeric: tabular-nums; }
-      .recon-table thead th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; position: sticky; top: 0; z-index: 1; }
-      .recon-table thead th.right { text-align: right; }
-      .recon-table tbody td { padding: 11px 12px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; white-space: nowrap; }
-      .recon-table tbody td.right { text-align: right; }
-      .recon-table tbody tr.r-row:hover td { background: var(--bg-sunken); }
-      .recon-table tbody tr.r-matched td { background: var(--green-bg); }
-      .recon-table tbody tr.r-matched:hover td { background: #e9f3ec; }
-      .recon-table tbody tr.r-diff td { background: var(--amber-bg); }
-      .recon-table tbody tr.r-diff:hover td { background: #fbeecf; }
-      .recon-table .res-no { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
-      .recon-table .int-id { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--accent-strong); }
-      .recon-table .money { font-weight: 600; color: var(--ink-soft); }
-      .recon-table .money.net { font-weight: 750; color: var(--ink); }
-      .recon-table td.act-cell { text-align: right; white-space: nowrap; }
-      .recon-table td.act-cell .lnk + .lnk { margin-left: 5px; }
-      .res-toggle { background: none; border: 0; color: var(--amber); font-size: 11px; font-weight: 700; cursor: pointer; padding: 2px 0 0; display: inline-flex; align-items: center; gap: 3px; }
-      .res-toggle .caret { transition: transform 0.15s; display: inline-block; }
-      .res-toggle.open .caret { transform: rotate(180deg); }
-
-      /* ── Search panel (inline) ── */
-      .search-cell td { padding: 0 !important; border-bottom: 1px solid var(--line) !important; }
-      .search-panel { background: var(--surface); box-shadow: var(--shadow-pop); border: 1px solid var(--accent-soft); border-left: 3px solid var(--accent); border-radius: var(--radius); margin: 12px 16px; padding: 16px 18px; }
-      .search-panel .sp-title { font-size: 13px; font-weight: 700; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-      .search-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-      .search-row .field { flex: 1; min-width: 180px; }
-      .search-or { font-size: 11.5px; color: var(--muted); margin: 10px 0; display: flex; align-items: center; gap: 10px; }
-      .search-or::before, .search-or::after { content: ""; height: 1px; background: var(--line); flex: 1; }
-      .results-head { font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 14px 0 8px; }
-      .result-opt { display: flex; align-items: flex-start; gap: 11px; padding: 11px 13px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; transition: border-color 0.1s, background 0.1s; margin-bottom: 8px; }
-      .result-opt:hover { border-color: var(--line-strong); background: var(--surface-warm); }
-      .result-opt.sel { border-color: var(--accent); border-width: 2px; background: var(--accent-soft); padding: 10px 12px; }
-      .result-opt .ro-radio { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-strong); flex-shrink: 0; margin-top: 2px; }
-      .result-opt.sel .ro-radio { border-color: var(--accent); border-width: 5px; }
-      .result-opt .ro-body { min-width: 0; flex: 1; }
-      .result-opt .ro-main { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-      .result-opt .ro-id { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; font-weight: 700; color: var(--ink); }
-      .result-opt .ro-name { font-size: 13px; font-weight: 600; }
-      .result-opt .ro-date { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-      .result-opt .ro-amount { margin-left: auto; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-      .result-opt .ro-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
-      .search-actions { display: flex; gap: 9px; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
-      .search-empty { background: var(--coral-bg); border: 1px solid var(--coral-soft); border-radius: var(--radius); padding: 13px 15px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
-      .search-empty strong { color: var(--coral); }
-      .search-empty .se-actions { margin-top: 10px; display: flex; gap: 14px; align-items: center; }
-
-      /* ── Diff detail (inline) ── */
-      .diff-cell td { padding: 0 !important; border-bottom: 1px solid var(--line) !important; }
-      .diff-detail { background: var(--amber-bg); border: 1px solid var(--amber-soft); border-left: 3px solid var(--amber); border-radius: var(--radius); margin: 12px 16px; padding: 16px 18px; }
-      .diff-detail .dd-title { font-size: 13px; font-weight: 700; margin: 0 0 12px; color: var(--amber); display: flex; align-items: center; gap: 8px; }
-      .diff-lines { display: grid; gap: 0; max-width: 460px; }
-      .diff-line { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid rgba(142,91,0,0.14); font-size: 13px; }
-      .diff-line:last-of-type { border-bottom: 0; }
-      .diff-line .dl-lab { color: var(--ink-soft); }
-      .diff-line .dl-lab small { color: var(--muted); font-weight: 500; }
-      .diff-line .dl-val { font-weight: 650; font-variant-numeric: tabular-nums; }
-      .diff-line.total { border-top: 2px solid rgba(142,91,0,0.3); margin-top: 2px; padding-top: 10px; }
-      .diff-line.total .dl-val { font-size: 15px; font-weight: 800; color: var(--coral); }
-      .diff-form { margin-top: 14px; display: grid; gap: 12px; max-width: 520px; }
-      .diff-form .df-actions { display: flex; gap: 9px; justify-content: flex-end; }
-
-      /* ── Complete bar ── */
-      .complete-bar { padding: 16px 20px; border-top: 1px solid var(--line); background: var(--surface-warm); }
-      .cb-warn { display: flex; align-items: flex-start; gap: 12px; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-left: 3px solid var(--amber); border-radius: var(--radius); padding: 13px 15px; margin-bottom: 14px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
-      .cb-warn .cbw-ic { color: var(--amber); font-weight: 800; flex-shrink: 0; }
-      .cb-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-      .cb-actions .cb-hint { font-size: 12.5px; color: var(--muted); }
-      .cb-actions .cb-hint.ok { color: var(--green); font-weight: 600; }
-      .cb-done { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-      .cb-done .cbd-meta { color: var(--muted); font-size: 12px; }
-
-      .info-note { display: flex; gap: 10px; background: var(--accent-soft); border: 1px solid #b8d8d3; border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 11px 14px; font-size: 12.5px; color: var(--accent-strong); line-height: 1.55; }
-
-      /* ── CSV upload wizard modal ── */
-      .modal-overlay { position: fixed; inset: 0; z-index: 340; background: rgba(20, 14, 6, 0.42); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); display: grid; place-items: start center; padding: 64px 20px 24px; overflow-y: auto; }
-      .modal { width: 100%; max-width: 680px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 96px); }
-      .modal-head { padding: 16px 20px 0; }
-      .modal-head .mh-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .modal-head h3 { margin: 0; font-size: 15px; font-weight: 750; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
-      .modal-close { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--surface); display: grid; place-items: center; font-size: 16px; color: var(--muted); flex-shrink: 0; }
-      .modal-close:hover { background: var(--surface-tint); color: var(--ink); }
-      .wiz-steps { display: flex; align-items: center; gap: 7px; margin-top: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); }
-      .wiz-step { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 650; color: var(--muted-soft); white-space: nowrap; }
-      .wiz-step .ws-num { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--bg-sunken); color: var(--muted); border: 1px solid var(--line-strong); }
-      .wiz-step.on { color: var(--ink); }
-      .wiz-step.on .ws-num { background: var(--accent); color: #fff; border-color: var(--accent); }
-      .wiz-step.done .ws-num { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--accent-soft); }
-      .wiz-sep { flex: 1; height: 1px; background: var(--line); min-width: 10px; }
-      .modal-body { padding: 18px 20px; overflow-y: auto; }
-      .modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-top: 1px solid var(--line-soft); background: var(--surface-warm); }
-      .modal-foot .mf-right { display: flex; gap: 9px; }
-
-      .ch-row { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-      .ch-row .ch-lab { color: var(--muted); }
-      .dropzone { border: 2px dashed var(--line-strong); border-radius: var(--radius-lg); background: var(--bg-sunken); padding: 34px 24px; text-align: center; transition: border-color 0.12s, background 0.12s; }
-      .dropzone.drag { border-color: var(--accent); background: var(--accent-soft); }
-      .dropzone .dz-ic { width: 46px; height: 46px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; margin: 0 auto 14px; font-size: 20px; }
-      .dropzone .dz-main { font-size: 13.5px; font-weight: 650; color: var(--ink-soft); }
-      .dropzone .dz-or { font-size: 12px; color: var(--muted); margin: 9px 0; }
-      .dropzone .dz-fmt { font-size: 11.5px; color: var(--muted-soft); margin-top: 16px; }
-      .dz-file { display: flex; align-items: center; gap: 10px; justify-content: center; }
-      .dz-file .badge { background: var(--green-soft); color: var(--green); }
-      .tip-note { display: flex; gap: 9px; background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius); padding: 11px 13px; font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 16px; }
-      .tip-note .tn-ic { flex-shrink: 0; }
-      .tip-note b { color: var(--ink-soft); font-weight: 650; }
-
-      .map-intro { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 14px; }
-      .map-list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-      .map-row { display: grid; grid-template-columns: 156px 16px minmax(0, 1fr) 26px; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--line-soft); }
-      .map-row:last-child { border-bottom: 0; }
-      .map-row:nth-child(odd) { background: var(--surface-warm); }
-      .map-row .mr-de { font-size: 12.5px; font-weight: 650; color: var(--ink); }
-      .map-row .mr-arrow { color: var(--muted-soft); text-align: center; }
-      .map-row select.ctrl { height: 32px; font-size: 12.5px; }
-      .map-row .mr-ok { text-align: center; color: var(--green); font-weight: 800; }
-      .map-row .mr-na { color: var(--muted-soft); text-align: center; font-size: 14px; }
-      .map-warn { display: flex; gap: 9px; align-items: center; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); padding: 10px 13px; font-size: 12px; color: var(--amber); margin-top: 14px; font-weight: 600; }
-
-      .prev-intro { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 12px; }
-      .prev-intro b { font-weight: 750; }
-      .prev-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: auto; max-height: 248px; }
-      .prev-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; font-size: 12.5px; }
-      .prev-table th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 11px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; position: sticky; top: 0; }
-      .prev-table th.right, .prev-table td.right { text-align: right; }
-      .prev-table td { padding: 8px 11px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
-      .prev-table tbody tr:last-child td { border-bottom: 0; }
-      .prev-table .res-no { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; font-weight: 600; color: var(--ink-soft); }
-      .prev-table .ok-cell { color: var(--green); font-weight: 800; }
-      .prev-table .prev-more td { color: var(--muted); font-style: italic; background: var(--surface-warm); text-align: center; }
-      .import-stat { display: flex; flex-direction: column; gap: 7px; margin: 16px 0 4px; font-size: 12.5px; }
-      .import-stat .is-line { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); }
-      .match-box { border-radius: var(--radius); padding: 13px 15px; margin-top: 12px; }
-      .match-box.ok { background: var(--green-bg); border: 1px solid var(--green-soft); }
-      .match-box.warn { background: var(--amber-bg); border: 1px solid var(--amber-soft); }
-      .match-box .mb-row { display: flex; justify-content: space-between; gap: 14px; padding: 3px 0; font-size: 12.5px; font-variant-numeric: tabular-nums; }
-      .match-box .mb-row .mb-k { color: var(--ink-soft); }
-      .match-box .mb-row .mb-v { font-weight: 650; }
-      .match-box .mb-verdict { margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(45, 30, 12, 0.1); font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 7px; }
-      .match-box.ok .mb-verdict { color: var(--green); }
-      .match-box.warn .mb-verdict { color: var(--amber); }
-
-      @media print { .side-nav { top: 0; height: 100vh; min-height: 0; } }
-
-      /* ── Toast ── */
-      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 320; display: flex; align-items: center; gap: 9px; }
-      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
-
-      @media (max-width: 1100px) {
-        .app-shell { grid-template-columns: 1fr; }
-        .side-nav { display: none; }
-        .ota-wrap { grid-template-columns: 280px minmax(0, 1fr); }
-      }
-      @media (max-width: 820px) {
-        .ota-wrap { grid-template-columns: 1fr; }
-        .ota-list { position: static; height: auto; max-height: 360px; }
-        .sum-figures { grid-template-columns: 1fr; }
-        .sum-fig { border-right: 0; border-bottom: 1px solid var(--line-soft); }
-        .form-grid, .add-row-form .arf-grid { grid-template-columns: 1fr; }
-      }
+        background-repeat: no-repeat; background-position: right 9px center; }
+      .filter-select:hover { border-color: var(--ink-soft); }
+      .filter-select:focus { outline: none; border-color: var(--accent); }
     </style>
   </head>
   <body>
@@ -412,1080 +30,183 @@
     <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
     <script type="text/babel" data-presets="react">
-      const { useState, useRef, useMemo } = React;
+      const { useState, useMemo } = React;
 
-      /* ── helpers ── */
-      const num = (v) => { const n = Number(String(v).replace(/[^0-9.\-]/g, "")); return isNaN(n) ? 0 : n; };
-      const yen = (n) => (n < 0 ? "−" : "") + "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
-      const nowStr = () => { const d = new Date(); const p = (x) => String(x).padStart(2, "0"); return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+      const yen = (n) => "¥" + Math.round(n).toLocaleString("ja-JP");
 
-      const CHANNEL = {
-        viator: { label: "Viator", feeRate: 0.20 },
-        getyourguide:    { label: "GetYourGuide", feeRate: 0.20 },
-        klook:  { label: "Klook", feeRate: 0.25 },
-        airbnb: { label: "Airbnb", feeRate: 0.20 },
-        other:  { label: "その他", feeRate: 0.20 },
-      };
-
-      // 照合ステータス（入金レコード単位）
       const STATUS = {
-        unmatched:   { label: "未照合", cls: "muted" },
-        in_progress: { label: "確認中", cls: "amber" },
+        unmatched:   { label: "未照合",   cls: "muted" },
+        in_progress: { label: "確認中",   cls: "amber" },
         diff:        { label: "差異あり", cls: "coral" },
         matched:     { label: "照合済み", cls: "green" },
       };
-      // 照合結果（OTAレポート行単位）
-      const ROW_RESULT = {
-        unmatched: { label: "未照合", cls: "muted" },
-        matched:   { label: "✓ 一致", cls: "green" },
-        diff:      { label: "差異あり", cls: "amber" },
-      };
-      const DIFF_REASONS = ["金額修正あり", "キャンセル処理の違い", "為替差", "その他"];
 
-      const NAV = [
-        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
-        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
-        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
-        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
-        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
-        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
-        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
-        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "monthly-settlement.html" },
-        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "ota-payment-matching.html" },
-        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "revenue-summary.html" },
-        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
-        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
-        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
-        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
-        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
-      ].map(n => ({ ...n, active: n.key === "ota" }));
-
-      let _rid = 1000;
-      const mkRow = (resNo, guest, date, gross, feeRate, result, intId, diff) => {
-        const fee = Math.round(gross * feeRate);
-        return { rid: ++_rid, resNo, guest, date, gross, fee, net: gross - fee,
-          result: result || "unmatched", intId: intId || null, diff: diff || null };
-      };
-
-      // 規約 BK-YYMMDD-XXXXX に準拠した予約IDを生成（YYMMDD＝予約受付日＝ツアー日の offset 日前）
-      const bkId = (tourDate, offset, serial) => {
-        const dt = new Date(tourDate.replace(/\//g, "-"));
-        dt.setDate(dt.getDate() - offset);
-        const mm = String(dt.getMonth() + 1).padStart(2, "0");
-        const dd = String(dt.getDate()).padStart(2, "0");
-        return `BK-${String(dt.getFullYear()).slice(2)}${mm}${dd}-${serial}`;
-      };
-
-      // ── 照合作業ビューの主データ：Viator 2026年5月分（8照合済み / 1差異 / 3未照合） ──
-      const buildViatorRows = () => [
-        mkRow("VTR-8823741", "Smith John",   "2026/05/15", 30000, 0.20, "unmatched"),
-        mkRow("VTR-8823742", "Kim Yuri",      "2026/05/16", 25000, 0.20, "matched", "BK-260507-00012"),
-        mkRow("VTR-8823743", "Brown Mike",    "2026/05/18", 25000, 0.36, "diff",    "BK-260509-00007",
-          { reason: "キャンセル処理の違い", expected: 20000, memo: "ツアー後に一部返金。OTA側ネットが期待値より少ない。" }),
-        mkRow("VTR-8823744", "Tanaka Aoi",    "2026/05/12", 18000, 0.20, "matched", "BK-260510-00003"),
-        mkRow("VTR-8823745", "Lee Min",       "2026/05/13", 36000, 0.20, "matched", "BK-260510-00009"),
-        mkRow("VTR-8823746", "Wang Fang",     "2026/05/20", 22000, 0.20, "matched", "BK-260512-00021"),
-        mkRow("VTR-8823747", "Muller Jonas",  "2026/05/22", 28000, 0.20, "matched", "BK-260513-00004"),
-        mkRow("VTR-8823748", "Rossi Luca",    "2026/05/24", 15000, 0.20, "matched", "BK-260515-00011"),
-        mkRow("VTR-8823749", "Dubois Marie",  "2026/05/25", 40000, 0.20, "matched", "BK-260514-00029"),
-        mkRow("VTR-8823750", "Patel Raj",     "2026/05/27", 30000, 0.20, "matched", "BK-260518-00018"),
-        mkRow("VTR-8823751", "Nguyen Linh",   "2026/05/28", 35000, 0.20, "unmatched"),
-        mkRow("VTR-8823752", "Sato Ken",      "2026/05/30", 30000, 0.20, "unmatched"),
-      ];
-
-      const sumNet = (rows) => rows.reduce((s, r) => s + r.net, 0);
-
-      const buildActive = () => {
-        const rows = buildViatorRows();
-        const total = sumNet(rows);
-        return {
-          id: "OTA-2605-VTR", channel: "viator", monthLabel: "2026年5月分",
-          periodStart: "2026/05/01", periodEnd: "2026/05/31", bankDate: "2026/06/10",
-          bankAmount: total, otaReportTotal: total, note: "", status: "in_progress",
-          completed: false, completedBy: "", completedAt: "", rows,
-        };
-      };
-
-      // 左ペインの入金一覧（サマリー表示用）
       const DEPOSITS = [
-        { id: "OTA-2605-VTR", channel: "viator", monthLabel: "2026年5月分", bankAmount: 263200,
-          bankDate: "2026/06/10", periodStart: "2026/05/01", periodEnd: "2026/05/31",
-          status: "in_progress", unmatched: 3, diff: 1, matched: 8 },
-        { id: "OTA-2605-GYG", channel: "getyourguide", monthLabel: "2026年5月分", bankAmount: 164500,
-          bankDate: "2026/06/08", periodStart: "2026/05/01", periodEnd: "2026/05/31",
-          status: "diff", unmatched: 0, diff: 2, matched: 9 },
-        { id: "OTA-2605-KLK", channel: "klook", monthLabel: "2026年5月分", bankAmount: 98400,
-          bankDate: "2026/06/12", periodStart: "2026/05/01", periodEnd: "2026/05/31",
-          status: "unmatched", unmatched: 6, diff: 0, matched: 0 },
-        { id: "OTA-2605-ABB", channel: "airbnb", monthLabel: "2026年5月分", bankAmount: 152800,
-          bankDate: "2026/06/05", periodStart: "2026/05/01", periodEnd: "2026/05/31",
-          status: "matched", unmatched: 0, diff: 0, matched: 7 },
-        { id: "OTA-2604-VTR", channel: "viator", monthLabel: "2026年4月分", bankAmount: 312000,
-          bankDate: "2026/05/10", periodStart: "2026/04/01", periodEnd: "2026/04/30",
-          status: "matched", unmatched: 0, diff: 0, matched: 12 },
-        { id: "OTA-2604-GYG", channel: "getyourguide", monthLabel: "2026年4月分", bankAmount: 142800,
-          bankDate: "2026/05/08", periodStart: "2026/04/01", periodEnd: "2026/04/30",
-          status: "matched", unmatched: 0, diff: 0, matched: 8 },
+        { id: "OTA-2605-VTR", channel: "Viator",        monthLabel: "2026年5月分", bankAmount: 263200, bankDate: "2026/06/10", periodStart: "2026/05/01", periodEnd: "2026/05/31", status: "in_progress", unmatched: 3, diff: 1, matched: 8 },
+        { id: "OTA-2605-GYG", channel: "GetYourGuide",  monthLabel: "2026年5月分", bankAmount: 164500, bankDate: "2026/06/08", periodStart: "2026/05/01", periodEnd: "2026/05/31", status: "diff",        unmatched: 0, diff: 2, matched: 9 },
+        { id: "OTA-2605-KLK", channel: "Klook",          monthLabel: "2026年5月分", bankAmount:  98400, bankDate: "2026/06/12", periodStart: "2026/05/01", periodEnd: "2026/05/31", status: "unmatched",   unmatched: 6, diff: 0, matched: 0 },
+        { id: "OTA-2605-ABB", channel: "Airbnb",         monthLabel: "2026年5月分", bankAmount: 152800, bankDate: "2026/06/05", periodStart: "2026/05/01", periodEnd: "2026/05/31", status: "matched",     unmatched: 0, diff: 0, matched: 7 },
+        { id: "OTA-2604-VTR", channel: "Viator",         monthLabel: "2026年4月分", bankAmount: 312000, bankDate: "2026/05/10", periodStart: "2026/04/01", periodEnd: "2026/04/30", status: "matched",     unmatched: 0, diff: 0, matched: 12 },
+        { id: "OTA-2604-GYG", channel: "GetYourGuide",  monthLabel: "2026年4月分", bankAmount: 142800, bankDate: "2026/05/08", periodStart: "2026/04/01", periodEnd: "2026/04/30", status: "matched",     unmatched: 0, diff: 0, matched: 8 },
       ];
 
-      const StatusBadge = ({ status }) => {
-        const s = STATUS[status];
-        return <span className={`badge ${s.cls}`}><span className="dot"></span>{s.label}</span>;
-      };
-
-      /* ───────────────────────── App ───────────────────────── */
-      function App() {
-        const [toast, setToast] = useState(null);
-        const toastTimer = useRef(null);
-        const showToast = (msg) => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2400); };
-
-        const [view, setView] = useState("reconcile"); // list | new | reconcile
-        const [active, setActive] = useState(buildActive);
-        const [chFilter, setChFilter] = useState("all");
-        const [stFilter, setStFilter] = useState("all");
-        const [bankDiff, setBankDiff] = useState(false);
-        const [bankDiffReason, setBankDiffReason] = useState(""); // 銀行入金額との差異理由（記録するまで完了不可）
-
-        // インライン展開状態
-        const [searchRowId, setSearchRowId] = useState(null);
-        const [diffOpenId, setDiffOpenId] = useState(null);
-        const [addRowOpen, setAddRowOpen] = useState(false);
-        const [editInfo, setEditInfo] = useState(false);
-        const [csvOpen, setCsvOpen] = useState(false);
-
-        const ch = CHANNEL[active.channel];
-
-        // 集計
-        const counts = useMemo(() => {
-          const c = { unmatched: 0, matched: 0, diff: 0 };
-          active.rows.forEach(r => { c[r.result] = (c[r.result] || 0) + 1; });
-          return c;
-        }, [active.rows]);
-        const total = active.rows.length;
-        const doneCount = counts.matched + counts.diff;
-        const pct = total ? Math.round((doneCount / total) * 100) : 0;
-        const reportTotal = sumNet(active.rows);
-        const bankAmount = bankDiff ? reportTotal + 3000 : reportTotal;
-        const bankDelta = bankAmount - reportTotal;
-
-        const setRows = (fn) => setActive(a => ({ ...a, rows: fn(a.rows) }));
-
-        // 行操作
-        const openSearch = (rid) => { setSearchRowId(rid); setDiffOpenId(null); };
-        const confirmMatch = (rid, cand) => {
-          setRows(rows => rows.map(r => {
-            if (r.rid !== rid) return r;
-            const expected = Math.round(cand.sale * (1 - ch.feeRate));
-            if (expected === r.net) {
-              return { ...r, result: "matched", intId: cand.id, diff: null };
-            }
-            return { ...r, result: "diff", intId: cand.id,
-              diff: { reason: "金額修正あり", expected, memo: "" } };
-          }));
-          setSearchRowId(null);
-          showToast(`${cand.id} と照合しました`);
-          recomputeStatus();
-        };
-        const unmatch = (rid) => {
-          setRows(rows => rows.map(r => r.rid === rid ? { ...r, result: "unmatched", intId: null, diff: null } : r));
-          setDiffOpenId(null);
-          showToast("照合を解除しました");
-          recomputeStatus();
-        };
-        const saveDiff = (rid, patch) => {
-          setRows(rows => rows.map(r => r.rid === rid ? { ...r, diff: { ...r.diff, ...patch } } : r));
-          setDiffOpenId(null);
-          showToast("差異内容を保存しました");
-        };
-        const recomputeStatus = () => {
-          setActive(a => {
-            const c = { unmatched: 0, matched: 0, diff: 0 };
-            a.rows.forEach(r => c[r.result]++);
-            let st = a.status;
-            if (a.completed) return a;
-            if (c.unmatched === a.rows.length) st = "unmatched";
-            else if (c.unmatched > 0) st = "in_progress";
-            else if (c.diff > 0) st = "diff";
-            else st = "matched";
-            return { ...a, status: st };
-          });
-        };
-        const addReportRow = (data) => {
-          const gross = num(data.gross), fee = num(data.fee);
-          const r = { rid: ++_rid, resNo: data.resNo || "(番号未入力)", guest: data.guest || "—",
-            date: data.date || "—", gross, fee, net: data.net != null ? num(data.net) : gross - fee,
-            result: "unmatched", intId: null, diff: null };
-          setRows(rows => [...rows, r]);
-          setAddRowOpen(false);
-          showToast("OTAレポート行を追加しました");
-          recomputeStatus();
-        };
-
-        const importCsvRows = (parsed) => {
-          const have = new Set(active.rows.map(r => r.resNo));
-          const add = parsed.filter(p => !have.has(p.resNo));
-          setRows(rows => [...rows, ...add.map(p => ({ rid: ++_rid, resNo: p.resNo, guest: p.guest,
-            date: p.date, gross: p.gross, fee: p.fee, net: p.net, result: "unmatched", intId: null, diff: null }))]);
-          setCsvOpen(false);
-          showToast(`${add.length}件のOTAレポート行をインポートしました`);
-          recomputeStatus();
-        };
-
-        // 照合完了
-        const completeReconcile = (approveDiff) => {
-          setActive(a => ({ ...a, completed: true, status: counts.diff > 0 ? "diff" : "matched",
-            completedBy: "佐藤 美咲", completedAt: nowStr() }));
-          showToast(approveDiff ? "差異を承認して照合を完了しました" : "照合を完了しました");
-        };
-
-        // 左カードクリック
-        const selectDeposit = (d) => {
-          if (d.id === "OTA-2605-VTR") { setActive(buildActive()); }
-          else {
-            // 他レコードは概要のみのデモ：簡易レコードを生成
-            setActive({
-              id: d.id, channel: d.channel, monthLabel: d.monthLabel,
-              periodStart: d.periodStart, periodEnd: d.periodEnd, bankDate: d.bankDate,
-              bankAmount: d.bankAmount, otaReportTotal: d.bankAmount, note: "", status: d.status,
-              completed: d.status === "matched", completedBy: d.status === "matched" ? "佐藤 美咲" : "",
-              completedAt: d.status === "matched" ? "2026/06/11 14:32" : "",
-              rows: buildViatorRows().slice(0, d.matched + d.diff + d.unmatched).map((r, i) => {
-                if (i < d.matched) return { ...r, result: "matched", intId: r.intId || bkId(r.date, 7, String(31 + i).padStart(5, "0")) };
-                if (i < d.matched + d.diff) return { ...r, result: "diff", intId: bkId(r.date, 10, String(41 + i).padStart(5, "0")),
-                  diff: { reason: "為替差", expected: r.net + 1500, memo: "" } };
-                return { ...r, result: "unmatched", intId: null, diff: null };
-              }),
-            });
-          }
-          setBankDiff(false); setBankDiffReason(""); setSearchRowId(null); setDiffOpenId(null); setAddRowOpen(false); setEditInfo(false); setCsvOpen(false);
-          setView("reconcile");
-        };
-
-        const filteredDeposits = DEPOSITS.filter(d =>
-          (chFilter === "all" || d.channel === chFilter) &&
-          (stFilter === "all" || d.status === stFilter));
-
+      function SideNav() {
         return (
-          <React.Fragment>
-            <div className="app-shell">
-              {/* ── サイドナビ ── */}
-              <nav className="side-nav">
-              <div className="brand-block">
-                <div className="brand-mark">d.</div>
-                <div>
-                  <div className="brand-name">deep_Admin</div>
-                  <div className="brand-caption">Product &amp; Sales · Phase 1</div>
-                </div>
+          <nav className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
               </div>
-              <div className="nav-group" style={{marginBottom:"8px"}}>
-                <a href="index.html" className="nav-item" style={{textDecoration:"none"}}>
-                  <span className="nav-icon">⊞</span>
-                  <span>ダッシュボード</span>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className="nav-item" style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span><span>ダッシュボード</span>
+              </a>
+            </div>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">
+                <a href="monthly-settlement.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">ST</span><span>月次締め確認</span>
+                </a>
+                <a href="ota-payment-matching.html" className="nav-item active" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">OT</span><span>OTA入金照合</span>
+                </a>
+                <a href="revenue-summary.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">RV</span><span>収支一覧</span>
                 </a>
               </div>
-              <div>
-                <div className="nav-section-label">精算・経営</div>
-                <div className="nav-group">
-                  <a href="monthly-settlement.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">ST</span><span>月次締め確認</span>
-                  </a>
-                  <a href="ota-payment-matching.html" className="nav-item active" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">OT</span><span>OTA入金照合</span>
-                  </a>
-                  <a href="revenue-summary.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">RV</span><span>収支一覧</span>
-                  </a>
-                </div>
-              </div>
-              <div>
-                <div className="nav-section-label">商品管理</div>
-                <div className="nav-group">
-                  <a href="tour-options.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">TO</span><span>TourOption</span>
-                  </a>
-                  <a href="products.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">PG</span><span>商品ページ</span>
-                  </a>
-                  <a href="resources.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">RS</span><span>リソース管理</span>
-                  </a>
-                  <a href="areas.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">AR</span><span>エリア管理</span>
-                  </a>
-                  <a href="facilities.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">FC</span><span>施設管理</span>
-                  </a>
-                  <a href="languages.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">LG</span><span>言語マスター管理</span>
-                  </a>
-                  <a href="guide-materials.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">GD</span><span>ガイド資料</span>
-                  </a>
-                  <a href="cancel-policies.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">CP</span><span>キャンセルポリシー</span>
-                  </a>
-                </div>
-              </div>
-            </nav>
-
-              {/* ── 2ペイン ── */}
-              <div className="ota-wrap">
-                {/* 左ペイン：OTA入金一覧 */}
-                <aside className="ota-list" data-screen-label="OTA入金一覧">
-                  <div className="ota-list-head">
-                    <h1>OTA入金照合</h1>
-                    <button className="btn primary" style={{ width: "100%", marginBottom: 12 }}
-                      onClick={() => { setView("new"); }}>＋ 新規入金を登録</button>
-                    <div className="ota-list-filters">
-                      <div className="seg-tabs">
-                        {[["all", "すべて"], ["viator", "Viator"], ["getyourguide", "GYG"], ["klook", "Klook"], ["airbnb", "Airbnb"]].map(([k, l]) => (
-                          <button key={k} className={chFilter === k ? "on" : ""} onClick={() => setChFilter(k)}>{l}</button>
-                        ))}
-                      </div>
-                      <select className="ctrl" value={stFilter} onChange={e => setStFilter(e.target.value)}>
-                        <option value="all">ステータス：すべて</option>
-                        <option value="unmatched">未照合</option>
-                        <option value="in_progress">確認中</option>
-                        <option value="diff">差異あり</option>
-                        <option value="matched">照合済み</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="ota-cards">
-                    {filteredDeposits.length === 0 && (
-                      <div style={{ padding: "24px 8px", textAlign: "center", color: "var(--muted)", fontSize: 12.5 }}>
-                        条件に一致する入金がありません
-                      </div>
-                    )}
-                    {filteredDeposits.map(d => (
-                      <button key={d.id} className={`deposit-card ${view === "reconcile" && active.id === d.id ? "active" : ""}`}
-                        onClick={() => selectDeposit(d)}>
-                        <div className="dc-row1">
-                          <span className="badge blue sq">{CHANNEL[d.channel].label}</span>
-                          <span className="dc-month">{d.monthLabel}</span>
-                          <StatusBadge status={d.status} />
-                        </div>
-                        <div className="dc-amount">{yen(d.bankAmount)}<span className="dc-date">入金 {d.bankDate}</span></div>
-                        <div className="dc-period">対象期間: {d.periodStart} 〜 {d.periodEnd}</div>
-                        <div className="dc-progress">
-                          <span className="pg-warn">未照合 <b>{d.unmatched}</b>件</span>
-                          <span className="pg-coral">差異 <b>{d.diff}</b>件</span>
-                          <span className="pg-green">照合済み <b>{d.matched}</b>件</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </aside>
-
-                {/* 右メインエリア */}
-                <main className="ota-main">
-                  {view === "list" && (
-                    <div className="main-empty">
-                      <div className="me-inner">
-                        <div className="me-ic">⇠</div>
-                        <div className="me-main">入金レコードを選択してください</div>
-                        <div className="me-sub">左の一覧から入金レコードを選ぶと照合作業ビューが表示されます。新しい振込は「＋ 新規入金を登録」から追加できます。</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {view === "new" && (
-                    <NewDepositForm
-                      onCancel={() => setView("list")}
-                      onSave={(form) => {
-                        const rt = num(form.otaReportTotal);
-                        setActive({
-                          id: "OTA-NEW", channel: form.channel, monthLabel: "新規登録分",
-                          periodStart: form.periodStart || "—", periodEnd: form.periodEnd || "—",
-                          bankDate: form.bankDate || "—", bankAmount: num(form.bankAmount),
-                          otaReportTotal: rt, note: form.note, status: "unmatched",
-                          completed: false, completedBy: "", completedAt: "", rows: [],
-                        });
-                        setBankDiff(false);
-                        showToast("入金を登録しました。照合を開始します");
-                        setView("reconcile");
-                      }} />
-                  )}
-
-                  {view === "reconcile" && (
-                    <ReconcileView
-                      active={active} ch={ch} counts={counts} total={total} doneCount={doneCount}
-                      pct={pct} reportTotal={reportTotal} bankAmount={bankAmount} bankDelta={bankDelta}
-                      bankDiffReason={bankDiffReason} setBankDiffReason={setBankDiffReason}
-                      searchRowId={searchRowId} setSearchRowId={setSearchRowId}
-                      diffOpenId={diffOpenId} setDiffOpenId={setDiffOpenId}
-                      addRowOpen={addRowOpen} setAddRowOpen={setAddRowOpen}
-                      editInfo={editInfo} setEditInfo={setEditInfo}
-                      csvOpen={csvOpen} setCsvOpen={setCsvOpen} importCsvRows={importCsvRows}
-                      openSearch={openSearch} confirmMatch={confirmMatch} unmatch={unmatch}
-                      saveDiff={saveDiff} addReportRow={addReportRow} completeReconcile={completeReconcile}
-                      showToast={showToast} />
-                  )}
-                </main>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group">
+                <a href="tour-options.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">TO</span><span>TourOption</span>
+                </a>
+                <a href="products.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">PG</span><span>商品ページ</span>
+                </a>
+                <a href="resources.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">RS</span><span>リソース管理</span>
+                </a>
+                <a href="areas.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">AR</span><span>エリア管理</span>
+                </a>
+                <a href="languages.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">LG</span><span>言語マスター管理</span>
+                </a>
+                <a href="guide-materials.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">GD</span><span>ガイド資料</span>
+                </a>
+                <a href="cancel-policies.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">CP</span><span>キャンセルポリシー</span>
+                </a>
               </div>
             </div>
-
-            <div className={`toast ${toast ? "show" : ""}`}>
-              <span className="t-dot"></span>{toast}
-            </div>
-          </React.Fragment>
+          </nav>
         );
       }
 
-      /* ───────────── 新規入金登録フォーム ───────────── */
-      function NewDepositForm({ onSave, onCancel }) {
-        const [f, setF] = useState({ channel: "viator", periodStart: "", periodEnd: "",
-          bankDate: "", bankAmount: "", otaReportTotal: "", note: "" });
-        const set = (k, v) => setF(p => ({ ...p, [k]: v }));
-        const delta = num(f.bankAmount) - num(f.otaReportTotal);
-        const hasBoth = f.bankAmount !== "" && f.otaReportTotal !== "";
-        const canSave = f.channel && f.periodStart && f.periodEnd && f.bankDate && f.bankAmount !== "" && f.otaReportTotal !== "";
+      function App() {
+        const [chFilter, setChFilter] = useState("all");
+        const [stFilter, setStFilter] = useState("all");
+
+        const filtered = useMemo(() => DEPOSITS.filter(d =>
+          (chFilter === "all" || d.channel === chFilter) &&
+          (stFilter === "all" || d.status === stFilter)
+        ), [chFilter, stFilter]);
 
         return (
-          <React.Fragment>
-            <div className="crumbs">
-              <a href="#" onClick={e => { e.preventDefault(); onCancel(); }}>OTA入金照合</a>
-              <span className="sep">›</span><span className="current">新規入金を登録</span>
-            </div>
-            <section className="card" data-screen-label="新規入金登録フォーム">
-              <div className="card-head">
-                <div className="card-title">入金基本情報<span className="sec-hint">OTAからの振込とレポート合計を登録します</span></div>
-              </div>
-              <div className="card-body">
-                <div className="form-grid">
-                  <div className="field">
-                    <label className="field-label">チャネル（OTA名）<span className="req"></span></label>
-                    <select className="ctrl" value={f.channel} onChange={e => set("channel", e.target.value)}>
-                      <option value="viator">Viator</option>
-                      <option value="getyourguide">GetYourGuide</option>
-                      <option value="klook">Klook</option>
-                      <option value="airbnb">Airbnb</option>
-                      <option value="other">その他</option>
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label className="field-label">銀行入金日<span className="req"></span></label>
-                    <input type="date" className="ctrl" value={f.bankDate} onChange={e => set("bankDate", e.target.value)} />
-                  </div>
-                  <div className="field">
-                    <label className="field-label">対象期間（開始）<span className="req"></span></label>
-                    <input type="date" className="ctrl" value={f.periodStart} onChange={e => set("periodStart", e.target.value)} />
-                  </div>
-                  <div className="field">
-                    <label className="field-label">対象期間（終了）<span className="req"></span></label>
-                    <input type="date" className="ctrl" value={f.periodEnd} onChange={e => set("periodEnd", e.target.value)} />
-                  </div>
-                  <div className="field">
-                    <label className="field-label">銀行入金額<span className="req"></span></label>
-                    <div className="num-affix"><span className="pfx">¥</span>
-                      <input className="ctrl" inputMode="numeric" placeholder="0" value={f.bankAmount} onChange={e => set("bankAmount", e.target.value)} /></div>
-                  </div>
-                  <div className="field">
-                    <label className="field-label">OTAレポート上の合計ネット額<span className="req"></span></label>
-                    <div className="num-affix"><span className="pfx">¥</span>
-                      <input className="ctrl" inputMode="numeric" placeholder="0" value={f.otaReportTotal} onChange={e => set("otaReportTotal", e.target.value)} /></div>
-                  </div>
-                  <div className="field full">
-                    <label className="field-label">照合差額<span className="opt">自動計算 / 読み取り専用</span></label>
-                    <div className={`calc-readout ${!hasBoth ? "" : delta === 0 ? "ok" : "diff"}`}>
-                      <span style={{ fontSize: 12, color: "var(--muted)" }}>銀行入金額 − OTAレポート合計</span>
-                      <span className="cr-val">{!hasBoth ? "—" : delta === 0 ? "¥0（一致）" : yen(delta)}</span>
-                    </div>
-                  </div>
-                  <div className="field full">
-                    <label className="field-label">備考<span className="opt">任意</span></label>
-                    <textarea className="ctrl" placeholder="振込明細番号、為替レート、特記事項など" value={f.note} onChange={e => set("note", e.target.value)}></textarea>
-                  </div>
+          <div className="app-shell">
+            <SideNav />
+            <div className="list-view">
+              {/* ページヘッダー */}
+              <div className="list-header">
+                <div className="list-header-left">
+                  <h1 className="list-title">OTA入金照合</h1>
+                  <p className="list-desc">OTAからの入金と予約データの照合を管理します。</p>
                 </div>
-                <div className="form-actions">
-                  <button className="btn primary lg" disabled={!canSave} onClick={() => onSave(f)}>保存して照合を開始する →</button>
-                  <button className="btn lg" onClick={onCancel}>キャンセル</button>
-                  {!canSave && <span style={{ fontSize: 12, color: "var(--muted)" }}>必須項目を入力すると保存できます</span>}
-                </div>
-              </div>
-            </section>
-          </React.Fragment>
-        );
-      }
-
-      /* ───────────── 照合作業ビュー ───────────── */
-      function ReconcileView(p) {
-        const { active, ch, counts, total, doneCount, pct, reportTotal, bankAmount, bankDelta,
-          bankDiffReason, setBankDiffReason,
-          searchRowId, setSearchRowId, diffOpenId, setDiffOpenId, addRowOpen, setAddRowOpen,
-          editInfo, setEditInfo, csvOpen, setCsvOpen, importCsvRows,
-          openSearch, confirmMatch, unmatch, saveDiff, addReportRow,
-          completeReconcile, showToast } = p;
-
-        return (
-          <React.Fragment>
-            <div className="crumbs">
-              <span>OTA入金照合</span><span className="sep">›</span>
-              <span className="current">{CHANNEL[active.channel].label} {active.monthLabel}</span>
-            </div>
-
-            {/* ① 入金情報サマリーカード */}
-            <section className="sum-card" data-screen-label="入金情報サマリー">
-              <div className="sum-head">
-                <div>
-                  <div className="sum-title">
-                    <span className="badge blue sq">{CHANNEL[active.channel].label}</span>
-                    <h2>{CHANNEL[active.channel].label} {active.monthLabel}</h2>
-                    <StatusBadge status={active.status} />
-                  </div>
-                  <div className="sum-meta">
-                    <span>対象期間: <b>{active.periodStart} 〜 {active.periodEnd}</b></span>
-                    <span>入金日: <b>{active.bankDate}</b></span>
-                  </div>
-                </div>
-                <button className="text-link" onClick={() => setEditInfo(v => !v)}>{editInfo ? "× 編集を閉じる" : "▼ 編集"}</button>
-              </div>
-
-              {editInfo && (
-                <div className="edit-panel">
-                  <div className="ep-inner">
-                    <div className="info-note" style={{ marginBottom: 14 }}>入金基本情報をインラインで編集できます（デモ）。変更は「保存」で反映されます。</div>
-                    <div className="form-grid">
-                      <div className="field"><label className="field-label">銀行入金日</label><input type="text" className="ctrl" defaultValue={active.bankDate} /></div>
-                      <div className="field"><label className="field-label">銀行入金額</label>
-                        <div className="num-affix"><span className="pfx">¥</span><input className="ctrl" defaultValue={String(active.bankAmount)} /></div></div>
-                    </div>
-                    <div className="form-actions" style={{ borderTop: 0, paddingTop: 14 }}>
-                      <button className="btn primary" onClick={() => { setEditInfo(false); showToast("入金基本情報を更新しました"); }}>保存</button>
-                      <button className="btn" onClick={() => setEditInfo(false)}>キャンセル</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="sum-figures">
-                <div className="sum-fig">
-                  <span className="sf-lab">銀行入金額</span>
-                  <span className="sf-val">{yen(bankAmount)}</span>
-                </div>
-                <div className="sum-fig">
-                  <span className="sf-lab">OTAレポート合計</span>
-                  <span className="sf-val">{yen(reportTotal)}</span>
-                </div>
-                <div className="sum-fig diff-fig">
-                  <span className="sf-lab">照合差額</span>
-                  <span className={`sf-val ${bankDelta === 0 ? "ok" : "bad"}`}>{bankDelta === 0 ? "¥0（一致）" : yen(bankDelta)}</span>
+                <div className="list-header-right">
+                  <a href="ota-payment-new.html" className="btn primary">＋ 新規入金を登録</a>
                 </div>
               </div>
 
-              <div className="sum-progress">
-                <div className="sp-top">
-                  <span className="sp-label">照合進捗: <b>{doneCount}/{total}</b>件 照合済み</span>
-                  <span className="sp-pct">{pct}%</span>
-                </div>
-                <div className="sp-bar"><div className="sp-fill" style={{ width: pct + "%" }}></div></div>
-                <div className="sp-counts">
-                  <span className="c-muted">未照合: <b>{counts.unmatched}</b>件</span>
-                  <span className="c-coral">差異あり: <b>{counts.diff}</b>件</span>
-                  <span className="c-green">照合済み: <b>{counts.matched}</b>件</span>
-                </div>
-              </div>
-            </section>
-
-            {/* ②③④⑤⑥ 照合作業テーブル */}
-            <section className="card" data-screen-label="照合作業テーブル">
-              <div className="recon-toolbar">
-                <span className="rt-title">OTAレポート行</span>
-                <div style={{ display: "flex", gap: 9 }}>
-                  <button className="btn sm primary" onClick={() => setCsvOpen(true)}>📂 OTAレポートCSVをアップロード</button>
-                  <button className="btn sm" onClick={() => setAddRowOpen(v => !v)}>{addRowOpen ? "× 追加をやめる" : "＋ 行を手動追加"}</button>
-                </div>
+              {/* フィルター */}
+              <div className="list-filters">
+                <select className="filter-select" value={chFilter} onChange={e => setChFilter(e.target.value)}>
+                  <option value="all">チャネル：すべて</option>
+                  <option value="Viator">Viator</option>
+                  <option value="GetYourGuide">GetYourGuide</option>
+                  <option value="Klook">Klook</option>
+                  <option value="Airbnb">Airbnb</option>
+                </select>
+                <select className="filter-select" value={stFilter} onChange={e => setStFilter(e.target.value)}>
+                  <option value="all">ステータス：すべて</option>
+                  <option value="unmatched">未照合</option>
+                  <option value="in_progress">確認中</option>
+                  <option value="diff">差異あり</option>
+                  <option value="matched">照合済み</option>
+                </select>
+                <span style={{fontSize:12.5,color:"var(--muted)",marginLeft:"auto"}}>{filtered.length}件</span>
               </div>
 
-              {addRowOpen && <AddRowForm feeRate={ch.feeRate} onCancel={() => setAddRowOpen(false)} onAdd={addReportRow} />}
-
-              {active.rows.length === 0 ? (
-                <div style={{ padding: "44px 20px", textAlign: "center", color: "var(--muted)" }}>
-                  <div style={{ fontSize: 14, fontWeight: 650, color: "var(--ink-soft)" }}>OTAレポート行がまだありません</div>
-                  <div style={{ fontSize: 12.5, marginTop: 5 }}>「＋ OTAレポート行を追加」からレポートの予約行を登録してください。</div>
-                </div>
-              ) : (
-                <div className="tbl-scroll">
-                  <table className="recon-table">
+              {/* テーブル */}
+              <div className="list-table-wrap">
+                <div className="table-scroll">
+                  <table className="list-table">
                     <thead>
                       <tr>
-                        <th>OTA予約番号</th><th>ゲスト名</th><th>ツアー日</th>
-                        <th className="right">グロス額</th><th className="right">手数料</th><th className="right">ネット額</th>
-                        <th>社内予約ID</th><th>照合結果</th><th className="right">操作</th>
+                        <th style={{width:160}}>管理ID</th>
+                        <th style={{width:140}}>チャネル</th>
+                        <th style={{width:120}}>対象月</th>
+                        <th style={{width:120}}>銀行入金日</th>
+                        <th className="num" style={{width:140}}>銀行入金額</th>
+                        <th style={{width:220}}>照合状況</th>
+                        <th style={{width:110}}>ステータス</th>
+                        <th className="actions" style={{width:100}}>アクション</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {active.rows.map(r => {
-                        const rr = ROW_RESULT[r.result];
-                        const rowCls = r.result === "matched" ? "r-matched" : r.result === "diff" ? "r-diff" : "r-row";
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td colSpan={8} style={{textAlign:"center",padding:"40px 20px",color:"var(--muted)"}}>
+                            条件に一致する入金がありません
+                          </td>
+                        </tr>
+                      )}
+                      {filtered.map(d => {
+                        const s = STATUS[d.status];
                         return (
-                          <React.Fragment key={r.rid}>
-                            <tr className={rowCls}>
-                              <td><span className="res-no">{r.resNo}</span></td>
-                              <td>{r.guest}</td>
-                              <td>{r.date}</td>
-                              <td className="right"><span className="money">{yen(r.gross)}</span></td>
-                              <td className="right"><span className="money">{yen(r.fee)}</span></td>
-                              <td className="right"><span className="money net">{yen(r.net)}</span></td>
-                              <td>{r.intId ? <span className="int-id">{r.intId}</span> : <span className="muted-dash">——</span>}</td>
-                              <td>
-                                <span className={`badge ${rr.cls}`}><span className="dot"></span>{rr.label}</span>
-                                {r.result === "diff" && (
-                                  <div><button className={`res-toggle ${diffOpenId === r.rid ? "open" : ""}`}
-                                    onClick={() => setDiffOpenId(diffOpenId === r.rid ? null : r.rid)}>
-                                    <span className="caret">▾</span> 差異内容</button></div>
-                                )}
-                              </td>
-                              <td className="act-cell">
-                                {r.result === "unmatched" && <button className="lnk" onClick={() => openSearch(r.rid)}>照合する</button>}
-                                {r.result === "matched" && <button className="lnk danger" onClick={() => unmatch(r.rid)}>解除</button>}
-                                {r.result === "diff" && (
-                                  <React.Fragment>
-                                    <button className="lnk" onClick={() => setDiffOpenId(diffOpenId === r.rid ? null : r.rid)}>修正</button>
-                                    <button className="lnk danger" onClick={() => unmatch(r.rid)}>解除</button>
-                                  </React.Fragment>
-                                )}
-                              </td>
-                            </tr>
-                            {searchRowId === r.rid && (
-                              <tr className="search-cell"><td colSpan={9}>
-                                <SearchPanel row={r} ch={ch} onCancel={() => setSearchRowId(null)}
-                                  onConfirm={(cand) => confirmMatch(r.rid, cand)} showToast={showToast} />
-                              </td></tr>
-                            )}
-                            {diffOpenId === r.rid && r.result === "diff" && (
-                              <tr className="diff-cell"><td colSpan={9}>
-                                <DiffDetail row={r} feeRate={ch.feeRate} onSave={(patch) => saveDiff(r.rid, patch)} onCancel={() => setDiffOpenId(null)} />
-                              </td></tr>
-                            )}
-                          </React.Fragment>
+                          <tr key={d.id} className="list-row">
+                            <td>
+                              <span style={{fontFamily:"monospace",fontSize:12.5,fontWeight:600,color:"var(--ink-soft)"}}>{d.id}</span>
+                            </td>
+                            <td>
+                              <span className="badge blue sq">{d.channel}</span>
+                            </td>
+                            <td>{d.monthLabel}</td>
+                            <td style={{fontVariantNumeric:"tabular-nums"}}>{d.bankDate}</td>
+                            <td className="num" style={{fontWeight:700,fontVariantNumeric:"tabular-nums"}}>{yen(d.bankAmount)}</td>
+                            <td>
+                              <div className="ota-status-row">
+                                <span className="ota-status-item warn">未照合 <b>{d.unmatched}</b>件</span>
+                                <span className="ota-status-item err">差異 <b>{d.diff}</b>件</span>
+                                <span className="ota-status-item ok">照合済み <b>{d.matched}</b>件</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`badge ${s.cls}`}><span className="dot"></span>{s.label}</span>
+                            </td>
+                            <td className="actions">
+                              <a href={`ota-payment-matching-detail.html?id=${d.id}`} className="lnk">照合する</a>
+                            </td>
+                          </tr>
                         );
                       })}
                     </tbody>
                   </table>
-                </div>
-              )}
-
-              {/* ⑥ 照合完了にする */}
-              {active.rows.length > 0 && (
-                <div className="complete-bar">
-                  {active.completed ? (
-                    <div className="cb-done">
-                      <span className={`badge ${counts.diff > 0 ? "coral" : "green"}`}><span className="dot"></span>{counts.diff > 0 ? "差異あり（承認済み）で完了" : "照合済み"}</span>
-                      <span className="cbd-meta">照合担当者: {active.completedBy} ／ 照合日時: {active.completedAt}</span>
-                    </div>
-                  ) : counts.unmatched > 0 ? (
-                    <div className="cb-actions">
-                      <span className="cb-hint">未照合 {counts.unmatched}件が残っています。すべての行を照合すると完了できます。</span>
-                    </div>
-                  ) : counts.diff > 0 ? (
-                    <React.Fragment>
-                      <div className="cb-warn">
-                        <span className="cbw-ic">!</span>
-                        <div>差異あり件数：<b>{counts.diff}件</b>。差異を確認・解消してから照合完了にしてください。または差異を承認して完了にすることもできます。</div>
-                      </div>
-                      <div className="cb-actions">
-                        <button className="btn primary lg" onClick={() => completeReconcile(true)}>差異を承認して完了にする</button>
-                        <span className="cb-hint">差異の内容と運営メモは各行に記録されます。</span>
-                      </div>
-                    </React.Fragment>
-                  ) : bankDelta !== 0 ? (
-                    <React.Fragment>
-                      <div className="cb-warn">
-                        <span className="cbw-ic">!</span>
-                        <div>全行照合済み・銀行入金額との差異 <b>{yen(bankDelta)}</b> があります。差異理由を記録して完了してください。</div>
-                      </div>
-                      <div style={{ padding: "0 0 12px" }}>
-                        <input className="ctrl" style={{ width: "100%", maxWidth: 480 }}
-                          placeholder="差異理由を入力（例：振込手数料、為替差など）"
-                          value={bankDiffReason} onChange={e => setBankDiffReason(e.target.value)} />
-                      </div>
-                      <div className="cb-actions">
-                        <button className="btn primary lg" disabled={!bankDiffReason.trim()}
-                          onClick={() => completeReconcile(false)}>照合を完了する</button>
-                        <span className="cb-hint">差異理由が未記録の間は完了できません。</span>
-                      </div>
-                    </React.Fragment>
-                  ) : (
-                    <div className="cb-actions">
-                      <button className="btn primary lg" onClick={() => completeReconcile(false)}>照合完了にする</button>
-                      <span className="cb-hint ok">全行照合済み・銀行入金額とレポート合計が一致しています。</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
-
-            {csvOpen && <CsvWizard active={active} onClose={() => setCsvOpen(false)} onImport={importCsvRows} />}
-          </React.Fragment>
-        );
-      }
-
-      /* ───────────── OTAレポート行 追加フォーム ───────────── */
-      function AddRowForm({ feeRate, onAdd, onCancel }) {
-        const [f, setF] = useState({ resNo: "", guest: "", date: "", gross: "", fee: "", net: "", netManual: false });
-        const set = (k, v) => setF(p => ({ ...p, [k]: v }));
-        const autoNet = num(f.gross) - num(f.fee);
-        const netVal = f.netManual ? f.net : (f.gross !== "" || f.fee !== "" ? String(autoNet) : "");
-        return (
-          <div className="add-row-form">
-            <div className="arf-grid">
-              <div className="field"><label className="field-label">OTA予約番号</label>
-                <input className="ctrl" placeholder="VTR-0000000" value={f.resNo} onChange={e => set("resNo", e.target.value)} /></div>
-              <div className="field"><label className="field-label">ゲスト名</label>
-                <input className="ctrl" placeholder="Smith John" value={f.guest} onChange={e => set("guest", e.target.value)} /></div>
-              <div className="field"><label className="field-label">ツアー日</label>
-                <input type="date" className="ctrl" value={f.date} onChange={e => set("date", e.target.value)} /></div>
-              <div className="field"><label className="field-label">グロス額</label>
-                <div className="num-affix"><span className="pfx">¥</span>
-                  <input className="ctrl" inputMode="numeric" placeholder="0" value={f.gross} onChange={e => set("gross", e.target.value)} /></div></div>
-              <div className="field"><label className="field-label">チャネル手数料</label>
-                <div className="num-affix"><span className="pfx">¥</span>
-                  <input className="ctrl" inputMode="numeric" placeholder="0" value={f.fee} onChange={e => set("fee", e.target.value)} /></div></div>
-              <div className="field"><label className="field-label">ネット額<span className="opt">グロス − 手数料・自動</span></label>
-                <div className="num-affix"><span className="pfx">¥</span>
-                  <input className="ctrl" inputMode="numeric" placeholder="0" value={netVal}
-                    onChange={e => set2(setF, { net: e.target.value, netManual: true })} /></div></div>
-            </div>
-            <div className="arf-actions">
-              <button className="btn primary" onClick={() => onAdd({ ...f, net: netVal })}>追加</button>
-              <button className="btn" onClick={onCancel}>キャンセル</button>
-            </div>
-          </div>
-        );
-      }
-      const set2 = (setter, patch) => setter(p => ({ ...p, ...patch }));
-
-      /* ───────────── 照合検索パネル ───────────── */
-      function SearchPanel({ row, ch, onConfirm, onCancel, showToast }) {
-        const [q, setQ] = useState(row.resNo);
-        const [q2, setQ2] = useState("");
-        const [sel, setSel] = useState(null);
-        const [searched, setSearched] = useState(true);
-        const [noResult, setNoResult] = useState(false);
-
-        // 候補生成：第1候補はネット額が一致、第2候補は差異あり
-        const exactSale = Math.round(row.net / (1 - ch.feeRate));
-        // 照合候補はOTA経由の予約のみ（自社サイトは照合対象外のため除外）
-        const cands = useMemo(() => ([
-          { id: bkId(row.date, 7, "00024"), name: row.guest, date: row.date, sale: exactSale, channel: `${ch.label}経由`, ext: row.resNo },
-          { id: bkId(row.date, 10, "00026"), name: row.guest.split(" ").reverse().join(" "), date: row.date, sale: exactSale + 5000, channel: `${ch.label}経由`, ext: "外部予約番号なし" },
-        ]), [row.rid]);
-
-        const doSearch = (empty) => { setSearched(true); setNoResult(!!empty); setSel(null); };
-
-        return (
-          <div className="search-panel">
-            <h4 className="sp-title">⌕ 社内予約を検索して紐付ける<span style={{ fontWeight: 500, color: "var(--muted)", marginLeft: 4 }}>（{row.resNo} / {row.guest}）</span></h4>
-            <div className="search-row">
-              <div className="field"><label className="field-label">OTA予約番号で検索</label>
-                <input className="ctrl" value={q} onChange={e => setQ(e.target.value)} /></div>
-              <button className="btn" onClick={() => doSearch(false)}>検索</button>
-            </div>
-            <div className="search-or">または</div>
-            <div className="search-row">
-              <div className="field"><label className="field-label">外部予約番号 / ゲスト名 / ツアー日で検索</label>
-                <input className="ctrl" placeholder="ゲスト名 または 日付" value={q2} onChange={e => setQ2(e.target.value)} /></div>
-              <button className="btn" onClick={() => doSearch(q2.trim() === "該当なし")}>検索</button>
-            </div>
-
-            {searched && !noResult && (
-              <React.Fragment>
-                <div className="results-head">検索結果（{cands.length}件）</div>
-                {cands.map(c => {
-                  const expected = Math.round(c.sale * (1 - ch.feeRate));
-                  const willMatch = expected === row.net;
-                  return (
-                    <div key={c.id} className={`result-opt ${sel === c.id ? "sel" : ""}`} onClick={() => setSel(c.id)}>
-                      <span className="ro-radio"></span>
-                      <div className="ro-body">
-                        <div className="ro-main">
-                          <span className="ro-id">{c.id}</span>
-                          <span className="ro-name">{c.name}</span>
-                          <span className="ro-date">{c.date}</span>
-                          <span className="ro-amount">{yen(c.sale)}</span>
-                        </div>
-                        <div className="ro-sub">
-                          <span>{c.channel}</span>
-                          <span>{c.ext}</span>
-                          <span>期待ネット額 {yen(expected)}　{willMatch
-                            ? <b style={{ color: "var(--green)" }}>一致</b>
-                            : <b style={{ color: "var(--amber)" }}>差異 {yen(expected - row.net)}</b>}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="search-actions">
-                  <button className="btn primary" disabled={!sel} onClick={() => onConfirm(cands.find(c => c.id === sel))}>この予約と照合する</button>
-                  <button className="btn" onClick={onCancel}>キャンセル</button>
-                </div>
-              </React.Fragment>
-            )}
-
-            {searched && noResult && (
-              <div className="search-empty" style={{ marginTop: 14 }}>
-                <strong>該当する社内予約が見つかりません。</strong>予約一覧を確認してください。
-                <div className="se-actions">
-                  <button className="text-link" onClick={() => showToast("予約一覧で検索します")}>→ 予約一覧で検索する</button>
-                  <button className="lnk" onClick={onCancel}>未照合のまま保存</button>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      /* ───────────── 差異行の詳細 ───────────── */
-      function DiffDetail({ row, feeRate = 0.20, onSave, onCancel }) {
-        const d = row.diff || {};
-        const [reason, setReason] = useState(d.reason || DIFF_REASONS[0]);
-        const [other, setOther] = useState("");
-        const [memo, setMemo] = useState(d.memo || "");
-        const expected = d.expected != null ? d.expected : row.net;
-        const delta = row.net - expected;
-        // チャネル別の手数料率（CHANNELマスタ）を参照して期待ネット額を逆算
-        const netRate = 1 - feeRate;
-        const intSale = Math.round(expected / netRate);
-        return (
-          <div className="diff-detail">
-            <h4 className="dd-title">差異の内容</h4>
-            <div className="diff-lines">
-              <div className="diff-line"><span className="dl-lab">OTAレポートのネット額</span><span className="dl-val">{yen(row.net)}</span></div>
-              <div className="diff-line"><span className="dl-lab">社内予約の期待値 <small>（{yen(intSale)} × {Math.round(netRate * 100)}%・チャネル手数料率 {Math.round(feeRate * 100)}%）</small></span><span className="dl-val">{yen(expected)}</span></div>
-              <div className="diff-line total"><span className="dl-lab">差異</span><span className="dl-val">{yen(delta)}</span></div>
-            </div>
-            <div className="diff-form">
-              <div className="field">
-                <label className="field-label">差異理由</label>
-                <select className="ctrl" value={reason} onChange={e => setReason(e.target.value)}>
-                  {DIFF_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-              {reason === "その他" && (
-                <div className="field"><label className="field-label">理由（自由記述）</label>
-                  <input className="ctrl" value={other} onChange={e => setOther(e.target.value)} placeholder="差異の理由を入力" /></div>
-              )}
-              <div className="field"><label className="field-label">運営メモ</label>
-                <textarea className="ctrl" value={memo} onChange={e => setMemo(e.target.value)} placeholder="差異の経緯・対応内容を記録"></textarea></div>
-              <div className="df-actions">
-                <button className="btn primary" onClick={() => onSave({ reason: reason === "その他" && other ? `その他：${other}` : reason, memo })}>保存</button>
-                <button className="btn" onClick={onCancel}>キャンセル</button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      /* ───────────── CSVアップロード ウィザード ───────────── */
-      const CSV_SCHEMA = {
-        viator: {
-          file: "viator_payments_2026-05.csv",
-          columns: ["Booking Reference", "Lead Traveler Name", "Travel Date", "Gross Amount", "Commission", "Net Amount", "Currency", "Product Title", "Booking Status"],
-          map: { resNo: "Booking Reference", guest: "Lead Traveler Name", date: "Travel Date", gross: "Gross Amount", fee: "Commission", net: "Net Amount" },
-          hint: "ViatorはReporting画面から「Payments」→「Export CSV」で取得できます。",
-        },
-        getyourguide: {
-          file: "gyg_finance_report_2026-05.csv",
-          columns: ["Reference Number", "Customer Name", "Activity Date", "Retail Price", "Commission", "Net Amount", "Currency", "Option Title", "Status"],
-          map: { resNo: "Reference Number", guest: "Customer Name", date: "Activity Date", gross: "Retail Price", fee: "Commission", net: "Net Amount" },
-          hint: "GetYourGuideはFinance画面から「Download report」でCSVを取得できます。",
-        },
-        klook: {
-          file: "klook_settlement_2026-05.csv",
-          columns: ["Booking No.", "Guest Name", "Participation Date", "Selling Price", "Service Fee", "Net Payout", "Currency", "Activity Name", "Status"],
-          map: { resNo: "Booking No.", guest: "Guest Name", date: "Participation Date", gross: "Selling Price", fee: "Service Fee", net: "Net Payout" },
-          hint: "KlookはMerchant Portalの「Settlement」からレポートCSVを取得できます。",
-        },
-        other: {
-          file: "ota_report_2026-05.csv",
-          columns: ["Reservation No", "Guest", "Tour Date", "Gross", "Fee", "Net", "Currency", "Product", "Status"],
-          map: { resNo: "Reservation No", guest: "Guest", date: "Tour Date", gross: "Gross", fee: "Fee", net: "Net" },
-          hint: "OTAのレポート画面からネット額・予約番号を含むCSVを取得してください。",
-        },
-      };
-      const DE_FIELDS = [
-        { key: "resNo", label: "OTA予約番号" },
-        { key: "guest", label: "ゲスト名" },
-        { key: "date",  label: "ツアー日" },
-        { key: "gross", label: "グロス額" },
-        { key: "fee",   label: "チャネル手数料" },
-        { key: "net",   label: "ネット額" },
-      ];
-      const CSV_COUNT = { viator: 12, getyourguide: 9, klook: 6, other: 8 };
-      const CSV_GUESTS = ["Smith John", "Garcia Maria", "Chen Wei", "Kim Min-jun", "Yamada Aoi", "Muller Jonas", "Rossi Luca", "Dubois Marie", "Patel Raj", "Nguyen Linh", "Brown Mike", "Lee Soo"];
-
-      // CSVの取込結果を模擬生成（ネット額合計 = 登録済みOTAレポート合計 になるよう調整）
-      const buildCsvRows = (channel, total, periodStart) => {
-        const feeRate = CHANNEL[channel].feeRate;
-        const prefix = { viator: "VTR", getyourguide: "GYG", klook: "KLK", airbnb: "ABB", other: "OTA" }[channel] || "OTA";
-        const count = CSV_COUNT[channel] || 8;
-        const ym = (periodStart && periodStart !== "—") ? periodStart.slice(0, 8) : "2026/05/";
-        const rows = []; let acc = 0;
-        for (let i = 0; i < count; i++) {
-          let net = i < count - 1 ? Math.max(0, Math.round(total / count / 100) * 100) : (total - acc);
-          acc += i < count - 1 ? net : 0;
-          const gross = Math.round(net / (1 - feeRate));
-          const fee = gross - net;
-          const day = String(2 + (i * 2) % 27).padStart(2, "0");
-          rows.push({ resNo: `${prefix}-93${String(10001 + i)}`, guest: CSV_GUESTS[i % CSV_GUESTS.length],
-            date: `${ym}${day}`, gross, fee, net });
-        }
-        return rows;
-      };
-
-      function CsvWizard({ active, onClose, onImport }) {
-        const channel = active.channel;
-        const schema = CSV_SCHEMA[channel] || CSV_SCHEMA.other;
-        const [step, setStep] = useState(1);
-        const [fileName, setFileName] = useState("");
-        const [drag, setDrag] = useState(false);
-        const [rows, setRows] = useState([]);
-        const [mapping, setMapping] = useState(schema.map);
-        const fileRef = useRef(null);
-
-        const parseFile = (name) => {
-          setFileName(name || schema.file);
-          setRows(buildCsvRows(channel, active.otaReportTotal || 0, active.periodStart));
-          setMapping(schema.map);
-          setStep(2);
-        };
-        const onDrop = (e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; parseFile(f ? f.name : ""); };
-        const onPick = (e) => { const f = e.target.files[0]; parseFile(f ? f.name : ""); };
-
-        const usedCols = DE_FIELDS.map(d => mapping[d.key]).filter(v => v && v !== "__ignore__");
-        const ignoredCount = schema.columns.length - new Set(usedCols).size;
-
-        const csvNetTotal = useMemo(() => rows.reduce((s, r) => s + r.net, 0), [rows]);
-        const reportTotal = active.otaReportTotal || 0;
-        const matchDelta = csvNetTotal - reportTotal;
-        const have = new Set(active.rows.map(r => r.resNo));
-        const dupCount = rows.filter(r => have.has(r.resNo)).length;
-        const importable = rows.length - dupCount;
-
-        const Steps = () => {
-          const labels = ["ファイル選択", "列マッピング", "内容確認"];
-          return (
-            <div className="wiz-steps">
-              {labels.map((l, i) => (
-                <React.Fragment key={l}>
-                  {i > 0 && <span className="wiz-sep"></span>}
-                  <span className={`wiz-step ${step === i + 1 ? "on" : step > i + 1 ? "done" : ""}`}>
-                    <span className="ws-num">{step > i + 1 ? "✓" : i + 1}</span>{l}
-                  </span>
-                </React.Fragment>
-              ))}
-            </div>
-          );
-        };
-
-        return (
-          <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="modal" data-screen-label="CSVアップロード" role="dialog" aria-modal="true">
-              <div className="modal-head">
-                <div className="mh-top">
-                  <h3>📂 OTAレポートCSVをアップロード</h3>
-                  <button className="modal-close" onClick={onClose} aria-label="閉じる">×</button>
-                </div>
-                <Steps />
-              </div>
-
-              <div className="modal-body">
-                {/* STEP 1 */}
-                {step === 1 && (
-                  <React.Fragment>
-                    <div className="ch-row"><span className="ch-lab">対象チャネル:</span>
-                      <span className="badge blue sq">{CHANNEL[channel].label}</span>
-                      <span style={{ color: "var(--muted)", fontSize: 11.5 }}>入金登録時の設定から自動表示</span></div>
-                    <div className={`dropzone ${drag ? "drag" : ""}`}
-                      onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-                      onDragLeave={() => setDrag(false)} onDrop={onDrop}>
-                      <div className="dz-ic">⬆</div>
-                      <div className="dz-main">ここにCSVファイルをドラッグ＆ドロップ</div>
-                      <div className="dz-or">または</div>
-                      <button className="btn" onClick={() => fileRef.current && fileRef.current.click()}>ファイルを選択</button>
-                      <input ref={fileRef} type="file" accept=".csv,.tsv" style={{ display: "none" }} onChange={onPick} />
-                      <div className="dz-fmt">対応形式: .csv / .tsv（UTF-8 または Shift-JIS）</div>
-                    </div>
-                    <div className="tip-note"><span className="tn-ic">💡</span><div>{schema.hint}</div></div>
-                  </React.Fragment>
-                )}
-
-                {/* STEP 2 */}
-                {step === 2 && (
-                  <React.Fragment>
-                    <div className="map-intro"><b>{CHANNEL[channel].label}</b> の既定マッピングを適用しました。必要に応じて修正してください。</div>
-                    <div className="map-list">
-                      {DE_FIELDS.map(d => {
-                        const val = mapping[d.key] || "__ignore__";
-                        const mapped = val !== "__ignore__";
-                        return (
-                          <div className="map-row" key={d.key}>
-                            <span className="mr-de">{d.label}</span>
-                            <span className="mr-arrow">←</span>
-                            <select className="ctrl" value={val} onChange={(e) => setMapping(m => ({ ...m, [d.key]: e.target.value }))}>
-                              {schema.columns.map(c => <option key={c} value={c}>{c}</option>)}
-                              <option value="__ignore__">— 無視する —</option>
-                            </select>
-                            <span className={mapped ? "mr-ok" : "mr-na"}>{mapped ? "✓" : "—"}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="map-warn"><span>⚠️</span>マッピングに使われなかった列は無視されます（{ignoredCount}列）</div>
-                  </React.Fragment>
-                )}
-
-                {/* STEP 3 */}
-                {step === 3 && (
-                  <React.Fragment>
-                    <div className="prev-intro"><b>{rows.length}件</b>のデータが読み込まれました。内容を確認してインポートしてください。</div>
-                    <div className="prev-wrap">
-                      <table className="prev-table">
-                        <thead>
-                          <tr><th>OTA予約番号</th><th>ゲスト名</th><th>ツアー日</th>
-                            <th className="right">グロス</th><th className="right">ネット</th><th></th></tr>
-                        </thead>
-                        <tbody>
-                          {rows.slice(0, 4).map(r => (
-                            <tr key={r.resNo}>
-                              <td><span className="res-no">{r.resNo}</span></td>
-                              <td>{r.guest}</td><td>{r.date}</td>
-                              <td className="right">{yen(r.gross)}</td><td className="right">{yen(r.net)}</td>
-                              <td className="ok-cell">✓</td>
-                            </tr>
-                          ))}
-                          {rows.length > 4 && (
-                            <tr className="prev-more"><td colSpan={6}>…（残り{rows.length - 4}件）</td></tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="import-stat">
-                      <div className="is-line"><span>⚠️</span>既にインポート済みの行：<b>{dupCount}件</b></div>
-                      <div className="is-line"><span>❌</span>解析エラーの行：<b>0件</b></div>
-                    </div>
-                    <div className={`match-box ${matchDelta === 0 ? "ok" : "warn"}`}>
-                      <div className="mb-row"><span className="mb-k">ネット額合計（CSVより）</span><span className="mb-v">{yen(csvNetTotal)}</span></div>
-                      <div className="mb-row"><span className="mb-k">OTAレポート合計（登録済み）</span><span className="mb-v">{yen(reportTotal)}</span></div>
-                      <div className="mb-verdict">
-                        {matchDelta === 0
-                          ? <React.Fragment><span>✅</span>一致しています</React.Fragment>
-                          : <React.Fragment><span>⚠️</span>{yen(Math.abs(matchDelta))} の差異があります。OTAレポート合計を修正するか、CSVを確認してください（インポートは可能です）。</React.Fragment>}
-                      </div>
-                    </div>
-                  </React.Fragment>
-                )}
-              </div>
-
-              <div className="modal-foot">
-                <div>
-                  {step > 1 && <button className="btn" onClick={() => setStep(step - 1)}>← 戻る</button>}
-                </div>
-                <div className="mf-right">
-                  <button className="btn" onClick={onClose}>キャンセル</button>
-                  {step === 2 && <button className="btn primary" onClick={() => setStep(3)}>プレビューを確認 →</button>}
-                  {step === 3 && <button className="btn primary" onClick={() => onImport(rows)} disabled={importable === 0}>{importable}件をインポート</button>}
                 </div>
               </div>
             </div>
