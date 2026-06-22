@@ -151,7 +151,7 @@
                   <option value="diff">差異あり</option>
                   <option value="matched">照合済み</option>
                 </select>
-                <span style={{fontSize:12.5,color:"var(--muted)",marginLeft:"auto"}}>{filtered.length}件</span>
+                <span style={{fontSize:12.5,color:"var(--muted)",marginLeft:"auto"}}>{filtered.length}件表示中</span>
               </div>
 
               {/* テーブル */}
@@ -202,7 +202,7 @@
                               <span className={`badge ${s.cls}`}><span className="dot"></span>{s.label}</span>
                             </td>
                             <td className="actions">
-                              <a href={`ota-payment-matching-detail.html?id=${d.id}`} className="lnk">照合する</a>
+                              <a href={`ota-payment-matching-detail.html?id=${d.id}`} className="btn sm">照合する</a>
                             </td>
                           </tr>
                         );
