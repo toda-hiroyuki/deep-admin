@@ -21,16 +21,16 @@ const { useState } = React;
 
 const PAYMENT_TYPES = [
   { value: "A", label: "A：施設へ月末一括（会社払い）" },
-  { value: "B", label: "B：施設へ都度・ガイド立替" },
-  { value: "C", label: "C：登録施設外への都度・ガイド立替" },
-  { value: "D", label: "D：ガイド自身の経費" },
+  { value: "B", label: "B：施設へ都度払い（会社払い）" },
+  { value: "C", label: "C：ガイドが現地立替（後日精算）" },
+  { value: "D", label: "D：お客様が現地直接払い" },
 ];
 
 const COST_TYPES = [
-  { value: "fixed",      label: "固定費",           hint: "1回あたりの合計金額を入力してください。" },
-  { value: "per-person", label: "変動・人数固定",    hint: "1人あたりの単価を入力してください。" },
-  { value: "slide",      label: "変動・スライド",    hint: "" },
-  { value: "full-var",   label: "完全変動",          hint: "" },
+  { value: "fixed",      label: "固定費（1催行）",         hint: "1回あたりの合計金額を入力してください。" },
+  { value: "per-person", label: "変動・人数比例（1名）",   hint: "1人あたりの単価を入力してください。" },
+  { value: "slide",      label: "変動・スライド",           hint: "" },
+  { value: "full-var",   label: "完全変動（要入力）",       hint: "" },
 ];
 
 const SEED_COSTS = {
@@ -230,11 +230,11 @@ function App() {
 
                   <div className="field-wide" style={{marginTop:-8}}>
                     <div style={{fontSize:12,color:'var(--muted)'}}>
-                      固定費：一定額 ／ 変動・人数固定：人数×単価 ／ 変動・スライド：人数帯で単価変動 ／ 完全変動：毎回異なる
+                      固定費（1催行）：一定額 ／ 変動・人数比例（1名）：人数×単価 ／ 変動・スライド：人数帯で単価変動 ／ 完全変動（要入力）：毎回異なる
                     </div>
                   </div>
 
-                  {/* 固定費 / 変動・人数固定 */}
+                  {/* 固定費（1催行） / 変動・人数比例（1名） */}
                   {(form.costType === "fixed" || form.costType === "per-person") && (
                     <Field label="単価 / 基本料金（円）" required>
                       <input type="number" min="0" value={form.unitPrice} onChange={e => upd("unitPrice", e.target.value)} placeholder="例：1200" />
