@@ -523,30 +523,6 @@ function App() {
 
   return (
     <React.Fragment>
-      {/* ── シナリオ選択バー（開発・確認用）── */}
-      <div className="scenario-bar">
-        <span className="sb-label">🎛 シナリオ選択</span>
-        <div className="sb-group">
-          <span className="sb-cap">精算種別</span>
-          <span className="sb-seg">
-            {[["first", "初回精算"], ["rechange", "変更による再精算"], ["cancel", "キャンセルによる精算"]].map(([k, l]) => (
-              <button key={k} className={settleType === k ? "on" : ""} onClick={() => { setSettleType(k); resetPhase(); }}>{l}</button>
-            ))}
-          </span>
-        </div>
-        <div className="sb-group">
-          <span className="sb-cap">差異の有無</span>
-          <span className="sb-seg">
-            {[["diff", "差異あり"], ["none", "差異なし"], ["all", "全項目差異あり"]].map(([k, l]) => (
-              <button key={k} className={variant === k ? "on" : ""} onClick={() => { setVariant(k); resetPhase(); }}>{l}</button>
-            ))}
-          </span>
-        </div>
-        <label className="sb-check"><input type="checkbox" checked={otaCheck} onChange={e => { setOtaCheck(e.target.checked); resetPhase(); }} />OTA経由予約</label>
-        <label className="sb-check"><input type="checkbox" checked={multiGuide} onChange={e => { setMultiGuide(e.target.checked); setActiveGuide("main"); resetPhase(); }} />複数ガイド</label>
-        <label className="sb-check"><input type="checkbox" checked={cancelCheck} onChange={e => { setCancelCheck(e.target.checked); resetPhase(); }} />キャンセル精算</label>
-      </div>
-
       <div className="app-shell">
         <nav className="side-nav">
               <div className="brand-block">
