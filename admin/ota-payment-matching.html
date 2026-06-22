@@ -113,13 +113,17 @@
       }
 
       function App() {
+        const [moFilter, setMoFilter] = useState("all");
         const [chFilter, setChFilter] = useState("all");
         const [stFilter, setStFilter] = useState("all");
 
+        const months = useMemo(() => [...new Set(DEPOSITS.map(d => d.monthLabel))], []);
+
         const filtered = useMemo(() => DEPOSITS.filter(d =>
+          (moFilter === "all" || d.monthLabel === moFilter) &&
           (chFilter === "all" || d.channel === chFilter) &&
           (stFilter === "all" || d.status === stFilter)
-        ), [chFilter, stFilter]);
+        ), [moFilter, chFilter, stFilter]);
 
         return (
           <div className="app-shell">
@@ -138,7 +142,11 @@
               </div>
 
               {/* フィルター */}
-              <div className="list-filters">
+              <div className="list-filters" style={{flexWrap:"nowrap",gap:8}}>
+                <select className="filter-select" value={moFilter} onChange={e => setMoFilter(e.target.value)}>
+                  <option value="all">対象月：すべて</option>
+                  {months.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
                 <div className="seg-tabs">
                   {[["all","すべて"],["Viator","Viator"],["GetYourGuide","GYG"],["Klook","Klook"],["Airbnb","Airbnb"]].map(([k,l]) => (
                     <button key={k} className={chFilter === k ? "on" : ""} onClick={() => setChFilter(k)}>{l}</button>
@@ -151,7 +159,7 @@
                   <option value="diff">差異あり</option>
                   <option value="matched">照合済み</option>
                 </select>
-                <span style={{fontSize:12.5,color:"var(--muted)",marginLeft:"auto"}}>{filtered.length}件表示中</span>
+                <span style={{fontSize:12.5,color:"var(--muted)",marginLeft:"auto",whiteSpace:"nowrap"}}>{filtered.length}件表示中</span>
               </div>
 
               {/* テーブル */}
