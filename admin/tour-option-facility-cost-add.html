@@ -110,116 +110,24 @@ function Sidebar() {
   );
 }
 
-// ── FacilityBlock ─────────────────────────────────────────────────────────────
-function FacilityBlock({ facility, checked, onToggle }) {
-  const allIds = facility.costs.map(c => c.id);
-  const checkedInFac = allIds.filter(id => checked[id]);
-  const allChecked = allIds.length > 0 && checkedInFac.length === allIds.length;
-  const someChecked = checkedInFac.length > 0 && !allChecked;
-
-  const toggleAll = () => {
-    if (allChecked) {
-      allIds.forEach(id => onToggle(id, false));
-    } else {
-      allIds.forEach(id => onToggle(id, true));
-    }
-  };
-
-  return (
-    <div style={{marginBottom:16,border:"1px solid var(--line)",borderRadius:"var(--radius)",overflow:"hidden"}}>
-      {/* 施設ヘッダー */}
-      <div style={{background:"var(--bg-sunken)",padding:"9px 16px",borderBottom:"1px solid var(--line)",display:"flex",alignItems:"center",gap:10}}>
-        <input
-          type="checkbox"
-          checked={allChecked}
-          ref={el => { if (el) el.indeterminate = someChecked; }}
-          onChange={toggleAll}
-          style={{width:15,height:15,cursor:"pointer",flexShrink:0}}
-        />
-        <span style={{fontWeight:700,fontSize:13}}>{facility.name}</span>
-        <span style={{fontSize:11,color:"var(--muted)",padding:"1px 7px",borderRadius:10,border:"1px solid var(--line)",background:"#fff"}}>
-          {facility.type === "partner" ? "提携" : "外部"}
-        </span>
-        {checkedInFac.length > 0 && (
-          <span style={{marginLeft:"auto",fontSize:12,color:"var(--accent)",fontWeight:600}}>
-            {checkedInFac.length}件選択中
-          </span>
-        )}
-      </div>
-
-      {facility.costs.length === 0 ? (
-        <div style={{padding:"14px 16px",fontSize:13,color:"var(--muted)"}}>
-          経費項目が登録されていません
-        </div>
-      ) : (
-        <table className="list-table" style={{marginBottom:0}}>
-          <thead>
-            <tr>
-              <th style={{width:40}}></th>
-              <th>経費項目名</th>
-              <th style={{width:160}}>費用区分</th>
-              <th style={{width:160}}>金額</th>
-              <th>支払区分</th>
-            </tr>
-          </thead>
-          <tbody>
-            {facility.costs.map(cost => {
-              const isChecked = !!checked[cost.id];
-              return (
-                <tr
-                  key={cost.id}
-                  className="list-row"
-                  style={{background: isChecked ? "var(--accent-tint, #eff6ff)" : undefined, cursor:"pointer"}}
-                  onClick={() => onToggle(cost.id, !isChecked)}
-                >
-                  <td style={{textAlign:"center"}}>
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => onToggle(cost.id, !isChecked)}
-                      onClick={e => e.stopPropagation()}
-                      style={{width:15,height:15,cursor:"pointer"}}
-                    />
-                  </td>
-                  <td style={{fontWeight:600,fontSize:13}}>{cost.name}</td>
-                  <td style={{fontSize:12,color:"var(--muted)"}}>
-                    {COST_TYPE_LABELS[cost.costType] || cost.costType}
-                  </td>
-                  <td>
-                    {(cost.costType === "fixed" || cost.costType === "per-person") ? (
-                      <span style={{fontWeight:600,fontSize:13}}>
-                        ¥{Number(cost.unitPrice).toLocaleString()}
-                        <span style={{fontSize:11,color:"var(--muted)",fontWeight:400,marginLeft:4}}>
-                          {cost.costType === "fixed" ? "/ 1催行" : "/ 1名"}
-                        </span>
-                      </span>
-                    ) : (
-                      <span style={{fontSize:12,color:"var(--muted)"}}>—</span>
-                    )}
-                  </td>
-                  <td style={{fontSize:12,color:"var(--muted)"}}>
-                    {PAYMENT_TYPE_LABELS[cost.paymentType] || cost.paymentType}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-}
-
 // ── App ───────────────────────────────────────────────────────────────────────
 function App() {
-  const params  = new URLSearchParams(window.location.search);
-  const backUrl = params.get("back") || "tour-option-detail.html?tab=expenses";
+  const params   = new URLSearchParams(window.location.search);
+  const backUrl  = params.get("back") || "tour-option-detail.html?tab=expenses";
 
-  const [checked, setChecked] = useState({});
-  const [saved,   setSaved]   = useState(false);
+  const [facilityId, setFacilityId] = useState(FACILITY_MASTER[0].id);
+  const [checked,    setChecked]    = useState({});
+  const [saved,      setSaved]      = useState(false);
 
-  const onToggle = (costId, val) => {
-    setChecked(prev => ({ ...prev, [costId]: val }));
+  const facility = FACILITY_MASTER.find(f => f.id === facilityId);
+
+  const toggle = (costId) => {
+    setChecked(prev => ({ ...prev, [costId]: !prev[costId] }));
+  };
+
+  const handleFacilityChange = (id) => {
+    setFacilityId(id);
+    setChecked({});
   };
 
   const checkedCount = Object.values(checked).filter(Boolean).length;
@@ -272,31 +180,121 @@ function App() {
         <div className="content-grid" data-no-preview="true">
           <section className="editor-pane">
             <div className="editor-content">
+
+              {/* 施設選択 */}
               <div className="form-section">
                 <div className="section-title">
                   <div>
-                    <h2>施設・経費項目を選択</h2>
-                    <p>複数施設の経費項目をまとめて選択できます。追加したい項目にチェックを入れて「追加」してください。</p>
+                    <h2>施設を選択</h2>
+                    <p>施設マスターから施設を選択し、紐づける経費項目にチェックを入れてください。</p>
                   </div>
                 </div>
 
-                {FACILITY_MASTER.map(fac => (
-                  <FacilityBlock
-                    key={fac.id}
-                    facility={fac}
-                    checked={checked}
-                    onToggle={onToggle}
-                  />
-                ))}
+                <div className="field">
+                  <label className="field-label">
+                    <span className="req" />
+                    <span>施設名</span>
+                  </label>
+                  <div style={{position:"relative",display:"inline-flex",alignItems:"center",minWidth:320}}>
+                    <select
+                      value={facilityId}
+                      onChange={e => handleFacilityChange(e.target.value)}
+                      style={{width:"100%",paddingRight:28,appearance:"none",WebkitAppearance:"none"}}
+                    >
+                      {FACILITY_MASTER.map(f => (
+                        <option key={f.id} value={f.id}>{f.name}</option>
+                      ))}
+                    </select>
+                    <span style={{position:"absolute",right:10,pointerEvents:"none",fontSize:10,color:"var(--muted)"}}>▼</span>
+                  </div>
+                  {facility && (
+                    <div style={{marginTop:6,fontSize:12,color:"var(--muted)"}}>
+                      種別：{facility.type === "partner" ? "提携施設" : "外部施設"}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 経費項目一覧 */}
+              <div className="form-section" style={{marginTop:"var(--sp-5)"}}>
+                <div className="section-title">
+                  <div>
+                    <h2>経費項目を選択</h2>
+                    <p>追加する経費項目にチェックを入れてください。</p>
+                  </div>
+                </div>
+
+                {facility && facility.costs.length === 0 ? (
+                  <div style={{padding:"24px 0",textAlign:"center",color:"var(--muted)",fontSize:13,border:"1px dashed var(--line)",borderRadius:"var(--radius)"}}>
+                    この施設には登録された経費項目がありません
+                  </div>
+                ) : (
+                  <div className="list-table-wrap">
+                    <table className="list-table">
+                      <thead>
+                        <tr>
+                          <th style={{width:40}}></th>
+                          <th>経費項目名</th>
+                          <th style={{width:160}}>費用区分</th>
+                          <th style={{width:160}}>金額</th>
+                          <th>支払区分</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {facility && facility.costs.map(cost => {
+                          const isChecked = !!checked[cost.id];
+                          return (
+                            <tr
+                              key={cost.id}
+                              className="list-row"
+                              style={{background: isChecked ? "var(--accent-tint, #eff6ff)" : undefined, cursor:"pointer"}}
+                              onClick={() => toggle(cost.id)}
+                            >
+                              <td style={{textAlign:"center"}}>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => toggle(cost.id)}
+                                  onClick={e => e.stopPropagation()}
+                                  style={{width:16,height:16,cursor:"pointer"}}
+                                />
+                              </td>
+                              <td style={{fontWeight:600,fontSize:13}}>{cost.name}</td>
+                              <td style={{fontSize:12,color:"var(--muted)"}}>
+                                {COST_TYPE_LABELS[cost.costType] || cost.costType}
+                              </td>
+                              <td>
+                                {(cost.costType === "fixed" || cost.costType === "per-person") ? (
+                                  <span style={{fontWeight:600,fontSize:13}}>
+                                    ¥{Number(cost.unitPrice).toLocaleString()}
+                                    <span style={{fontSize:11,color:"var(--muted)",fontWeight:400,marginLeft:4}}>
+                                      {cost.costType === "fixed" ? "/ 1催行" : "/ 1名"}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span style={{fontSize:12,color:"var(--muted)"}}>—</span>
+                                )}
+                              </td>
+                              <td style={{fontSize:12,color:"var(--muted)"}}>
+                                {PAYMENT_TYPE_LABELS[cost.paymentType] || cost.paymentType}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               {/* フッターアクション */}
-              <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:8}}>
+              <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:16}}>
                 <button className="btn ghost" onClick={() => { window.location.href = backUrl; }}>キャンセル</button>
                 <button className="btn primary" onClick={handleSave} disabled={checkedCount === 0}>
                   {saveLabel}
                 </button>
               </div>
+
             </div>
           </section>
         </div>
