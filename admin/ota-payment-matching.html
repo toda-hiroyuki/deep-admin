@@ -383,27 +383,7 @@
       .match-box.ok .mb-verdict { color: var(--green); }
       .match-box.warn .mb-verdict { color: var(--amber); }
 
-      /* ── Scenario bar (dev/QA only) ── */
-      body { padding-top: 42px; }
-      .scenario-bar {
-        position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-        height: 42px; display: flex; align-items: center; gap: 14px;
-        padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8;
-        font-size: 11.5px; color: #6b6b6b;
-        overflow-x: auto; overflow-y: hidden; white-space: nowrap;
-      }
-      .scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
-      .scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
-      .scenario-bar .sb-cap { color: #8a8a8a; }
-      .sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
-      .sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; }
-      .sb-seg button + button { border-left: 1px solid #e4dfd4; }
-      .sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
-      .sb-seg button.on { background: var(--accent); color: #fff; }
-      .scenario-bar .sb-check { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #6b6b6b; white-space: nowrap; cursor: pointer; }
-      .scenario-bar .sb-check input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; }
-      .scenario-bar .sb-spacer { margin-left: auto; }
-      @media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; min-height: 0; } }
+      @media print { .side-nav { top: 0; height: 100vh; min-height: 0; } }
 
       /* ── Toast ── */
       .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 320; display: flex; align-items: center; gap: 9px; }
