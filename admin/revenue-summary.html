@@ -549,38 +549,6 @@
 
         return (
           <React.Fragment>
-            {/* シナリオ選択バー（開発・確認用） */}
-            <div className="scenario-bar">
-              <span className="sb-label">🎛 シナリオ選択</span>
-              <div className="sb-group">
-                <span className="sb-cap">表示タブ</span>
-                <span className="sb-seg">
-                  <button className={tab === "booking" ? "on" : ""} onClick={() => setTab("booking")}>予約別</button>
-                  <button className={tab === "tour" ? "on" : ""} onClick={() => setTab("tour")}>TourOption別</button>
-                  <button className={tab === "channel" ? "on" : ""} onClick={() => setTab("channel")}>チャネル別</button>
-                </span>
-              </div>
-              <div className="sb-group">
-                <span className="sb-cap">収益状態</span>
-                <span className="sb-seg">
-                  <button className={profitMode === "profit" ? "on" : ""} onClick={() => setProfitMode("profit")}>黒字が多い</button>
-                  <button className={profitMode === "loss" ? "on" : ""} onClick={() => setProfitMode("loss")}>赤字が多い</button>
-                  <button className={profitMode === "mixed" ? "on" : ""} onClick={() => setProfitMode("mixed")}>混在</button>
-                </span>
-              </div>
-              <div className="sb-group">
-                <span className="sb-cap">表示切替</span>
-                <span className="sb-seg">
-                  <button className={viewMode === "forecast" ? "on" : ""} onClick={() => setViewMode("forecast")}>見込み</button>
-                  <button className={viewMode === "actual" ? "on" : ""} onClick={() => setViewMode("actual")}>実績</button>
-                  <button className={viewMode === "both" ? "on" : ""} onClick={() => setViewMode("both")}>両方</button>
-                </span>
-              </div>
-              <label className="sb-check"><input type="checkbox" checked={includeGroup} onChange={(e) => setIncludeGroup(e.target.checked)} />グループツアー含む</label>
-              <label className="sb-check"><input type="checkbox" checked={noData} onChange={(e) => setNoData(e.target.checked)} />データなし</label>
-              <span className="sb-scenario">期間：<strong>{periodLabel}</strong></span>
-            </div>
-
             <div className="app-shell">
               <nav className="side-nav">
               <div className="brand-block">

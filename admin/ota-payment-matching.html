@@ -687,46 +687,6 @@
 
         return (
           <React.Fragment>
-            {/* ── シナリオパネル（開発・確認用） ── */}
-            <div className="scenario-bar">
-              <span className="sb-label">🎛 シナリオ選択</span>
-              <div className="sb-group">
-                <span className="sb-cap">表示モード</span>
-                <span className="sb-seg">
-                  <button className={view === "list" ? "on" : ""} onClick={() => setView("list")}>入金一覧</button>
-                  <button className={view === "new" ? "on" : ""} onClick={() => { setView("new"); }}>新規登録フォーム</button>
-                  <button className={view === "reconcile" ? "on" : ""} onClick={() => setView("reconcile")}>照合作業ビュー</button>
-                </span>
-              </div>
-              <div className="sb-group">
-                <span className="sb-cap">チャネル</span>
-                <span className="sb-seg">
-                  {["viator", "getyourguide", "klook"].map(k => (
-                    <button key={k} className={active.channel === k ? "on" : ""}
-                      onClick={() => setActive(a => ({ ...a, channel: k }))}>{CHANNEL[k].label}</button>
-                  ))}
-                </span>
-              </div>
-              <div className="sb-group">
-                <span className="sb-cap">照合ステータス</span>
-                <span className="sb-seg">
-                  {["unmatched", "in_progress", "diff", "matched"].map(k => (
-                    <button key={k} className={active.status === k ? "on" : ""}
-                      onClick={() => setActive(a => ({ ...a, status: k }))}>{STATUS[k].label}</button>
-                  ))}
-                </span>
-              </div>
-              <label className="sb-check">
-                <input type="checkbox" checked={searchRowId != null}
-                  onChange={e => { const first = active.rows.find(r => r.result === "unmatched"); setSearchRowId(e.target.checked && first ? first.rid : null); if (e.target.checked) setView("reconcile"); }} />
-                照合検索パネル
-              </label>
-              <label className="sb-check">
-                <input type="checkbox" checked={bankDiff} onChange={e => setBankDiff(e.target.checked)} />
-                銀行入金額と差異あり(¥3,000)
-              </label>
-            </div>
-
             <div className="app-shell">
               {/* ── サイドナビ ── */}
               <nav className="side-nav">
