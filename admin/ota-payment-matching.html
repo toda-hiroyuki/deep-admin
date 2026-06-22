@@ -135,6 +135,9 @@
                 <div className="list-header-left">
                   <h1 className="list-title">OTA入金照合</h1>
                   <p className="list-desc">OTAからの入金と予約データの照合を管理します。</p>
+                  <p style={{fontSize:12.5,color:"var(--muted)",margin:"6px 0 0"}}>
+                    <strong style={{color:"var(--ink)"}}>{DEPOSITS.length}件中</strong> {filtered.length}件を表示
+                  </p>
                 </div>
                 <div className="list-header-right">
                   <a href="ota-payment-new.html" className="btn primary">＋ 新規入金を登録</a>
@@ -142,7 +145,7 @@
               </div>
 
               {/* フィルター */}
-              <div className="list-filters" style={{flexWrap:"nowrap",gap:8}}>
+              <div className="list-filters" style={{flexWrap:"nowrap",gap:8,justifyContent:"flex-start"}}>
                 <select className="filter-select" value={moFilter} onChange={e => setMoFilter(e.target.value)}>
                   <option value="all">対象月：すべて</option>
                   {months.map(m => <option key={m} value={m}>{m}</option>)}
@@ -159,7 +162,6 @@
                   <option value="diff">差異あり</option>
                   <option value="matched">照合済み</option>
                 </select>
-                <span style={{fontSize:12.5,color:"var(--muted)",marginLeft:"auto",whiteSpace:"nowrap"}}>{filtered.length}件表示中</span>
               </div>
 
               {/* テーブル */}
