@@ -29,17 +29,22 @@ const targetId = params.get("id");
 const isCreate = params.get("mode") === "create" || !targetId;
 
 // ── Sidebar ─────────────────────────────────────────────────────────────────
-function Sidebar() {
-  const items = [
-    { key: "dashboard",      href: "index.html",           icon: "⊞", label: "ダッシュボード" },
-    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       hint: "ツアーの実体" },
-    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          hint: "顧客表示" },
-    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理",         hint: "機材・車両等" },
-    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理",           hint: "都道府県・エリア" },
-    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設管理",             hint: "体験施設・観光スポット" },
-    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理",     hint: "対応言語" },
-    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",          hint: "運営注意・行程" },
-    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー",  hint: "キャンセル文言" },
+function Sidebar({ resource, counts = {} }) {
+  const payItems = [
+    { key: "settle",   href: "monthly-settlement.html",   icon: "ST", label: "月次締め確認" },
+    { key: "import",   href: "payment-confirmation.html", icon: "IM", label: "金額確認待ち一覧" },
+    { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+    { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
+  ];
+  const masterItems = [
+    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
+    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設管理" },
+    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",         count: counts.gd },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
   ];
   return (
     <aside className="side-nav">
@@ -50,17 +55,35 @@ function Sidebar() {
           <div className="brand-caption">Product &amp; Sales · Phase 1</div>
         </div>
       </div>
+      <div className="nav-group" style={{marginBottom:"8px"}}>
+        <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+          <span className="nav-icon">⊞</span>
+          <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+        </a>
+      </div>
       <div>
-        <div className="nav-section-label">Manage</div>
+        <div className="nav-section-label">精算・経営</div>
         <div className="nav-group">
-          {items.map(it => (
+          {payItems.map(it => (
             <a key={it.key} href={it.href}
-              className={`nav-item ${it.key === "language" ? "active" : ""}`}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
               style={{textDecoration:"none"}}>
               <span className="nav-icon">{it.icon}</span>
-              <span style={{flex:1,minWidth:0}}>
-                <div>{it.label}</div>
-              </span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">
+          {masterItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+              <span className="nav-count">{it.count}</span>
             </a>
           ))}
         </div>
