@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>新規入金登録 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+      .detail-main { padding: 28px 32px 60px; min-width: 0; max-width: 800px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { font-size: 20px; font-weight: 750; letter-spacing: -0.01em; margin: 0 0 24px; }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg, 10px); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { font-size: 14px; font-weight: 700; }
+      .card-body { padding: 22px 20px; }
+      .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+      .form-grid .full { grid-column: 1 / -1; }
+      .form-actions { display: flex; gap: 10px; align-items: center; padding-top: 20px; margin-top: 6px; border-top: 1px solid var(--line-soft); }
+      .calc-readout { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: var(--field-h, 38px); border: 1px solid var(--line); border-radius: var(--radius, 6px); background: var(--surface-tint); padding: 0 12px; }
+      .calc-readout .cr-val { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+      .calc-readout.ok .cr-val { color: var(--green); }
+      .calc-readout.diff { background: var(--amber-bg, #fdf4dd); border-color: var(--amber-soft); }
+      .calc-readout.diff .cr-val { color: var(--amber); }
+      .num-affix { position: relative; display: flex; align-items: center; }
+      .num-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; font-weight: 600; }
+      .num-affix input { padding-left: 24px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState } = React;
+
+      const num = (v) => { const n = Number(String(v).replace(/[^0-9.\-]/g, "")); return isNaN(n) ? 0 : n; };
+      const yen = (n) => (n < 0 ? "−" : "") + "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
+
+      function SideNav() {
+        return (
+          <nav className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+              </div>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className="nav-item" style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span><span>ダッシュボード</span>
+              </a>
+            </div>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">
+                <a href="monthly-settlement.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">ST</span><span>月次締め確認</span>
+                </a>
+                <a href="ota-payment-matching.html" className="nav-item active" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">OT</span><span>OTA入金照合</span>
+                </a>
+                <a href="revenue-summary.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">RV</span><span>収支一覧</span>
+                </a>
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group">
+                <a href="tour-options.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">TO</span><span>TourOption</span>
+                </a>
+                <a href="products.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">PG</span><span>商品ページ</span>
+                </a>
+                <a href="resources.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">RS</span><span>リソース管理</span>
+                </a>
+                <a href="areas.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">AR</span><span>エリア管理</span>
+                </a>
+                <a href="languages.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">LG</span><span>言語マスター管理</span>
+                </a>
+                <a href="guide-materials.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">GD</span><span>ガイド資料</span>
+                </a>
+                <a href="cancel-policies.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">CP</span><span>キャンセルポリシー</span>
+                </a>
+              </div>
+            </div>
+          </nav>
+        );
+      }
+
+      function App() {
+        const [f, setF] = useState({
+          channel: "viator", periodStart: "", periodEnd: "",
+          bankDate: "", bankAmount: "", otaReportTotal: "", note: ""
+        });
+        const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+        const delta = num(f.bankAmount) - num(f.otaReportTotal);
+        const hasBoth = f.bankAmount !== "" && f.otaReportTotal !== "";
+        const canSave = f.channel && f.periodStart && f.periodEnd && f.bankDate && f.bankAmount !== "" && f.otaReportTotal !== "";
+
+        const handleSave = () => {
+          window.location.href = "ota-payment-matching.html";
+        };
+
+        return (
+          <div className="app-shell">
+            <SideNav />
+            <main className="detail-main">
+              <div className="crumbs">
+                <a href="ota-payment-matching.html">OTA入金照合</a>
+                <span className="sep">›</span>
+                <span className="current">新規入金登録</span>
+              </div>
+
+              <h1 className="page-title">新規入金登録</h1>
+
+              <section className="card">
+                <div className="card-head">
+                  <div className="card-title">入金基本情報</div>
+                  <span style={{fontSize:12,color:"var(--muted)"}}>OTAからの振込とレポート合計を登録します</span>
+                </div>
+                <div className="card-body">
+                  <div className="form-grid">
+                    <div className="field">
+                      <label className="field-label">チャネル（OTA名）<span className="req"></span></label>
+                      <select className="ctrl" value={f.channel} onChange={e => set("channel", e.target.value)}>
+                        <option value="viator">Viator</option>
+                        <option value="getyourguide">GetYourGuide</option>
+                        <option value="klook">Klook</option>
+                        <option value="airbnb">Airbnb</option>
+                        <option value="other">その他</option>
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label className="field-label">銀行入金日<span className="req"></span></label>
+                      <input type="date" className="ctrl" value={f.bankDate} onChange={e => set("bankDate", e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label className="field-label">対象期間（開始）<span className="req"></span></label>
+                      <input type="date" className="ctrl" value={f.periodStart} onChange={e => set("periodStart", e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label className="field-label">対象期間（終了）<span className="req"></span></label>
+                      <input type="date" className="ctrl" value={f.periodEnd} onChange={e => set("periodEnd", e.target.value)} />
+                    </div>
+                    <div className="field">
+                      <label className="field-label">銀行入金額<span className="req"></span></label>
+                      <div className="num-affix">
+                        <span className="pfx">¥</span>
+                        <input className="ctrl" inputMode="numeric" placeholder="0"
+                          value={f.bankAmount} onChange={e => set("bankAmount", e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="field-label">OTAレポート上の合計ネット額<span className="req"></span></label>
+                      <div className="num-affix">
+                        <span className="pfx">¥</span>
+                        <input className="ctrl" inputMode="numeric" placeholder="0"
+                          value={f.otaReportTotal} onChange={e => set("otaReportTotal", e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="field full">
+                      <label className="field-label">照合差額<span className="opt">自動計算 / 読み取り専用</span></label>
+                      <div className={`calc-readout ${!hasBoth ? "" : delta === 0 ? "ok" : "diff"}`}>
+                        <span style={{fontSize:12,color:"var(--muted)"}}>銀行入金額 − OTAレポート合計</span>
+                        <span className="cr-val">
+                          {!hasBoth ? "—" : delta === 0 ? "¥0（一致）" : yen(delta)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="field full">
+                      <label className="field-label">備考<span className="opt">任意</span></label>
+                      <textarea className="ctrl" placeholder="振込明細番号、為替レート、特記事項など"
+                        value={f.note} onChange={e => set("note", e.target.value)}></textarea>
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button className="btn primary lg" disabled={!canSave} onClick={handleSave}>
+                      保存して照合を開始する →
+                    </button>
+                    <a href="ota-payment-matching.html" className="btn lg">キャンセル</a>
+                    {!canSave && (
+                      <span style={{fontSize:12,color:"var(--muted)"}}>必須項目を入力すると保存できます</span>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </main>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
