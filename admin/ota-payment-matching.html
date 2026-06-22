@@ -15,6 +15,10 @@
       .ota-status-item.err b { color: var(--coral); }
       .ota-status-item.ok b { color: var(--green); }
       .list-filters { display: flex; gap: 10px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+      .seg-tabs { display: inline-flex; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius, 6px); padding: 2px; gap: 2px; }
+      .seg-tabs button { flex: 1; border: 0; background: transparent; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.1s; white-space: nowrap; cursor: pointer; }
+      .seg-tabs button:hover { color: var(--ink); }
+      .seg-tabs button.on { background: var(--accent); color: #fff; }
       .filter-select { height: 34px; border: 1px solid var(--line-strong); border-radius: var(--radius, 6px); background: var(--surface); color: var(--ink); padding: 0 28px 0 10px; font-size: 13px; cursor: pointer; appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat; background-position: right 9px center; }
@@ -135,13 +139,11 @@
 
               {/* フィルター */}
               <div className="list-filters">
-                <select className="filter-select" value={chFilter} onChange={e => setChFilter(e.target.value)}>
-                  <option value="all">チャネル：すべて</option>
-                  <option value="Viator">Viator</option>
-                  <option value="GetYourGuide">GetYourGuide</option>
-                  <option value="Klook">Klook</option>
-                  <option value="Airbnb">Airbnb</option>
-                </select>
+                <div className="seg-tabs">
+                  {[["all","すべて"],["Viator","Viator"],["GetYourGuide","GYG"],["Klook","Klook"],["Airbnb","Airbnb"]].map(([k,l]) => (
+                    <button key={k} className={chFilter === k ? "on" : ""} onClick={() => setChFilter(k)}>{l}</button>
+                  ))}
+                </div>
                 <select className="filter-select" value={stFilter} onChange={e => setStFilter(e.target.value)}>
                   <option value="all">ステータス：すべて</option>
                   <option value="unmatched">未照合</option>
