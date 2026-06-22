@@ -404,41 +404,63 @@
           <div className="app-shell">
             <nav className="side-nav">
               <div className="brand-block">
-                <div className="brand-mark">DE</div>
+                <div className="brand-mark">d.</div>
                 <div>
-                  <div className="brand-name">DeepExperience</div>
-                  <div className="brand-caption">運営管理</div>
+                  <div className="brand-name">deep_Admin</div>
+                  <div className="brand-caption">Product &amp; Sales · Phase 1</div>
                 </div>
               </div>
-              {[
-                { grp: "ops",    label: "予約オペレーション" },
-                { grp: "guide",  label: "ガイド管理" },
-                { grp: "pay",    label: "精算・経営" },
-                { grp: "master", label: "商品管理" },
-              ].map(({ grp, label }) => (
-                <div className="nav-group" key={grp}>
-                  <div className="nav-section-label">{label}</div>
-                  {NAV.filter(n => n.group === grp).map(n => (
-                    <button
-                      key={n.key}
-                      className={`nav-item${n.active ? " active" : ""}`}
-                      onClick={() => n.href && !n.active
-                        ? (window.location.href = n.href)
-                        : showToast(`「${n.label}」へ移動します`)
-                      }
-                    >
-                      <span className="nav-icon">{n.icon}</span>
-                      <span>{n.label}</span>
-                      {n.count != null && (
-                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
-                      )}
-                    </button>
-                  ))}
+              <div className="nav-group" style={{marginBottom:"8px"}}>
+                <a href="index.html" className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">⊞</span>
+                  <span>ダッシュボード</span>
+                </a>
+              </div>
+              <div>
+                <div className="nav-section-label">精算・経営</div>
+                <div className="nav-group">
+                  <a href="monthly-settlement.html" className="nav-item active" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">ST</span><span>月次締め確認</span>
+                  </a>
+                  <a href="payment-confirmation.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">IM</span><span>金額確認待ち一覧</span>
+                  </a>
+                  <a href="ota-payment-matching.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">OT</span><span>OTA入金照合</span>
+                  </a>
+                  <a href="revenue-summary.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">RV</span><span>収支一覧</span>
+                  </a>
                 </div>
-              ))}
-              <div className="side-note">
-                <strong>運用メモ</strong>
-                当月のツアー実施済み全予約の収支項目を確認します。施設費・ガイド精算・OTA照合がすべて確定すると月次締めを実行できます。
+              </div>
+              <div>
+                <div className="nav-section-label">商品管理</div>
+                <div className="nav-group">
+                  <a href="tour-options.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">TO</span><span>TourOption</span>
+                  </a>
+                  <a href="products.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">PG</span><span>商品ページ</span>
+                  </a>
+                  <a href="resources.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">RS</span><span>リソース管理</span>
+                  </a>
+                  <a href="areas.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">AR</span><span>エリア管理</span>
+                  </a>
+                  <a href="facilities.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">FC</span><span>施設管理</span>
+                  </a>
+                  <a href="languages.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">LG</span><span>言語マスター管理</span>
+                  </a>
+                  <a href="guide-materials.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">GD</span><span>ガイド資料</span>
+                  </a>
+                  <a href="cancel-policies.html" className="nav-item" style={{textDecoration:"none"}}>
+                    <span className="nav-icon">CP</span><span>キャンセルポリシー</span>
+                  </a>
+                </div>
               </div>
             </nav>
 
