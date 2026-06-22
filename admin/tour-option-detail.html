@@ -1669,10 +1669,10 @@ function ContentTab({ t, update, readonly }) {
 
 // 費用区分の説明
 const COST_CATEGORY_INFO = {
-  "A": "施設へ元払い（立替払い）— 施設への支払いをガイドが立替えず、直接精算",
-  "B": "施設へ・ガイド立替 — 施設への支払いをガイドが一時立替",
-  "C": "登録施設外への経費・ガイド立替 — 施設マスター外の経費をガイドが立替",
-  "D": "ガイド自身の経費 — ガイドの交通費・人件費など",
+  "A": "施設へ月末一括（会社払い）— 月末に会社から施設へ一括精算",
+  "B": "施設へ都度払い（会社払い）— 都度、会社から施設へ直接支払い",
+  "C": "ガイドが現地立替（後日精算）— ガイドが一時立替、後日会社が精算",
+  "D": "お客様が現地直接払い — お客様が施設へ直接支払い",
 };
 
 // スライド単価テーブルのデフォルト
@@ -1707,16 +1707,16 @@ const FACILITY_MASTER = [
 ];
 
 const COST_TYPE_LABELS = {
-  "fixed":      "固定費",
-  "per-person": "変動・人数固定",
+  "fixed":      "固定費（1催行）",
+  "per-person": "変動・人数比例（1名）",
   "slide":      "変動・スライド",
-  "full-var":   "完全変動",
+  "full-var":   "完全変動（要入力）",
 };
 const PAYMENT_TYPE_LABELS = {
-  "A": "A：施設へ月末一括",
-  "B": "B：施設へ都度・ガイド立替",
-  "C": "C：施設外・ガイド立替",
-  "D": "D：ガイド自身の経費",
+  "A": "A：施設へ月末一括（会社払い）",
+  "B": "B：施設へ都度払い（会社払い）",
+  "C": "C：ガイドが現地立替（後日精算）",
+  "D": "D：お客様が現地直接払い",
 };
 
 function SlideTierTable({ tiers, onChange, readonly }) {
@@ -1786,9 +1786,10 @@ function ExpenseRowForm({ row, onUpdate, onDone, onRemove, readonly }) {
   const [showTiers, setShowTiers] = useState(row.costType === "変動・スライド");
   const tiers = row.slideTiers || DEFAULT_SLIDE_TIERS;
 
+  const isSlide = (v) => v === "変動・スライド";
   const handleTypeChange = (v) => {
-    onUpdate({ costType: v, slideTiers: v === "変動・スライド" ? tiers : row.slideTiers });
-    setShowTiers(v === "変動・スライド");
+    onUpdate({ costType: v, slideTiers: isSlide(v) ? tiers : row.slideTiers });
+    setShowTiers(isSlide(v));
   };
 
   return (
@@ -1805,10 +1806,10 @@ function ExpenseRowForm({ row, onUpdate, onDone, onRemove, readonly }) {
           <div style={{position:'relative'}}>
             <select value={row.category} onChange={e => onUpdate({category:e.target.value})}
               style={{width:'100%',padding:'5px 28px 5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'none',backgroundImage:`url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.45)' d='M0 0h10L5 6z'/></svg>")`,backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'}}>
-              <option value="A">A：施設へ元払い</option>
-              <option value="B">B：施設へ・ガイド立替</option>
-              <option value="C">C：施設外・ガイド立替</option>
-              <option value="D">D：ガイド自身の経費</option>
+              <option value="A">A：施設へ月末一括（会社払い）</option>
+              <option value="B">B：施設へ都度払い（会社払い）</option>
+              <option value="C">C：ガイドが現地立替（後日精算）</option>
+              <option value="D">D：お客様が現地直接払い</option>
             </select>
           </div>
           {row.category && <div style={{fontSize:10,color:'var(--muted)',marginTop:3}}>{COST_CATEGORY_INFO[row.category]}</div>}
@@ -1818,19 +1819,19 @@ function ExpenseRowForm({ row, onUpdate, onDone, onRemove, readonly }) {
           <div style={{position:'relative'}}>
             <select value={row.costType} onChange={e => handleTypeChange(e.target.value)}
               style={{width:'100%',padding:'5px 28px 5px 8px',border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',fontSize:13,appearance:'none',backgroundImage:`url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.45)' d='M0 0h10L5 6z'/></svg>")`,backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'}}>
-              <option value="固定費">固定費（参加人数に関わらず一定）</option>
-              <option value="変動・人数割">変動・人数割（単価 × 人数）</option>
-              <option value="変動・スライド">変動・スライド（人数帯で単価が変わる）</option>
-              <option value="変動・完全変動">変動・完全変動（毎回金額が異なる）</option>
+              <option value="固定費（1催行）">固定費（1催行）— 参加人数に関わらず一定</option>
+              <option value="変動・人数比例（1名）">変動・人数比例（1名）— 単価 × 人数</option>
+              <option value="変動・スライド">変動・スライド — 人数帯で単価が変わる</option>
+              <option value="完全変動（要入力）">完全変動（要入力）— 毎回金額が異なる</option>
             </select>
           </div>
         </div>
       </div>
-      {(row.costType === "固定費" || row.costType === "変動・人数割") && (
+      {(row.costType === "固定費（1催行）" || row.costType === "変動・人数比例（1名）") && (
         <div style={{display:'grid',gridTemplateColumns:'160px 1fr',gap:12,marginBottom:10}}>
           <div>
             <div style={{fontSize:11,fontWeight:600,color:'var(--muted)',marginBottom:4}}>
-              {row.costType === "固定費" ? "金額（1催行あたり）" : "単価（1名あたり）"}
+              {row.costType === "固定費（1催行）" ? "金額（1催行あたり）" : "単価（1名あたり）"}
             </div>
             <div className="input-affix">
               <div className="affix">¥</div>
@@ -1844,7 +1845,7 @@ function ExpenseRowForm({ row, onUpdate, onDone, onRemove, readonly }) {
           </div>
         </div>
       )}
-      {row.costType === "変動・完全変動" && (
+      {row.costType === "完全変動（要入力）" && (
         <div style={{marginBottom:10}}>
           <div style={{fontSize:11,fontWeight:600,color:'var(--muted)',marginBottom:4}}>備考</div>
           <input value={row.note} onChange={e => onUpdate({note:e.target.value})} placeholder="毎回手動入力のため、備考欄に記録してください"

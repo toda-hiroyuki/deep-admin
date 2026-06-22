@@ -31,6 +31,18 @@ const PAYMENT_TYPES = [
   "C：ガイドが現地立替（後日精算）",
   "D：お客様が現地直接払い",
 ];
+const PAYMENT_TYPE_LABELS = {
+  "A": "A：施設へ月末一括（会社払い）",
+  "B": "B：施設へ都度払い（会社払い）",
+  "C": "C：ガイドが現地立替（後日精算）",
+  "D": "D：お客様が現地直接払い",
+};
+const COST_TYPE_LABELS = {
+  "fixed":      "固定費（1催行）",
+  "per-person": "変動・人数比例（1名）",
+  "slide":      "変動・スライド",
+  "full-var":   "完全変動（要入力）",
+};
 const TABS = [
   ["basic", "基本情報"],
   ["costs", "経費項目管理"],
@@ -263,7 +275,7 @@ function CostItemsTab({ costs, facilityId }) {
                   <tr key={c.id} className="list-row" onClick={() => { window.location.href = `facility-cost-detail.html?facilityId=${fid}&id=${c.id}`; }}>
                     <td style={{fontWeight:600}}>{c.name}</td>
                     <td style={{fontSize:12,color:'var(--muted)'}}>
-                      {{ "fixed":"固定費","per-person":"変動・人数固定","slide":"変動・スライド","full-var":"完全変動" }[c.costType] || c.costType}
+                      {COST_TYPE_LABELS[c.costType] || c.costType}
                     </td>
                     <td>
                       {(c.costType==="fixed"||c.costType==="per-person") && (
@@ -275,7 +287,7 @@ function CostItemsTab({ costs, facilityId }) {
                       {c.costType==="full-var" && <span style={{fontSize:12,color:'var(--amber)'}}>毎回手動</span>}
                     </td>
                     <td style={{fontSize:12,color:'var(--muted)'}}>
-                      {{"A":"A：施設へ月末一括","B":"B：施設へ都度・ガイド立替","C":"C：施設外・ガイド立替","D":"D：ガイド自身の経費"}[c.paymentType] || c.paymentType}
+                      {PAYMENT_TYPE_LABELS[c.paymentType] || c.paymentType}
                     </td>
                     <td className="actions">
                       <a href={`facility-cost-detail.html?facilityId=${fid}&id=${c.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
