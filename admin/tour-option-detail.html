@@ -1884,19 +1884,6 @@ function ExpensesTab({ t, update, readonly }) {
     { facilityId: "fac-1", costId: "c1", note: "" },
     { facilityId: "fac-1", costId: "c2", note: "" },
   ]);
-  const [facilityPickOpen, setFacilityPickOpen] = useLState(false);
-  const [pickFacilityId, setPickFacilityId] = useLState(FACILITY_MASTER[0].id);
-
-  const pickedFacility = FACILITY_MASTER.find(f => f.id === pickFacilityId);
-  const alreadyAdded = new Set(facilityItems.filter(i => i.facilityId === pickFacilityId).map(i => i.costId));
-
-  const toggleCostItem = (costId) => {
-    if (alreadyAdded.has(costId)) {
-      setFacilityItems(prev => prev.filter(i => !(i.facilityId === pickFacilityId && i.costId === costId)));
-    } else {
-      setFacilityItems(prev => [...prev, { facilityId: pickFacilityId, costId, note: "" }]);
-    }
-  };
 
   // 施設経費 → 表示用に施設名・項目名を解決
   const resolvedFacilityItems = facilityItems.map(item => {
@@ -1916,7 +1903,6 @@ function ExpensesTab({ t, update, readonly }) {
   const [adHocItems, setAdHocItems] = useLState([
     { id: "ah-1", name: "交通費（ガイド）", costType: "per-person", unitPrice: 800, paymentType: "C", note: "" },
   ]);
-  const addAdHoc = () => setAdHocItems(prev => [...prev, { id: `ah-${Date.now()}`, name: "", costType: "fixed", unitPrice: 0, paymentType: "C", note: "" }]);
   const removeAdHoc = (id) => setAdHocItems(prev => prev.filter(i => i.id !== id));
 
   // ── 原価サマリー ──
@@ -1939,43 +1925,9 @@ function ExpensesTab({ t, update, readonly }) {
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <SectionHead eyebrow="STEP 9" title="施設経費" desc="施設マスターに登録された経費項目を選択して紐づけます。" />
           {!readonly && (
-            <button className="btn primary sm" onClick={() => setFacilityPickOpen(o => !o)}>
-              {facilityPickOpen ? "▲ 閉じる" : "＋ 施設経費を追加"}
-            </button>
+            <a href="tour-option-facility-cost-add.html" className="btn primary sm">＋ 施設経費を追加</a>
           )}
         </div>
-
-        {/* 施設選択パネル */}
-        {facilityPickOpen && !readonly && (
-          <div style={{marginBottom:16,border:'1px solid var(--line)',borderRadius:'var(--radius)',overflow:'hidden'}}>
-            <div style={{background:'var(--bg-sunken)',padding:'10px 16px',borderBottom:'1px solid var(--line)',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-              <span style={{fontSize:13,fontWeight:600}}>施設を選択</span>
-              <div style={{position:'relative',display:'inline-flex',alignItems:'center'}}>
-                <select value={pickFacilityId} onChange={e => setPickFacilityId(e.target.value)}
-                  style={{paddingRight:24,appearance:'none',WebkitAppearance:'none',fontSize:13,height:'var(--field-h)',paddingLeft:8,border:'1px solid var(--line-strong)',borderRadius:'var(--radius)',background:'#fff'}}>
-                  {FACILITY_MASTER.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                </select>
-                <span style={{position:'absolute',right:8,pointerEvents:'none',fontSize:10,color:'var(--muted)'}}>▼</span>
-              </div>
-            </div>
-            <div style={{padding:'12px 16px'}}>
-              {pickedFacility?.costs.map(cost => {
-                const checked = alreadyAdded.has(cost.id);
-                return (
-                  <label key={cost.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:'1px solid var(--line)',cursor:'pointer'}}>
-                    <input type="checkbox" checked={checked} onChange={() => toggleCostItem(cost.id)} />
-                    <span style={{flex:1,fontWeight:600,fontSize:13}}>{cost.name}</span>
-                    <span style={{fontSize:12,color:'var(--muted)',minWidth:80}}>{COST_TYPE_LABELS[cost.costType] || cost.costType}</span>
-                    <span style={{fontSize:12,fontWeight:600,minWidth:90,textAlign:'right'}}>
-                      {cost.costType === "fixed" || cost.costType === "per-person" ? `¥${Number(cost.unitPrice).toLocaleString()}` : "—"}
-                    </span>
-                    <span style={{fontSize:11,color:'var(--muted)',minWidth:120}}>{PAYMENT_TYPE_LABELS[cost.paymentType] || cost.paymentType}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* 施設経費一覧（施設ごとグループ） */}
         {facilityGroups.length === 0 ? (
@@ -2022,7 +1974,7 @@ function ExpensesTab({ t, update, readonly }) {
       <div className="form-section" style={{marginTop:'var(--sp-5)'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <SectionHead title="単発経費" desc="たこ焼き等の単発飲食費・タクシー代など、施設マスターに登録しない経費を登録します。" />
-          {!readonly && <button className="btn primary sm" onClick={addAdHoc}>＋ 単発経費を追加</button>}
+          {!readonly && <a href="tour-option-cost-add.html" className="btn primary sm">＋ 単発経費を追加</a>}
         </div>
 
         {adHocItems.length === 0 ? (
