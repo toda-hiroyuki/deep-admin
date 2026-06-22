@@ -777,16 +777,13 @@
                                   <td className="right">
                                     {isConf
                                       ? <button className="lnk" onClick={(e) => { e.stopPropagation(); toggleRow(rec); }}>{isOpen ? "閉じる" : "詳細"}</button>
-                                      : <button className="btn sm primary" onClick={(e) => { e.stopPropagation(); setOpenId(isOpen ? null : rec.id); }}>確認・修正</button>}
+                                      : <a className="btn sm primary" href={`payment-confirmation-edit.html?id=${rec.id}`} style={{textDecoration:"none"}}>確認・修正</a>}
                                   </td>
                                 </tr>
-                                {isOpen && (
+                                {isOpen && isConf && (
                                   <tr className="panel-cell">
                                     <td colSpan="11">
-                                      {isConf
-                                        ? <AuditPanel rec={rec} />
-                                        : <AmendPanel key={rec.id + (seed ? "-seed" : "")} rec={recForPanel} hasUrl={scHasUrl}
-                                            onConfirm={(form) => confirmRec(rec.id, form)} onCancel={() => setOpenId(null)} />}
+                                      <AuditPanel rec={rec} />
                                     </td>
                                   </tr>
                                 )}
