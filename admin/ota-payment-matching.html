@@ -14,8 +14,7 @@
       .ota-status-item.warn b { color: var(--amber); }
       .ota-status-item.err b { color: var(--coral); }
       .ota-status-item.ok b { color: var(--green); }
-      .list-filters { display: flex; gap: 10px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-      .seg-tabs { display: inline-flex; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius, 6px); padding: 2px; gap: 2px; }
+.seg-tabs { display: inline-flex; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius, 6px); padding: 2px; gap: 2px; }
       .seg-tabs button { flex: 1; border: 0; background: transparent; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--muted); transition: all 0.1s; white-space: nowrap; cursor: pointer; }
       .seg-tabs button:hover { color: var(--ink); }
       .seg-tabs button.on { background: var(--accent); color: #fff; }
@@ -125,6 +124,7 @@
         return (
           <div className="app-shell">
             <SideNav />
+            <main className="workspace">
             <div className="list-view">
               {/* ページヘッダー */}
               <div className="list-header">
@@ -212,6 +212,7 @@
                 </div>
               </div>
             </div>
+            </main>
           </div>
         );
       }
