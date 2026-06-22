@@ -382,10 +382,11 @@ const GUIDE_ROWS = [
   { key: "guestAdv", label: "ゲスト立替経費（立替の返金）", sub: "立替の返金としてガイドへ支払う",      type: "money", passthrough: true },
 ];
 
+const FACILITY_PLAN = 5000; // TourOptionで設定された施設費
+
 const OP_ROWS = [
   { key: "otaFee",   label: "OTAチャネル手数料",            sub: "OTA経由予約の販売手数料",            plan: 15000 },
   { key: "penalty",  label: "OTAペナルティ（運営都合違約金）", sub: "運営都合キャンセル等による違約金", plan: null },
-  { key: "facility", label: "施設費",                        sub: "会場・施設の利用料",                  plan: 5000 },
   { key: "other",    label: "その他運営費",                  sub: "上記以外の運営実費",                  plan: 0 },
 ];
 
@@ -450,7 +451,7 @@ function App() {
   const [editMode, setEditMode] = useState(false);
   const [edits, setEdits] = useState({});                   // {guideId: {key: val}}
   const [editReason, setEditReason] = useState("");
-  const [opEdits, setOpEdits] = useState({});
+  const [opEdits, setOpEdits] = useState({ facility: String(FACILITY_PLAN) });
   const [opMemo, setOpMemo] = useState("");
   const [opComment, setOpComment] = useState("");
   const [openNotes, setOpenNotes] = useState({});
@@ -472,12 +473,14 @@ function App() {
     const v = opEdits[key];
     return (v !== undefined && v !== "") ? num(v) : (plan == null ? 0 : plan);
   };
+  const facilityVal = opVal("facility", FACILITY_PLAN);
   const opActTotal = (cancel || !otaCheck) ? 0 : OP_ROWS.reduce((s, r) => s + opVal(r.key, r.plan), 0);
   const opPlanTotal = OP_ROWS.reduce((s, r) => s + (r.plan == null ? 0 : r.plan), 0);
   const hasOpDiff = !cancel && OP_ROWS.some(r => {
     const v = opEdits[r.key];
     return v !== undefined && v !== "" && num(v) !== (r.plan == null ? 0 : r.plan);
   });
+  const facilityDiff = facilityVal - FACILITY_PLAN;
 
   /* ── 集計 ── */
   const calcs = shownGuides.map(g => ({ g, c: guideCalc(g, variant, cancel, edits) }));
@@ -797,9 +800,37 @@ function App() {
             )}
           </Card>
 
-          {/* ── ④ 運営費精算 ── */}
+          {/* ── ④ 施設費 ── */}
+          <Card no="4" title="施設費" hint="TourOption設定値を初期値として反映" label="④ 施設費">
+            {cancel
+              ? <div style={{ padding: "18px 20px" }}><div className="gs-banner coral"><span className="gb-ic">!</span><div><span className="gb-title">催行回中止 — 施設費精算なし</span></div></div></div>
+              : <div style={{ padding: "18px 20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                    <div style={{ fontSize: 13, color: "var(--muted)", minWidth: 120 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted-soft)", marginBottom: 3 }}>TourOption設定値（見込み）</div>
+                      <div style={{ fontVariantNumeric: "tabular-nums", fontWeight: 650 }}>{yen(FACILITY_PLAN)}</div>
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--muted)", minWidth: 20 }}>→</div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted-soft)", marginBottom: 3 }}>実績（編集可）</div>
+                      <span className="input-affix"><span className="pfx">¥</span>
+                        <input className="ctrl" inputMode="numeric" placeholder={String(FACILITY_PLAN)}
+                          value={opEdits.facility !== undefined ? opEdits.facility : ""}
+                          onChange={e => setOpEdits(p => ({ ...p, facility: e.target.value }))} />
+                      </span>
+                    </div>
+                    {facilityDiff !== 0 && (
+                      <div style={{ fontSize: 13 }}>
+                        <span className={facilityDiff > 0 ? "diff-plus" : "diff-minus"}>{signYen(facilityDiff)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>}
+          </Card>
+
+          {/* ── ⑤ 運営費精算 ── */}
           {otaCheck && (
-            <Card no="4" title="運営費精算" hint="OTA手数料・施設費等" label="④ 運営費精算"
+            <Card no="5" title="運営費精算" hint="OTA手数料等" label="⑤ 運営費精算"
               flush
               foot={<div className="section-foot-note">見込みと一致する項目は入力不要です。実績が確定した項目のみ入力してください。空欄の項目は見込み額を使用します。</div>}>
               {cancel
@@ -865,12 +896,12 @@ function App() {
                   <div className="sum-line sub"><span className="sl-lab">通勤交通費</span><span className="sl-val">{yen(commuteSum)}</span></div>
                   <div className="sum-line sub"><span className="sl-lab">ゲスト立替経費（立替の返金）</span><span className="sl-val">{yen(guestAdvSum)}</span></div>
                   <div style={{ padding: "10px 20px", borderBottom: "1px solid var(--line-soft)", background: "var(--surface-warm)", fontSize: 11.5, lineHeight: 1.6, color: "var(--muted)" }}>※ ゲスト立替はガイドへ実際に支払う（立替の返金）ため支払合計に含みます。利益計算上は元本が売上と相殺されます（立替分に課金されるチャネル手数料のみ実コストとして残ります）。</div>
-                  {otaCheck && <div className="sum-group-gap"></div>}
+                  <div className="sum-group-gap"></div>
+                  <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）施設費</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(facilityVal)}</span></div>
                   {otaCheck && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）OTAチャネル手数料</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("otaFee", 15000))}</span></div>}
                   {otaCheck && opVal("penalty", null) > 0 && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）OTAペナルティ</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("penalty", null))}</span></div>}
-                  {otaCheck && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）施設費</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("facility", 5000))}</span></div>}
                   {otaCheck && opVal("other", 0) > 0 && <div className="sum-line"><span className="sl-lab" style={{ color: "var(--muted)" }}>（参考）その他運営費</span><span className="sl-val" style={{ color: "var(--muted)" }}>{yen(opVal("other", 0))}</span></div>}
-                  {otaCheck && <div style={{ padding: "8px 20px", borderBottom: "1px solid var(--line-soft)", background: "var(--surface-warm)", fontSize: 11.5, color: "var(--muted)" }}>OTAチャネル手数料・施設費は運営費（§④）であり、ガイドへの支払合計とは別枠の参考表示です。</div>}
+                  {otaCheck && <div style={{ padding: "8px 20px", borderBottom: "1px solid var(--line-soft)", background: "var(--surface-warm)", fontSize: 11.5, color: "var(--muted)" }}>OTAチャネル手数料は運営費（§⑤）であり、ガイドへの支払合計とは別枠の参考表示です。</div>}
                   <div className={`sum-line diff-line ${grandDiff === 0 ? "no-diff" : "has-diff"}`}>
                     <span className="sl-lab">見込み合計との差異</span>
                     <span className="sl-val">{grandDiff === 0 ? "見込み通り" : signYen(grandDiff)}</span>
