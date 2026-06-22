@@ -138,6 +138,12 @@ function App() {
     setTimeout(() => { window.location.href = backUrl; }, 800);
   };
 
+  const saveLabel = saved
+    ? "✓ 追加しました"
+    : checkedCount > 0
+      ? `選択した ${checkedCount} 件を追加`
+      : "経費項目を選択してください";
+
   return (
     <div className="app-shell">
       <Sidebar />
@@ -156,8 +162,7 @@ function App() {
               <span className="current">施設経費を追加</span>
             </div>
             <div className="title-row">
-              <button className="btn ghost sm back-btn"
-                onClick={() => { window.location.href = backUrl; }}>
+              <button className="btn ghost sm back-btn" onClick={() => { window.location.href = backUrl; }}>
                 ← 経費管理に戻る
               </button>
               <h1>施設経費を追加</h1>
@@ -166,12 +171,7 @@ function App() {
           <div style={{display:"flex",gap:8,alignItems:"center"}}>
             <button className="btn" onClick={() => { window.location.href = backUrl; }}>キャンセル</button>
             <button className="btn primary" onClick={handleSave} disabled={checkedCount === 0}>
-              {saved
-                ? "✓ 追加しました"
-                : checkedCount > 0
-                  ? `選択した ${checkedCount} 件を追加`
-                  : "経費項目を選択してください"
-              }
+              {saveLabel}
             </button>
           </div>
         </div>
@@ -247,10 +247,7 @@ function App() {
                             <tr
                               key={cost.id}
                               className="list-row"
-                              style={{
-                                background: isChecked ? "var(--accent-tint, #eff6ff)" : undefined,
-                                cursor: "pointer",
-                              }}
+                              style={{background: isChecked ? "var(--accent-tint, #eff6ff)" : undefined, cursor:"pointer"}}
                               onClick={() => toggle(cost.id)}
                             >
                               <td style={{textAlign:"center"}}>
@@ -294,12 +291,7 @@ function App() {
               <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:16}}>
                 <button className="btn ghost" onClick={() => { window.location.href = backUrl; }}>キャンセル</button>
                 <button className="btn primary" onClick={handleSave} disabled={checkedCount === 0}>
-                  {saved
-                    ? "✓ 追加しました"
-                    : checkedCount > 0
-                      ? `選択した ${checkedCount} 件を追加`
-                      : "経費項目を選択してください"
-                  }
+                  {saveLabel}
                 </button>
               </div>
 
