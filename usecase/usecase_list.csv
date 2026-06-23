@@ -1,4 +1,4 @@
-UC-ID,ユースケース名,アクター,概要,条件,備考
+UC-ID,カテゴリー(画面),ユースケース名,アクター,概要,条件,備考
 UC-DB-001,ダッシュボードを閲覧する,運営者,管理画面トップでTourOption・商品ページ等の概況を確認する,ログイン済みであること,index.html
 UC-TO-001,TourOption一覧を閲覧・検索する,運営者,TourOptionをステータスやキーワードで絞り込んで一覧表示する,,tour-options.html
 UC-TO-002,TourOptionを新規作成する,運営者,TourOptionの基本情報を入力して新規登録する,,tour-option-detail.html（新規モード）
