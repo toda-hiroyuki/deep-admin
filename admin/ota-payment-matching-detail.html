@@ -102,6 +102,34 @@
 
       /* メインカラム */
       .detail-main { padding: 24px 28px 60px; min-width: 0; display: flex; flex-direction: column; gap: 0; }
+
+      /* ── CSVアップロードモーダル ── */
+      .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 400; display: flex; align-items: center; justify-content: center; padding: 24px; }
+      .modal-box { background: var(--surface); border-radius: var(--radius-lg); box-shadow: 0 20px 60px rgba(0,0,0,0.18); width: 100%; max-width: 640px; overflow: hidden; }
+      .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 14px; border-bottom: 1px solid var(--line-soft); }
+      .modal-head-left { display: flex; align-items: center; gap: 10px; }
+      .modal-head-icon { font-size: 18px; }
+      .modal-head-title { font-size: 15px; font-weight: 750; }
+      .modal-close { width: 28px; height: 28px; border: 1px solid var(--line-strong); border-radius: 6px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--muted); }
+      .modal-close:hover { background: var(--surface-tint); color: var(--ink); }
+      .modal-steps { display: flex; align-items: center; padding: 14px 22px; border-bottom: 1px solid var(--line-soft); gap: 0; }
+      .modal-step { display: flex; align-items: center; gap: 8px; flex: 1; }
+      .modal-step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; background: var(--accent); color: #fff; }
+      .modal-step-num.inactive { background: var(--bg-sunken); color: var(--muted); }
+      .modal-step-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      .modal-step-label.inactive { color: var(--muted); }
+      .modal-step-sep { height: 1px; flex: 1; background: var(--line); margin: 0 8px; }
+      .modal-body { padding: 22px; }
+      .csv-channel-info { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; font-size: 13px; color: var(--muted); }
+      .drop-zone { border: 2px dashed var(--line-strong); border-radius: var(--radius-lg); background: var(--surface-warm); min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+      .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+      .drop-icon { width: 48px; height: 48px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+      .drop-main { font-size: 14px; font-weight: 600; color: var(--ink); }
+      .drop-or { font-size: 12px; color: var(--muted); }
+      .drop-hint { font-size: 11.5px; color: var(--muted-soft); }
+      .csv-tip { display: flex; align-items: flex-start; gap: 8px; padding: 11px 14px; background: var(--amber-bg, #fdf4dd); border-radius: var(--radius); margin-top: 16px; font-size: 12.5px; color: var(--ink-soft); }
+      .csv-tip-icon { flex-shrink: 0; font-size: 14px; }
+      .modal-foot { padding: 14px 22px; border-top: 1px solid var(--line-soft); display: flex; justify-content: flex-end; gap: 8px; }
     </style>
   </head>
   <body>
@@ -112,7 +140,7 @@
     <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
     <script type="text/babel" data-presets="react">
-      const { useState, useRef, useMemo } = React;
+      const { useState, useRef, useMemo, useCallback } = React;
 
       const num = (v) => { const n = Number(String(v).replace(/[^0-9.\-]/g, "")); return isNaN(n) ? 0 : n; };
       const yen = (n) => (n < 0 ? "−" : "") + "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
@@ -232,6 +260,94 @@
         );
       }
 
+      /* ── CSVアップロードモーダル ── */
+      function CsvUploadModal({ channel, onClose }) {
+        const [dragOver, setDragOver] = useState(false);
+        const fileInputRef = useRef(null);
+
+        const handleDrop = useCallback(e => {
+          e.preventDefault();
+          setDragOver(false);
+          const file = e.dataTransfer.files[0];
+          if(file) { onClose(); }
+        }, [onClose]);
+
+        const handleFileChange = e => {
+          if(e.target.files[0]) { onClose(); }
+        };
+
+        const tipMap = {
+          viator: "ViatorはTransactions画面から「Export」でCSVを取得できます。",
+          getyourguide: "GetYourGuideはFinance画面から「Download report」でCSVを取得できます。",
+          klook: "KlookはPartnerHub > 財務 > ダウンロードからCSVを取得できます。",
+          airbnb: "AirbnbはTransaction history画面からCSVをエクスポートできます。",
+        };
+        const tip = tipMap[channel.key] || "OTA管理画面の入金レポートからCSVをダウンロードしてください。";
+
+        return (
+          <div className="modal-backdrop" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+            <div className="modal-box">
+              <div className="modal-head">
+                <div className="modal-head-left">
+                  <span className="modal-head-icon">📂</span>
+                  <span className="modal-head-title">OTAレポートCSVをアップロード</span>
+                </div>
+                <button className="modal-close" onClick={onClose}>✕</button>
+              </div>
+
+              <div className="modal-steps">
+                <div className="modal-step">
+                  <span className="modal-step-num">1</span>
+                  <span className="modal-step-label">ファイル選択</span>
+                </div>
+                <div className="modal-step-sep"></div>
+                <div className="modal-step">
+                  <span className="modal-step-num inactive">2</span>
+                  <span className="modal-step-label inactive">列マッピング</span>
+                </div>
+                <div className="modal-step-sep"></div>
+                <div className="modal-step">
+                  <span className="modal-step-num inactive">3</span>
+                  <span className="modal-step-label inactive">内容確認</span>
+                </div>
+              </div>
+
+              <div className="modal-body">
+                <div className="csv-channel-info">
+                  <span>対象チャネル:</span>
+                  <span className="badge blue sq">{channel.label}</span>
+                  <span>入金登録時の設定から自動表示</span>
+                </div>
+
+                <div
+                  className={`drop-zone${dragOver?" drag-over":""}`}
+                  onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+                  onDragLeave={()=>setDragOver(false)}
+                  onDrop={handleDrop}
+                  onClick={()=>fileInputRef.current?.click()}
+                >
+                  <div className="drop-icon">⬆</div>
+                  <div className="drop-main">ここにCSVファイルをドラッグ＆ドロップ</div>
+                  <div className="drop-or">または</div>
+                  <button className="btn" onClick={e=>{e.stopPropagation();fileInputRef.current?.click();}}>ファイルを選択</button>
+                  <div className="drop-hint">対応形式：.csv / .tsv（UTF-8 または Shift-JIS）</div>
+                  <input ref={fileInputRef} type="file" accept=".csv,.tsv" style={{display:"none"}} onChange={handleFileChange} />
+                </div>
+
+                <div className="csv-tip">
+                  <span className="csv-tip-icon">💡</span>
+                  <span>{tip}</span>
+                </div>
+              </div>
+
+              <div className="modal-foot">
+                <button className="btn" onClick={onClose}>キャンセル</button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       /* ── 照合検索パネル ── */
       function SearchPanel({ row, ch, onConfirm, onCancel }) {
         return (
@@ -332,6 +448,7 @@
         const [searchRowId, setSearchRowId] = useState(null);
         const [diffOpenId, setDiffOpenId] = useState(null);
         const [toast, setToast] = useState(null);
+        const [csvModalOpen, setCsvModalOpen] = useState(false);
         const toastTimer = useRef(null);
 
         const showToast = msg => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(()=>setToast(null),2400); };
@@ -465,7 +582,7 @@
                 <div className="tbl-toolbar">
                   <span className="tt-title">OTAレポート行</span>
                   <div style={{display:"flex",gap:8}}>
-                    <button className="btn sm primary">📂 OTAレポートCSVをアップロード</button>
+                    <button className="btn sm primary" onClick={()=>setCsvModalOpen(true)}>📂 OTAレポートCSVをアップロード</button>
                     <button className="btn sm" onClick={()=>setAddRowOpen(v=>!v)}>
                       {addRowOpen?"× 追加をやめる":"＋ 行を手動追加"}
                     </button>
@@ -567,6 +684,14 @@
                 </div>
               </div>
             </main>
+
+            {/* CSVアップロードモーダル */}
+            {csvModalOpen && (
+              <CsvUploadModal
+                channel={{...ch, key: deposit.channel}}
+                onClose={()=>setCsvModalOpen(false)}
+              />
+            )}
 
             {/* トースト */}
             <div style={{
