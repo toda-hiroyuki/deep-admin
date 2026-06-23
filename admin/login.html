@@ -177,22 +177,6 @@
       transform: translateY(1px);
     }
 
-    /* Error message */
-    .error-msg {
-      background: var(--coral-soft);
-      border: 1px solid #e8b4a8;
-      border-radius: var(--radius);
-      color: var(--coral);
-      font-size: 13px;
-      padding: 10px 12px;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .error-msg.show {
-      display: block;
-    }
-
     /* Footer note */
     .login-note {
       font-size: 12px;
@@ -214,10 +198,6 @@
 
   <div class="card">
     <div class="card-title">管理画面にログイン</div>
-
-    <div class="error-msg" id="errorMsg">
-      メールアドレスまたはパスワードが正しくありません。
-    </div>
 
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="field-group">
@@ -253,29 +233,9 @@
 </div>
 
 <script>
-  // 既にログイン済みならindex.htmlへリダイレクト
-  if (sessionStorage.getItem('deepAdminLoggedIn') === 'true') {
-    location.href = 'index.html';
-  }
-
   function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const errorMsg = document.getElementById('errorMsg');
-
-    // 静的モックのため固定認証情報
-    const VALID_EMAIL = 'deep-toda@deep-exp.jp';
-    const VALID_PASSWORD = 'admin1234';
-
-    if (email === VALID_EMAIL && password === VALID_PASSWORD) {
-      sessionStorage.setItem('deepAdminLoggedIn', 'true');
-      location.href = 'index.html';
-    } else {
-      errorMsg.classList.add('show');
-      document.getElementById('password').value = '';
-      document.getElementById('password').focus();
-    }
+    location.href = 'index.html';
   }
 </script>
 
