@@ -129,7 +129,32 @@
       .drop-hint { font-size: 11.5px; color: var(--muted-soft); }
       .csv-tip { display: flex; align-items: flex-start; gap: 8px; padding: 11px 14px; background: var(--amber-bg, #fdf4dd); border-radius: var(--radius); margin-top: 16px; font-size: 12.5px; color: var(--ink-soft); }
       .csv-tip-icon { flex-shrink: 0; font-size: 14px; }
-      .modal-foot { padding: 14px 22px; border-top: 1px solid var(--line-soft); display: flex; justify-content: flex-end; gap: 8px; }
+      .modal-foot { padding: 14px 22px; border-top: 1px solid var(--line-soft); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+      .modal-foot-right { display: flex; gap: 8px; }
+      /* ステップ完了チェック */
+      .modal-step-num.done { background: var(--green); }
+      /* 列マッピング */
+      .mapping-table { width: 100%; border-collapse: collapse; }
+      .mapping-table tr { border-bottom: 1px solid var(--line-soft); }
+      .mapping-table tr:last-child { border-bottom: 0; }
+      .mapping-table td { padding: 10px 0; vertical-align: middle; }
+      .mapping-table td:first-child { font-size: 13px; font-weight: 600; width: 120px; }
+      .mapping-table td.arrow { width: 28px; color: var(--muted); text-align: center; font-size: 13px; }
+      .mapping-table td.select-col { padding-right: 8px; }
+      .mapping-table td.check-col { width: 28px; text-align: center; color: var(--green); font-size: 16px; }
+      .mapping-select { width: 100%; height: 34px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 28px 0 10px; font-size: 13px; cursor: pointer; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 9px center; }
+      /* 内容確認 */
+      .preview-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 520px; }
+      .preview-table th { text-align: left; padding: 7px 10px; background: var(--surface-tint); border-bottom: 1px solid var(--line); font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+      .preview-table th.right { text-align: right; }
+      .preview-table td { padding: 8px 10px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+      .preview-table td.right { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+      .preview-table tbody tr:last-child td { border-bottom: 0; }
+      .preview-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+      .preview-summary { display: flex; gap: 18px; margin-bottom: 14px; font-size: 13px; }
+      .preview-summary b { font-weight: 700; }
     </style>
   </head>
   <body>
@@ -261,20 +286,41 @@
       }
 
       /* ── CSVアップロードモーダル ── */
-      function CsvUploadModal({ channel, onClose }) {
+      const COL_OPTIONS = {
+        viator:       ["Reference Number","Booking ID","Customer Name","Activity Date","Retail Price","Commission","Net Amount","Currency","Status","Booking Date"],
+        getyourguide: ["Reference Number","Customer Name","Activity Date","Retail Price","Commission","Net Amount","Booking Status","Tour Title","Option Title","Voucher Number"],
+        klook:        ["Order ID","Customer Name","Activity Date","Retail Price","Commission","Net Amount","Activity Name","Booking Status","Payment Method"],
+        airbnb:       ["Confirmation Code","Guest Name","Check-in Date","Payout Amount","Service Fee","Net Amount","Listing Name","Status","Booking Date"],
+      };
+      const DEFAULT_MAPPING = {
+        viator:       { resNo:"Reference Number",guest:"Customer Name",date:"Activity Date",gross:"Retail Price",fee:"Commission",net:"Net Amount" },
+        getyourguide: { resNo:"Reference Number",guest:"Customer Name",date:"Activity Date",gross:"Retail Price",fee:"Commission",net:"Net Amount" },
+        klook:        { resNo:"Order ID",guest:"Customer Name",date:"Activity Date",gross:"Retail Price",fee:"Commission",net:"Net Amount" },
+        airbnb:       { resNo:"Confirmation Code",guest:"Guest Name",date:"Check-in Date",gross:"Payout Amount",fee:"Service Fee",net:"Net Amount" },
+      };
+      const PREVIEW_ROWS = [
+        { resNo:"GYG-7291044",guest:"Smith John",  date:"2026/05/15",gross:30000,fee:6000,net:24000 },
+        { resNo:"GYG-7291045",guest:"Kim Yuri",    date:"2026/05/16",gross:25000,fee:5000,net:20000 },
+        { resNo:"GYG-7291046",guest:"Brown Mike",  date:"2026/05/18",gross:25000,fee:9000,net:16000 },
+      ];
+
+      function CsvUploadModal({ channel, onClose, onImport }) {
+        const [step, setStep] = useState(1);
         const [dragOver, setDragOver] = useState(false);
+        const [fileName, setFileName] = useState(null);
         const fileInputRef = useRef(null);
+        const colOptions = COL_OPTIONS[channel.key] || COL_OPTIONS.getyourguide;
+        const defMap = DEFAULT_MAPPING[channel.key] || DEFAULT_MAPPING.getyourguide;
+        const [mapping, setMapping] = useState(defMap);
 
+        const setMap = (k, v) => setMapping(m => ({...m, [k]: v}));
+
+        const handleFile = file => { if(file) { setFileName(file.name); setStep(2); } };
         const handleDrop = useCallback(e => {
-          e.preventDefault();
-          setDragOver(false);
-          const file = e.dataTransfer.files[0];
-          if(file) { onClose(); }
-        }, [onClose]);
-
-        const handleFileChange = e => {
-          if(e.target.files[0]) { onClose(); }
-        };
+          e.preventDefault(); setDragOver(false);
+          handleFile(e.dataTransfer.files[0]);
+        }, []);
+        const handleFileChange = e => handleFile(e.target.files[0]);
 
         const tipMap = {
           viator: "ViatorはTransactions画面から「Export」でCSVを取得できます。",
@@ -283,6 +329,18 @@
           airbnb: "AirbnbはTransaction history画面からCSVをエクスポートできます。",
         };
         const tip = tipMap[channel.key] || "OTA管理画面の入金レポートからCSVをダウンロードしてください。";
+
+        const stepLabel = s => s < step ? "done" : s === step ? "" : "inactive";
+
+        const FIELDS = [
+          { key:"resNo",  label:"OTA予約番号" },
+          { key:"guest",  label:"ゲスト名" },
+          { key:"date",   label:"ツアー日" },
+          { key:"gross",  label:"グロス額" },
+          { key:"fee",    label:"チャネル手数料" },
+          { key:"net",    label:"ネット額" },
+        ];
+        const unmappedCount = colOptions.length - FIELDS.length;
 
         return (
           <div className="modal-backdrop" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
@@ -297,52 +355,144 @@
 
               <div className="modal-steps">
                 <div className="modal-step">
-                  <span className="modal-step-num">1</span>
-                  <span className="modal-step-label">ファイル選択</span>
+                  <span className={`modal-step-num ${stepLabel(1)}`}>{step > 1 ? "✓" : "1"}</span>
+                  <span className={`modal-step-label ${step < 1 ? "inactive" : ""}`}>ファイル選択</span>
                 </div>
                 <div className="modal-step-sep"></div>
                 <div className="modal-step">
-                  <span className="modal-step-num inactive">2</span>
-                  <span className="modal-step-label inactive">列マッピング</span>
+                  <span className={`modal-step-num ${stepLabel(2)}`}>{step > 2 ? "✓" : "2"}</span>
+                  <span className={`modal-step-label ${step < 2 ? "inactive" : ""}`}>列マッピング</span>
                 </div>
                 <div className="modal-step-sep"></div>
                 <div className="modal-step">
-                  <span className="modal-step-num inactive">3</span>
-                  <span className="modal-step-label inactive">内容確認</span>
+                  <span className={`modal-step-num ${stepLabel(3)}`}>3</span>
+                  <span className={`modal-step-label ${step < 3 ? "inactive" : ""}`}>内容確認</span>
                 </div>
               </div>
 
-              <div className="modal-body">
-                <div className="csv-channel-info">
-                  <span>対象チャネル:</span>
-                  <span className="badge blue sq">{channel.label}</span>
-                  <span>入金登録時の設定から自動表示</span>
-                </div>
+              {/* ── STEP 1 ── */}
+              {step === 1 && (
+                <>
+                  <div className="modal-body">
+                    <div className="csv-channel-info">
+                      <span>対象チャネル:</span>
+                      <span className="badge blue sq">{channel.label}</span>
+                      <span>入金登録時の設定から自動表示</span>
+                    </div>
+                    <div
+                      className={`drop-zone${dragOver?" drag-over":""}`}
+                      onDragOver={e=>{e.preventDefault();setDragOver(true);}}
+                      onDragLeave={()=>setDragOver(false)}
+                      onDrop={handleDrop}
+                      onClick={()=>fileInputRef.current?.click()}
+                    >
+                      <div className="drop-icon">⬆</div>
+                      <div className="drop-main">ここにCSVファイルをドラッグ＆ドロップ</div>
+                      <div className="drop-or">または</div>
+                      <button className="btn" onClick={e=>{e.stopPropagation();fileInputRef.current?.click();}}>ファイルを選択</button>
+                      <div className="drop-hint">対応形式：.csv / .tsv（UTF-8 または Shift-JIS）</div>
+                      <input ref={fileInputRef} type="file" accept=".csv,.tsv" style={{display:"none"}} onChange={handleFileChange} />
+                    </div>
+                    <div className="csv-tip">
+                      <span className="csv-tip-icon">💡</span>
+                      <span>{tip}</span>
+                    </div>
+                  </div>
+                  <div className="modal-foot">
+                    <div></div>
+                    <div className="modal-foot-right">
+                      <button className="btn" onClick={onClose}>キャンセル</button>
+                    </div>
+                  </div>
+                </>
+              )}
 
-                <div
-                  className={`drop-zone${dragOver?" drag-over":""}`}
-                  onDragOver={e=>{e.preventDefault();setDragOver(true);}}
-                  onDragLeave={()=>setDragOver(false)}
-                  onDrop={handleDrop}
-                  onClick={()=>fileInputRef.current?.click()}
-                >
-                  <div className="drop-icon">⬆</div>
-                  <div className="drop-main">ここにCSVファイルをドラッグ＆ドロップ</div>
-                  <div className="drop-or">または</div>
-                  <button className="btn" onClick={e=>{e.stopPropagation();fileInputRef.current?.click();}}>ファイルを選択</button>
-                  <div className="drop-hint">対応形式：.csv / .tsv（UTF-8 または Shift-JIS）</div>
-                  <input ref={fileInputRef} type="file" accept=".csv,.tsv" style={{display:"none"}} onChange={handleFileChange} />
-                </div>
+              {/* ── STEP 2 ── */}
+              {step === 2 && (
+                <>
+                  <div className="modal-body">
+                    <p style={{fontSize:13,color:"var(--ink-soft)",marginBottom:16}}>
+                      <b>{channel.label}</b> の既定マッピングを適用しました。必要に応じて修正してください。
+                    </p>
+                    <table className="mapping-table">
+                      <tbody>
+                        {FIELDS.map(f => (
+                          <tr key={f.key}>
+                            <td>{f.label}</td>
+                            <td className="arrow">←</td>
+                            <td className="select-col">
+                              <select className="mapping-select" value={mapping[f.key]} onChange={e=>setMap(f.key, e.target.value)}>
+                                {colOptions.map(o=><option key={o}>{o}</option>)}
+                              </select>
+                            </td>
+                            <td className="check-col">✓</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="csv-tip" style={{marginTop:14}}>
+                      <span className="csv-tip-icon">⚠</span>
+                      <span>マッピングに使われなかった列は無視されます（{unmappedCount}列）</span>
+                    </div>
+                  </div>
+                  <div className="modal-foot">
+                    <button className="btn" onClick={()=>setStep(1)}>← 戻る</button>
+                    <div className="modal-foot-right">
+                      <button className="btn" onClick={onClose}>キャンセル</button>
+                      <button className="btn primary" onClick={()=>setStep(3)}>プレビューを確認 →</button>
+                    </div>
+                  </div>
+                </>
+              )}
 
-                <div className="csv-tip">
-                  <span className="csv-tip-icon">💡</span>
-                  <span>{tip}</span>
-                </div>
-              </div>
-
-              <div className="modal-foot">
-                <button className="btn" onClick={onClose}>キャンセル</button>
-              </div>
+              {/* ── STEP 3 ── */}
+              {step === 3 && (
+                <>
+                  <div className="modal-body">
+                    <div className="preview-summary">
+                      <span>ファイル: <b>{fileName}</b></span>
+                      <span>読み込み件数: <b>{PREVIEW_ROWS.length}件</b></span>
+                    </div>
+                    <div className="preview-scroll">
+                      <table className="preview-table">
+                        <thead>
+                          <tr>
+                            <th>OTA予約番号</th>
+                            <th>ゲスト名</th>
+                            <th>ツアー日</th>
+                            <th className="right">グロス額</th>
+                            <th className="right">手数料</th>
+                            <th className="right">ネット額</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {PREVIEW_ROWS.map((r,i)=>(
+                            <tr key={i}>
+                              <td style={{fontFamily:"monospace",fontSize:11.5,fontWeight:600}}>{r.resNo}</td>
+                              <td>{r.guest}</td>
+                              <td>{r.date}</td>
+                              <td className="right">{yen(r.gross)}</td>
+                              <td className="right">{yen(r.fee)}</td>
+                              <td className="right">{yen(r.net)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="csv-tip" style={{marginTop:14}}>
+                      <span className="csv-tip-icon">💡</span>
+                      <span>「インポートして照合を開始」を押すと、この内容がOTAレポート行として追加されます。</span>
+                    </div>
+                  </div>
+                  <div className="modal-foot">
+                    <button className="btn" onClick={()=>setStep(2)}>← 戻る</button>
+                    <div className="modal-foot-right">
+                      <button className="btn" onClick={onClose}>キャンセル</button>
+                      <button className="btn primary" onClick={()=>{ onImport(PREVIEW_ROWS); onClose(); }}>インポートして照合を開始 →</button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );
@@ -492,6 +642,17 @@
           setAddRowOpen(false);
           showToast("OTAレポート行を追加しました");
         };
+        const importCsv = (rows) => {
+          const newRows = rows.map(r => {
+            const fee = r.fee;
+            const net = r.net;
+            return { rid: ++_rid, resNo: r.resNo, guest: r.guest, date: r.date,
+              gross: r.gross, fee, net, result: "unmatched", intId: null, diff: null };
+          });
+          setRows(rs => [...rs, ...newRows]);
+          showToast(`${newRows.length}件のOTAレポート行をインポートしました`);
+        };
+
         const completeReconcile = () => {
           setDeposit(d=>({...d,completed:true,status:counts.diff>0?"diff":"matched",
             completedBy:"佐藤 美咲",completedAt:nowStr()}));
@@ -690,6 +851,7 @@
               <CsvUploadModal
                 channel={{...ch, key: deposit.channel}}
                 onClose={()=>setCsvModalOpen(false)}
+                onImport={importCsv}
               />
             )}
 
