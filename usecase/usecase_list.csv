@@ -4,9 +4,9 @@ UC-TO-001,TourOption 一覧,TourOption一覧を表示する,運営者,登録済�
 UC-TO-002,TourOption 一覧,TourOptionをステータスで絞り込む,運営者,掲載中・一時停止・非公開・下書きでフィルタリングする,,tour-options.html
 UC-TO-003,TourOption 一覧,TourOptionをキーワード検索する,運営者,名称等のキーワードでTourOptionを絞り込む,,tour-options.html
 UC-TO-004,TourOption 一覧,TourOption新規作成画面へ遷移する,運営者,一覧画面から新規作成ページへ移動する,,tour-options.html → tour-option-detail.html
-UC-TO-004a,TourOption 作成・編集・確認,TourOptionを仮登録して編集画面へ遷移する,運営者,新規作成ボタン押下でdelete_flag=1のレコードを仮挿入しIDを取得・編集ページへリダイレクトする,—,tour-option-detail.html（新規モード）※バリデーションなし
-UC-TO-004b,TourOption 作成・編集・確認,TourOptionを下書き保存する,運営者,下書き用バリデーション通過後にdelete_flag=0・status=下書きで保存する,仮登録済みのTourOptionが存在すること（delete_flag=1）,tour-option-detail.html 更新保存ボタン（下書き）
-UC-TO-004c,TourOption 作成・編集・確認,TourOptionを更新保存する,運営者,本番用バリデーション通過後にdelete_flag=0・status=選択中のステータスで保存する,仮登録または下書き保存済みのTourOptionが存在すること,tour-option-detail.html 更新保存ボタン
+UC-TO-004a,TourOption 作成・編集・確認,TourOptionを仮登録して編集画面へ遷移する,運営者,新規作成ボタン押下でis_deleted=1のレコードを仮挿入しIDを取得・編集ページへリダイレクトする,—,tour-option-detail.html（新規モード）※バリデーションなし
+UC-TO-004b,TourOption 作成・編集・確認,TourOptionを下書き保存する,運営者,下書き用バリデーション通過後にis_deleted=0・status=下書きで保存する,仮登録済みのTourOptionが存在すること（is_deleted=1）,tour-option-detail.html 更新保存ボタン（下書き）
+UC-TO-004c,TourOption 作成・編集・確認,TourOptionを更新保存する,運営者,本番用バリデーション通過後にis_deleted=0・status=選択中のステータスで保存する,仮登録または下書き保存済みのTourOptionが存在すること,tour-option-detail.html 更新保存ボタン
 UC-TO-005,TourOption 一覧,TourOption編集画面へ遷移する,運営者,対象TourOptionの編集ページへ移動する,対象TourOptionが存在すること,tour-options.html → tour-option-detail.html
 UC-TO-006,TourOption 作成・編集・確認,TourOptionのIDを確認する,運営者,システムが付番したTourOption IDを確認する,対象TourOptionが存在すること,tour-option-detail.html 01基本情報タブ
 UC-TO-007,TourOption 作成・編集・確認,TourOptionの販売ステータスを変更する,運営者,掲載中・一時停止・非公開・下書きをセレクトボックスで切り替える,対象TourOptionが存在すること,tour-option-detail.html 右上セレクトボックス
