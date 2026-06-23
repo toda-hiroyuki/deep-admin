@@ -1,2 +1,39 @@
 UC-ID,ユースケース名,アクター,概要,条件,備考
-UC-001,（ユースケース名を記入）,（例：一般ユーザー）,（このユースケースで何を実現するか1〜2文で記入）,（開始前に必要な条件があれば記載）,（注意事項や特記事項を表記）
+UC-DB-001,ダッシュボードを閲覧する,運営者,管理画面トップでTourOption・商品ページ等の概況を確認する,ログイン済みであること,index.html
+UC-TO-001,TourOption一覧を閲覧・検索する,運営者,TourOptionをステータスやキーワードで絞り込んで一覧表示する,,tour-options.html
+UC-TO-002,TourOptionを新規作成する,運営者,TourOptionの基本情報を入力して新規登録する,,tour-option-detail.html（新規モード）
+UC-TO-003,TourOptionの基本情報を編集する,運営者,名称・テーマタイトル・都道府県・エリア・タグ等を編集する,対象TourOptionが存在すること,tour-option-detail.html 01基本情報タブ
+UC-TO-004,TourOptionの提供条件を編集する,運営者,商品種別・所要時間・カテゴリ・集合場所・解散場所・ピックアップ等を編集する,対象TourOptionが存在すること,tour-option-detail.html 02提供条件タブ
+UC-TO-005,TourOptionの販売条件を編集する,運営者,予約期限・料金区分一覧・キャンセルポリシー・販売停止理由を編集する,対象TourOptionが存在すること,tour-option-detail.html 03販売条件タブ
+UC-TO-006,TourOptionの料金（段階価格）を登録・編集する,運営者,参加者区分ごとの段階価格を別ページで登録・編集する,対象TourOptionが存在すること,tour-option-price.html
+UC-TO-007,TourOptionの販売期間・リソースを設定する,運営者,販売期間・曜日・受付時間帯・臨時休業・催行リソースを設定する,対象TourOptionが存在すること,tour-option-detail.html 04販売期間・リソースタブ
+UC-TO-008,TourOptionのコンテンツを編集する,運営者,説明文・含まれるもの/含まれないもの・画像（D&Dアップロード）を編集する,対象TourOptionが存在すること,tour-option-detail.html 04コンテンツタブ
+UC-TO-009,TourOptionのツアー行程を管理する,運営者,TourOptionに紐づくツアー行程の一覧を確認し新規作成・編集に遷移する,対象TourOptionが存在すること,tour-option-detail.html 05ツアー行程タブ
+UC-TO-010,TourOptionの運営・確認情報を管理する,運営者,ガイド向け資料（共通・個別）をサジェスト検索で割り当てる,対象TourOptionが存在すること,tour-option-detail.html 06運営・確認タブ
+UC-TO-011,TourOptionのチャネル別URLを管理する,運営者,チャネルごとのURLを一覧表示し登録・編集する,対象TourOptionが存在すること,tour-option-detail.html 07チャネル別URLタブ / tour-channel-detail.html
+UC-TO-012,TourOptionの経費を管理する,運営者,TourOptionに紐づく経費を登録・編集する,対象TourOptionが存在すること,tour-option-detail.html 09経費タブ / tour-option-cost-add.html / tour-option-cost-edit.html
+UC-TO-013,TourOptionの販売ステータスを変更する,運営者,掲載中・一時停止・非公開・下書きを切り替える,対象TourOptionが存在すること,tour-option-detail.html 右上セレクトボックス
+UC-PR-001,商品ページ一覧を閲覧・検索する,運営者,商品ページをステータスやキーワードで絞り込んで一覧表示する,,products.html
+UC-PR-002,商品ページを新規作成する,運営者,商品ページの基本情報を入力して新規登録する,,product-detail.html（新規モード）
+UC-PR-003,商品ページの基本情報を編集する,運営者,タイトル・サブタイトル・カテゴリ等を多言語タブで編集する,対象商品ページが存在すること,product-detail.html 01ページ基本タブ
+UC-PR-004,商品ページの共通コンテンツを編集する,運営者,商品ページ全体で使う共通コンテンツを多言語タブで編集する,対象商品ページが存在すること,product-detail.html 02共通コンテンツタブ
+UC-PR-005,商品ページに掲載TourOptionを紐付け・管理する,運営者,サジェスト検索でTourOptionを追加しD&Dで表示順を変更する,対象商品ページが存在すること,product-detail.html 03掲載TourOptionタブ / tour-option-add.html / tour-option-edit.html
+UC-PR-006,商品ページの掲載ステータスを変更する,運営者,掲載中・非公開・下書きを切り替える,対象商品ページが存在すること,product-detail.html 右上セレクトボックス
+UC-PR-007,商品ページの公開前チェックを実施する,運営者,公開可否（公開OK/公開NG）を確認する,対象商品ページが存在すること,product-detail.html 右上公開前チェックボタン
+UC-TS-001,ツアー行程一覧を閲覧する,運営者,TourOptionに紐づくツアー行程の一覧を確認する,対象TourOptionが存在すること,tour-schedules.html
+UC-TS-002,ツアー行程を新規作成する,運営者,スポット種別・スポット名・地図設定等を入力して行程を登録する,,tour-schedule-detail.html（新規モード）
+UC-TS-003,ツアー行程を編集する,運営者,登録済みツアー行程のスポット情報・地図設定等を編集する,対象ツアー行程が存在すること,tour-schedule-detail.html（編集モード）
+UC-GM-001,ガイド向け資料一覧を閲覧・検索する,運営者,ガイド向け資料をキーワードで絞り込んで一覧表示する,,guide-materials.html
+UC-GM-002,ガイド向け資料を新規作成する,運営者,ガイド向け資料の内容を入力して新規登録する,,guide-material-detail.html（新規モード）
+UC-GM-003,ガイド向け資料を編集する,運営者,登録済みガイド向け資料の内容を編集する,対象資料が存在すること,guide-material-detail.html（編集モード）
+UC-CP-001,キャンセルポリシー一覧を閲覧する,運営者,登録済みキャンセルポリシーの一覧を確認する,,cancel-policies.html
+UC-CP-002,キャンセルポリシーを新規作成する,運営者,テンプレート名・返金条件（日数・割合）を多言語で入力して登録する,,cancel-policy-detail.html（新規モード）
+UC-CP-003,キャンセルポリシーを編集する,運営者,登録済みキャンセルポリシーの内容を編集する,対象ポリシーが存在すること,cancel-policy-detail.html（編集モード）
+UC-RS-001,リソース一覧を閲覧する,運営者,催行リソースの一覧を確認する,,resources.html
+UC-RS-002,リソースを新規作成する,運営者,リソース名・再利用可能までの時間等を入力して登録する,,resource-detail.html（新規モード）
+UC-RS-003,リソースを編集する,運営者,登録済みリソースの情報を編集する,対象リソースが存在すること,resource-detail.html（編集モード）
+UC-AR-001,都道府県・エリア一覧を閲覧する,運営者,登録済み都道府県とエリアの一覧を確認する,,areas.html
+UC-AR-002,都道府県を新規作成・編集する,運営者,都道府県名を多言語で入力して登録・編集する,,areas.html（編集モード）
+UC-AR-003,エリアを新規作成・編集する,運営者,都道府県に紐づくエリア名を多言語で入力して登録・編集する,対象都道府県が存在すること,areas.html（編集モード）
+UC-LG-001,言語マスター一覧を閲覧する,運営者,管理対象の言語マスター一覧を確認する,,languages.html
+UC-LG-002,言語マスターを新規作成・編集する,運営者,言語名・言語コードを入力して登録・編集する,,language-detail.html
