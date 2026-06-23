@@ -275,7 +275,12 @@
         .nav-item.active::before { display: none; }
       }
     </style>
-  </head>
+    <script>
+    if (sessionStorage.getItem('deepAdminLoggedIn') !== 'true') {
+      location.replace('login.html');
+    }
+  </script>
+</head>
   <body>
     <template id="__bundler_thumbnail" data-bg-color="#0a5e5a">
       <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">

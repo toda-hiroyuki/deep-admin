@@ -31,7 +31,12 @@
       .num-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; font-weight: 600; }
       .num-affix input { padding-left: 24px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
     </style>
-  </head>
+    <script>
+    if (sessionStorage.getItem('deepAdminLoggedIn') !== 'true') {
+      location.replace('login.html');
+    }
+  </script>
+</head>
   <body>
     <div id="root"></div>
 

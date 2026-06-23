@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ログイン | deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <style>
+    :root {
+      --bg: #fbf7f0;
+      --bg-sunken: #f4efe5;
+      --surface: #ffffff;
+      --surface-tint: #f7f3eb;
+      --ink: #1d1a17;
+      --ink-soft: #3d3833;
+      --muted: #756d63;
+      --line: #e8e0d3;
+      --line-strong: #d4cabb;
+      --side-bg: #0f2e2b;
+      --side-ink: #f3ebdb;
+      --side-ink-soft: #aac3bf;
+      --accent: #0a5e5a;
+      --accent-strong: #064a47;
+      --accent-soft: #d6ebe8;
+      --accent-ink: #ffffff;
+      --coral: #ba4530;
+      --coral-soft: #f6dfd8;
+      --radius: 6px;
+      --radius-lg: 10px;
+      --shadow-2: 0 1px 2px rgba(45, 30, 12, 0.05), 0 6px 24px rgba(45, 30, 12, 0.06);
+      --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+      --field-h: 38px;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+      font-feature-settings: "ss01", "cv11";
+      -webkit-font-smoothing: antialiased;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-sunken);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Brand */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      background: var(--side-bg);
+      color: var(--side-ink);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      flex-shrink: 0;
+    }
+
+    .brand-text {}
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.3px;
+    }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-2);
+      padding: 36px 32px;
+      width: 100%;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-soft);
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      height: var(--field-h);
+      border: 1px solid var(--line-strong, #d4cabb);
+      border-radius: var(--radius);
+      background: var(--surface-tint);
+      padding: 0 12px;
+      font-size: 14px;
+      color: var(--ink);
+      width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      border-color: var(--accent);
+      box-shadow: var(--ring);
+      background: var(--surface);
+    }
+
+    input[type="email"]::placeholder,
+    input[type="password"]::placeholder {
+      color: #b0a99e;
+    }
+
+    .btn-login {
+      width: 100%;
+      height: 40px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-login:hover {
+      background: var(--accent-strong);
+    }
+
+    .btn-login:active {
+      transform: translateY(1px);
+    }
+
+    /* Error message */
+    .error-msg {
+      background: var(--coral-soft);
+      border: 1px solid #e8b4a8;
+      border-radius: var(--radius);
+      color: var(--coral);
+      font-size: 13px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .error-msg.show {
+      display: block;
+    }
+
+    /* Footer note */
+    .login-note {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="brand">
+    <div class="brand-mark">d.</div>
+    <div class="brand-text">
+      <div class="brand-name">deep_Admin</div>
+      <div class="brand-sub">deep experience</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">管理画面にログイン</div>
+
+    <div class="error-msg" id="errorMsg">
+      メールアドレスまたはパスワードが正しくありません。
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="field-group">
+        <div class="field">
+          <label for="email">メールアドレス</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="example@deep-exp.jp"
+            autocomplete="email"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="password">パスワード</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="パスワードを入力"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">ログイン</button>
+    </form>
+  </div>
+
+  <div class="login-note">deep experience 運営者専用</div>
+</div>
+
+<script>
+  // 既にログイン済みならindex.htmlへリダイレクト
+  if (sessionStorage.getItem('deepAdminLoggedIn') === 'true') {
+    location.href = 'index.html';
+  }
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+
+    // 静的モックのため固定認証情報
+    const VALID_EMAIL = 'deep-toda@deep-exp.jp';
+    const VALID_PASSWORD = 'admin1234';
+
+    if (email === VALID_EMAIL && password === VALID_PASSWORD) {
+      sessionStorage.setItem('deepAdminLoggedIn', 'true');
+      location.href = 'index.html';
+    } else {
+      errorMsg.classList.add('show');
+      document.getElementById('password').value = '';
+      document.getElementById('password').focus();
+    }
+  }
+</script>
+
+</body>
+</html>

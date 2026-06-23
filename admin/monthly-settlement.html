@@ -222,7 +222,12 @@
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
       .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
     </style>
-  </head>
+    <script>
+    if (sessionStorage.getItem('deepAdminLoggedIn') !== 'true') {
+      location.replace('login.html');
+    }
+  </script>
+</head>
   <body>
     <div id="root"></div>
 

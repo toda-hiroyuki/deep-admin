@@ -281,7 +281,12 @@
         .case-div { display: none; }
       }
     </style>
-  </head>
+    <script>
+    if (sessionStorage.getItem('deepAdminLoggedIn') !== 'true') {
+      location.replace('login.html');
+    }
+  </script>
+</head>
   <body>
     <div id="root"></div>
 
