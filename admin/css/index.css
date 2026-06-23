@@ -248,3 +248,17 @@ body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1
 .notice-dot.red { background: var(--coral); }
 .notice-dot.amber { background: #c97300; }
 .notice-dot.green { background: var(--green); }
+
+/* ── Sidebar footer (logout) ── */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--side-line);
+}
+.nav-logout {
+  opacity: 0.75;
+}
+.nav-logout:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.06);
+}
