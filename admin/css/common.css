@@ -449,6 +449,7 @@ h4 { font-size: 13px; }
 .btn.danger:hover { background: var(--coral-soft); border-color: var(--coral); }
 .btn.sm { height: 28px; padding: 0 9px; font-size: 12px; }
 .btn.icon { width: 32px; padding: 0; }
+.btn:disabled, .btn[disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
 /* ─── Content grid ──────────────────────────────────────── */
 
