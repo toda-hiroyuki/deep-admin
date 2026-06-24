@@ -388,18 +388,13 @@
         const [dataFlag, setDataFlag] = useState(true);     // データ不備フラグ
         const [dupFlag, setDupFlag] = useState(true);       // 重複疑いフラグ
         // ── 追加請求管理（変更2）──
-        const [acRecord, setAcRecord] = useState(null);    // 登録済み追加請求レコード（nullなら未登録）
-        const hasAddCharge = acRecord !== null;
+        const [acRecords, setAcRecords] = useState([]);    // 追加請求レコード配列（複数件対応）
+        const hasAddCharge = acRecords.length > 0;
         const [acRegOpen, setAcRegOpen] = useState(false); // 新規登録フォーム開閉
         const [acRegAmount, setAcRegAmount] = useState(""); // 登録フォーム: 金額
         const [acRegDesc, setAcRegDesc] = useState("");    // 登録フォーム: 理由
         const [acRegDate, setAcRegDate] = useState("");    // 登録フォーム: 日付
         const [acOpen, setAcOpen] = useState(false);
-        const [acStatus, setAcStatus] = useState("unsent");
-        const [acUrl, setAcUrl] = useState("");
-        const [acExpiry, setAcExpiry] = useState("");
-        const [acSent, setAcSent] = useState("");
-        const [acMethod, setAcMethod] = useState("email");
         // ── 返金管理（追加請求 hasAddCharge と対）──
         const [refunds, setRefunds] = useState([]);         // 返金レコード配列（空なら未登録）
         const hasRefund = refunds.length > 0;
@@ -1003,14 +998,16 @@
                   { k: "当初支払い額", v: <span>¥25,000<span className="sub">（2026/06/01）</span></span> },
                   { k: "決済元", v: "Viator" },
                   { k: "料金メモ", v: <span className="muted-dash">なし</span> },
-                  ...(hasAddCharge ? [
-                    { k: "追加請求", v: <span>¥{Number(acRecord.amount).toLocaleString()}<span className="sub">（{acRecord.desc}{acRecord.date ? "　" + acRecord.date : ""}・決済リンク）</span></span> },
-                    { k: "追加請求ステータス", v: <span className={`badge ${AC_STATUS[acStatus].cls}`}>{AC_STATUS[acStatus].label}</span> },
-                  ] : []),
-                  { k: "支払い済み合計", v: hasAddCharge
-                    ? <span className="strong">¥{(25000 + Number(acRecord.amount)).toLocaleString()}<span className="sub">（当初 ¥25,000 ＋ 追加請求 ¥{Number(acRecord.amount).toLocaleString()}）</span></span>
-                    : <span className="strong">¥25,000</span>
-                  },
+                  ...acRecords.flatMap((r, i) => [
+                    { k: `追加請求 #${i + 1}`, v: <span>¥{Number(r.amount).toLocaleString()}<span className="sub">（{r.desc}{r.date ? "　" + r.date : ""}）</span></span> },
+                    { k: "ステータス", v: <span className={`badge ${AC_STATUS[r.status].cls}`}>{AC_STATUS[r.status].label}</span> },
+                  ]),
+                  { k: "支払い済み合計", v: (() => {
+                    const totalAc = acRecords.reduce((s, r) => s + Number(r.amount), 0);
+                    return hasAddCharge
+                      ? <span className="strong">¥{(25000 + totalAc).toLocaleString()}<span className="sub">（当初 ¥25,000 ＋ 追加請求 ¥{totalAc.toLocaleString()}）</span></span>
+                      : <span className="strong">¥25,000</span>;
+                  })() },
                   ...(hasRefund ? [
                     { k: "実返金額（合計）", v: <span className="strong">¥{refunds.reduce((s, r) => s + r.amount, 0).toLocaleString()}</span> },
                     { k: "返金ステータス", v: <span className={`badge ${RE_STATUS[reStatus].cls}`}>{RE_STATUS[reStatus].label}</span> },
@@ -1044,7 +1041,7 @@
                         </div>
                         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                           <button className="btn sm" onClick={() => { setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate(""); }}>キャンセル</button>
-                          <button className="btn primary sm" onClick={() => { setAcRecord({ amount: acRegAmount, desc: acRegDesc, date: acRegDate }); setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate(""); showToast("追加請求を登録しました"); }}>登録する</button>
+                          <button className="btn primary sm" onClick={() => { setAcRecords(prev => [...prev, { id: Date.now(), amount: acRegAmount, desc: acRegDesc, date: acRegDate, status: "unsent", url: "", expiry: "", sent: "", method: "email", statusHistory: [] }]); setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate(""); showToast("追加請求を登録しました"); }}>登録する</button>
                         </div>
                       </div>
                     )}
@@ -1056,39 +1053,95 @@
                     {acOpen && (
                       <div className="ac-panel reveal">
                         <div className="ac-title">💳 追加請求の管理</div>
-                        <div className="form-field">
-                          <label className="f-label">追加請求ステータス</label>
-                          <select className="ctrl" value={acStatus} onChange={e => setAcStatus(e.target.value)}>
-                            <option value="unsent">未送付</option>
-                            <option value="invoiced">請求済み（未払い）</option>
-                            <option value="paid">支払い済み</option>
-                            <option value="expired">期限切れ</option>
-                            <option value="cancelled">取消</option>
-                          </select>
-                        </div>
-                        {(acStatus === "invoiced" || acStatus === "paid" || acStatus === "expired") && (
-                          <div className="ac-grid reveal">
-                            <div className="form-field"><label className="f-label">決済リンク URL</label><input className="ctrl" placeholder="https://buy.stripe.com/..." value={acUrl} onChange={e => setAcUrl(e.target.value)} /></div>
-                            <div className="form-field"><label className="f-label">リンク有効期限</label><input type="date" className="ctrl" value={acExpiry} onChange={e => setAcExpiry(e.target.value)} /></div>
-                            <div className="form-field"><label className="f-label">送付日時</label><input type="datetime-local" className="ctrl" value={acSent} onChange={e => setAcSent(e.target.value)} /></div>
-                            <div className="form-field"><label className="f-label">送付手段</label>
-                              <select className="ctrl" value={acMethod} onChange={e => setAcMethod(e.target.value)}>
-                                <option value="email">メール</option><option value="line">LINE</option><option value="whatsapp">WhatsApp</option><option value="other">その他</option>
+                        {acRecords.map((r, idx) => (
+                          <div key={r.id} style={{ borderTop: idx ? "1px solid var(--line-soft)" : "none", paddingTop: idx ? 16 : 0, marginTop: idx ? 16 : 0 }}>
+                            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
+                              <span style={{ fontWeight: 700, fontSize: 13 }}>追加請求 #{idx + 1}</span>
+                              <span style={{ fontWeight: 700 }}>¥{Number(r.amount).toLocaleString()}</span>
+                              {r.desc && <span style={{ color: "var(--muted)", fontSize: 12 }}>{r.desc}</span>}
+                              {r.date && <span style={{ color: "var(--muted)", fontSize: 12 }}>{r.date}</span>}
+                            </div>
+                            <div className="form-field">
+                              <label className="f-label">追加請求ステータス</label>
+                              <select className="ctrl" value={r.status}
+                                onChange={e => setAcRecords(prev => prev.map(rec => rec.id === r.id ? { ...rec, status: e.target.value } : rec))}>
+                                <option value="unsent">未送付</option>
+                                <option value="invoiced">請求済み（未払い）</option>
+                                <option value="paid">支払い済み</option>
+                                <option value="expired">期限切れ</option>
+                                <option value="cancelled">取消</option>
                               </select>
                             </div>
+                            {(r.status === "invoiced" || r.status === "paid" || r.status === "expired") && (
+                              <div className="ac-grid reveal">
+                                <div className="form-field"><label className="f-label">決済リンク URL</label><input className="ctrl" placeholder="https://buy.stripe.com/..." value={r.url} onChange={e => setAcRecords(prev => prev.map(rec => rec.id === r.id ? { ...rec, url: e.target.value } : rec))} /></div>
+                                <div className="form-field"><label className="f-label">リンク有効期限</label><input type="date" className="ctrl" value={r.expiry} onChange={e => setAcRecords(prev => prev.map(rec => rec.id === r.id ? { ...rec, expiry: e.target.value } : rec))} /></div>
+                                <div className="form-field"><label className="f-label">送付日時</label><input type="datetime-local" className="ctrl" value={r.sent} onChange={e => setAcRecords(prev => prev.map(rec => rec.id === r.id ? { ...rec, sent: e.target.value } : rec))} /></div>
+                                <div className="form-field"><label className="f-label">送付手段</label>
+                                  <select className="ctrl" value={r.method} onChange={e => setAcRecords(prev => prev.map(rec => rec.id === r.id ? { ...rec, method: e.target.value } : rec))}>
+                                    <option value="email">メール</option><option value="line">LINE</option><option value="whatsapp">WhatsApp</option><option value="other">その他</option>
+                                  </select>
+                                </div>
+                              </div>
+                            )}
+                            {r.status === "expired" && (
+                              <div className="ac-warn">⚠️ 決済リンクの有効期限が切れています。Stripe 管理画面で新しいリンクを発行してください。</div>
+                            )}
+                            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                              <button className="btn primary" onClick={() => {
+                                const now = new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
+                                setAcRecords(prev => prev.map(rec => rec.id === r.id
+                                  ? { ...rec, statusHistory: [{ savedAt: now, status: rec.status, url: rec.url, expiry: rec.expiry, sent: rec.sent, method: rec.method }, ...rec.statusHistory] }
+                                  : rec
+                                ));
+                                showToast("追加請求の管理内容を保存しました");
+                              }}>保存する</button>
+                            </div>
+                            {r.statusHistory.length > 0 && (
+                              <div style={{ marginTop: 12, borderTop: "1px solid var(--line-soft)", paddingTop: 10 }}>
+                                <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--muted)", marginBottom: 6 }}>更新履歴</div>
+                                {r.statusHistory.map((h, i) => (
+                                  <div key={i} className="ba-reason" style={{ marginBottom: 4, display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+                                    <span className="brl" style={{ whiteSpace: "nowrap" }}>{h.savedAt}</span>
+                                    <span className={`badge ${AC_STATUS[h.status].cls}`}>{AC_STATUS[h.status].label}</span>
+                                    {h.url && <span style={{ color: "var(--muted)", fontSize: 12 }}>URL: {h.url}</span>}
+                                    {h.expiry && <span style={{ color: "var(--muted)", fontSize: 12 }}>期限: {h.expiry}</span>}
+                                    {h.sent && <span style={{ color: "var(--muted)", fontSize: 12 }}>送付: {h.sent}</span>}
+                                    {h.url && h.method && <span style={{ color: "var(--muted)", fontSize: 12 }}>（{h.method}）</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {acStatus === "expired" && (
-                          <div className="ac-warn">⚠️ 決済リンクの有効期限が切れています。Stripe 管理画面で新しいリンクを発行してください。</div>
-                        )}
-                        <div className="form-field">
-                          <label className="f-label">理由・メモ</label>
-                          <input type="text" className="ctrl" placeholder="例：人数変更による増額" value={acRecord?.desc ?? ""} onChange={e => setAcRecord(prev => ({ ...prev, desc: e.target.value }))} />
+                        ))}
+                        <div style={{ marginTop: 16 }}>
+                          {!acRegOpen ? (
+                            <button className="btn sm" onClick={() => setAcRegOpen(true)}>＋ 追加請求を追加</button>
+                          ) : (
+                            <div style={{ padding: 14, background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--radius)" }}>
+                              <div className="ac-title" style={{ fontSize: 13 }}>追加請求を追加</div>
+                              <div className="ac-grid">
+                                <div className="form-field">
+                                  <label className="f-label">追加請求金額<span className="req">*</span></label>
+                                  <div className="input-prefix"><span className="pfx">¥</span><input type="number" className="ctrl" placeholder="0" value={acRegAmount} onChange={e => setAcRegAmount(e.target.value)} /></div>
+                                </div>
+                                <div className="form-field">
+                                  <label className="f-label">日付<span className="req">*</span></label>
+                                  <input type="date" className="ctrl" value={acRegDate} onChange={e => setAcRegDate(e.target.value)} />
+                                </div>
+                              </div>
+                              <div className="form-field">
+                                <label className="f-label">理由・メモ</label>
+                                <input type="text" className="ctrl" placeholder="例：人数変更による増額" value={acRegDesc} onChange={e => setAcRegDesc(e.target.value)} />
+                              </div>
+                              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                                <button className="btn sm" onClick={() => { setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate(""); }}>キャンセル</button>
+                                <button className="btn primary sm" onClick={() => { setAcRecords(prev => [...prev, { id: Date.now(), amount: acRegAmount, desc: acRegDesc, date: acRegDate, status: "unsent", url: "", expiry: "", sent: "", method: "email", statusHistory: [] }]); setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate(""); showToast("追加請求を登録しました"); }}>登録する</button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="ac-note"><span className="an-ic">ℹ️</span><span>決済リンクは Stripe 管理画面で発行し URL を記録してください。送付後にステータスを「請求済み」に更新してください。</span></div>
-                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                          <button className="btn primary" onClick={() => showToast("追加請求の管理内容を保存しました")}>保存する</button>
-                        </div>
                       </div>
                     )}
                   </div>
