@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TourOption紐付け追加 | deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="css/simple-page.css">
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-name">deep_Admin</div>
+    <div class="brand-sub">deep experience</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">予約オペレーション</div>
+    <a href="予約一覧.html" class="nav-item"><span class="nav-icon"></span>予約一覧</a>
+    <a href="予約一覧.html?filter=unassigned" class="nav-item nav-child"><span class="nav-icon">↳</span>未割り当て一覧</a>
+    <a href="催行回一覧.html" class="nav-item"><span class="nav-icon"></span>催行回一覧</a>
+    <a href="未手配一覧.html" class="nav-item nav-child"><span class="nav-icon">↳</span>未手配一覧</a>
+    <a href="当日翌日案件一覧.html" class="nav-item nav-child"><span class="nav-icon">↳</span>当日/翌日案件</a>
+    <div class="nav-section-label">商品管理</div>
+    <a href="tour-options.html" class="nav-item active"><span class="nav-icon"></span>TourOption</a>
+    <a href="products.html" class="nav-item"><span class="nav-icon"></span>商品ページ</a>
+    <a href="guide-materials.html" class="nav-item"><span class="nav-icon"></span>ガイド資料</a>
+    <div class="nav-section-label">ガイド管理</div>
+    <a href="ガイド一覧.html" class="nav-item"><span class="nav-icon"></span>ガイド一覧</a>
+    <div class="nav-section-label">施設管理</div>
+    <div class="nav-section-label">精算・経営</div>
+    <a href="月次精算管理.html" class="nav-item"><span class="nav-icon"></span>月次締め確認</a>
+    <a href="金額確認待ち一覧.html" class="nav-item"><span class="nav-icon"></span>金額確認待ち一覧</a>
+    <a href="OTA入金照合.html" class="nav-item"><span class="nav-icon"></span>OTA入金照合</a>
+    <a href="収支一覧.html" class="nav-item"><span class="nav-icon"></span>収支一覧</a>
+    <div class="nav-section-label">マスター管理</div>
+    <a href="cancel-policies.html" class="nav-item"><span class="nav-icon"></span>キャンセルポリシー</a>
+    <a href="チャネル・手数料設定.html" class="nav-item"><span class="nav-icon"></span>チャネル・手数料設定</a>
+    <a href="facilities.html" class="nav-item"><span class="nav-icon"></span>施設一覧</a>
+  </div>
+</nav>
+  <div class="page-wrap">
+    <div class="page-header">
+      <div class="page-header-left">
+        <a href="product-detail.html" class="back-btn">← 戻る</a>
+        <h1>TourOption紐付け追加</h1>
+      </div>
+      <a href="product-detail.html" class="btn">キャンセル</a>
+    </div>
+
+    <div class="section-card">
+      <h2>紐付けるTourOptionを選択</h2>
+      <p class="desc">登録済みのTourOptionから選んで、この商品ページに紐付けます。表示・販売などの詳細は追加後に「設定を編集」で調整できます。</p>
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" placeholder="コード・選択表示名で検索..." />
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>コード</th>
+            <th>選択表示名</th>
+            <th class="num">価格</th>
+            <th>所要</th>
+            <th style="width:120px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="code-mono">G-KYO-003-1-PR</span></td>
+            <td>
+              <div class="row-name">貸切3時間プラン</div>
+              <div class="row-sub">祇園周辺をガイドと歩く、少人数向けの夜ツアー。</div>
+            </td>
+            <td class="num">¥18,000</td>
+            <td>3時間</td>
+            <td><button class="btn primary done" disabled>紐付け済</button></td>
+          </tr>
+          <tr>
+            <td><span class="code-mono">G-KYO-003-1-GR</span></td>
+            <td>
+              <div class="row-name">グループ3時間プラン</div>
+              <div class="row-sub">他のゲストと一緒に参加する、グループ向けの夜ツアー。</div>
+            </td>
+            <td class="num">¥12,000</td>
+            <td>3時間</td>
+            <td><button class="btn primary done" disabled>紐付け済</button></td>
+          </tr>
+          <tr>
+            <td><span class="code-mono">G-KYO-003-2-PR</span></td>
+            <td>
+              <div class="row-name">貸切4時間プラン</div>
+              <div class="row-sub">食事時間を長めに確保した、4時間の貸切プラン。</div>
+            </td>
+            <td class="num">¥24,000</td>
+            <td>4時間</td>
+            <td><button class="btn primary done" disabled>紐付け済</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

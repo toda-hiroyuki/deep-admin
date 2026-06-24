@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ガイド編集 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      a { color: inherit; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--coral); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { min-width: 0; display: flex; flex-direction: column; }
+      .ws-inner { padding: 20px 24px 64px; display: flex; flex-direction: column; gap: 16px; max-width: 1060px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+
+      /* ── Sticky edit header ── */
+      .edit-head { position: sticky; top: 0; z-index: 30; background: rgba(251, 247, 240, 0.86); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+      .eh-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+      .eh-left h1 { margin: 0; font-size: 19px; font-weight: 750; letter-spacing: -0.01em; }
+      .eh-left .eh-sub { font-size: 12.5px; color: var(--muted); }
+      .eh-left .eh-sub .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-weight: 650; color: var(--ink-soft); margin-right: 6px; }
+      .eh-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; text-decoration: none; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 13px; font-size: 12.5px; }
+      .btn .b-ic { font-size: 14px; opacity: 0.85; }
+      .btn.ghost { border-style: dashed; color: var(--accent-strong); background: var(--surface); }
+      .btn.ghost:hover { background: var(--accent-soft); border-color: var(--accent); border-style: dashed; }
+
+      /* ── Tab shell ── */
+      .tab-shell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .tab-bar { display: flex; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--line); background: var(--surface-warm); overflow-x: auto; }
+      .tab-bar::-webkit-scrollbar { height: 0; }
+      .tab { appearance: none; border: 0; background: transparent; color: var(--muted); padding: 13px 15px 11px; font-size: 13.5px; font-weight: 600; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.1s; }
+      .tab:hover { color: var(--ink-soft); }
+      .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent); font-weight: 700; }
+      .tab-panel { padding: 22px 24px 26px; }
+      .panel-title { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 0 0 2px; }
+      .panel-sub { font-size: 12px; color: var(--muted); margin: 0 0 18px; }
+
+      /* ── Form rows ── */
+      .form-section { display: flex; flex-direction: column; }
+      .frow { display: grid; grid-template-columns: 210px 1fr; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line-soft); align-items: start; }
+      .frow:last-child { border-bottom: 0; }
+      .frow .fl { font-size: 12.5px; font-weight: 600; color: var(--muted); padding-top: 9px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+      .frow .fl .req { color: var(--coral); font-weight: 700; }
+      .frow .fl .opt { font-size: 10.5px; font-weight: 600; color: var(--muted-soft); background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px; }
+      .frow .fc { min-width: 0; max-width: 540px; }
+      .f-hint { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+      /* ── Controls ── */
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 11px; font-size: 13.5px; width: 100%; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      textarea.ctrl { height: auto; min-height: 76px; padding: 9px 11px; resize: vertical; line-height: 1.55; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; max-width: 220px; }
+      .ctrl.code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+      select.ctrl { appearance: none; cursor: pointer; padding-right: 30px; max-width: 260px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 11px center; }
+      .ctrl.readonly { background: var(--bg-sunken); color: var(--muted); border-color: var(--line); cursor: not-allowed; max-width: 220px; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-weight: 650; }
+      .lock-note { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--muted-soft); margin-left: 10px; vertical-align: middle; }
+      .lock-note::before { content: ""; width: 11px; height: 11px; flex-shrink: 0; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+      /* ── Name / paired inputs ── */
+      .name-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 420px; }
+
+      /* ── Checkbox ── */
+      .check { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; padding: 5px 0; }
+      .check input { appearance: none; width: 19px; height: 19px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); display: grid; place-items: center; transition: background 0.1s, border-color 0.1s; flex-shrink: 0; }
+      .check input:checked { background: var(--accent); border-color: var(--accent); }
+      .check input:checked::after { content: "✓"; color: #fff; font-size: 12px; font-weight: 800; }
+      .check .c-txt { font-size: 13.5px; color: var(--ink-soft); }
+
+      /* ── Radio group ── */
+      .radio-group { display: inline-flex; gap: 8px; }
+      .radio-opt { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-soft); transition: background 0.1s, border-color 0.1s; }
+      .radio-opt input { appearance: none; width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--line-strong); flex-shrink: 0; transition: border 0.1s; }
+      .radio-opt.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); }
+      .radio-opt.on input { border: 4px solid var(--accent); }
+
+      /* ── Editable area tags ── */
+      .edit-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .edit-tag { display: inline-flex; align-items: center; gap: 6px; padding: 5px 6px 5px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); border: 1px solid rgba(10, 94, 90, 0.16); font-size: 12.5px; font-weight: 600; }
+      .edit-tag .x { width: 18px; height: 18px; border-radius: 50%; border: 0; background: rgba(10, 94, 90, 0.13); color: var(--accent-strong); display: grid; place-items: center; font-size: 13px; line-height: 1; padding: 0; }
+      .edit-tag .x:hover { background: var(--accent); color: #fff; }
+      .tags-empty { color: var(--muted-soft); font-size: 13px; }
+
+      /* ── Add-inline ── */
+      .add-inline { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+      .add-inline .ctrl { max-width: 200px; }
+
+      /* ── Language edit rows ── */
+      .lang-list { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .lang-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); background: var(--surface); }
+      .lang-row:last-child { border-bottom: 0; }
+      .lang-row .l-name { flex: 1 1 auto; font-size: 13.5px; font-weight: 650; min-width: 0; }
+      .lang-row select.ctrl { flex: 0 0 190px; max-width: 190px; }
+      .lang-row .l-del { height: 32px; width: 32px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); color: var(--muted); display: grid; place-items: center; font-size: 15px; flex-shrink: 0; }
+      .lang-row .l-del:hover { background: var(--coral-soft); border-color: var(--coral); color: var(--coral); }
+      .lang-empty { padding: 16px 14px; color: var(--muted-soft); font-size: 13px; text-align: center; }
+      .sub-cap { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin: 0 0 10px; }
+      .sub-cap + .sub-cap, .form-block + .form-block { margin-top: 24px; }
+      .form-block { display: block; }
+
+      /* ── Read-only rate display ── */
+      .ro-stat { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius); }
+      .ro-stat .ro-lab { font-size: 12px; font-weight: 600; color: var(--muted); }
+      .ro-stat .ro-val { font-size: 24px; font-weight: 750; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+      .ro-stat .ro-unit { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+      .info-note { display: flex; align-items: flex-start; gap: 10px; background: var(--surface-tint); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 12px 14px; margin-top: 14px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.55; }
+      .info-note .in-ic { color: var(--accent); flex-shrink: 0; font-weight: 800; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+
+      @media (max-width: 760px) {
+        .frow { grid-template-columns: 1fr; gap: 7px; }
+        .frow .fl { padding-top: 0; }
+        .name-pair { max-width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+            const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",             group: "ops"                           , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",       group: "ops",    child: true           , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",           group: "ops"                           , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",           group: "ops",    child: true           , href: "未手配一覧.html" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",        group: "ops",    child: true           , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",          group: "product"                       , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",            group: "product"                       , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",            group: "product"                       , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",            group: "guide"                         , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",          group: "pay"                           , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",      group: "pay",    count: 4, alert: true  , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",           group: "pay",    count: 4, alert: true  , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",              group: "pay"                           , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",    group: "master"                        , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定",  group: "master"                        , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+      ].map(n => ({ ...n, active: n.key === "guides" }));
+
+      const TABS = [
+        { key: "basic",    label: "基本情報" },
+        { key: "personal", label: "個人情報" },
+        { key: "skill",    label: "資格・スキル" },
+        { key: "area",     label: "対応エリア/言語" },
+        { key: "rate",     label: "報酬単価" },
+        { key: "pay",      label: "支払い情報" },
+        { key: "hire",     label: "採用情報" },
+        { key: "memo",     label: "メモ" },
+      ];
+
+      const PROF_OPTS = ["ネイティブ", "ネイティブ相当", "流暢", "ビジネス", "日常会話"];
+
+      // ── Reusable form row ──
+      function Row({ label, req, opt, hint, children }) {
+        return (
+          <div className="frow">
+            <div className="fl">
+              {label}
+              {req && <span className="req">*</span>}
+              {opt && <span className="opt">任意</span>}
+            </div>
+            <div className="fc">
+              {children}
+              {hint && <div className="f-hint">{hint}</div>}
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [tab, setTab] = useState("basic");
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        // ── Form state (persists across tabs) ──
+        const [form, setForm] = useState({
+          // basic
+          kanjiSei: "山田", kanjiMei: "太郎",
+          kanaSei: "ヤマダ", kanaMei: "タロウ",
+          romaSei: "Yamada", romaMei: "Taro",
+          tel: "090-1234-5678", email: "t.yamada@example.com",
+          whatsapp: true, kobetsu: false,
+          contactMemo: "LINEグループ「Deep Guides Tokyo」",
+          status: "アクティブ", statusReason: "",
+          // personal
+          nationality: "日本", birth: "1988-03-15",
+          pref: "東京都", city: "新宿区",
+          addr: "西新宿1-2-3 ○○マンション401",
+          // skill
+          natLicense: "有", natLicenseMemo: "資格番号 2015-12345 / 取得 2015年",
+          regLicense: "無", regLicenseMemo: "",
+          rank: "A",
+          experience: "外資系ホテルでのコンシェルジュ経験5年。英語・中国語ガイド多数実績あり。",
+          // rate　— 報酬単位（ガイド情報設計資料 §5-2：将来のB2B対応に備えてフィールドを持つ）
+          rewardUnit: "1時間あたり",
+          // pay
+          bank: "三菱UFJ銀行", branchNo: "001", branchName: "新宿支店",
+          accountType: "普通", accountNo: "1234567", accountName: "ヤマダ タロウ",
+          invoice: "T1234567890123",
+          // hire
+          interviewDate: "2022-05-10", occupation: "会社員（副業でガイド）",
+          interviewInfo: "英語・中国語ともに高いレベル。接客経験豊富で即戦力。週末中心の稼働希望。",
+          // memo
+          staffMemo: "夏季は多忙のため6〜8月は月2回程度の稼働。事前に確認が必要。",
+        });
+        const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+        // ── Areas ──
+        const [areas, setAreas] = useState(["東京都", "神奈川県", "埼玉県"]);
+        const [areaAdd, setAreaAdd] = useState("");
+        const removeArea = (a) => setAreas(areas.filter(x => x !== a));
+        const addArea = () => {
+          const v = areaAdd.trim();
+          if (!v) return;
+          if (areas.includes(v)) { showToast("既に登録済みのエリアです"); return; }
+          setAreas([...areas, v]); setAreaAdd("");
+        };
+
+        // ── Languages ──
+        const [langs, setLangs] = useState([
+          { name: "英語", prof: "ネイティブ相当" },
+          { name: "中国語（普通話）", prof: "流暢" },
+          { name: "日本語", prof: "ネイティブ" },
+        ]);
+        const [langAdd, setLangAdd] = useState("");
+        const [langProf, setLangProf] = useState("流暢");
+        const removeLang = (i) => setLangs(langs.filter((_, idx) => idx !== i));
+        const setLangProfAt = (i, v) => setLangs(langs.map((l, idx) => idx === i ? { ...l, prof: v } : l));
+        const addLang = () => {
+          const v = langAdd.trim();
+          if (!v) return;
+          if (langs.some(l => l.name === v)) { showToast("既に登録済みの言語です"); return; }
+          setLangs([...langs, { name: v, prof: langProf }]); setLangAdd("");
+        };
+
+        const onSave = () => showToast("ガイド情報を保存しました");
+
+        const renderTab = () => {
+          switch (tab) {
+            case "basic":
+              return (
+                <div className="form-section">
+                  <Row label="ガイドID" hint="システム自動生成のため変更できません">
+                    <input className="ctrl readonly" value="G-042" readOnly tabIndex={-1} />
+                  </Row>
+                  <Row label="漢字姓名" req>
+                    <div className="name-pair">
+                      <input className="ctrl" placeholder="姓（例：山田）" value={form.kanjiSei} onChange={e => set("kanjiSei", e.target.value)} />
+                      <input className="ctrl" placeholder="名（例：太郎）" value={form.kanjiMei} onChange={e => set("kanjiMei", e.target.value)} />
+                    </div>
+                  </Row>
+                  <Row label="カタカナ姓名" req>
+                    <div className="name-pair">
+                      <input className="ctrl" placeholder="セイ（例：ヤマダ）" value={form.kanaSei} onChange={e => set("kanaSei", e.target.value)} />
+                      <input className="ctrl" placeholder="メイ（例：タロウ）" value={form.kanaMei} onChange={e => set("kanaMei", e.target.value)} />
+                    </div>
+                  </Row>
+                  <Row label="ローマ字姓名">
+                    <div className="name-pair">
+                      <input className="ctrl" placeholder="Last (例：Yamada)" value={form.romaSei} onChange={e => set("romaSei", e.target.value)} />
+                      <input className="ctrl" placeholder="First (例：Taro)" value={form.romaMei} onChange={e => set("romaMei", e.target.value)} />
+                    </div>
+                  </Row>
+                  <Row label="Tel" req>
+                    <input className="ctrl code-mono" style={{ maxWidth: 240 }} placeholder="090-1234-5678" value={form.tel} onChange={e => set("tel", e.target.value)} />
+                  </Row>
+                  <Row label="Email" req>
+                    <input className="ctrl code-mono" style={{ maxWidth: 320 }} placeholder="t.yamada@example.com" value={form.email} onChange={e => set("email", e.target.value)} />
+                  </Row>
+                  <Row label="WhatsAppコミュニティ参加">
+                    <label className="check">
+                      <input type="checkbox" checked={form.whatsapp} onChange={e => set("whatsapp", e.target.checked)} />
+                      <span className="c-txt">参加済み</span>
+                    </label>
+                  </Row>
+                  <Row label="個別連絡希望">
+                    <label className="check">
+                      <input type="checkbox" checked={form.kobetsu} onChange={e => set("kobetsu", e.target.checked)} />
+                      <span className="c-txt">個別連絡を希望する</span>
+                    </label>
+                  </Row>
+                  <Row label="連絡手段メモ" opt>
+                    <textarea className="ctrl" placeholder="連絡手段に関するメモを入力…" value={form.contactMemo} onChange={e => set("contactMemo", e.target.value)}></textarea>
+                  </Row>
+                </div>
+              );
+
+            case "personal":
+              return (
+                <div className="form-section">
+                  <Row label="国籍"><input className="ctrl" style={{ maxWidth: 220 }} placeholder="例：日本" value={form.nationality} onChange={e => set("nationality", e.target.value)} /></Row>
+                  <Row label="生年月日"><input type="date" className="ctrl" value={form.birth} onChange={e => set("birth", e.target.value)} /></Row>
+                  <Row label="都道府県"><input className="ctrl" style={{ maxWidth: 220 }} placeholder="例：東京都" value={form.pref} onChange={e => set("pref", e.target.value)} /></Row>
+                  <Row label="市区町村"><input className="ctrl" style={{ maxWidth: 220 }} placeholder="例：新宿区" value={form.city} onChange={e => set("city", e.target.value)} /></Row>
+                  <Row label="住所（それ以降）"><input className="ctrl" placeholder="例：西新宿1-2-3 ○○マンション401" value={form.addr} onChange={e => set("addr", e.target.value)} /></Row>
+                </div>
+              );
+
+            case "skill":
+              return (
+                <div className="form-section">
+                  <Row label="全国案内士資格">
+                    <div className="radio-group">
+                      {["有", "無"].map(o => (
+                        <label key={o} className={`radio-opt ${form.natLicense === o ? "on" : ""}`}>
+                          <input type="radio" name="natLicense" checked={form.natLicense === o} onChange={() => set("natLicense", o)} />{o}
+                        </label>
+                      ))}
+                    </div>
+                  </Row>
+                  <Row label="全国案内士資格メモ" opt>
+                    <input className="ctrl" placeholder="例：資格番号 2015-12345 / 取得 2015年" value={form.natLicenseMemo} onChange={e => set("natLicenseMemo", e.target.value)} />
+                  </Row>
+                  <Row label="地域案内士資格">
+                    <div className="radio-group">
+                      {["有", "無"].map(o => (
+                        <label key={o} className={`radio-opt ${form.regLicense === o ? "on" : ""}`}>
+                          <input type="radio" name="regLicense" checked={form.regLicense === o} onChange={() => set("regLicense", o)} />{o}
+                        </label>
+                      ))}
+                    </div>
+                  </Row>
+                  <Row label="地域案内士資格メモ" opt>
+                    <input className="ctrl" placeholder="資格番号など" value={form.regLicenseMemo} onChange={e => set("regLicenseMemo", e.target.value)} />
+                  </Row>
+                  <Row label="ガイドスキルランク" req>
+                    <select className="ctrl" style={{ maxWidth: 160 }} value={form.rank} onChange={e => set("rank", e.target.value)}>
+                      {["S", "A", "B", "C"].map(r => <option key={r}>{r}</option>)}
+                    </select>
+                  </Row>
+                  <Row label="面接時ガイド経験" opt>
+                    <textarea className="ctrl" placeholder="ガイド経験・実績を入力…" value={form.experience} onChange={e => set("experience", e.target.value)}></textarea>
+                  </Row>
+                </div>
+              );
+
+            case "area":
+              return (
+                <div>
+                  <div className="form-block">
+                    <p className="sub-cap">対応エリア</p>
+                    <div className="edit-tags">
+                      {areas.length === 0 ? <span className="tags-empty">登録されたエリアはありません</span> :
+                        areas.map(a => (
+                          <span className="edit-tag" key={a}>
+                            {a}
+                            <button className="x" aria-label={`${a}を削除`} onClick={() => removeArea(a)}>×</button>
+                          </span>
+                        ))}
+                    </div>
+                    <div className="add-inline">
+                      <input className="ctrl" placeholder="エリア名（例：千葉県）" value={areaAdd}
+                        onChange={e => setAreaAdd(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addArea(); } }} />
+                      <button className="btn ghost sm" onClick={addArea}>＋ エリアを追加</button>
+                    </div>
+                  </div>
+
+                  <div className="form-block">
+                    <p className="sub-cap">対応言語</p>
+                    <div className="lang-list">
+                      {langs.length === 0 ? <div className="lang-empty">登録された言語はありません</div> :
+                        langs.map((l, i) => (
+                          <div className="lang-row" key={i}>
+                            <span className="l-name">{l.name}</span>
+                            <select className="ctrl" value={l.prof} onChange={e => setLangProfAt(i, e.target.value)}>
+                              {PROF_OPTS.map(p => <option key={p}>{p}</option>)}
+                            </select>
+                            <button className="l-del" aria-label={`${l.name}を削除`} onClick={() => removeLang(i)}>×</button>
+                          </div>
+                        ))}
+                    </div>
+                    <div className="add-inline">
+                      <input className="ctrl" placeholder="言語名（例：スペイン語）" value={langAdd}
+                        onChange={e => setLangAdd(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addLang(); } }} />
+                      <select className="ctrl" style={{ maxWidth: 180 }} value={langProf} onChange={e => setLangProf(e.target.value)}>
+                        {PROF_OPTS.map(p => <option key={p}>{p}</option>)}
+                      </select>
+                      <button className="btn ghost sm" onClick={addLang}>＋ 言語を追加</button>
+                    </div>
+                  </div>
+                </div>
+              );
+
+            case "rate":
+              return (
+                <div>
+                  <p className="panel-title">報酬単価</p>
+                  <p className="panel-sub">現在の基本報酬単価を表示します。</p>
+                  <div className="ro-stat">
+                    <span className="ro-lab">現在の基本報酬単価</span>
+                    <span className="ro-val">¥3,000</span>
+                    <span className="ro-unit">/ 時間</span>
+                  </div>
+                  <div className="form-section" style={{ marginTop: 16 }}>
+                    <Row label="報酬単位" hint="報酬単価の適用単位。通常は「1時間あたり」（デフォルト）。将来のB2B対応に備えて「1ツアーあたり」を選択できます。">
+                      <select className="ctrl" style={{ maxWidth: 200 }} value={form.rewardUnit} onChange={e => set("rewardUnit", e.target.value)}>
+                        <option>1時間あたり</option>
+                        <option>1ツアーあたり</option>
+                      </select>
+                    </Row>
+                  </div>
+                  <div className="info-note">
+                    <span className="in-ic">ⓘ</span>
+                    <span>時給の変更は履歴管理が必要なため、この編集画面では変更できません。時給を更新する場合は<b> ガイド詳細画面の「報酬単価」タブ </b>から行ってください。</span>
+                  </div>
+                </div>
+              );
+
+            case "pay":
+              return (
+                <div className="form-section">
+                  <Row label="銀行名" req><input className="ctrl" style={{ maxWidth: 280 }} placeholder="例：三菱UFJ銀行" value={form.bank} onChange={e => set("bank", e.target.value)} /></Row>
+                  <Row label="支店番号"><input className="ctrl code-mono" style={{ maxWidth: 140 }} placeholder="例：123" value={form.branchNo} onChange={e => set("branchNo", e.target.value)} /></Row>
+                  <Row label="支店名"><input className="ctrl" style={{ maxWidth: 240 }} placeholder="例：新宿支店" value={form.branchName} onChange={e => set("branchName", e.target.value)} /></Row>
+                  <Row label="口座種別" req>
+                    <select className="ctrl" style={{ maxWidth: 160 }} value={form.accountType} onChange={e => set("accountType", e.target.value)}>
+                      <option>普通</option>
+                      <option>当座</option>
+                    </select>
+                  </Row>
+                  <Row label="口座番号" req><input className="ctrl code-mono" style={{ maxWidth: 200 }} placeholder="例：1234567" value={form.accountNo} onChange={e => set("accountNo", e.target.value)} /></Row>
+                  <Row label="口座名義" req><input className="ctrl" style={{ maxWidth: 280 }} placeholder="例：ヤマダ タロウ" value={form.accountName} onChange={e => set("accountName", e.target.value)} /></Row>
+                  <Row label="インボイス登録番号" opt><input className="ctrl code-mono" style={{ maxWidth: 280 }} placeholder="例：T1234567890123" value={form.invoice} onChange={e => set("invoice", e.target.value)} /></Row>
+                </div>
+              );
+
+            case "hire":
+              return (
+                <div className="form-section">
+                  <Row label="面接日"><input type="date" className="ctrl" value={form.interviewDate} onChange={e => set("interviewDate", e.target.value)} /></Row>
+                  <Row label="職業"><input className="ctrl" placeholder="例：会社員（副業でガイド）" value={form.occupation} onChange={e => set("occupation", e.target.value)} /></Row>
+                  <Row label="面接時info" opt><textarea className="ctrl" placeholder="面接時の所感・評価を入力…" value={form.interviewInfo} onChange={e => set("interviewInfo", e.target.value)}></textarea></Row>
+                </div>
+              );
+
+            case "memo":
+              return (
+                <div className="form-section">
+                  <Row label="稼働状況" req>
+                    <select className="ctrl" value={form.status} onChange={e => set("status", e.target.value)}>
+                      <option>アクティブ</option>
+                      <option>一時停止</option>
+                      <option>退会</option>
+                    </select>
+                  </Row>
+                  <Row label="稼働状況変更理由メモ" opt hint="稼働状況を変更した場合は理由を記録してください。">
+                    <textarea className="ctrl" placeholder="変更理由を入力…" value={form.statusReason} onChange={e => set("statusReason", e.target.value)}></textarea>
+                  </Row>
+                  <Row label="スタッフメモ" opt hint="運営スタッフ向けの社内メモです。">
+                    <textarea className="ctrl" style={{ minHeight: 120 }} placeholder="社内向けメモを入力…" value={form.staffMemo} onChange={e => set("staffMemo", e.target.value)}></textarea>
+                  </Row>
+                </div>
+              );
+
+            default:
+              return null;
+          }
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+                            {[
+                { grp: "ops",     label: "予約オペレーション" },
+                { grp: "product", label: "商品管理" },
+                { grp: "guide",    label: "ガイド管理" },
+                { grp: "facility", label: "施設管理" },
+                { grp: "pay",      label: "精算・経営" },
+                { grp: "master",  label: "マスター管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`}
+                      onClick={() => n.href
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                ガイドの登録情報を編集します。時給の変更は履歴管理のため詳細画面の「報酬単価」タブから行います。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="edit-head">
+                <div className="eh-left">
+                  <h1>ガイド情報を編集</h1>
+                  <div className="eh-sub"><span className="code-mono">G-042</span>山田 太郎</div>
+                </div>
+                <div className="eh-actions">
+                  <a className="btn" href="ガイド詳細.html">キャンセル</a>
+                  <button className="btn primary" onClick={onSave}>
+                    <span className="b-ic">✓</span>保存する
+                  </button>
+                </div>
+              </div>
+
+              <div className="ws-inner">
+                <div className="crumbs">
+                  <a href="ガイド一覧.html">ガイド管理</a>
+                  <span className="sep">›</span>
+                  <a href="ガイド詳細.html">G-042　山田太郎</a>
+                  <span className="sep">›</span>
+                  <span className="current">編集</span>
+                </div>
+
+                <section className="tab-shell">
+                  <div className="tab-bar" role="tablist">
+                    {TABS.map(t => (
+                      <button key={t.key} role="tab" aria-selected={tab === t.key}
+                        className={`tab ${tab === t.key ? "active" : ""}`}
+                        onClick={() => setTab(t.key)}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="tab-panel" role="tabpanel">
+                    {renderTab()}
+                  </div>
+                </section>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

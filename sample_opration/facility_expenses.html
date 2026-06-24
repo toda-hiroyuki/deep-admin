@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>経費項目管理 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+/* ── Tabs ── */
+.tabs { display:flex; gap:0; border-bottom:2px solid var(--line); margin-bottom:24px; }
+.tab-btn { appearance:none; border:0; background:transparent; padding:10px 18px;
+  font-size:13.5px; font-weight:500; color:var(--muted); cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .12s; }
+.tab-btn:hover { color:var(--ink); }
+.tab-btn.active { color:var(--accent-strong); border-bottom-color:var(--accent); font-weight:600; }
+
+/* ── Detail grid ── */
+.detail-grid { display:grid; grid-template-columns:180px 1fr; gap:12px 24px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:24px 28px; }
+.detail-label { font-size:12.5px; color:var(--muted); font-weight:500; padding-top:2px; }
+.detail-value { font-size:14px; color:var(--ink); }
+
+/* ── Form ── */
+.form-card { background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:28px; margin-bottom:20px; }
+.form-section { margin-bottom:28px; }
+.form-section:last-child { margin-bottom:0; }
+.form-section-title { font-size:12px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--muted); padding-bottom:14px;
+  border-bottom:1px solid var(--line); margin-bottom:18px; }
+.form-field { display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+.form-label { font-size:13px; font-weight:500; color:var(--ink-soft); }
+.form-label .req { display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--coral); margin-right:5px; vertical-align:middle; }
+.form-label .opt { font-size:11px; color:var(--muted); font-weight:400;
+  margin-left:6px; letter-spacing:.01em; }
+.form-input, .form-select, .form-textarea {
+  height:38px; padding:0 12px; border:1px solid var(--line-strong);
+  border-radius:var(--radius); background:var(--surface); font:inherit;
+  font-size:14px; color:var(--ink); outline:none; transition:border-color .12s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--accent); box-shadow:var(--ring); }
+.form-textarea { height:auto; padding:10px 12px; resize:vertical; }
+.form-hint { font-size:12px; color:var(--muted); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+/* ── Modal ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center; z-index:1000; }
+.modal { background:var(--surface); border-radius:var(--radius-lg); padding:28px 32px;
+  width:420px; max-width:90vw; box-shadow:var(--shadow-pop); }
+.modal h3 { margin:0 0 10px; font-size:17px; }
+.modal p { margin:0 0 20px; color:var(--muted); font-size:13.5px; line-height:1.6; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+/* ── Cost/Pay badges ── */
+.cost-fixed   { background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.cost-perpax  { background:#fce7f3; color:#9d174d; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.cost-slide   { background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.cost-variable{ background:#f3f4f6; color:#374151; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-a { background:var(--accent-soft); color:var(--accent-strong); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-b { background:var(--blue-soft); color:var(--blue); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-c { background:var(--amber-soft); color:var(--amber); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-d { background:var(--line); color:var(--muted); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+
+/* ── Tier table ── */
+.tier-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+.tier-table th, .tier-table td {
+  padding:6px 10px; border:1px solid var(--line); text-align:left; }
+.tier-table th { background:var(--bg-sunken); font-weight:600; font-size:12px; }
+
+/* ── Topbar / page shell extras ── */
+.page-shell { display:flex; flex-direction:column; min-height:100vh; }
+.topbar { padding:16px 28px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  background:var(--surface); }
+.topbar-left { display:flex; flex-direction:column; gap:3px; }
+.breadcrumb { font-size:12px; color:var(--muted); }
+.breadcrumb a { color:var(--accent); text-decoration:none; }
+.page-h1 { font-size:20px; font-weight:700; letter-spacing:-.02em; margin:0; }
+.topbar-right { display:flex; gap:10px; align-items:center; }
+.page-content { padding:28px; flex:1; }
+
+/* ── Btn additions ── */
+.btn-danger { background:var(--coral); color:#fff; border:0; padding:8px 16px;
+  border-radius:var(--radius); font-size:13.5px; font-weight:600; cursor:pointer; }
+.btn-danger:hover { background:var(--coral-soft); color:var(--coral); }
+.btn-ghost { background:transparent; color:var(--ink); border:1px solid var(--line-strong);
+  padding:8px 16px; border-radius:var(--radius); font-size:13.5px; font-weight:500; cursor:pointer; }
+.btn-ghost:hover { background:var(--bg-sunken); }
+.btn-primary { background:var(--accent); color:#fff; border:0; padding:8px 18px;
+  border-radius:var(--radius); font-size:13.5px; font-weight:600; cursor:pointer; }
+.btn-primary:hover { background:var(--accent-strong); }
+
+/* ── Info callout ── */
+.info-callout { background:var(--accent-soft); border:1px solid #b2d8d4;
+  border-radius:var(--radius); padding:12px 16px; font-size:13px;
+  color:var(--accent-strong); margin-bottom:8px; }
+
+/* ── Section header ── */
+.section-hdr { display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; }
+.section-hdr h2 { font-size:15px; font-weight:700; margin:0; }
+
+    </style>
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+    <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+// ── Sidebar ──────────────────────────────────────────────────────────────
+function Sidebar({ active }) {
+  const opsItems = [
+    { key:"bookings",   href:"予約一覧.html",                        icon:"BK", label:"予約一覧" },
+    { key:"unassigned", href:"予約一覧.html?filter=unassigned",       icon:"↳",  label:"未割り当て一覧", child:true },
+    { key:"sessions",   href:"催行回一覧.html",                      icon:"SS", label:"催行回一覧" },
+    { key:"unarranged", href:"未手配一覧.html",                      icon:"↳",  label:"未手配一覧",    child:true },
+    { key:"today",      href:"当日翌日案件一覧.html",                 icon:"↳",  label:"当日/翌日案件", child:true },
+  ];
+  const productItems = [
+    { key:"tourOption",  href:"tour-options.html",    icon:"TO", label:"TourOption" },
+    { key:"productPage", href:"products.html",        icon:"PG", label:"商品ページ" },
+    { key:"guideDoc",    href:"guide-materials.html", icon:"GD", label:"ガイド資料" },
+  ];
+  const guideItems = [
+    { key:"guides", href:"ガイド一覧.html", icon:"GM", label:"ガイド一覧" },
+  ];
+  const payItems = [
+    { key:"settle",  href:"月次精算管理.html",     icon:"ST", label:"月次締め確認" },
+    { key:"import",  href:"金額確認待ち一覧.html", icon:"IM", label:"金額確認待ち一覧" },
+    { key:"ota",     href:"OTA入金照合.html",      icon:"OT", label:"OTA入金照合" },
+    { key:"revenue", href:"収支一覧.html",         icon:"RV", label:"収支一覧" },
+  ];
+  const facilityItems = [
+    { key:"facilities",     href:"facilities.html",           icon:"FC", label:"施設一覧" },
+  ];
+  const masterItems = [
+    { key:"cancelTemplate", href:"cancel-policies.html",      icon:"CP", label:"キャンセルポリシー" },
+    { key:"feeMaster",      href:"チャネル・手数料設定.html",  icon:"FE", label:"チャネル・手数料設定" },
+  ];
+  const renderItems = (arr) => arr.map(it => (
+    <a key={it.key} href={it.href}
+      className={`nav-item ${active === it.key ? "active" : ""} ${it.child ? "nav-child" : ""}`}
+      style={{textDecoration:"none"}}>
+      <span className="nav-icon">{it.icon}</span>
+      <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+    </a>
+  ));
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">DE</div>
+        <div>
+          <div className="brand-name">DeepExperience</div>
+          <div className="brand-caption">運営管理</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">{renderItems(opsItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">{renderItems(productItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">{renderItems(guideItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">{renderItems(facilityItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">{renderItems(payItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">マスター管理</div>
+        <div className="nav-group">{renderItems(masterItems)}</div>
+      </div>
+    </aside>
+  );
+}
+
+
+
+const EXPENSES_INIT = [
+  { id:"E001", name:"入館料（大人）",   costType:"人数変動", payType:"A", unitPrice:800,  remarks:"ガイド分含む", tiers:null },
+  { id:"E002", name:"施設利用基本料",   costType:"固定",     payType:"B", unitPrice:5000, remarks:"1催行回あたり", tiers:null },
+  { id:"E003", name:"体験材料費",       costType:"スライド", payType:"A", unitPrice:null, remarks:"人数に応じ段階",
+    tiers:[{max:5,price:1200},{max:10,price:1000},{max:null,price:800}] },
+];
+
+function CostBadge({ type }) {
+  const cls = type==="固定"?"cost-fixed":type==="人数変動"?"cost-perpax":type==="スライド"?"cost-slide":"cost-variable";
+  return <span className={cls}>{type}</span>;
+}
+function PayBadge({ type }) {
+  const cls = `pay-${type.toLowerCase()}`;
+  const label = type==="A"?"区分A":type==="B"?"区分B":type==="C"?"区分C":"区分D";
+  return <span className={cls}>{label}</span>;
+}
+
+function App() {
+  const [expenses, setExpenses] = useState(EXPENSES_INIT);
+  const [expanded, setExpanded] = useState({});
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const toggleExpand = (id) => setExpanded(s => ({...s, [id]:!s[id]}));
+  const doDelete = () => {
+    setExpenses(e => e.filter(x => x.id !== deleteTarget));
+    setDeleteTarget(null);
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar active="facilities" />
+      <div className="page-shell">
+        <div className="topbar">
+          <div className="topbar-left">
+            <div className="breadcrumb">
+              マスター管理 › <a href="facilities.html">施設一覧</a> › <a href="facility_detail.html">施設詳細</a>
+            </div>
+            <h1 className="page-h1">施設詳細</h1>
+          </div>
+        </div>
+
+        <div className="page-content">
+          {/* Tabs */}
+          <div className="tabs">
+            <a href="facility_detail.html" className="tab-btn" style={{textDecoration:"none",color:"var(--muted)"}}>基本情報</a>
+            <button className="tab-btn active">経費項目管理</button>
+          </div>
+
+          {/* Section header */}
+          <div className="section-hdr">
+            <h2>経費項目一覧</h2>
+            <a href="facility_expense_form.html" className="btn-primary"
+              style={{textDecoration:"none",padding:"7px 16px",borderRadius:"var(--radius)",fontSize:"13px",fontWeight:600,background:"var(--accent)",color:"#fff"}}>
+              ＋ 経費項目を追加
+            </a>
+          </div>
+
+          {/* Table */}
+          <div style={{background:"var(--surface)",border:"1px solid var(--line)",borderRadius:"var(--radius-lg)",overflow:"hidden"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead>
+                <tr style={{borderBottom:"1px solid var(--line)",background:"var(--bg-sunken)"}}>
+                  <th style={{padding:"10px 14px",textAlign:"left",fontSize:12,fontWeight:600,color:"var(--muted)"}}>項目名</th>
+                  <th style={{padding:"10px 14px",textAlign:"left",fontSize:12,fontWeight:600,color:"var(--muted)",width:110}}>原価種別</th>
+                  <th style={{padding:"10px 14px",textAlign:"left",fontSize:12,fontWeight:600,color:"var(--muted)",width:90}}>支払い区分</th>
+                  <th style={{padding:"10px 14px",textAlign:"right",fontSize:12,fontWeight:600,color:"var(--muted)",width:130}}>単価・基本価格</th>
+                  <th style={{padding:"10px 14px",textAlign:"left",fontSize:12,fontWeight:600,color:"var(--muted)"}}>備考</th>
+                  <th style={{padding:"10px 14px",textAlign:"right",fontSize:12,fontWeight:600,color:"var(--muted)",width:100}}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses.map(e => (
+                  <React.Fragment key={e.id}>
+                    <tr style={{borderBottom: expanded[e.id] ? "none" : "1px solid var(--line-soft)"}}>
+                      <td style={{padding:"12px 14px"}}>
+                        <strong style={{fontSize:14}}>{e.name}</strong>
+                        {e.costType==="スライド" && (
+                          <button onClick={()=>toggleExpand(e.id)}
+                            style={{marginLeft:8,fontSize:11,padding:"2px 7px",border:"1px solid var(--line-strong)",borderRadius:4,background:"transparent",cursor:"pointer",color:"var(--muted)"}}>
+                            {expanded[e.id]?"▲ 段階を閉じる":"▼ 段階を見る"}
+                          </button>
+                        )}
+                      </td>
+                      <td style={{padding:"12px 14px"}}><CostBadge type={e.costType} /></td>
+                      <td style={{padding:"12px 14px"}}><PayBadge type={e.payType} /></td>
+                      <td style={{padding:"12px 14px",textAlign:"right"}}>
+                        {e.unitPrice != null
+                          ? <strong>¥{e.unitPrice.toLocaleString()}</strong>
+                          : <span style={{color:"var(--muted)",fontSize:12}}>段階設定</span>}
+                      </td>
+                      <td style={{padding:"12px 14px",fontSize:13,color:"var(--ink-soft)"}}>{e.remarks}</td>
+                      <td style={{padding:"12px 14px",textAlign:"right"}}>
+                        <div style={{display:"inline-flex",gap:8}}>
+                          <a href="facility_expense_form.html?mode=edit"
+                            style={{fontSize:13,color:"var(--accent)",textDecoration:"none",padding:"6px 16px",border:"1px solid var(--line-strong)",borderRadius:4,whiteSpace:"nowrap"}}>編集</a>
+                          <button onClick={()=>setDeleteTarget(e.id)}
+                            style={{fontSize:13,color:"var(--coral)",background:"transparent",border:"1px solid var(--coral-soft)",borderRadius:4,padding:"6px 16px",cursor:"pointer",whiteSpace:"nowrap"}}>削除</button>
+                        </div>
+                      </td>
+                    </tr>
+                    {e.tiers && expanded[e.id] && (
+                      <tr style={{borderBottom:"1px solid var(--line-soft)"}}>
+                        <td colSpan={6} style={{padding:"0 14px 14px 28px"}}>
+                          <table className="tier-table" style={{width:"auto",minWidth:320}}>
+                            <thead>
+                              <tr>
+                                <th>最大人数</th>
+                                <th>単価（1名）</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {e.tiers.map((t, i) => (
+                                <tr key={i}>
+                                  <td>{t.max != null ? `〜${t.max}名` : "上限なし"}</td>
+                                  <td>¥{t.price.toLocaleString()}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Delete modal */}
+        {deleteTarget && (
+          <div className="modal-overlay" onClick={()=>setDeleteTarget(null)}>
+            <div className="modal" onClick={e=>e.stopPropagation()}>
+              <h3>経費項目を削除しますか？</h3>
+              <p>「{expenses.find(x=>x.id===deleteTarget)?.name}」を削除します。この操作は取り消せません。</p>
+              <div className="modal-actions">
+                <button className="btn-ghost" onClick={()=>setDeleteTarget(null)}>キャンセル</button>
+                <button className="btn-danger" onClick={doDelete}>削除する</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

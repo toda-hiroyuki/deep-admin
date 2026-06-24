@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>施設 新規登録 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+/* ── Tabs ── */
+.tabs { display:flex; gap:0; border-bottom:2px solid var(--line); margin-bottom:24px; }
+.tab-btn { appearance:none; border:0; background:transparent; padding:10px 18px;
+  font-size:13.5px; font-weight:500; color:var(--muted); cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .12s; }
+.tab-btn:hover { color:var(--ink); }
+.tab-btn.active { color:var(--accent-strong); border-bottom-color:var(--accent); font-weight:600; }
+
+/* ── Detail grid ── */
+.detail-grid { display:grid; grid-template-columns:180px 1fr; gap:12px 24px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg);
+  padding:24px 28px; }
+.detail-label { font-size:12.5px; color:var(--muted); font-weight:500; padding-top:2px; }
+.detail-value { font-size:14px; color:var(--ink); }
+
+/* ── Form ── */
+.form-card { background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--radius-lg); padding:28px; margin-bottom:20px; }
+.form-section { margin-bottom:28px; }
+.form-section:last-child { margin-bottom:0; }
+.form-section-title { font-size:12px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--muted); padding-bottom:14px;
+  border-bottom:1px solid var(--line); margin-bottom:18px; }
+.form-field { display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+.form-label { font-size:13px; font-weight:500; color:var(--ink-soft); }
+.form-label .req { display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--coral); margin-right:5px; vertical-align:middle; }
+.form-label .opt { font-size:11px; color:var(--muted); font-weight:400;
+  margin-left:6px; letter-spacing:.01em; }
+.form-input, .form-select, .form-textarea {
+  height:38px; padding:0 12px; border:1px solid var(--line-strong);
+  border-radius:var(--radius); background:var(--surface); font:inherit;
+  font-size:14px; color:var(--ink); outline:none; transition:border-color .12s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--accent); box-shadow:var(--ring); }
+.form-textarea { height:auto; padding:10px 12px; resize:vertical; }
+.form-hint { font-size:12px; color:var(--muted); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+/* ── Modal ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center; z-index:1000; }
+.modal { background:var(--surface); border-radius:var(--radius-lg); padding:28px 32px;
+  width:420px; max-width:90vw; box-shadow:var(--shadow-pop); }
+.modal h3 { margin:0 0 10px; font-size:17px; }
+.modal p { margin:0 0 20px; color:var(--muted); font-size:13.5px; line-height:1.6; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+/* ── Cost/Pay badges ── */
+.cost-fixed   { background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.cost-perpax  { background:#fce7f3; color:#9d174d; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.cost-slide   { background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.cost-variable{ background:#f3f4f6; color:#374151; padding:2px 8px; border-radius:4px;
+  font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-a { background:var(--accent-soft); color:var(--accent-strong); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-b { background:var(--blue-soft); color:var(--blue); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-c { background:var(--amber-soft); color:var(--amber); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+.pay-d { background:var(--line); color:var(--muted); padding:2px 8px;
+  border-radius:4px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+
+/* ── Tier table ── */
+.tier-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; }
+.tier-table th, .tier-table td {
+  padding:6px 10px; border:1px solid var(--line); text-align:left; }
+.tier-table th { background:var(--bg-sunken); font-weight:600; font-size:12px; }
+
+/* ── Topbar / page shell extras ── */
+.page-shell { display:flex; flex-direction:column; min-height:100vh; }
+.topbar { padding:16px 28px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  background:var(--surface); }
+.topbar-left { display:flex; flex-direction:column; gap:3px; }
+.breadcrumb { font-size:12px; color:var(--muted); }
+.breadcrumb a { color:var(--accent); text-decoration:none; }
+.page-h1 { font-size:20px; font-weight:700; letter-spacing:-.02em; margin:0; }
+.topbar-right { display:flex; gap:10px; align-items:center; }
+.page-content { padding:28px; flex:1; }
+
+/* ── Btn additions ── */
+.btn-danger { background:var(--coral); color:#fff; border:0; padding:8px 16px;
+  border-radius:var(--radius); font-size:13.5px; font-weight:600; cursor:pointer; }
+.btn-danger:hover { background:var(--coral-soft); color:var(--coral); }
+.btn-ghost { background:transparent; color:var(--ink); border:1px solid var(--line-strong);
+  padding:8px 16px; border-radius:var(--radius); font-size:13.5px; font-weight:500; cursor:pointer; }
+.btn-ghost:hover { background:var(--bg-sunken); }
+.btn-primary { background:var(--accent); color:#fff; border:0; padding:8px 18px;
+  border-radius:var(--radius); font-size:13.5px; font-weight:600; cursor:pointer; }
+.btn-primary:hover { background:var(--accent-strong); }
+
+/* ── Info callout ── */
+.info-callout { background:var(--accent-soft); border:1px solid #b2d8d4;
+  border-radius:var(--radius); padding:12px 16px; font-size:13px;
+  color:var(--accent-strong); margin-bottom:8px; }
+
+/* ── Section header ── */
+.section-hdr { display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px; }
+.section-hdr h2 { font-size:15px; font-weight:700; margin:0; }
+
+    </style>
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+    <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+// ── Sidebar ──────────────────────────────────────────────────────────────
+function Sidebar({ active }) {
+  const opsItems = [
+    { key:"bookings",   href:"予約一覧.html",                        icon:"BK", label:"予約一覧" },
+    { key:"unassigned", href:"予約一覧.html?filter=unassigned",       icon:"↳",  label:"未割り当て一覧", child:true },
+    { key:"sessions",   href:"催行回一覧.html",                      icon:"SS", label:"催行回一覧" },
+    { key:"unarranged", href:"未手配一覧.html",                      icon:"↳",  label:"未手配一覧",    child:true },
+    { key:"today",      href:"当日翌日案件一覧.html",                 icon:"↳",  label:"当日/翌日案件", child:true },
+  ];
+  const productItems = [
+    { key:"tourOption",  href:"tour-options.html",    icon:"TO", label:"TourOption" },
+    { key:"productPage", href:"products.html",        icon:"PG", label:"商品ページ" },
+    { key:"guideDoc",    href:"guide-materials.html", icon:"GD", label:"ガイド資料" },
+  ];
+  const guideItems = [
+    { key:"guides", href:"ガイド一覧.html", icon:"GM", label:"ガイド一覧" },
+  ];
+  const payItems = [
+    { key:"settle",  href:"月次精算管理.html",     icon:"ST", label:"月次締め確認" },
+    { key:"import",  href:"金額確認待ち一覧.html", icon:"IM", label:"金額確認待ち一覧" },
+    { key:"ota",     href:"OTA入金照合.html",      icon:"OT", label:"OTA入金照合" },
+    { key:"revenue", href:"収支一覧.html",         icon:"RV", label:"収支一覧" },
+  ];
+  const facilityItems = [
+    { key:"facilities",     href:"facilities.html",           icon:"FC", label:"施設一覧" },
+  ];
+  const masterItems = [
+    { key:"cancelTemplate", href:"cancel-policies.html",      icon:"CP", label:"キャンセルポリシー" },
+    { key:"feeMaster",      href:"チャネル・手数料設定.html",  icon:"FE", label:"チャネル・手数料設定" },
+  ];
+  const renderItems = (arr) => arr.map(it => (
+    <a key={it.key} href={it.href}
+      className={`nav-item ${active === it.key ? "active" : ""} ${it.child ? "nav-child" : ""}`}
+      style={{textDecoration:"none"}}>
+      <span className="nav-icon">{it.icon}</span>
+      <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+    </a>
+  ));
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">DE</div>
+        <div>
+          <div className="brand-name">DeepExperience</div>
+          <div className="brand-caption">運営管理</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">{renderItems(opsItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">{renderItems(productItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">{renderItems(guideItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">{renderItems(facilityItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">{renderItems(payItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">マスター管理</div>
+        <div className="nav-group">{renderItems(masterItems)}</div>
+      </div>
+    </aside>
+  );
+}
+
+
+
+const ALL_PREFS = ['北海道', '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県', '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県', '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県', '静岡県', '愛知県', '三重県', '滋賀県', '京都府', '大阪府', '兵庫県', '奈良県', '和歌山県', '鳥取県', '島根県', '岡山県', '広島県', '山口県', '徳島県', '香川県', '愛媛県', '高知県', '福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県'];
+
+function FormField({ label, required, children, hint }) {
+  return (
+    <div className="form-field">
+      <label className="form-label">
+        {required && <span className="req" />}
+        {label}
+        {!required && <span className="opt">任意</span>}
+      </label>
+      {children}
+      {hint && <div className="form-hint">{hint}</div>}
+    </div>
+  );
+}
+
+function App() {
+  const [form, setForm] = useState({
+    name:"", category:"観光施設", pref:"東京都", address:"",
+    phone:"", email:"", contact:"", payType:"区分A 現地払い",
+    remarks:"", status:"active"
+  });
+  const set = (k, v) => setForm(f => ({...f, [k]:v}));
+
+  return (
+    <div className="app-shell">
+      <Sidebar active="facilities" />
+      <div className="page-shell">
+        <div className="topbar">
+          <div className="topbar-left">
+            <div className="breadcrumb">
+              マスター管理 › <a href="facilities.html">施設一覧</a>
+            </div>
+            <h1 className="page-h1">施設 新規登録</h1>
+          </div>
+        </div>
+
+        <div className="page-content">
+          <div className="form-card">
+            {/* 基本情報 */}
+            <div className="form-section">
+              <div className="form-section-title">基本情報</div>
+              <FormField label="施設名" required>
+                <input className="form-input" value={form.name} onChange={e=>set("name",e.target.value)} placeholder="例：浅草文化観光センター" style={{width:"100%"}} />
+              </FormField>
+              <FormField label="カテゴリ" required>
+                <select className="form-select" value={form.category} onChange={e=>set("category",e.target.value)}>
+                  <option>観光施設</option>
+                  <option>文化施設</option>
+                  <option>体験施設</option>
+                  <option>飲食施設</option>
+                  <option>交通施設</option>
+                  <option>宿泊施設</option>
+                  <option>その他</option>
+                </select>
+              </FormField>
+            </div>
+
+            {/* 所在地 */}
+            <div className="form-section">
+              <div className="form-section-title">所在地</div>
+              <FormField label="都道府県" required>
+                <select className="form-select" value={form.pref} onChange={e=>set("pref",e.target.value)}>
+                  {ALL_PREFS.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </FormField>
+              <FormField label="住所" required>
+                <input className="form-input" value={form.address} onChange={e=>set("address",e.target.value)} placeholder="例：台東区雷門2-18-9" style={{width:"100%"}} />
+              </FormField>
+            </div>
+
+            {/* 連絡先 */}
+            <div className="form-section">
+              <div className="form-section-title">連絡先</div>
+              <div className="form-row">
+                <FormField label="電話">
+                  <input className="form-input" type="tel" value={form.phone} onChange={e=>set("phone",e.target.value)} placeholder="例：03-0000-0000" />
+                </FormField>
+                <FormField label="メール">
+                  <input className="form-input" type="email" value={form.email} onChange={e=>set("email",e.target.value)} placeholder="例：info@example.jp" />
+                </FormField>
+              </div>
+              <FormField label="担当者名">
+                <input className="form-input" value={form.contact} onChange={e=>set("contact",e.target.value)} placeholder="例：田中 正志" style={{width:"50%"}} />
+              </FormField>
+            </div>
+
+            {/* 経費設定 */}
+            <div className="form-section">
+              <div className="form-section-title">経費設定（デフォルト）</div>
+              <FormField label="デフォルト支払い区分" hint="経費項目登録時の初期値として使用されます。個別の経費項目で変更できます。">
+                <select className="form-select" value={form.payType} onChange={e=>set("payType",e.target.value)}>
+                  <option value="区分A 現地払い">区分A 現地払い</option>
+                  <option value="区分B 翌月精算">区分B 翌月精算</option>
+                  <option value="区分C 前払い">区分C 前払い</option>
+                  <option value="区分D その他">区分D その他</option>
+                </select>
+              </FormField>
+            </div>
+
+            {/* その他 */}
+            <div className="form-section">
+              <div className="form-section-title">その他</div>
+              <FormField label="備考">
+                <textarea className="form-textarea" rows={3} value={form.remarks} onChange={e=>set("remarks",e.target.value)} placeholder="例：ガイド入場は事前連絡要" style={{width:"100%"}} />
+              </FormField>
+              <FormField label="ステータス">
+                <select className="form-select" value={form.status} onChange={e=>set("status",e.target.value)}>
+                  <option value="active">稼働中</option>
+                  <option value="inactive">停止中</option>
+                </select>
+              </FormField>
+            </div>
+
+            {/* Buttons */}
+            <div style={{display:"flex",gap:10,marginTop:8}}>
+              <button className="btn-primary">登録する</button>
+              <a href="facilities.html" className="btn-ghost" style={{textDecoration:"none",display:"inline-flex",alignItems:"center"}}>キャンセル</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

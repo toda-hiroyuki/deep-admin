@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>応募者一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1100px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .rank-chip { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; font-size: 12px; font-weight: 800; background: var(--bg-sunken); color: var(--ink-soft); }
+      .rank-chip.s { background: var(--accent); color: #fff; }
+      .rank-chip.a { background: var(--accent-soft); color: var(--accent-strong); }
+      .rank-chip.b { background: var(--blue-soft); color: var(--blue); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn.danger-link { border: 0; background: none; color: var(--muted); font-size: 12.5px; height: 32px; padding: 0 8px; }
+      .btn.danger-link:hover { color: var(--coral); text-decoration: underline; background: none; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 18px 20px; }
+
+      /* ── Definition grid ── */
+      .def-grid { display: grid; grid-template-columns: 150px 1fr 150px 1fr; gap: 0; }
+      .def-grid .dt { color: var(--muted); font-size: 12px; font-weight: 600; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .def-grid .dd .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; }
+      .def-grid .dd .strong { font-weight: 650; }
+      @media (max-width: 820px) { .def-grid { grid-template-columns: 140px 1fr; } }
+
+      /* ── Tables ── */
+      .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table thead th.center { text-align: center; }
+      .data-table tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody td.center { text-align: center; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table tbody tr { transition: background 0.08s; }
+      .data-table tbody tr:hover { background: var(--surface-warm); }
+      .data-table tbody tr.is-dimmed td { background: var(--bg-sunken); }
+      .data-table tbody tr.is-dimmed .g-name,
+      .data-table tbody tr.is-dimmed td { color: var(--muted-soft); }
+      .data-table tbody tr.is-assigned td { background: var(--green-soft); }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .data-table .g-name { font-weight: 650; color: var(--ink); }
+      .data-table .rate-note { font-size: 11px; color: var(--muted); display: block; }
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .result-meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+      .row-actions { display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+      /* ── Banner ── */
+      .assigned-banner { display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: var(--green-soft); border: 1px solid #bfdfc9; border-radius: var(--radius-lg); font-size: 13px; font-weight: 600; color: var(--green); }
+      .assigned-banner .ab-ic { width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 11px; flex-shrink: 0; }
+      .assigned-banner .ab-sub { font-weight: 500; color: var(--green); opacity: 0.85; }
+
+      /* ── Form bits ── */
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; }
+      .input-affix { position: relative; display: inline-flex; align-items: center; width: 160px; }
+      .input-affix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .sfx { position: absolute; right: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .ctrl { padding-left: 22px; padding-right: 26px; font-variant-numeric: tabular-nums; }
+      .radio-row { display: flex; flex-direction: column; gap: 8px; }
+      .radio-opt { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: var(--ink-soft); user-select: none; cursor: pointer; }
+      .radio-opt input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+      .radio-opt .ro-sub { color: var(--muted); font-size: 12px; }
+      .guide-chip { display: inline-flex; align-items: center; gap: 9px; }
+      .guide-chip .g-ava { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 12px; border: 1px solid var(--line-strong); }
+      .guide-chip .g-name { font-weight: 650; }
+      .guide-chip .g-code { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); }
+      .ref-note { font-size: 12px; color: var(--muted); }
+
+      /* ── Modal ── */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(29, 26, 23, 0.42); display: grid; place-items: center; z-index: 50; padding: 20px; }
+      .modal { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); width: 100%; max-width: 480px; overflow: hidden; }
+      .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .modal-head h2 { margin: 0; font-size: 15px; font-weight: 700; }
+      .modal-x { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 4px 6px; border-radius: 5px; }
+      .modal-x:hover { background: var(--bg-sunken); color: var(--ink); }
+      .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+      .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; justify-content: flex-end; gap: 8px; }
+      .modal-field { display: flex; flex-direction: column; gap: 7px; }
+      .modal-warn { font-size: 12.5px; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); padding: 10px 13px; line-height: 1.55; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+            const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",             group: "ops"                           , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",       group: "ops",    child: true           , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",           group: "ops"                           , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",           group: "ops",    child: true           , href: "未手配一覧.html" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",        group: "ops",    child: true           , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",          group: "product"                       , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",            group: "product"                       , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",            group: "product"                       , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",            group: "guide"                         , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",          group: "pay"                           , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",      group: "pay",    count: 4, alert: true  , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",           group: "pay",    count: 4, alert: true  , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",              group: "pay"                           , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",    group: "master"                        , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定",  group: "master"                        , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+      ].map(n => ({ ...n, active: n.key === "sessions" }));
+
+      // ── 応募者（今日 = 2026/06/08（月）） ──
+      // この催行回はメインガイド＋サブガイドを同時募集中。
+      // 各応募者は応募役割（main / sub の片方または両方）を持つ。アサインは役割枠ごとに行い、
+      // 非選択は「応募した役割枠がすべて他者で埋まった」場合に役割単位で自動判定する。
+      const RECRUIT_ROLES = ["main", "sub"];   // この募集が募集している役割枠（各最大1名）
+      const ROLE_LABEL = { main: "メインガイド", sub: "サブガイド" };
+      const rolesLabel = (roles) => roles.map(r => ROLE_LABEL[r]).join("・");
+      const INITIAL_APPLICANTS = [
+        { code: "G-001", name: "吉田 健太", initials: "吉", appliedAt: "2026/06/07 14:22", langs: "英語・中国語",
+          areas: "金沢市・石川県", rank: "S", rate: 3200, rateType: "基本", roles: ["main", "sub"], hidden: false },
+        { code: "G-015", name: "佐藤 美咲", initials: "佐", appliedAt: "2026/06/07 18:05", langs: "英語",
+          areas: "石川県・富山県", rank: "A", rate: 3800, rateType: "基本", roles: ["main"], hidden: false },
+        { code: "G-023", name: "中村 大輔", initials: "中", appliedAt: "2026/06/08 09:40", langs: "英語",
+          areas: "石川県", rank: "B", rate: 2800, rateType: "基本", roles: ["sub"], hidden: false },
+        { code: "G-031", name: "林 さくら", initials: "林", appliedAt: "2026/06/07 20:11", langs: "英語・フランス語",
+          areas: "金沢市", rank: "A", rate: 3000, rateType: "基本", roles: ["main"], hidden: true },
+        { code: "G-008", name: "田中 誠", initials: "田", appliedAt: "2026/06/08 07:55", langs: "日本語・英語",
+          areas: "石川県・富山県", rank: "A", rate: 3500, rateType: "基本", roles: ["main", "sub"], hidden: false },
+      ];
+
+      // 表示状態（pill色のみ。assignedのラベルは役割を含めて動的生成）
+      const PILL = {
+        candidate:   { label: "候補", pill: "blue" },
+        assigned:    { label: "アサイン済み", pill: "green" },
+        hidden:      { label: "非表示", pill: "muted" },
+        notselected: { label: "非選択", pill: "muted" },
+      };
+
+      const fmtYen = (n) => "¥" + Number(n).toLocaleString("ja-JP");
+
+      function Card({ title, hint, action, children, label }) {
+        return (
+          <section className="card" data-screen-label={label || title}>
+            <div className="card-head">
+              <div className="card-title">
+                {title}
+                {hint && <span className="sec-hint">{hint}</span>}
+              </div>
+              {action}
+            </div>
+            <div className="card-body">{children}</div>
+          </section>
+        );
+      }
+
+      function Modal({ title, onClose, foot, children }) {
+        return (
+          <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+            <div className="modal" role="dialog" aria-modal="true">
+              <div className="modal-head">
+                <h2>{title}</h2>
+                <button className="modal-x" onClick={onClose} aria-label="閉じる">×</button>
+              </div>
+              <div className="modal-body">{children}</div>
+              {foot && <div className="modal-foot">{foot}</div>}
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [applicants, setApplicants] = useState(INITIAL_APPLICANTS);
+        const [deadline, setDeadline] = useState("2026/06/08（月）18:00");
+        // modals
+        const [extendOpen, setExtendOpen] = useState(false);
+        const [extendVal, setExtendVal] = useState("2026-06-08T18:00");
+        const [assigned, setAssigned] = useState({ main: null, sub: null });   // 役割枠ごとのアサイン済みガイドcode
+        const [assignTarget, setAssignTarget] = useState(null);   // { code, role }
+        const [assignRate, setAssignRate] = useState("");
+        const [hideTarget, setHideTarget] = useState(null);       // applicant code
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        // 役割枠ごとのアサイン状況から各応募者の表示状態を導出する
+        const assignedRoleOf = (a) =>
+          assigned.main === a.code ? "main" : assigned.sub === a.code ? "sub" : null;
+        const openRolesFor = (a) => a.roles.filter(r => assigned[r] == null);  // 本人が応募した役割のうち未充足の枠
+        const statusOf = (a) => {
+          if (a.hidden) return "hidden";
+          if (assignedRoleOf(a)) return "assigned";
+          return openRolesFor(a).length > 0 ? "candidate" : "notselected";
+        };
+
+        const hasAssigned = assigned.main != null || assigned.sub != null;
+        const candidateCount = applicants.filter(a => statusOf(a) === "candidate").length;
+
+        const openAssign = (a, role) => {
+          setAssignTarget({ code: a.code, role });
+          setAssignRate(String(a.rate));
+        };
+
+        const confirmAssign = () => {
+          const a = applicants.find(x => x.code === assignTarget.code);
+          const role = assignTarget.role;
+          // その役割枠を確定。同じ役割に応募していた他の候補は「非選択」へ自動遷移（statusOfで導出）。
+          // 別の役割枠は独立して募集継続。両方に応募した本人は、片方確定で他方の候補から自動的に外れる。
+          setAssigned(prev => ({ ...prev, [role]: a.code }));
+          setApplicants(prev => prev.map(x => x.code === a.code ? { ...x, assignedRate: assignRate } : x));
+          setAssignTarget(null);
+          showToast(`${a.name}（${a.code}）を${ROLE_LABEL[role]}にアサインしました — ガイドの確認待ちです`);
+        };
+
+        const confirmHide = () => {
+          const a = applicants.find(x => x.code === hideTarget);
+          setApplicants(prev => prev.map(x => x.code === hideTarget ? { ...x, hidden: true } : x));
+          setHideTarget(null);
+          showToast(`${a.name}（${a.code}）への募集表示を非表示にしました`);
+        };
+
+        const confirmExtend = () => {
+          if (!extendVal) return;
+          const d = new Date(extendVal);
+          const youbi = ["日", "月", "火", "水", "木", "金", "土"][d.getDay()];
+          const pad = (n) => String(n).padStart(2, "0");
+          setDeadline(`${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}（${youbi}）${pad(d.getHours())}:${pad(d.getMinutes())}`);
+          setExtendOpen(false);
+          showToast("応募締切を延長しました");
+        };
+
+        const assignApplicant = assignTarget ? applicants.find(x => x.code === assignTarget.code) : null;
+        const hideApplicant = hideTarget ? applicants.find(x => x.code === hideTarget) : null;
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",     label: "予約オペレーション" },
+                { grp: "product", label: "商品管理" },
+                { grp: "guide",    label: "ガイド管理" },
+                { grp: "facility", label: "施設管理" },
+                { grp: "pay",      label: "精算・経営" },
+                { grp: "master",  label: "マスター管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`}
+                      onClick={() => n.href
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                メイン／サブの役割ごとに募集しています。ある役割に1名アサインすると、その役割に応募していた他の候補は「非選択」になります（別の役割枠は独立して募集継続）。両方に応募した方は、片方に確定するともう片方の候補から自動で外れます。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="crumbs">
+                <a href="#" onClick={e => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
+                <span className="sep">›</span>
+                <a href="未手配一覧.html">未手配一覧</a>
+                <span className="sep">›</span>
+                <a href="ガイド手配操作.html">ガイド手配操作</a>
+                <span className="sep">›</span>
+                <span className="current">応募者一覧</span>
+              </div>
+              <div className="page-title">
+                <h1>応募者一覧</h1>
+                <span className="sub">ガイド募集への応募者を確認し、アサインします</span>
+              </div>
+
+              {hasAssigned && (
+                <div className="assigned-banner" role="status">
+                  <span className="ab-ic">✓</span>
+                  <span>アサイン済み：ガイドの確認待ちです</span>
+                  <span className="ab-sub">— ガイドが受託すると手配確定になります。未充足の役割枠は引き続き募集中です。</span>
+                </div>
+              )}
+
+              {/* ── 対象催行回サマリー ── */}
+              <Card title="対象催行回"
+                action={<button className="btn sm" onClick={() => setExtendOpen(true)}>締切を延長</button>}
+                label="対象催行回サマリー">
+                <div className="def-grid">
+                  <div className="dt">催行回ID</div>
+                  <div className="dd" style={{ gridColumn: "2 / -1" }}><span className="code-mono">TI-20260609-0900-G-WAK-001-2-PR-01</span></div>
+                  <div className="dt">TourOption</div>
+                  <div className="dd"><span className="code-mono">G-WAK-001-2-PR</span><span className="sub">里山ハイキング（プライベート）</span></div>
+                  <div className="dt">ツアー日時</div>
+                  <div className="dd"><span className="strong">2026/06/09（火）09:00〜12:00</span></div>
+                  <div className="dt">参加人数</div>
+                  <div className="dd">大人4<span className="sub">（計4名）</span></div>
+                  <div className="dt">募集役割</div>
+                  <div className="dd"><span className="badge teal">メインガイド</span><span className="badge teal">サブガイド</span><span className="sub">（同時募集・各1名）</span></div>
+                  <div className="dt">募集条件</div>
+                  <div className="dd"><span className="badge teal">言語：英語</span><span className="badge teal">エリア：石川県</span></div>
+                  <div className="dt">応募締切</div>
+                  <div className="dd" style={{ gridColumn: "2 / -1" }}><span className="strong">{deadline}</span></div>
+                </div>
+              </Card>
+
+              {/* ── 応募者一覧 ── */}
+              <Card title="応募者" hint={`候補 ${candidateCount}名`} label="応募者一覧">
+                <div className="result-meta"><strong>{applicants.length}</strong> 名の応募（今日 = 2026/06/08（月））</div>
+                <div className="table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>ガイドID</th>
+                        <th>氏名</th>
+                        <th>応募日時</th>
+                        <th>対応言語</th>
+                        <th>対応エリア</th>
+                        <th className="center">スキルランク</th>
+                        <th>基本時給</th>
+                        <th>応募役割</th>
+                        <th>アサイン状態</th>
+                        <th className="center">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {applicants.map(a => {
+                        const st = statusOf(a);
+                        const role = assignedRoleOf(a);
+                        const meta = PILL[st];
+                        const label = st === "assigned"
+                          ? `アサイン済み・${ROLE_LABEL[role]}（確認待ち）`
+                          : meta.label;
+                        const dimmed = st === "hidden" || st === "notselected";
+                        const openRoles = openRolesFor(a);
+                        return (
+                          <tr key={a.code} className={`${dimmed ? "is-dimmed" : ""}${st === "assigned" ? " is-assigned" : ""}`}>
+                            <td><span className="code-mono">{a.code}</span></td>
+                            <td className="g-name">{a.name}</td>
+                            <td>{a.appliedAt.replace("2026/", "")}</td>
+                            <td>{a.langs}</td>
+                            <td>{a.areas}</td>
+                            <td className="center"><span className={`rank-chip ${a.rank.toLowerCase()}`}>{a.rank}</span></td>
+                            <td>
+                              {fmtYen(a.rate)}/h<span className="rate-note">基本時給</span>
+                            </td>
+                            <td>{rolesLabel(a.roles)}</td>
+                            <td><span className={`status-pill ${meta.pill}`}><span className="dot"></span>{label}</span></td>
+                            <td className="center">
+                              {st === "candidate" ? (
+                                <span className="row-actions">
+                                  {openRoles.map(r => (
+                                    <button key={r} className="btn primary sm" onClick={() => openAssign(a, r)}>
+                                      {openRoles.length > 1 ? `${ROLE_LABEL[r]}にアサイン` : "アサイン"}
+                                    </button>
+                                  ))}
+                                  <button className="btn danger-link" onClick={() => setHideTarget(a.code)}>募集を非表示にする</button>
+                                </span>
+                              ) : st === "assigned" ? (
+                                <span className="ref-note">確認待ち</span>
+                              ) : (
+                                <span className="muted-dash">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </main>
+
+            {/* ── 締切延長モーダル ── */}
+            {extendOpen && (
+              <Modal title="応募締切を延長" onClose={() => setExtendOpen(false)}
+                foot={
+                  <React.Fragment>
+                    <button className="btn" onClick={() => setExtendOpen(false)}>キャンセル</button>
+                    <button className="btn primary" onClick={confirmExtend} disabled={!extendVal}>締切を保存</button>
+                  </React.Fragment>
+                }>
+                <div className="modal-field">
+                  <span className="filter-label">現在の締切</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 650 }}>{deadline}</span>
+                </div>
+                <div className="modal-field">
+                  <label className="filter-label">新しい締切日時</label>
+                  <input type="datetime-local" className="ctrl" value={extendVal} onChange={e => setExtendVal(e.target.value)} />
+                </div>
+                <div className="ref-note">※ ツアー日時（2026/06/09（火）09:00）より前の日時を指定してください。</div>
+              </Modal>
+            )}
+
+            {/* ── アサイン確認モーダル ── */}
+            {assignApplicant && (
+              <Modal title="アサインの確認" onClose={() => setAssignTarget(null)}
+                foot={
+                  <React.Fragment>
+                    <button className="btn" onClick={() => setAssignTarget(null)}>キャンセル</button>
+                    <button className="btn primary" onClick={confirmAssign} disabled={!String(assignRate).trim()}>アサインを確定</button>
+                  </React.Fragment>
+                }>
+                <div className="modal-field">
+                  <span className="filter-label">対象ガイド</span>
+                  <span className="guide-chip">
+                    <span className="g-ava">{assignApplicant.initials}</span>
+                    <span className="g-name">{assignApplicant.name}</span>
+                    <span className="g-code">{assignApplicant.code}</span>
+                    <span className={`rank-chip ${assignApplicant.rank.toLowerCase()}`}>{assignApplicant.rank}</span>
+                  </span>
+                </div>
+                <div className="modal-field">
+                  <span className="filter-label">アサインする役割</span>
+                  <span style={{ fontSize: 13.5, fontWeight: 650 }}>{ROLE_LABEL[assignTarget.role]}<span className="ref-note" style={{ marginLeft: 8 }}>（応募役割：{rolesLabel(assignApplicant.roles)}）</span></span>
+                </div>
+                <div className="modal-field">
+                  <label className="filter-label">適用時給</label>
+                  <span className="input-affix">
+                    <span className="pfx">¥</span>
+                    <input className="ctrl" inputMode="numeric" value={assignRate} onChange={e => setAssignRate(e.target.value)} />
+                    <span className="sfx">/h</span>
+                  </span>
+                  <span className="ref-note">初期値：基本時給 {fmtYen(assignApplicant.rate)}/h（必要に応じて上書き）</span>
+                </div>
+                <div className="ref-note">確定するとガイドに通知され、{ROLE_LABEL[assignTarget.role]}の状態が「アサイン済み（ガイド確認待ち）」になります。この役割に応募していた他の候補は非選択になります（別の役割枠の募集は継続）。</div>
+              </Modal>
+            )}
+
+            {/* ── 非表示確認モーダル ── */}
+            {hideApplicant && (
+              <Modal title="募集を非表示にする" onClose={() => setHideTarget(null)}
+                foot={
+                  <React.Fragment>
+                    <button className="btn" onClick={() => setHideTarget(null)}>キャンセル</button>
+                    <button className="btn primary" onClick={confirmHide}>非表示にする</button>
+                  </React.Fragment>
+                }>
+                <div className="modal-field">
+                  <span className="filter-label">対象ガイド</span>
+                  <span className="guide-chip">
+                    <span className="g-ava">{hideApplicant.initials}</span>
+                    <span className="g-name">{hideApplicant.name}</span>
+                    <span className="g-code">{hideApplicant.code}</span>
+                  </span>
+                </div>
+                <div className="modal-warn">非表示にすると、このガイドのアプリからこの募集が見えなくなります。応募はキャンセル扱いにはなりませんが、選定の対象から外れます。</div>
+              </Modal>
+            )}
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

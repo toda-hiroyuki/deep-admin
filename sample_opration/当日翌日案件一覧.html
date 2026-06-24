@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>当日/翌日案件一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --coral-bg: #fdeee9;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav { background: var(--side-bg); color: var(--side-ink); padding: 20px 16px; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line); }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--coral); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+      .topbar .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 7px; }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; border: 1px solid var(--line-strong); font-weight: 700; font-size: 12px; }
+
+      /* ── Tab switcher ── */
+      .day-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); }
+      .day-tab { appearance: none; background: none; border: 0; padding: 12px 22px 14px; font-size: 16px; font-weight: 600; color: var(--muted); position: relative; margin-bottom: -2px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; transition: color 0.12s; }
+      .day-tab:hover { color: var(--ink-soft); }
+      .day-tab.active { color: var(--accent-strong); font-weight: 750; }
+      .day-tab.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); border-radius: 3px 3px 0 0; }
+      .day-tab .tab-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: inherit; opacity: 0.7; }
+      .day-tab .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); font-size: 11px; font-weight: 700; margin-left: 8px; }
+      .day-tab.active .tab-count { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Alert cards ── */
+      .alert-stack { display: flex; flex-direction: column; gap: 10px; }
+      .alert-card { display: flex; align-items: center; gap: 12px; border-radius: var(--radius); padding: 13px 16px; font-size: 13.5px; font-weight: 600; }
+      .alert-card .ac-icon { width: 24px; height: 24px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; font-size: 13px; font-weight: 800; color: #fff; }
+      .alert-card.red { background: var(--coral-bg); border: 1px solid var(--coral-soft); border-left: 3px solid var(--coral); color: var(--coral); }
+      .alert-card.red .ac-icon { background: var(--coral); }
+      .alert-card.amber { background: var(--amber-bg); border: 1px solid var(--amber-soft); border-left: 3px solid var(--amber); color: var(--amber); }
+      .alert-card.amber .ac-icon { background: var(--amber); }
+      .alert-card b { font-weight: 800; font-variant-numeric: tabular-nums; }
+      .ac-link { margin-left: auto; flex-shrink: 0; background: none; border: 1px solid currentColor; color: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 12px; border-radius: var(--radius); }
+      .ac-link:hover { background: rgba(255, 255, 255, 0.5); }
+      a.ac-link { text-decoration: none; display: inline-block; }
+
+      /* ── Filter ── */
+      .filter-row { display: flex; align-items: flex-end; gap: 14px; }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .result-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); padding: 0 2px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+
+      /* ── Table ── */
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1); }
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1240px; background: var(--surface); font-variant-numeric: tabular-nums; }
+      thead th { position: sticky; top: 0; z-index: 1; background: var(--surface-tint); text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+      thead th.center { text-align: center; }
+      tbody td { padding: 13px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; font-size: 13px; }
+      tbody td.center { text-align: center; }
+      tbody tr:last-child td { border-bottom: 0; }
+      tbody tr.row-urgent td { background: var(--coral-bg); }
+      tbody tr.row-urgent td:first-child { box-shadow: inset 3px 0 0 var(--coral); }
+      tbody tr.row-warn td { background: var(--amber-bg); }
+      tbody tr.row-warn td:first-child { box-shadow: inset 3px 0 0 var(--amber); }
+      .start-time { font-size: 16px; font-weight: 750; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+      .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+      .guide-list { display: flex; flex-direction: column; gap: 4px; }
+      .guide-row { display: flex; align-items: center; gap: 6px; }
+      .guide-role { font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+      .guide-role.main { background: var(--accent-soft); color: var(--accent-strong); }
+      .guide-role.sub { background: var(--bg-sunken); color: var(--muted); }
+      .guide-name { font-weight: 600; color: var(--ink); }
+      .guide-missing { display: inline-flex; align-items: center; gap: 6px; color: var(--coral); font-weight: 600; font-size: 12.5px; }
+      .guide-missing .gm-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); }
+      tbody tr { cursor: pointer; transition: background 0.08s; }
+      tbody tr:not(.row-urgent):not(.row-warn):hover td { background: var(--surface-warm); }
+      tbody tr.row-urgent:hover td { filter: brightness(0.97); }
+      tbody tr.row-warn:hover td { filter: brightness(0.97); }
+
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.red { background: var(--coral-soft); color: var(--coral); }
+      .status-pill.gray { background: var(--bg-sunken); color: var(--muted); }
+
+      .meet { color: var(--ink-soft); }
+      .pickup-yes { color: var(--ink); font-weight: 600; }
+      .pickup-yes .pu-place { color: var(--muted); font-weight: 500; font-size: 11.5px; }
+      .pickup-no { color: var(--muted-soft); }
+
+      .contact-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+      .contact-pill.done { background: var(--green-soft); color: var(--green); }
+      .contact-pill.pending { background: var(--coral-soft); color: var(--coral); }
+
+      .note-text { font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; max-width: 200px; }
+      .note-text.alergy { color: var(--coral); font-weight: 600; }
+      .note-text.warn { color: var(--amber); font-weight: 600; }
+      .muted-dash { color: var(--muted-soft); }
+
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+            const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",             group: "ops"                           , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",       group: "ops",    child: true           , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",           group: "ops"                           , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",           group: "ops",    child: true           , href: "催行回一覧.html?arrange=未手配" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",        group: "ops",    child: true           , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",          group: "product"                       , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",            group: "product"                       , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",            group: "product"                       , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",            group: "guide"                         , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",          group: "pay"                           , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",      group: "pay",    count: 4, alert: true  , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",           group: "pay",    count: 4, alert: true  , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",              group: "pay"                           , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",    group: "master"                        , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定",  group: "master"                        , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+      ].map(n => ({ ...n, active: n.key === "today" }));
+
+      const TODAY = [
+        { time: "09:00", code: "G-GIF-017-1-PR", tour: "城下町ウォーキング", pax: "大人2 子供1",
+          guides: { main: { name: "田中 誠", id: "G-003" }, subs: [] },
+          arrange: { label: "確定済み", cls: "green" }, meet: "金沢駅東口",
+          pickup: null, contact: "done", note: "アレルギー：えび・かに", noteKind: "alergy" },
+        { time: "10:30", code: "G-WAK-001-2-PR", tour: "里山ハイキング", pax: "大人4",
+          guides: { main: null, subs: [] },
+          arrange: { label: "未手配", cls: "red" }, meet: "白山比咩神社 駐車場",
+          pickup: null, contact: "pending", note: null, noteKind: null, row: "urgent" },
+        { time: "13:00", code: "G-AIC-005-1-GR", tour: "茶道体験", pax: "大人3",
+          guides: { main: { name: "吉田 健太", id: "G-007" }, subs: [] },
+          arrange: { label: "要確認", cls: "amber" }, meet: "裏千家茶道教室",
+          pickup: "金沢駅", contact: "done", note: "日時変更あり・要確認", noteKind: "warn", row: "warn" },
+        { time: "15:00", code: "G-MIE-005-1-PR", tour: "漁村体験", pax: "大人2 子供2",
+          guides: { main: { name: "佐々木 美咲", id: "G-012" }, subs: [] },
+          arrange: { label: "確定済み", cls: "green" }, meet: "輪島港 漁協前",
+          pickup: "のと里山空港", contact: "done", note: null, noteKind: null },
+      ];
+
+      const TOMORROW = [
+        { time: "09:00", code: "G-WAK-001-2-GR", tour: "里山ハイキング", pax: "大人4 子供1",
+          guides: { main: { name: "田中 誠", id: "G-003" }, subs: [] },
+          arrange: { label: "要確認", cls: "amber" }, meet: "白山比咩神社 駐車場",
+          pickup: null, contact: "pending", note: "変更理由：増員", noteKind: "warn", row: "warn" },
+        { time: "10:00", code: "G-GIF-017-1-PR", tour: "城下町ウォーキング", pax: "大人2",
+          guides: { main: { name: "中村 大輔", id: "G-005" }, subs: [] },
+          arrange: { label: "確定済み", cls: "green" }, meet: "金沢駅東口",
+          pickup: null, contact: "done", note: null, noteKind: null },
+        { time: "14:00", code: "G-AIC-005-1-GR", tour: "茶道体験", pax: "大人6",
+          guides: { main: null, subs: [] },
+          arrange: { label: "未手配", cls: "red" }, meet: "裏千家茶道教室",
+          pickup: null, contact: "pending", note: null, noteKind: null, row: "urgent" },
+      ];
+
+      function GuideCell({ guides }) {
+        if (!guides || (!guides.main && guides.subs.length === 0)) {
+          return <span className="guide-missing"><span className="gm-dot"></span>未手配</span>;
+        }
+        return (
+          <div className="guide-list">
+            {guides.main && (
+              <div className="guide-row">
+                <span className="guide-role main">メイン</span>
+                <span className="code-mono">{guides.main.id}</span>
+                <span className="guide-name">{guides.main.name}</span>
+              </div>
+            )}
+            {guides.subs.map((s, i) => (
+              <div className="guide-row" key={i}>
+                <span className="guide-role sub">サブ</span>
+                <span className="code-mono">{s.id}</span>
+                <span className="guide-name">{s.name}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      function PickupCell({ pickup }) {
+        if (!pickup) return <span className="pickup-no">なし</span>;
+        return <span className="pickup-yes">あり<span className="pu-place">：{pickup}</span></span>;
+      }
+
+      function NoteCell({ note, kind }) {
+        if (!note) return <span className="muted-dash">—</span>;
+        return <div className={`note-text ${kind || ""}`}>{note}</div>;
+      }
+
+      function App() {
+        const [day, setDay] = useState("today");
+        const [codeQuery, setCodeQuery] = useState("");
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const rows = day === "today" ? TODAY : TOMORROW;
+        const isTomorrow = day === "tomorrow";
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+                            {[
+                { grp: "ops",     label: "予約オペレーション" },
+                { grp: "product", label: "商品管理" },
+                { grp: "guide",    label: "ガイド管理" },
+                { grp: "facility", label: "施設管理" },
+                { grp: "pay",      label: "精算・経営" },
+                { grp: "master",  label: "マスター管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`}
+                      onClick={() => n.href
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                当日・翌日の催行案件を時間順に表示します。未手配・要確認が残っている場合は最優先で対応してください。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>当日/翌日案件一覧</h1>
+                </div>
+                <div className="topbar-right">
+                  <div className="top-date"><span className="dot"></span>2026年6月8日（月）09:42 時点</div>
+                  <div className="avatar" title="運営担当">OP</div>
+                </div>
+              </div>
+
+              <div className="day-tabs">
+                <button className={`day-tab ${day === "today" ? "active" : ""}`} onClick={() => setDay("today")}>
+                  <span className="tab-kicker">今日</span>
+                  <span>2026/06/08（月）<span className="tab-count">4</span></span>
+                </button>
+                <button className={`day-tab ${day === "tomorrow" ? "active" : ""}`} onClick={() => setDay("tomorrow")}>
+                  <span className="tab-kicker">明日</span>
+                  <span>2026/06/09（火）<span className="tab-count">3</span></span>
+                </button>
+              </div>
+
+              {!isTomorrow && (
+                <div className="alert-stack">
+                  <div className="alert-card red">
+                    <span className="ac-icon">!</span>
+                    <span>未手配のまま当日を迎えている案件が <b>1 件</b> あります</span>
+                  </div>
+                  <div className="alert-card amber">
+                    <span className="ac-icon">!</span>
+                    <span>手配要確認の案件が <b>1 件</b> あります</span>
+                  </div>
+                </div>
+              )}
+              {isTomorrow && (
+                <div className="alert-stack">
+                  <div className="alert-card red">
+                    <span className="ac-icon">!</span>
+                    <span>翌日案件に未手配が <b>1 件</b> あります。本日中の手配を推奨します</span>
+                  </div>
+                  <div className="alert-card amber">
+                    <span className="ac-icon">!</span>
+                    <span>手配要確認の案件が <b>1 件</b> あります</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="filter-row">
+                <div className="filter-field">
+                  <span className="filter-label">TourOptionコード</span>
+                  <input className="ctrl" style={{ width: 220 }} placeholder="例：G-WAK-001-2-PR"
+                    value={codeQuery} onChange={e => setCodeQuery(e.target.value)} />
+                </div>
+                <button className="btn-link" onClick={() => setCodeQuery("")}>リセット</button>
+                <div style={{ marginLeft: "auto" }} className="result-meta">
+                  <span><strong>{rows.length}</strong> 件 / 開始時間順</span>
+                </div>
+              </div>
+
+              <div className="table-wrap">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>開始時間</th>
+                        <th>TourOption</th>
+                        <th>参加人数</th>
+                        <th>担当ガイド名</th>
+                        <th>手配状況</th>
+                        <th>集合場所</th>
+                        <th>ピックアップ</th>
+                        <th className="center">ゲスト連絡</th>
+                        <th>特記事項</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r, i) => (
+                        <tr key={i} className={r.row === "urgent" ? "row-urgent" : r.row === "warn" ? "row-warn" : ""} onClick={() => window.location.href = "催行回詳細.html"}>
+                          <td><span className="start-time">{r.time}</span></td>
+                          <td>
+                            <div className="code-mono">{r.code}</div>
+                            <div className="cell-sub">{r.tour}</div>
+                          </td>
+                          <td className="pax">{r.pax}</td>
+                          <td><GuideCell guides={r.guides} /></td>
+                          <td><span className={`status-pill ${r.arrange.cls}`}><span className="dot"></span>{r.arrange.label}</span></td>
+                          <td><span className="meet">{r.meet}</span></td>
+                          <td><PickupCell pickup={r.pickup} /></td>
+                          <td className="center">
+                            {r.contact === "done"
+                              ? <span className="contact-pill done">済</span>
+                              : <span className="contact-pill pending">未</span>}
+                          </td>
+                          <td><NoteCell note={r.note} kind={r.noteKind} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

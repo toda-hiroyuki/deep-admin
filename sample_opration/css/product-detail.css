@@ -1,0 +1,6 @@
+/* product-detail.html specific overrides */
+.status-strip {
+  grid-template-columns: 1.2fr 1.4fr 1fr 1.2fr;
+}
+.status-cell:last-child { border-right: none; }
+.status-cell.action { flex-direction: row; align-items: center; gap: 8px; }

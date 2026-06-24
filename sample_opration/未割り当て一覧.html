@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>未割り当て一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+      .topbar .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      .topbar .sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 7px; }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; border: 1px solid var(--line-strong); font-weight: 700; font-size: 12px; }
+
+      /* ── Filter bar ── */
+      .filter-bar { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 16px 18px; }
+      .filter-grid { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; }
+      .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .date-range .ctrl { width: 150px; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      .check-row { display: flex; align-items: center; gap: 16px; height: var(--field-h); }
+      .check-opt { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); user-select: none; }
+      .check-opt input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+      /* ── Result meta ── */
+      .result-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); padding: 0 2px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+      .result-meta .sort-tag { display: inline-flex; align-items: center; gap: 5px; }
+      .result-meta .sort-tag .ar { color: var(--accent); font-weight: 700; }
+
+      /* ── Bulk action bar ── */
+      .bulk-bar { display: flex; align-items: center; gap: 14px; background: var(--accent-soft); border: 1px solid #b7dcd6; border-radius: var(--radius-lg); padding: 11px 16px; box-shadow: var(--shadow-1); }
+      .bulk-bar .bb-count { font-size: 13px; font-weight: 650; color: var(--accent-strong); }
+      .bulk-bar .bb-count b { font-variant-numeric: tabular-nums; }
+      .bulk-bar .bb-hint { font-size: 12px; color: var(--accent-strong); opacity: 0.85; }
+      .bulk-bar .bb-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+      .bulk-bar .btn.ghost { background: transparent; border-color: transparent; color: var(--accent-strong); }
+      .bulk-bar .btn.ghost:hover { background: rgba(255,255,255,0.5); border-color: transparent; }
+
+      /* ── Table ── */
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1); }
+      .table-scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1280px; background: var(--surface); font-variant-numeric: tabular-nums; }
+      thead th { position: sticky; top: 0; z-index: 1; background: var(--surface-tint); text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+      thead th.center { text-align: center; }
+      thead th.check-col { width: 44px; padding-left: 16px; }
+      th .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
+      tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; font-size: 13px; }
+      tbody td.center { text-align: center; }
+      tbody td.check-col { padding-left: 16px; }
+      tbody tr { transition: background 0.08s; }
+      tbody tr:hover { background: var(--surface-warm); }
+      tbody tr.is-selected { background: var(--accent-soft); }
+      tbody tr.is-selected:hover { background: var(--accent-soft); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .row-check { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+      .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date { font-variant-numeric: tabular-nums; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+      .guest { display: inline-flex; align-items: center; gap: 9px; }
+      .guest-av { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 700; flex-shrink: 0; border: 1px solid var(--line-strong); }
+      .guest-name { font-weight: 600; color: var(--ink); white-space: nowrap; }
+
+      .same-flag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: var(--amber); background: var(--amber-soft); padding: 1px 7px; border-radius: 4px; white-space: nowrap; margin-top: 3px; }
+
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Pagination ── */
+      .pagination { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 4px; font-size: 12.5px; color: var(--muted); }
+      .page-controls { display: flex; align-items: center; gap: 4px; }
+      .page-btn { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: var(--radius); font-size: 12.5px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; }
+      .page-btn:hover:not(:disabled) { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; max-width: 90vw; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; flex-shrink: 0; }
+      .toast .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #cdeee8; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+            const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",             group: "ops"                           , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",       group: "ops",    child: true           , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",           group: "ops"                           , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",           group: "ops",    child: true           , href: "未手配一覧.html" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",        group: "ops",    child: true           , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",          group: "product"                       , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",            group: "product"                       , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",            group: "product"                       , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",            group: "guide"                         , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",          group: "pay"                           , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",      group: "pay",    count: 4, alert: true  , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",           group: "pay",    count: 4, alert: true  , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",              group: "pay"                           , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",    group: "master"                        , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定",  group: "master"                        , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+      ].map(n => ({ ...n, active: n.key === "unassigned" }));
+
+      // すべて未紐付け・グループ予約。ツアー日が近い順。
+      const ROWS = [
+        { id: "BK-260601-00042", ext: "Viator #VTR-8842013", guest: "Emily Carter",  initials: "EC", code: "G-WAK-001-2-GR", tour: "里山ハイキング",     date: "2026-06-15", time: "09:00", pax: "大人3 子供1", lang: "英語",   channel: "Viator",              status: { label: "確定予約", cls: "green" } },
+        { id: "BK-260602-00043", ext: "GYG #GYG-553120",     guest: "Lucas Müller",   initials: "LM", code: "G-WAK-001-2-GR", tour: "里山ハイキング",     date: "2026-06-15", time: "09:00", pax: "大人2",       lang: "英語",   channel: "GetYourGuide",        status: { label: "確定予約", cls: "green" } },
+        { id: "BK-260528-00038", ext: "自社サイト #DR-100388",      guest: "田中 由美",      initials: "田", code: "G-AIC-005-1-GR", tour: "茶道体験",           date: "2026-06-16", time: "10:00", pax: "大人2",       lang: "日本語", channel: "自社サイト",                status: { label: "確定予約", cls: "green" } },
+        { id: "BK-260604-00051", ext: "Klook #KL-77420",      guest: "Sofia Rossi",    initials: "SR", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", date: "2026-06-17", time: "14:00", pax: "大人4 子供2", lang: "英語",   channel: "Klook",               status: { label: "確定待ち", cls: "amber" } },
+        { id: "BK-260530-00031", ext: "Airbnb #ABX-20915",    guest: "James Brown",    initials: "JB", code: "G-MIE-005-1-GR", tour: "漁村体験",           date: "2026-06-18", time: "08:30", pax: "大人5",       lang: "英語",   channel: "Airbnb",  status: { label: "確定予約", cls: "green" } },
+        { id: "BK-260606-00055", ext: "Viator #VTR-8843771",  guest: "Chen Wei",       initials: "CW", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", date: "2026-06-20", time: "14:00", pax: "大人2 子供1", lang: "英語",   channel: "Viator",              status: { label: "確定予約", cls: "green" } },
+      ].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+      // 同一 TourOption（枝番桁まで同一）・同一日時・同一言語の予約をフラグ（まとめ導線）
+      const groupKey = (r) => `${r.code}__${r.date}__${r.time}__${r.lang}`;
+      const keyCounts = ROWS.reduce((m, r) => { const k = groupKey(r); m[k] = (m[k] || 0) + 1; return m; }, {});
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [selected, setSelected] = useState([]);   // array of ids
+
+        // filters
+        const [q, setQ] = useState("");
+        const [tourQuery, setTourQuery] = useState("");
+        const [from, setFrom] = useState("2026-06-15");
+        const [to, setTo] = useState("");
+        const [channel, setChannel] = useState("すべて");
+        const [lang, setLang] = useState("すべて");
+        const [stConfirm, setStConfirm] = useState(true);
+        const [stPending, setStPending] = useState(true);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 3000);
+        };
+
+        const reset = () => {
+          setQ(""); setTourQuery(""); setFrom("2026-06-15"); setTo("");
+          setChannel("すべて"); setLang("すべて"); setStConfirm(true); setStPending(true);
+          showToast("フィルターをリセットしました");
+        };
+
+        const allChecked = selected.length === ROWS.length && ROWS.length > 0;
+        const toggleAll = () => setSelected(allChecked ? [] : ROWS.map(r => r.id));
+        const toggleOne = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
+
+        const bulkAssign = () => {
+          showToast(<span>選択した <b>{selected.length}</b> 件の予約割り当て画面を開きます</span>);
+        };
+        const goAssign = (r) => {
+          window.location.href = "予約割り当て.html";
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",     label: "予約オペレーション" },
+                { grp: "product", label: "商品管理" },
+                { grp: "guide",    label: "ガイド管理" },
+                { grp: "facility", label: "施設管理" },
+                { grp: "pay",      label: "精算・経営" },
+                { grp: "master",  label: "マスター管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`}
+                      onClick={() => n.href
+                        ? (window.location.href = n.href)
+                        : (!n.active && showToast(`「${n.label}」へ移動します`))
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                催行回にまだ紐付いていない予約を、ツアー日が近い順に表示します。割り当て後は本一覧から外れます。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>未割り当て一覧</h1>
+                  <div className="sub">催行回に未紐付けの予約を割り当てます</div>
+                </div>
+                <div className="topbar-right">
+                  <div className="top-date"><span className="dot"></span>2026年6月8日（月）</div>
+                  <div className="avatar" title="運営担当">OP</div>
+                </div>
+              </div>
+
+              <div className="filter-bar">
+                <div className="filter-grid">
+                  <div className="filter-field">
+                    <span className="filter-label">予約ID / 外部予約番号</span>
+                    <input className="ctrl" style={{ width: 210 }} placeholder="BK-… / 外部番号で検索"
+                      value={q} onChange={e => setQ(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">TourOption</span>
+                    <input className="ctrl" style={{ width: 190 }} placeholder="コード・名称で検索"
+                      value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">ツアー日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={from} onChange={e => setFrom(e.target.value)} />
+                      <span className="sep">〜</span>
+                      <input type="date" className="ctrl" value={to} onChange={e => setTo(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約元 / チャネル</span>
+                    <select className="ctrl" style={{ width: 180 }} value={channel} onChange={e => setChannel(e.target.value)}>
+                      <option>すべて</option>
+                      <option>Viator</option>
+                      <option>GetYourGuide</option>
+                      <option>Klook</option>
+                      <option>Airbnb</option>
+                      <option>自社サイト</option>
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">ゲスト言語</span>
+                    <select className="ctrl" style={{ width: 140 }} value={lang} onChange={e => setLang(e.target.value)}>
+                      <option>すべて</option>
+                      <option>日本語</option>
+                      <option>英語</option>
+                      <option>中国語(簡体)</option>
+                      <option>中国語(繁体)</option>
+                      <option>韓国語</option>
+                      <option>フランス語</option>
+                      <option>その他</option>
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約ステータス</span>
+                    <div className="check-row">
+                      <label className="check-opt"><input type="checkbox" checked={stConfirm} onChange={e => setStConfirm(e.target.checked)} />確定予約</label>
+                      <label className="check-opt"><input type="checkbox" checked={stPending} onChange={e => setStPending(e.target.checked)} />確定待ち</label>
+                    </div>
+                  </div>
+                  <div className="filter-actions">
+                    <button className="btn-link" onClick={reset}>リセット</button>
+                    <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="result-meta">
+                <span><strong>1–{ROWS.length}</strong> / {ROWS.length} 件の未紐付け予約</span>
+                <span className="sort-tag">ツアー日 <span className="ar">昇順</span> で表示中（近い順）</span>
+              </div>
+
+              {selected.length > 0 && (
+                <div className="bulk-bar">
+                  <span className="bb-count"><b>{selected.length}</b> 件を選択中</span>
+                  <span className="bb-hint">同一 TourOption・同一日時の予約は、まとめて同じ催行回に載せられます。</span>
+                  <span className="bb-actions">
+                    <button className="btn ghost sm" onClick={() => setSelected([])}>選択を解除</button>
+                    <button className="btn primary" onClick={bulkAssign}>選択した {selected.length} 件を割り当て</button>
+                  </span>
+                </div>
+              )}
+
+              <div className="table-wrap">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th className="check-col center">
+                          <input type="checkbox" className="row-check" checked={allChecked}
+                            ref={el => { if (el) el.indeterminate = selected.length > 0 && !allChecked; }}
+                            onChange={toggleAll} />
+                        </th>
+                        <th>予約ID</th>
+                        <th>ゲスト名</th>
+                        <th>TourOption</th>
+                        <th>ツアー日時<span className="sort-arrow">↑</span></th>
+                        <th>参加人数</th>
+                        <th>ゲスト言語</th>
+                        <th>予約元 / チャネル</th>
+                        <th>予約ステータス</th>
+                        <th>催行回紐付け</th>
+                        <th className="center">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ROWS.map(r => {
+                        const isSel = selected.includes(r.id);
+                        const isGrouped = keyCounts[groupKey(r)] > 1;
+                        return (
+                          <tr key={r.id} className={isSel ? "is-selected" : ""}>
+                            <td className="check-col center">
+                              <input type="checkbox" className="row-check" checked={isSel} onChange={() => toggleOne(r.id)} />
+                            </td>
+                            <td>
+                              <div className="code-mono">{r.id}</div>
+                              <div className="cell-sub">{r.ext}</div>
+                            </td>
+                            <td>
+                              <span className="guest">
+                                <span className="guest-av">{r.initials}</span>
+                                <span className="guest-name">{r.guest}</span>
+                              </span>
+                            </td>
+                            <td>
+                              <div className="code-mono">{r.code}</div>
+                              <div className="cell-sub">{r.tour}</div>
+                            </td>
+                            <td className="cell-date">
+                              <div>{r.date.replace(/-/g, "/")}</div>
+                              <div className="time">{r.time}</div>
+                              {isGrouped && <span className="same-flag">同枠候補 {keyCounts[groupKey(r)]}件</span>}
+                            </td>
+                            <td className="pax">{r.pax}</td>
+                            <td><span className="badge teal">{r.lang}</span></td>
+                            <td><span className="badge blue">{r.channel}</span></td>
+                            <td><span className={`status-pill ${r.status.cls}`}><span className="dot"></span>{r.status.label}</span></td>
+                            <td><span className="status-pill muted"><span className="dot"></span>未紐付け</span></td>
+                            <td className="center">
+                              <button className="btn primary sm" onClick={() => goAssign(r)}>催行回へ割り当て</button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="pagination">
+                <span>{ROWS.length} 件中 1–{ROWS.length} 件を表示</span>
+                <div className="page-controls">
+                  <button className="page-btn" disabled>‹</button>
+                  <button className="page-btn active">1</button>
+                  <button className="page-btn" disabled>›</button>
+                </div>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span><span>{toast}</span>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
