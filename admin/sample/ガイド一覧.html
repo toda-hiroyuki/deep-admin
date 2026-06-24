@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ガイド一覧 | deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <style>
+    .guide-cell { display: inline-flex; align-items: center; gap: 9px; }
+    .g-ava { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 12px; border: 1px solid var(--line-strong); flex-shrink: 0; }
+    .g-name { font-weight: 650; color: var(--ink); }
+    .sub-text { color: var(--muted); font-size: 12.5px; }
+    .romaji { color: var(--ink-soft); font-size: 12.5px; }
+    .yen { font-variant-numeric: tabular-nums; font-weight: 650; }
+    .yen .per { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 1px; }
+    .tag-row { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .tag { display: inline-flex; align-items: center; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); border: 1px solid var(--line); white-space: nowrap; }
+    .tag.more { background: transparent; color: var(--muted); border-color: var(--line-strong); }
+    .rank { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; font-size: 13px; font-weight: 800; letter-spacing: -0.02em; }
+    .rank.r-S { background: var(--accent-soft); color: var(--accent-strong); }
+    .rank.r-A { background: var(--blue-soft); color: var(--blue); }
+    .rank.r-B { background: var(--amber-soft); color: var(--amber); }
+    .rank.r-C { background: var(--bg-sunken); color: var(--muted); }
+  </style>
+</head>
+<body data-density="regular" data-side="default">
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useRef } = React;
+
+    const STATUS = {
+      active:  { label: "アクティブ", cls: "green" },
+      paused:  { label: "一時停止",   cls: "amber" },
+      retired: { label: "退会",       cls: "muted" },
+    };
+
+    const GUIDES = [
+      { code: "G-001", kanji: "吉田 健太", kana: "ヨシダ ケンタ",   romaji: "Yoshida Kenta",  initials: "吉", areas: ["金沢市", "石川県"],           langs: ["英語", "中国語"],                     rank: "S", rate: 3200, status: "active" },
+      { code: "G-002", kanji: "田中 美咲", kana: "タナカ ミサキ",   romaji: "Tanaka Misaki",  initials: "田", areas: ["金沢市"],                      langs: ["英語"],                               rank: "A", rate: 2400, status: "active" },
+      { code: "G-005", kanji: "李 智妍",   kana: "イ ジヨン",       romaji: "Lee Jiyeon",     initials: "李", areas: ["大阪府", "京都市"],           langs: ["韓国語", "英語"],                     rank: "B", rate: 2000, status: "paused" },
+      { code: "G-010", kanji: "山本 涼",   kana: "ヤマモト リョウ", romaji: "Yamamoto Ryo",   initials: "山", areas: ["京都市"],                      langs: ["英語", "スペイン語", "フランス語"],   rank: "A", rate: 2600, status: "active" },
+      { code: "G-021", kanji: "佐藤 隆",   kana: "サトウ タカシ",   romaji: "Sato Takashi",   initials: "佐", areas: ["東京都"],                      langs: ["英語"],                               rank: "C", rate: 1800, status: "retired" },
+    ];
+
+    const AREA_OPTS = ["石川県", "金沢市", "大阪府", "京都市", "東京都"];
+    const LANG_OPTS = ["英語", "中国語", "韓国語", "スペイン語", "フランス語"];
+    const RANK_OPTS = ["S", "A", "B", "C"];
+
+    const yen = (n) => "¥" + Number(n).toLocaleString("ja-JP");
+
+    function Tags({ items, max }) {
+      const shown = items.slice(0, max);
+      const rest = items.length - shown.length;
+      return (
+        <span className="tag-row">
+          {shown.map((t, i) => <span className="tag" key={i}>{t}</span>)}
+          {rest > 0 && <span className="tag more">+{rest}</span>}
+        </span>
+      );
+    }
+
+    function Sidebar() {
+      const payItems = [
+        { key: "ota",     href: "../ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+        { key: "revenue", href: "../revenue-summary.html",      icon: "RV", label: "収支一覧" },
+      ];
+      const masterItems = [
+        { key: "tourOption",     href: "../tour-options.html",    icon: "TO", label: "TourOption" },
+        { key: "productPage",    href: "../products.html",        icon: "PG", label: "商品ページ" },
+        { key: "resource",       href: "../resources.html",       icon: "RS", label: "リソース管理" },
+        { key: "area",           href: "../areas.html",           icon: "AR", label: "エリア管理" },
+        { key: "facility",       href: "../facilities.html",      icon: "FC", label: "施設管理" },
+        { key: "language",       href: "../languages.html",       icon: "LG", label: "言語マスター管理" },
+        { key: "guideDoc",       href: "../guide-materials.html", icon: "GD", label: "ガイド資料" },
+        { key: "cancelTemplate", href: "../cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+      ];
+      return (
+        <aside className="side-nav">
+          <div className="brand-block">
+            <div className="brand-mark">d.</div>
+            <div>
+              <div className="brand-name">deep_Admin</div>
+              <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+            </div>
+          </div>
+          <div className="nav-group" style={{marginBottom:"8px"}}>
+            <a href="../index.html" className="nav-item" style={{textDecoration:"none"}}>
+              <span className="nav-icon">⊞</span><span>ダッシュボード</span>
+            </a>
+          </div>
+          <div>
+            <div className="nav-section-label">精算・経営</div>
+            <div className="nav-group">
+              {payItems.map(it => (
+                <a key={it.key} href={it.href} className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}>{it.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="nav-section-label">ガイド管理</div>
+            <div className="nav-group">
+              <a href="ガイド一覧.html" className="nav-item active" style={{textDecoration:"none"}}>
+                <span className="nav-icon">GM</span>
+                <span style={{flex:1,minWidth:0}}>ガイド一覧</span>
+              </a>
+            </div>
+          </div>
+          <div>
+            <div className="nav-section-label">商品管理</div>
+            <div className="nav-group">
+              {masterItems.map(it => (
+                <a key={it.key} href={it.href} className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}>{it.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="sidebar-footer">
+            <a href="../login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+              <span className="nav-icon">↩</span><span>ログアウト</span>
+            </a>
+          </div>
+        </aside>
+      );
+    }
+
+    function App() {
+      const [q, setQ] = useState("");
+      const [fStatus, setFStatus] = useState("all");
+      const [fArea, setFArea] = useState("all");
+      const [fLang, setFLang] = useState("all");
+      const [fRank, setFRank] = useState("all");
+
+      const norm = (s) => s.toLowerCase();
+      const rows = GUIDES.filter(g => {
+        const hay = norm(`${g.code} ${g.kanji} ${g.kana} ${g.romaji}`);
+        return (q.trim() === "" || hay.includes(norm(q.trim()))) &&
+          (fStatus === "all" || g.status === fStatus) &&
+          (fArea === "all" || g.areas.includes(fArea)) &&
+          (fLang === "all" || g.langs.includes(fLang)) &&
+          (fRank === "all" || g.rank === fRank);
+      });
+
+      return (
+        <div className="app-shell">
+          <Sidebar />
+          <main className="workspace">
+            <div className="topbar">
+              <div>
+                <div className="crumbs">
+                  <a href="../index.html" style={{color:"var(--muted)",textDecoration:"none"}}>ダッシュボード</a>
+                  <span style={{color:"var(--muted-soft)"}}>›</span>
+                  <span style={{color:"var(--ink)",fontWeight:600}}>ガイド一覧</span>
+                </div>
+                <h1 style={{margin:0,fontSize:23,fontWeight:750,letterSpacing:"-0.01em"}}>ガイド一覧</h1>
+                <div style={{fontSize:12.5,color:"var(--muted)",marginTop:3}}>登録ガイドの稼働状況・対応条件・単価を管理します</div>
+              </div>
+              <button className="btn primary">＋ ガイドを登録</button>
+            </div>
+
+            <section className="card">
+              {/* フィルターバー */}
+              <div style={{display:"flex",alignItems:"flex-end",gap:14,flexWrap:"wrap",padding:"16px 20px",borderBottom:"1px solid var(--line-soft)",background:"var(--surface-warm)"}}>
+                <div className="filter-field">
+                  <span className="filter-label">検索</span>
+                  <div style={{position:"relative",display:"flex",alignItems:"center"}}>
+                    <span style={{position:"absolute",left:11,color:"var(--muted-soft)",fontSize:14,pointerEvents:"none"}}>⌕</span>
+                    <input className="ctrl" style={{paddingLeft:32,width:280}} placeholder="ガイドID・氏名で検索"
+                      value={q} onChange={e => setQ(e.target.value)} />
+                  </div>
+                </div>
+                <div className="filter-field">
+                  <span className="filter-label">稼働状況</span>
+                  <select className="ctrl select-arrow" value={fStatus} onChange={e => setFStatus(e.target.value)}>
+                    <option value="all">すべて</option>
+                    <option value="active">アクティブ</option>
+                    <option value="paused">一時停止</option>
+                    <option value="retired">退会</option>
+                  </select>
+                </div>
+                <div className="filter-field">
+                  <span className="filter-label">対応エリア</span>
+                  <select className="ctrl select-arrow" value={fArea} onChange={e => setFArea(e.target.value)}>
+                    <option value="all">すべて</option>
+                    {AREA_OPTS.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+                <div className="filter-field">
+                  <span className="filter-label">対応言語</span>
+                  <select className="ctrl select-arrow" value={fLang} onChange={e => setFLang(e.target.value)}>
+                    <option value="all">すべて</option>
+                    {LANG_OPTS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div className="filter-field">
+                  <span className="filter-label">スキルランク</span>
+                  <select className="ctrl select-arrow" value={fRank} onChange={e => setFRank(e.target.value)}>
+                    <option value="all">すべて</option>
+                    {RANK_OPTS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* テーブル */}
+              <div style={{overflowX:"auto"}}>
+                <table className="list-table" style={{minWidth:960}}>
+                  <thead>
+                    <tr>
+                      <th>ガイドID</th>
+                      <th>氏名（漢字）</th>
+                      <th>カタカナ</th>
+                      <th>ローマ字</th>
+                      <th>対応エリア</th>
+                      <th>対応言語</th>
+                      <th>ランク</th>
+                      <th style={{textAlign:"right"}}>基本時給</th>
+                      <th>稼働状況</th>
+                      <th style={{textAlign:"right"}}>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.length === 0 ? (
+                      <tr><td colSpan={10} style={{textAlign:"center",color:"var(--muted-soft)",padding:"40px 14px",fontSize:13}}>
+                        条件に一致するガイドが見つかりません
+                      </td></tr>
+                    ) : rows.map(g => {
+                      const st = STATUS[g.status];
+                      return (
+                        <tr key={g.code}>
+                          <td><span style={{fontFamily:"ui-monospace,monospace",fontSize:12,fontWeight:600,color:"var(--accent-strong)"}}>{g.code}</span></td>
+                          <td>
+                            <span className="guide-cell">
+                              <span className="g-ava">{g.initials}</span>
+                              <span className="g-name">{g.kanji}</span>
+                            </span>
+                          </td>
+                          <td><span className="sub-text">{g.kana}</span></td>
+                          <td><span className="romaji">{g.romaji}</span></td>
+                          <td><Tags items={g.areas} max={1} /></td>
+                          <td><Tags items={g.langs} max={2} /></td>
+                          <td><span className={`rank r-${g.rank}`}>{g.rank}</span></td>
+                          <td style={{textAlign:"right"}}><span className="yen">{yen(g.rate)}<span className="per">/h</span></span></td>
+                          <td><span className={`badge ${st.cls}`}><span className="dot"></span>{st.label}</span></td>
+                          <td style={{textAlign:"right"}}>
+                            <button className="btn sm">詳細</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ページャー */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,padding:"13px 20px",borderTop:"1px solid var(--line-soft)",background:"var(--surface-warm)",flexWrap:"wrap"}}>
+                <span style={{fontSize:12.5,color:"var(--muted)",fontVariantNumeric:"tabular-nums"}}>
+                  全 <b style={{color:"var(--ink-soft)"}}>{rows.length}</b> 件
+                </span>
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn sm" disabled>← 前へ</button>
+                  <button className="btn sm" disabled>次へ →</button>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
