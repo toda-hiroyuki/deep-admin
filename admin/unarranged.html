@@ -325,7 +325,7 @@
                           <td style={{textAlign:"center"}}>
                             {r.link.label === "仮紐付け"
                               ? <button className="btn sm" disabled style={{opacity:0.45,cursor:"not-allowed"}} title="確定紐付け後に手配を開始できます">手配する</button>
-                              : <button className="btn primary sm" onClick={() => showToast("手配操作へ移動します")}>手配する</button>}
+                              : <button className="btn primary sm" onClick={() => { window.location.href = "guide-arrangement.html?session=" + r.session; }}>手配する</button>}
                           </td>
                         </tr>
                       ))}

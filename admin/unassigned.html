@@ -298,7 +298,7 @@
                   <span className="bb-hint">同一TourOption・同一日時の予約はまとめて同じ催行回に載せられます。</span>
                   <span className="bb-actions">
                     <button className="btn sm" onClick={() => setSelected([])}>選択を解除</button>
-                    <button className="btn primary sm" onClick={() => showToast(`${selected.length}件を割り当て`)}>選択した {selected.length}件を割り当て</button>
+                    <button className="btn primary sm" onClick={() => { window.location.href = "assignment.html"; }}>選択した {selected.length}件を割り当て</button>
                   </span>
                 </div>
               )}
@@ -360,7 +360,7 @@
                             <td><span className={`status-pill ${r.status.cls}`}><span className="dot"></span>{r.status.label}</span></td>
                             <td><span className="status-pill muted"><span className="dot"></span>未紐付け</span></td>
                             <td>
-                              <button className="btn primary sm" onClick={() => showToast(`催行回へ割り当て: ${r.id}`)}>催行回へ割り当て</button>
+                              <button className="btn primary sm" onClick={() => { window.location.href = "assignment.html?booking=" + r.id; }}>催行回へ割り当て</button>
                             </td>
                           </tr>
                         );

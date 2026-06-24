@@ -464,7 +464,7 @@
                         <tr><td colSpan="8" style={{textAlign:"center",padding:"40px 14px",color:"var(--muted)"}}>条件に一致する催行回がありません</td></tr>
                       )}
                       {rows.map(r => (
-                        <tr key={r.id} style={{cursor:"pointer"}} onClick={() => showToast("催行回詳細へ移動します")}>
+                        <tr key={r.id} style={{cursor:"pointer"}} onClick={() => { window.location.href = "session-detail.html?id=" + r.id; }}>
                           <td><span className="code-mono">{r.id}</span></td>
                           <td className="cell-date">
                             <div>{r.date.replace(/-/g, "/")}</div>
