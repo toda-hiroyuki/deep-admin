@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>予約一覧 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .filter-bar { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 16px 18px; }
+      .filter-grid { display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end; }
+      .filter-row { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+      .filter-row + .filter-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+      .check-filter { display: flex; align-items: center; gap: 8px; height: var(--field-h); padding: 0 4px; font-size: 13px; color: var(--ink-soft); user-select: none; }
+      .check-filter input { width: 16px; height: 16px; accent-color: var(--accent); }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); cursor: pointer; }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .result-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); padding: 0 2px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.dark { background: #e5e0d8; color: #4a4540; }
+      .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 4px 0 8px; }
+      .page-btn { min-width: 34px; height: 34px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+      .page-btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .page-btn.nav { font-weight: 500; color: var(--muted); }
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 7px; }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .channel { display: inline-flex; align-items: center; gap: 6px; }
+      .channel .ch-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+      .ch-own { background: var(--accent); }
+      .ch-ota { background: var(--blue); }
+      .ch-agent { background: #614aa4; }
+      .ch-inquiry { background: var(--amber); }
+      .muted-dash { color: var(--muted-soft); }
+      .ms { position: relative; }
+      .ms-trigger { height: var(--field-h); min-width: 180px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); padding: 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; cursor: pointer; }
+      .ms-trigger:hover { border-color: var(--ink-soft); }
+      .ms-trigger.open { border-color: var(--accent); box-shadow: var(--ring); }
+      .ms-count { font-size: 11px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); border-radius: 999px; padding: 0 7px; line-height: 18px; }
+      .ms-pop { position: absolute; top: calc(100% + 4px); left: 0; z-index: 30; min-width: 100%; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-pop); padding: 6px; }
+      .ms-opt { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border-radius: var(--radius-sm); font-size: 13px; white-space: nowrap; cursor: pointer; }
+      .ms-opt:hover { background: var(--surface-tint); }
+      .ms-opt input { width: 15px; height: 15px; accent-color: var(--accent); }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .date-range .ctrl { width: 140px; }
+      .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
+      .sort-arrow.idle { color: var(--muted-soft); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useEffect } = React;
+
+      const STATUS_OPTIONS = ["確定待ち", "確定予約", "キャンセル済み", "無効", "Completed", "No-show", "Guide_No-show", "Incompleted"];
+      const CHANNEL_OPTIONS = ["すべて", "自社サイト", "OTA", "問い合わせ", "旅行会社"];
+      const ARRANGE_OPTIONS = ["すべて", "未手配", "募集中", "確定済み", "要確認"];
+
+      function channelClass(ch) {
+        if (ch === "自社サイト") return "ch-own";
+        if (ch === "問い合わせ") return "ch-inquiry";
+        if (ch === "旅行会社") return "ch-agent";
+        return "ch-ota";
+      }
+
+      const ROWS = [
+        { id: "BK-260511-00001", guest: "田中 花子", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-11", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
+        { id: "BK-260601-00002", guest: "Smith John", code: "G-WAK-001-2-GR", tour: "里山ハイキング", booked: "2026-06-01", date: "2026-06-15", time: "09:00", pax: "大人4 子供1", channel: "Viator", lang: "英語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "要確認", cls: "amber" } },
+        { id: "BK-260519-00003", guest: "佐藤 太郎", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-19", date: "2026-06-02", time: "13:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" } },
+        { id: "BK-260527-00004", guest: "Lee Minjun", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-27", date: "2026-06-03", time: "14:00", pax: "大人3", channel: "Airbnb", lang: "韓国語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "募集中", cls: "blue" } },
+        { id: "BK-260507-00005", guest: "鈴木 一郎", code: "G-WAK-001-2-GR", tour: "里山ハイキング", booked: "2026-05-07", date: "2026-05-28", time: "09:00", pax: "大人6", channel: "旅行会社", lang: "日本語", status: { label: "キャンセル済み", cls: "coral" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "—", cls: "dash" } },
+        { id: "BK-260515-00006", guest: "Brown Emily", code: null, tour: "漁村体験", booked: "2026-05-15", date: "2026-06-05", time: "07:00", pax: "大人2 子供2", channel: "GetYourGuide", lang: "英語", status: { label: "確定予約", cls: "green" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" } },
+        { id: "BK-260523-00007", guest: "山本 健二", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-23", date: "2026-06-06", time: "10:00", pax: "大人1", channel: "問い合わせ", lang: "日本語", status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" } },
+        { id: "BK-260510-00008", guest: "Chen Wei", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-10", date: "2026-06-07", time: "15:00", pax: "大人2", channel: "自社サイト", lang: "中国語(簡体)", status: { label: "確定予約", cls: "green" }, link: { label: "仮紐付け", cls: "amber" }, arrange: { label: "未手配", cls: "muted" } },
+        { id: "BK-260518-00016", guest: "Wilson Kate", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-18", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "Viator", lang: "英語", status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
+        { id: "BK-260521-00017", guest: "Dubois Marie", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-21", date: "2026-06-03", time: "14:00", pax: "大人2", channel: "GetYourGuide", lang: "フランス語", status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
+        { id: "BK-260524-00018", guest: "高橋 直樹", code: "G-MIE-005-1-PR", tour: "漁村体験", booked: "2026-05-24", date: "2026-06-05", time: "07:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "No-show", cls: "coral" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
+      ];
+
+      function Caret() {
+        return (
+          <svg width="12" height="12" viewBox="0 0 12 12" style={{color:"var(--muted)"}}>
+            <path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      }
+
+      function MultiSelect({ options, selected, onToggle }) {
+        const [open, setOpen] = useState(false);
+        const ref = useRef(null);
+        useEffect(() => {
+          if (!open) return;
+          const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+          document.addEventListener("mousedown", onDoc);
+          return () => document.removeEventListener("mousedown", onDoc);
+        }, [open]);
+        const label = selected.length === 0 ? "すべて" : selected.length === options.length ? "すべて選択中" : selected.join(" / ");
+        return (
+          <div className="ms" ref={ref}>
+            <button type="button" className={`ms-trigger ${open ? "open" : ""}`} onClick={() => setOpen(o => !o)}>
+              <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</span>
+              <span style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
+                {selected.length > 0 && <span className="ms-count">{selected.length}</span>}
+                <Caret />
+              </span>
+            </button>
+            {open && (
+              <div className="ms-pop">
+                {options.map(o => (
+                  <label key={o} className="ms-opt">
+                    <input type="checkbox" checked={selected.includes(o)} onChange={() => onToggle(o)} />
+                    <span>{o}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      function Sidebar({ resource }) {
+        const opsItems = [
+          { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+          { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+          { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+          { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+          { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+        ];
+        const payItems = [
+          { key: "settlement", href: "monthly-settlement.html",  icon: "ST", label: "月次締め確認" },
+          { key: "ota",        href: "ota-payment-matching.html",icon: "OT", label: "OTA入金照合" },
+          { key: "revenue",    href: "revenue-summary.html",     icon: "RV", label: "収支一覧" },
+        ];
+        const guideItems = [{ key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" }];
+        const facilityItems = [{ key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" }];
+        const masterMainItems = [
+          { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption" },
+          { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ" },
+        ];
+        const masterSubItems = [
+          { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+          { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+          { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+          { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+          { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+          { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+        ];
+        const navLink = (it) => (
+          <a key={it.key} href={it.href}
+            className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+            style={{textDecoration:"none"}}>
+            <span className="nav-icon">{it.icon}</span>
+            <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+          </a>
+        );
+        return (
+          <aside className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+              </div>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span><span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+              </a>
+            </div>
+            <div>
+              <div className="nav-section-label">予約オペレーション</div>
+              <div className="nav-group">{opsItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">{payItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">ガイド管理</div>
+              <div className="nav-group">{guideItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">施設管理</div>
+              <div className="nav-group">{facilityItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group">
+                {masterMainItems.map(navLink)}
+                <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+                {masterSubItems.map(navLink)}
+              </div>
+            </div>
+            <div className="sidebar-footer">
+              <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+                <span className="nav-icon">↩</span><span>ログアウト</span>
+              </a>
+            </div>
+          </aside>
+        );
+      }
+
+      function App() {
+        const [statusSel, setStatusSel] = useState([]);
+        const [idQuery, setIdQuery] = useState("");
+        const [from, setFrom] = useState("2026-06-01");
+        const [to, setTo] = useState("2026-06-30");
+        const [tourQuery, setTourQuery] = useState("");
+        const [channel, setChannel] = useState("すべて");
+        const [lang, setLang] = useState("すべて");
+        const [arrange, setArrange] = useState("すべて");
+        const [unassignedOnly, setUnassignedOnly] = useState(false);
+        const [sortKey, setSortKey] = useState("tour");
+        const [sortDir, setSortDir] = useState("asc");
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        useEffect(() => {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get("filter") === "unassigned") setUnassignedOnly(true);
+        }, []);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const toggleStatus = (o) => setStatusSel(s => s.includes(o) ? s.filter(x => x !== o) : [...s, o]);
+        const toggleSort = (key) => {
+          if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+          else { setSortKey(key); setSortDir("asc"); }
+        };
+
+        const reset = () => {
+          setStatusSel([]); setIdQuery(""); setFrom("2026-06-01"); setTo("2026-06-30");
+          setTourQuery(""); setChannel("すべて"); setLang("すべて"); setArrange("すべて");
+          setUnassignedOnly(false);
+          showToast("フィルターをリセットしました");
+        };
+
+        const rows = [...ROWS]
+          .filter(r => !unassignedOnly || r.link.label === "未紐付け")
+          .sort((a, b) => {
+            const av = sortKey === "booking" ? a.booked : a.date + a.time;
+            const bv = sortKey === "booking" ? b.booked : b.date + b.time;
+            return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+          });
+
+        return (
+          <div className="app-shell">
+            <Sidebar resource="bookings" />
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>予約一覧</h1>
+                </div>
+                <div className="topbar-right">
+                  <button className="btn primary" onClick={() => showToast("新規予約登録画面を開きます")}>＋ 新規予約登録</button>
+                </div>
+              </div>
+
+              <div className="filter-bar">
+                <div className="filter-row">
+                  <div className="filter-field">
+                    <span className="filter-label">予約ID / 外部予約番号</span>
+                    <input className="ctrl" style={{width:260}} placeholder="例：BK-260601-00001"
+                      value={idQuery} onChange={e => setIdQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">TourOption</span>
+                    <input className="ctrl" style={{width:200}} placeholder="コード・名称で検索"
+                      value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">ツアー日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={from} onChange={e => setFrom(e.target.value)} />
+                      <span className="sep">–</span>
+                      <input type="date" className="ctrl" value={to} onChange={e => setTo(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+                <div className="filter-row">
+                  <div className="filter-field">
+                    <span className="filter-label">予約元 / チャネル</span>
+                    <select className="ctrl" style={{width:160}} value={channel} onChange={e => setChannel(e.target.value)}>
+                      {CHANNEL_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">ゲスト言語</span>
+                    <select className="ctrl" style={{width:140}} value={lang} onChange={e => setLang(e.target.value)}>
+                      <option>すべて</option><option>日本語</option><option>英語</option>
+                      <option>中国語(簡体)</option><option>韓国語</option><option>フランス語</option>
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約ステータス</span>
+                    <MultiSelect options={STATUS_OPTIONS} selected={statusSel} onToggle={toggleStatus} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">手配状況</span>
+                    <select className="ctrl" style={{width:140}} value={arrange} onChange={e => setArrange(e.target.value)}>
+                      {ARRANGE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <label className="check-filter">
+                    <input type="checkbox" checked={unassignedOnly} onChange={e => setUnassignedOnly(e.target.checked)} />
+                    未割り当てのみ
+                  </label>
+                  <div className="filter-actions">
+                    <button className="btn-link" onClick={reset}>リセット</button>
+                    <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="result-meta">
+                <span><strong>1–{rows.length}</strong> / {ROWS.length}件</span>
+                <span>ツアー日時 {sortDir === "asc" ? "昇順" : "降順"}で表示中</span>
+              </div>
+
+              <div className="list-table-wrap">
+                <div className="table-scroll">
+                  <table className="list-table" style={{minWidth:1100}}>
+                    <thead>
+                      <tr>
+                        <th>予約ID</th>
+                        <th>ゲスト名</th>
+                        <th>TourOption</th>
+                        <th style={{cursor:"pointer"}} onClick={() => toggleSort("tour")}>
+                          ツアー日時<span className={`sort-arrow ${sortKey === "tour" ? "" : "idle"}`}>{sortKey === "tour" ? (sortDir === "asc" ? "▲" : "▼") : "▲▼"}</span>
+                        </th>
+                        <th>参加人数</th>
+                        <th>予約元</th>
+                        <th>予約ステータス</th>
+                        <th>催行回紐付け</th>
+                        <th>手配状況</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(r => (
+                        <tr key={r.id} onClick={() => showToast(`予約詳細: ${r.id}`)} style={{cursor:"pointer"}}>
+                          <td><span className="code-mono" style={{fontSize:12,color:"var(--ink-soft)",fontWeight:600}}>{r.id}</span></td>
+                          <td><strong>{r.guest}</strong></td>
+                          <td>
+                            {r.code
+                              ? <React.Fragment><div className="code-mono" style={{fontSize:12,color:"var(--ink-soft)",fontWeight:600}}>{r.code}</div><div className="cell-sub">{r.tour}</div></React.Fragment>
+                              : <React.Fragment><span className="badge amber">⚠ 未設定</span><div className="cell-sub">{r.tour}</div></React.Fragment>}
+                          </td>
+                          <td className="cell-date">
+                            <div>{r.date.replace(/-/g, "/")}</div>
+                            <div className="time">{r.time}</div>
+                          </td>
+                          <td className="pax">{r.pax}</td>
+                          <td>
+                            <span className="channel">
+                              <span className={`ch-dot ${channelClass(r.channel)}`}></span>{r.channel}
+                            </span>
+                          </td>
+                          <td><span className={`status-pill ${r.status.cls}`}><span className="dot"></span>{r.status.label}</span></td>
+                          <td><span className={`status-pill ${r.link.cls}`}><span className="dot"></span>{r.link.label}</span></td>
+                          <td>{r.arrange.cls === "dash" ? <span className="muted-dash">—</span> : <span className={`status-pill ${r.arrange.cls}`}><span className="dot"></span>{r.arrange.label}</span>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="pagination">
+                <button className="page-btn nav">← 前へ</button>
+                <button className="page-btn active">1</button>
+                <button className="page-btn" onClick={() => showToast("2ページ目へ")}>2</button>
+                <button className="page-btn" onClick={() => showToast("3ページ目へ")}>3</button>
+                <button className="page-btn nav" onClick={() => showToast("2ページ目へ")}>次へ →</button>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

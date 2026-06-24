@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>未手配一覧 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .filter-bar { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 16px 18px; }
+      .filter-grid { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; }
+      .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h); cursor: pointer; }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .check-row { display: flex; align-items: center; gap: 16px; height: var(--field-h); }
+      .check-opt { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); user-select: none; cursor: pointer; }
+      .check-opt input { width: 16px; height: 16px; accent-color: var(--accent); }
+      .result-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); padding: 0 2px; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .muted-dash { color: var(--muted-soft); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 7px; }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .alert-banner { display: flex; align-items: center; gap: 12px; background: #fdf4dd; border: 1px solid var(--amber-soft); border-left: 3px solid var(--amber); border-radius: var(--radius); padding: 12px 16px; color: var(--amber); font-size: 13.5px; font-weight: 550; }
+      .alert-banner .alert-icon { width: 22px; height: 22px; flex-shrink: 0; display: grid; place-items: center; background: var(--amber); color: #fff; border-radius: 50%; font-size: 13px; font-weight: 800; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const ROWS = [
+        { session: "TI-20260608-1000-G-GIF-017-1-GR-01", bookings: 2, date: "2026-06-08", time: "10:00", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          pax: "大人4 子供1", arrange: { label: "未手配", cls: "muted" }, reason: null,
+          lang: "英語", area: "金沢市", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260609-0900-G-WAK-001-2-PR-01", bookings: 1, date: "2026-06-09", time: "09:00", code: "G-WAK-001-2-PR", tour: "里山ハイキング（プライベート）",
+          pax: "大人4", arrange: { label: "未手配", cls: "muted" }, reason: null,
+          lang: "英語", area: "石川県", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260611-0900-G-WAK-001-2-GR-01", bookings: 2, date: "2026-06-11", time: "09:00", code: "G-WAK-001-2-GR", tour: "里山ハイキング",
+          pax: "大人6 子供1", arrange: { label: "要確認", cls: "amber" }, reason: "日時変更",
+          lang: "英語", area: "石川県", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260614-1000-G-AIC-005-1-GR-01", bookings: 3, date: "2026-06-14", time: "10:00", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          pax: "大人10", arrange: { label: "要確認", cls: "amber" }, reason: "増員",
+          lang: "日本語", area: "愛知県", link: { label: "確定紐付け", cls: "green" } },
+        { session: "TI-20260620-1400-G-GIF-017-1-GR-01", bookings: 1, date: "2026-06-20", time: "14:00", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          pax: "大人3", arrange: { label: "未手配", cls: "muted" }, reason: null,
+          lang: "英語", area: "金沢市", link: { label: "仮紐付け", cls: "amber" } },
+      ];
+
+      function Sidebar({ resource }) {
+        const opsItems = [
+          { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+          { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+          { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+          { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+          { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+        ];
+        const payItems = [
+          { key: "settlement", href: "monthly-settlement.html",  icon: "ST", label: "月次締め確認" },
+          { key: "ota",        href: "ota-payment-matching.html",icon: "OT", label: "OTA入金照合" },
+          { key: "revenue",    href: "revenue-summary.html",     icon: "RV", label: "収支一覧" },
+        ];
+        const guideItems = [{ key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" }];
+        const facilityItems = [{ key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" }];
+        const masterMainItems = [
+          { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption" },
+          { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ" },
+        ];
+        const masterSubItems = [
+          { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+          { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+          { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+          { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+          { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+          { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+        ];
+        const navLink = (it) => (
+          <a key={it.key} href={it.href}
+            className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+            style={{textDecoration:"none"}}>
+            <span className="nav-icon">{it.icon}</span>
+            <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+          </a>
+        );
+        return (
+          <aside className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+              </div>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span><span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+              </a>
+            </div>
+            <div>
+              <div className="nav-section-label">予約オペレーション</div>
+              <div className="nav-group">{opsItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">{payItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">ガイド管理</div>
+              <div className="nav-group">{guideItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">施設管理</div>
+              <div className="nav-group">{facilityItems.map(navLink)}</div>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group" style={{marginBottom:"4px"}}>{masterMainItems.map(navLink)}</div>
+              <div className="nav-section-label" style={{marginTop:"8px",opacity:0.6}}>マスター</div>
+              <div className="nav-group">{masterSubItems.map(navLink)}</div>
+            </div>
+            <div className="sidebar-footer">
+              <a href="#" className="nav-logout">ログアウト</a>
+            </div>
+          </aside>
+        );
+      }
+
+      function App() {
+        const [from, setFrom] = useState("2026-06-08");
+        const [to, setTo] = useState("");
+        const [tourQuery, setTourQuery] = useState("");
+        const [arrUn, setArrUn] = useState(true);
+        const [arrCheck, setArrCheck] = useState(true);
+        const [linkTmp, setLinkTmp] = useState(true);
+        const [linkFix, setLinkFix] = useState(true);
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        const reset = () => {
+          setFrom("2026-06-08"); setTo(""); setTourQuery("");
+          setArrUn(true); setArrCheck(true); setLinkTmp(true); setLinkFix(true);
+          showToast("フィルターをリセットしました");
+        };
+
+        const rows = [...ROWS].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+        return (
+          <div className="workspace-shell">
+            <Sidebar resource="unarranged" />
+            <main className="workspace">
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>未手配一覧</h1>
+                </div>
+                <div className="topbar-right">
+                  <div className="top-date"><span className="dot"></span>2026年6月24日</div>
+                  <div className="avatar">OP</div>
+                </div>
+              </div>
+
+              <div className="alert-banner">
+                <span className="alert-icon">!</span>
+                <span>未手配・要確認の案件が <strong>5 件</strong> あります。ツアー日が近い順に表示しています。</span>
+              </div>
+
+              <div className="filter-bar">
+                <div className="filter-grid">
+                  <div className="filter-field">
+                    <span className="filter-label">ツアー日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={from} onChange={e => setFrom(e.target.value)} />
+                      <span className="sep">〜</span>
+                      <input type="date" className="ctrl" value={to} onChange={e => setTo(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">TourOption</span>
+                    <input className="ctrl" style={{width:200}} placeholder="コード・名称で検索"
+                      value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">手配状況</span>
+                    <div className="check-row">
+                      <label className="check-opt"><input type="checkbox" checked={arrUn} onChange={e => setArrUn(e.target.checked)} />未手配</label>
+                      <label className="check-opt"><input type="checkbox" checked={arrCheck} onChange={e => setArrCheck(e.target.checked)} />要確認</label>
+                    </div>
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">催行回紐付け</span>
+                    <div className="check-row">
+                      <label className="check-opt"><input type="checkbox" checked={linkTmp} onChange={e => setLinkTmp(e.target.checked)} />仮紐付け</label>
+                      <label className="check-opt"><input type="checkbox" checked={linkFix} onChange={e => setLinkFix(e.target.checked)} />確定紐付け</label>
+                    </div>
+                  </div>
+                  <div className="filter-actions">
+                    <button className="btn-link" onClick={reset}>リセット</button>
+                    <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="result-meta">
+                <span><strong>5</strong> 件の未手配・要確認案件</span>
+                <span>ツアー日時 昇順で表示中</span>
+              </div>
+
+              <div className="table-wrap">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>催行回ID</th>
+                        <th style={{textAlign:"center"}}>予約数</th>
+                        <th>ツアー日時 ↑</th>
+                        <th>TourOption</th>
+                        <th>参加人数</th>
+                        <th>手配状況</th>
+                        <th>変更理由区分</th>
+                        <th>ガイド要件</th>
+                        <th>催行回紐付け</th>
+                        <th style={{textAlign:"center"}}>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(r => (
+                        <tr key={r.session}>
+                          <td><span className="code-mono">{r.session}</span></td>
+                          <td style={{textAlign:"center"}}><span className="badge">{r.bookings}件</span></td>
+                          <td className="cell-date">
+                            <div>{r.date.replace(/-/g, "/")}</div>
+                            <div className="time">{r.time}</div>
+                          </td>
+                          <td>
+                            <div className="code-mono">{r.code}</div>
+                            <div className="cell-sub">{r.tour}</div>
+                          </td>
+                          <td className="pax">{r.pax}</td>
+                          <td><span className={`status-pill ${r.arrange.cls}`}><span className="dot"></span>{r.arrange.label}</span></td>
+                          <td>{r.reason ? <span className="badge blue">{r.reason}</span> : <span className="muted-dash">—</span>}</td>
+                          <td><span style={{fontSize:"12.5px",color:"var(--ink-soft)"}}>{r.lang} / {r.area}</span></td>
+                          <td><span className={`status-pill ${r.link.cls}`}><span className="dot"></span>{r.link.label}</span></td>
+                          <td style={{textAlign:"center"}}>
+                            {r.link.label === "仮紐付け"
+                              ? <button className="btn sm" disabled style={{opacity:0.45,cursor:"not-allowed"}} title="確定紐付け後に手配を開始できます">手配する</button>
+                              : <button className="btn primary sm" onClick={() => showToast("手配操作へ移動します")}>手配する</button>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

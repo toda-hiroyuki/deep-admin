@@ -73,6 +73,13 @@ const FACILITY_MASTER = [
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 function Sidebar({ resource, counts = {} }) {
+  const opsItems = [
+    { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+    { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+    { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+    { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+    { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+  ];
   const payItems = [
     { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
     { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
@@ -110,6 +117,19 @@ function Sidebar({ resource, counts = {} }) {
           <span className="nav-icon">⊞</span>
           <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
         </a>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">
+          {opsItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
       </div>
       <div>
         <div className="nav-section-label">精算・経営</div>

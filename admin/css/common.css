@@ -266,6 +266,10 @@ body[data-side="light"] .nav-count {
   background: rgba(0, 0, 0, 0.06);
 }
 
+/* Nav child items (sub-menu indented items) */
+.nav-child { padding-left: 30px !important; }
+.nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+
 /* Sidebar footer (logout) */
 .sidebar-footer {
   margin-top: auto;
