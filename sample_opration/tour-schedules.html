@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ツアー行程 一覧 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tour-schedules.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const SCHEDULE_ROWS = [
+  {
+    id: "sc-001",
+    no: 1,
+    iconType: "move",
+    iconLabel: "移",
+    category: "移動",
+    pinDisplay: false,
+    title: "集合 → 京阪祇園四条駅 6番出口",
+    body: "18:00集合。地下鉄出口から徒歩3分。遅刻の場合は電話連絡をお願いします。",
+    hasImage: false,
+  },
+  {
+    id: "sc-002",
+    no: 2,
+    iconType: "stop",
+    iconLabel: "①",
+    category: "立ち寄りスポット",
+    pinDisplay: true,
+    title: "花見小路散策",
+    body: "祇園の中心を流れる石畳の小路。歴史的な建物と提灯の明かりが印象的。約20分の散策。",
+    hasImage: false,
+  },
+  {
+    id: "sc-003",
+    no: 3,
+    iconType: "optional",
+    iconLabel: "任",
+    category: "任意スポット",
+    pinDisplay: true,
+    title: "居酒屋Aでの前菜・日本酒体験",
+    body: "ゲストの希望に応じて立ち寄り可能な地元の居酒屋。季節の前菜と京都地酒を楽しめます。",
+    hasImage: false,
+  },
+  {
+    id: "sc-004",
+    no: 4,
+    iconType: "optional",
+    iconLabel: "任",
+    category: "任意スポット",
+    pinDisplay: true,
+    title: "石塀小路夜景鑑賞",
+    body: "ライトアップされた石畳の路地。撮影スポットとして人気。雨天時は省略の場合あり。",
+    hasImage: false,
+  },
+  {
+    id: "sc-005",
+    no: 5,
+    iconType: "stop",
+    iconLabel: "②",
+    category: "立ち寄りスポット",
+    pinDisplay: false,
+    title: "八坂神社周辺で解散",
+    body: "20:20頃、八坂神社正面付近で解散。夜間のライトアップを楽しみながら自由解散。",
+    hasImage: false,
+  },
+];
+
+function Sidebar({ resource, counts }) {
+  const opsItems = [
+    { key: "bookings",   href: "予約一覧.html",        icon: "BK", label: "予約一覧" },
+    { key: "unassigned", href: "予約一覧.html?filter=unassigned",   icon: "↳",  label: "未割り当て一覧", child: true },
+    { key: "sessions",   href: "催行回一覧.html",       icon: "SS", label: "催行回一覧" },
+    { key: "unarranged", href: "未手配一覧.html",       icon: "↳",  label: "未手配一覧",     child: true },
+    { key: "today",      href: "当日翌日案件一覧.html", icon: "↳",  label: "当日/翌日案件",  child: true },
+  ];
+  const productItems = [
+    { key: "tourOption", href: "tour-options.html",    icon: "TO", label: "TourOption" },
+    { key: "productPage",href: "products.html",        icon: "PG", label: "商品ページ" },
+    { key: "guideDoc",   href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+  ];
+  const guideItems = [
+    { key: "guides",     href: "ガイド一覧.html",       icon: "GM", label: "ガイド一覧" },
+  ];
+  const payItems = [
+    { key: "settle",     href: "月次精算管理.html",     icon: "ST", label: "月次締め確認" },
+    { key: "import",     href: "金額確認待ち一覧.html", icon: "IM", label: "金額確認待ち一覧" },
+    { key: "ota",        href: "OTA入金照合.html",      icon: "OT", label: "OTA入金照合" },
+    { key: "revenue",    href: "収支一覧.html",         icon: "RV", label: "収支一覧" },
+  ];
+  const facilityItems = [
+    { key: "facilities",     href: "facilities.html",           icon: "FC", label: "施設一覧" },
+  ];
+  const masterItems = [
+    { key: "cancelTemplate", href: "cancel-policies.html",     icon: "CP", label: "キャンセルポリシー" },
+    { key: "feeMaster",      href: "チャネル・手数料設定.html", icon: "FE", label: "チャネル・手数料設定" },
+  ];
+  const active = "tourOption";
+  const renderItems = (arr) => arr.map(it => (
+    <a key={it.key} href={it.href}
+      className={`nav-item ${active === it.key ? "active" : ""} ${it.child ? "nav-child" : ""}`}
+      style={{textDecoration:"none"}}>
+      <span className="nav-icon">{it.icon}</span>
+      <span style={{flex:1,minWidth:0}}>
+        <div>{it.label}</div>
+      </span>
+    </a>
+  ));
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">DE</div>
+        <div>
+          <div className="brand-name">DeepExperience</div>
+          <div className="brand-caption">運営管理</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">{renderItems(opsItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">{renderItems(productItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">{renderItems(guideItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">{renderItems(facilityItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">{renderItems(payItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">マスター管理</div>
+        <div className="nav-group">{renderItems(masterItems)}</div>
+      </div>
+    </aside>
+  );
+}
+
+function ScheduleIcon({ type, label }) {
+  const cls = type === "move" ? "move" : type === "optional" ? "optional" : "stop";
+  return <div className={`schedule-icon ${cls}`}>{label}</div>;
+}
+
+function App() {
+  const TOUR_NAME = "Osaka: LED E-Bike Night Ride to Dotonbori, Namba & Shinsekai";
+  const counts = { to: 4, pg: 3, gd: 5, ct: 3 };
+
+  return (
+    <div className="app-shell">
+      <Sidebar resource="productPage" counts={counts} />
+      <main className="workspace">
+        <div className="topbar list-topbar">
+          <div>
+            <div className="crumbs">
+              <span>deep_Admin</span>
+              <span className="sep">/</span>
+              <a className="crumb-link" href="products.html">商品ページ</a>
+              <span className="sep">/</span>
+              <span className="current">ツアー行程</span>
+            </div>
+          </div>
+        </div>
+        <div className="list-view">
+          <div className="list-header">
+            <div>
+              <h1 style={{fontSize:18}}>
+                『<span style={{color:"var(--accent)"}}>{TOUR_NAME}</span>』の行程一覧
+              </h1>
+              <p className="list-desc">ドラッグ&amp;ドロップで並び替え可能です。</p>
+            </div>
+            <div>
+              <a href="tour-schedule-detail.html" className="btn primary">＋ 新規登録</a>
+            </div>
+          </div>
+          <div className="list-table-wrap">
+            <div className="table-scroll">
+              <table className="list-table" style={{minWidth:760}}>
+                <thead>
+                  <tr>
+                    <th style={{width:50}}>No.</th>
+                    <th style={{width:50}}>行程</th>
+                    <th style={{width:70}}>画像</th>
+                    <th style={{width:130}}>分類</th>
+                    <th style={{width:100}}>ピン表示</th>
+                    <th>タイトル</th>
+                    <th>本文</th>
+                    <th className="actions" style={{width:80}}>編集</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SCHEDULE_ROWS.map(r => (
+                    <tr key={r.id} className="list-row" onClick={() => { window.location.href='tour-schedule-detail.html'; }}>
+                      <td className="center" style={{fontWeight:600,color:"var(--muted)"}}>{"0"+r.no}</td>
+                      <td className="center">
+                        <ScheduleIcon type={r.iconType} label={r.iconLabel} />
+                      </td>
+                      <td>
+                        <div className="img-thumb">NO IMG</div>
+                      </td>
+                      <td>
+                        <span className={`badge ${r.category === "移動" ? "" : r.category === "立ち寄りスポット" ? "teal" : "amber"}`}>
+                          {r.category}
+                        </span>
+                      </td>
+                      <td className="center">
+                        <span className={`pin-badge ${r.pinDisplay ? "on" : "off"}`}>
+                          {r.pinDisplay ? "● On" : "○ Off"}
+                        </span>
+                      </td>
+                      <td><strong>{r.title}</strong></td>
+                      <td style={{maxWidth:260,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:"var(--muted)",fontSize:12}}>{r.body}</td>
+                      <td className="actions" onClick={e => e.stopPropagation()}>
+                        <a href="tour-schedule-detail.html" className="btn sm">編集</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

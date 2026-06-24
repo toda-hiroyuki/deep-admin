@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>予約割り当て — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1100px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── 紐付け件数チップ ── */
+      .cnt-chip { font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .cnt-chip.fix { background: var(--green-soft); color: var(--green); }
+      .cnt-chip.tmp { background: var(--amber-soft); color: var(--amber); }
+      .link-cnt { display: flex; flex-wrap: wrap; gap: 4px; }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.outline { background: var(--surface); border-color: var(--line-strong); color: var(--ink-soft); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn.selected { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 18px 20px; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .card-foot.end { justify-content: flex-end; }
+
+      /* ── Definition grid ── */
+      .def-grid { display: grid; grid-template-columns: 150px 1fr 150px 1fr; gap: 0; }
+      .def-grid .dt { color: var(--muted); font-size: 12px; font-weight: 600; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; white-space: nowrap; }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .def-grid .dd .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; }
+      .def-grid .dd .strong { font-weight: 650; }
+      @media (max-width: 820px) { .def-grid { grid-template-columns: 140px 1fr; } }
+
+      /* ── Method tabs (seg toggle) ── */
+      .method-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .method-tab { appearance: none; text-align: left; border: 1.5px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; transition: border-color 0.12s, background 0.12s, box-shadow 0.12s; position: relative; }
+      .method-tab:hover { border-color: var(--ink-soft); }
+      .method-tab.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--ring); }
+      .method-tab .mt-ic { width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center; background: var(--bg-sunken); color: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: 0.02em; flex-shrink: 0; }
+      .method-tab.active .mt-ic { background: var(--accent); color: #fff; }
+      .method-tab .mt-title { font-size: 15px; font-weight: 700; letter-spacing: -0.005em; display: flex; align-items: center; gap: 8px; }
+      .method-tab .mt-desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+      .method-tab.active .mt-desc { color: var(--accent-strong); }
+      .mt-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: grid; place-items: center; margin-left: auto; flex-shrink: 0; color: #fff; font-size: 11px; }
+      .method-tab.active .mt-check { background: var(--accent); border-color: var(--accent); }
+
+      /* ── Tables in cards ── */
+      .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table thead th.center { text-align: center; }
+      .data-table tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody td.center { text-align: center; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table tbody tr { transition: background 0.08s; cursor: pointer; }
+      .data-table tbody tr.disabled { cursor: not-allowed; background: var(--surface); }
+      .data-table tbody tr:not(.disabled):hover { background: var(--surface-warm); }
+      .data-table tbody tr.is-selected { background: var(--accent-soft); }
+      .data-table tbody tr.is-selected:hover { background: var(--accent-soft); }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .data-table tr.disabled .code-mono, .data-table tr.disabled td { color: var(--muted-soft); }
+      .table-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .result-meta { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; flex-wrap: wrap; justify-content: space-between; }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+      .match-tags { display: inline-flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 12px; color: var(--ink-soft); }
+      .match-tags .m-dot { color: var(--muted-soft); }
+      .match-tags .m-suffix { color: var(--muted); }
+
+      .ver-chip { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; font-weight: 650; color: var(--blue); background: var(--blue-soft); padding: 2px 7px; border-radius: 4px; white-space: nowrap; cursor: help; }
+      .ver-chip.warn { color: var(--coral); background: var(--coral-soft); }
+
+      .excluded-note { margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-tint); padding: 12px 14px; }
+      .excluded-note .ex-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+      .excluded-note .ex-ic { color: var(--coral); font-size: 14px; }
+      .excluded-note .ex-count { font-size: 11px; font-weight: 700; color: var(--coral); background: var(--coral-soft); padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
+      .excluded-note .ex-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--line-strong); font-size: 12px; color: var(--muted); cursor: help; }
+      .excluded-note .ex-row .code-mono { color: var(--muted-soft); text-decoration: line-through; }
+      .excluded-note .ex-reason { color: var(--muted); }
+      .lock { font-size: 10.5px; color: var(--muted); }
+
+      .empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 40px 24px 36px; border: 1px dashed var(--line-strong); border-radius: var(--radius-lg); background: var(--surface-tint); }
+      .empty-state .es-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--bg-sunken); color: var(--muted-soft); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+      .empty-state .es-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+      .empty-state .es-desc { font-size: 12.5px; color: var(--muted); max-width: 440px; line-height: 1.55; margin-bottom: 8px; }
+
+      .cell-date { font-variant-numeric: tabular-nums; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+
+      /* radio cell */
+      .radio-cell input { width: 17px; height: 17px; accent-color: var(--accent); }
+      .radio-cell input:disabled { cursor: not-allowed; }
+
+      /* capacity gauge */
+      .cap { display: flex; flex-direction: column; gap: 4px; min-width: 96px; }
+      .cap-top { display: flex; align-items: baseline; gap: 4px; font-variant-numeric: tabular-nums; }
+      .cap-cur { font-weight: 700; color: var(--ink); font-size: 14px; }
+      .cap-max { color: var(--muted); font-size: 12px; }
+      .cap-bar { height: 5px; border-radius: 999px; background: var(--bg-sunken); overflow: hidden; }
+      .cap-fill { height: 100%; border-radius: 999px; background: var(--accent); }
+
+      /* slots remaining */
+      .slots { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .slots.zero { color: var(--coral); }
+      .slots .slots-num { white-space: nowrap; }
+      .slots .full-tag { font-size: 10.5px; font-weight: 700; color: #fff; background: var(--coral); padding: 1px 7px; border-radius: 4px; white-space: nowrap; }
+
+      /* ── Create form ── */
+      .assign-grid { display: grid; grid-template-columns: 160px 1fr; gap: 14px 18px; align-items: center; }
+      .assign-grid .a-label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+      .assign-grid .a-label .req { color: var(--coral); margin-left: 3px; }
+      .assign-grid .a-val { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      .ctrl[readonly] { background: var(--surface-tint); color: var(--ink-soft); cursor: default; }
+      .ctrl[readonly]:hover { border-color: var(--line-strong); }
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .inherit-chip { display: inline-flex; align-items: center; gap: 9px; height: var(--field-h); padding: 0 12px; border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface-tint); }
+      .inherit-chip .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .inherit-chip .ic-name { font-weight: 650; }
+      .inherit-chip .lock { font-size: 10.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+      .assign-divider { border: 0; border-top: 1px solid var(--line-soft); margin: 18px 0; }
+
+      /* ID preview block */
+      .id-preview { display: flex; flex-direction: column; gap: 8px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 14px 16px; }
+      .id-preview .ip-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 8px; }
+      .id-preview .ip-label .auto { font-size: 10px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); padding: 2px 6px; border-radius: 4px; letter-spacing: 0.02em; text-transform: none; }
+      .id-preview .ip-value { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--accent-strong); letter-spacing: -0.01em; word-break: break-all; }
+      .id-preview .ip-parts { font-size: 11px; color: var(--muted); }
+      .id-preview .ip-parts b { color: var(--ink-soft); font-weight: 650; }
+
+      .hint-row { display: flex; align-items: flex-start; gap: 9px; margin-top: 14px; padding: 11px 14px; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); font-size: 12.5px; color: var(--amber); line-height: 1.5; }
+      .hint-row .h-ic { font-weight: 800; flex-shrink: 0; }
+      .foot-note { font-size: 12px; color: var(--muted); margin-right: auto; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; max-width: 90vw; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; flex-shrink: 0; }
+      .toast .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #cdeee8; }
+
+      /* ── 特例承認で受入（ソフト上限拡張） ── */
+      .btn.amber { background: var(--amber); border-color: var(--amber); color: #fff; }
+      .btn.amber:hover { background: #7a4e00; border-color: #7a4e00; }
+      .res-line { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+      .res-line.over { color: var(--coral); font-weight: 650; }
+      .res-line .res-tag { font-size: 10px; font-weight: 700; color: var(--coral); background: var(--coral-soft); padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+
+      .modal-mask { position: fixed; inset: 0; background: rgba(29, 26, 23, 0.42); display: grid; place-items: center; z-index: 80; padding: 24px; }
+      .modal { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); width: 560px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+      .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); background: var(--amber-bg); }
+      .modal-head .mh-title { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 750; color: var(--amber); }
+      .modal-head .mh-title .mh-ic { width: 24px; height: 24px; border-radius: 6px; background: var(--amber-soft); color: var(--amber); display: grid; place-items: center; font-size: 13px; font-weight: 800; }
+      .modal-head .mh-sub { font-size: 11.5px; color: var(--amber); margin-top: 4px; line-height: 1.5; }
+      .modal-close { appearance: none; border: 0; background: transparent; color: var(--amber); font-size: 18px; line-height: 1; padding: 4px; border-radius: 4px; flex-shrink: 0; }
+      .modal-close:hover { background: var(--amber-soft); }
+      .modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+      .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+
+      .ex-target { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 11px 13px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); font-size: 12.5px; }
+      .ex-target .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 650; }
+      .cap-change { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .cap-change .cc-box { display: flex; flex-direction: column; gap: 3px; }
+      .cap-change .cc-cap { font-size: 11px; font-weight: 600; color: var(--muted); }
+      .cap-change .cc-was { font-size: 18px; font-weight: 750; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .cap-change .cc-arrow { font-size: 18px; color: var(--muted-soft); align-self: flex-end; padding-bottom: 2px; }
+      .ex-field { display: flex; flex-direction: column; gap: 6px; }
+      .ex-field .ef-label { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+      .ex-field .ef-label .req { color: var(--coral); margin-left: 3px; }
+      .ex-field textarea.ctrl { height: auto; min-height: 64px; padding: 9px 10px; line-height: 1.5; resize: vertical; width: 100%; }
+      .ex-field input.ctrl { width: 100%; }
+      .res-guard { display: flex; align-items: flex-start; gap: 9px; padding: 11px 14px; border-radius: var(--radius); font-size: 12px; line-height: 1.5; }
+      .res-guard .rg-ic { font-weight: 800; flex-shrink: 0; }
+      .res-guard.ok { background: var(--green-soft); color: var(--green); }
+      .res-guard.ng { background: var(--coral-soft); color: var(--coral); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useMemo } = React;
+
+            const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",             group: "ops"                           , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",       group: "ops",    child: true           , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",           group: "ops"                           , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",           group: "ops",    child: true           , href: "未手配一覧.html" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",        group: "ops",    child: true           , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",          group: "product"                       , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",            group: "product"                       , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",            group: "product"                       , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",            group: "guide"                         , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",          group: "pay"                           , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",      group: "pay",    count: 4, alert: true  , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",           group: "pay",    count: 4, alert: true  , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",              group: "pay"                           , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",    group: "master"                        , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定",  group: "master"                        , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+      ].map(n => ({ ...n, active: n.key === "bookings" }));
+
+      // 対象予約
+      const BOOKING = {
+        id: "BK-260601-00042",
+        guest: "Emily Carter",
+        pax: "大人3・子供1",
+        paxTotal: 4,
+        toCode: "G-WAK-001-2-GR",
+        toName: "里山ハイキング",
+        wishDate: "2026/06/15（月）09:00",
+        lang: "英語",
+        channel: "Viator",
+        toId: "TO-3920",                 // ピン留めされたTourOption ID（TourOptionバージョン）＝催行回の束ね鍵。予約作成時に確定し変更しない
+        verLabel: "v3（2026-04-01〜・現在のTourOptionバージョン）",
+      };
+
+      // 既存催行回候補：対象予約と TourOption ID（TourOptionバージョン）・ツアー日・開始時刻・ゲスト言語が完全一致する回のみ。
+      // TourOptionバージョンが一致する＝提供内容が一致する（提供内容はTourOptionのバージョンに固定）。同一日時で連番違い（-01〜-04）が並び、満員/枠不足と空きありが混在する。
+      // resMax=人数単位リソース（自転車等）のハード上限・残量。定員(max)はソフト上限で特例拡張可、resMaxはハード上限で特例でも免除しない（§4-9）。
+      const CANDIDATES = [
+        { id: "TI-20260615-0900-G-WAK-001-2-GR-01", date: "2026/06/15（月）", time: "09:00〜12:00", lang: "英語", toId: "TO-3920", ver: "v3", cur: 6, max: 8,  arrange: "arranged",   resName: "自転車", resCur: 6, resMax: 10 },
+        { id: "TI-20260615-0900-G-WAK-001-2-GR-02", date: "2026/06/15（月）", time: "09:00〜12:00", lang: "英語", toId: "TO-3920", ver: "v3", cur: 8, max: 8,  arrange: "arranged",   resName: "自転車", resCur: 8, resMax: 10 },
+        { id: "TI-20260615-0900-G-WAK-001-2-GR-03", date: "2026/06/15（月）", time: "09:00〜12:00", lang: "英語", toId: "TO-3920", ver: "v3", cur: 4, max: 8,  arrange: "arranged",   resName: "自転車", resCur: 4, resMax: 10 },
+        { id: "TI-20260615-0900-G-WAK-001-2-GR-04", date: "2026/06/15（月）", time: "09:00〜12:00", lang: "英語", toId: "TO-3920", ver: "v3", cur: 2, max: 8, arrange: "unarranged", resName: "自転車", resCur: 2, resMax: 10 },
+        { id: "TI-20260615-0900-G-WAK-001-2-GR-06", date: "2026/06/15（月）", time: "09:00〜12:00", lang: "英語", toId: "TO-3920", ver: "v3", cur: 8, max: 8,  arrange: "arranged",   resName: "自転車", resCur: 10, resMax: 10 },
+      ];
+
+      // 同一コード・同一日時・同一言語だが TourOption のバージョン（TourOption ID）が異なるため候補から除外された枠（④の意味を示す注記）。
+      const EXCLUDED = [
+        { id: "TI-20260615-0900-G-WAK-001-2-GR-05", toId: "TO-3071", ver: "v2", reason: "同一コード・同一日時・同一言語だが TourOption のバージョンが異なる（v2／旧TourOptionバージョン）ため、提供内容が一致せず同乗できません。" },
+      ];
+
+      function Card({ no, title, hint, action, foot, footEnd, children, label }) {
+        return (
+          <section className="card" data-screen-label={label || title}>
+            <div className="card-head">
+              <div className="card-title">
+                {no && <span className="sec-no">{no}</span>}{title}
+                {hint && <span className="sec-hint">{hint}</span>}
+              </div>
+              {action}
+            </div>
+            <div className="card-body">{children}</div>
+            {foot && <div className={`card-foot ${footEnd ? "end" : ""}`}>{foot}</div>}
+          </section>
+        );
+      }
+
+      function CapGauge({ cur, max, blocked }) {
+        const pct = Math.min(100, Math.round((cur / max) * 100));
+        return (
+          <div className="cap">
+            <div className="cap-top">
+              <span className="cap-cur">{cur}</span>
+              <span className="cap-max">/ {max}名</span>
+            </div>
+            <div className="cap-bar">
+              <div className="cap-fill" style={{ width: pct + "%", background: blocked ? "var(--coral)" : "var(--accent)" }}></div>
+            </div>
+          </div>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [tab, setTab] = useState("existing");          // existing | create
+        const [selected, setSelected] = useState(null);      // selected session id
+
+        // create form
+        const [cDate, setCDate] = useState("2026-06-15");
+        const [cTime, setCTime] = useState("09:00");
+        const [cCap, setCCap] = useState(8);
+
+        // 特例承認で受入（ソフト上限拡張）§4-9
+        const [override, setOverride] = useState({});        // { [candId]: { newMax } } 適用済みの特例拡張
+        const [exModal, setExModal] = useState(null);        // 入力中の催行回id（モーダル対象）
+        const [exReason, setExReason] = useState("");
+        const [exApprover, setExApprover] = useState("");
+        const [exNewMax, setExNewMax] = useState("");
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 3000);
+        };
+
+        // 採番プレビュー：TI-{YYYYMMDD}-{HHMM}-{TourOption}-{連番}
+        const newId = useMemo(() => {
+          const d = (cDate || "").replace(/-/g, "");
+          const t = (cTime || "").replace(/:/g, "").slice(0, 4);
+          if (d.length !== 8 || t.length !== 4) return null;
+          return `TI-${d}-${t}-${BOOKING.toCode}-01`;
+        }, [cDate, cTime]);
+
+        const selectedCand = CANDIDATES.find(c => c.id === selected);
+
+        // 当該催行回の実効定員（ソフト上限）。特例拡張が適用されていれば拡張後の値。
+        const effMax = (c) => (override[c.id] ? override[c.id].newMax : c.max);
+        // リソース上限（ハード）：人数単位リソースの残量が対象人数に満たなければ特例でも受入不可（§4-9）。
+        const resBlocked = (c) => (c.resMax - c.resCur) < BOOKING.paxTotal;
+
+        // 特例承認モーダルを開く（対象は定員超過＝満員/枠不足の回）。
+        const openEx = (c) => {
+          setExModal(c.id);
+          const cur = override[c.id];
+          setExNewMax(String(cur ? cur.newMax : c.cur + BOOKING.paxTotal));
+          setExReason(cur ? cur.reason : "");
+          setExApprover(cur ? cur.approver : "");
+        };
+        const closeEx = () => setExModal(null);
+        const exCand = CANDIDATES.find(c => c.id === exModal);
+        const exNewMaxNum = parseInt(exNewMax, 10);
+        const exCanApply = exCand
+          && exReason.trim() && exApprover.trim()
+          && exNewMaxNum > exCand.max               // 拡張後は元の定員より大きいこと
+          && exNewMaxNum >= exCand.cur + BOOKING.paxTotal  // 対象人数を収容できること
+          && !resBlocked(exCand);                   // リソース上限（ハード）は免除しない
+        const applyEx = () => {
+          if (!exCanApply) return;
+          setOverride(prev => ({ ...prev, [exCand.id]: { newMax: exNewMaxNum, was: exCand.max, reason: exReason.trim(), approver: exApprover.trim() } }));
+          setSelected(exCand.id);   // 拡張した回をそのまま選択
+          setExModal(null);
+          showToast(<span>特例承認: <span className="code-mono">{exCand.id}</span> の定員を <b>{exCand.max}→{exNewMaxNum}名</b> に拡張しました</span>);
+        };
+
+        const doAssign = () => {
+          const ov = override[selected];
+          if (ov) {
+            showToast(<span><b>{BOOKING.id}</b> を <span className="code-mono">{selected}</span> に特例承認で仮紐付けしました（定員 {ov.was}→{ov.newMax}名）</span>);
+            return;
+          }
+          showToast(<span><b>{BOOKING.id}</b> を <span className="code-mono">{selected}</span> に仮紐付けしました</span>);
+        };
+        const doCreate = () => {
+          if (!newId) { showToast("日時を正しく入力してください"); return; }
+          showToast(<span><span className="code-mono">{newId}</span> を作成し <b>{BOOKING.id}</b> を仮紐付けしました</span>);
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+                            {[
+                { grp: "ops",     label: "予約オペレーション" },
+                { grp: "product", label: "商品管理" },
+                { grp: "guide",    label: "ガイド管理" },
+                { grp: "facility", label: "施設管理" },
+                { grp: "pay",      label: "精算・経営" },
+                { grp: "master",  label: "マスター管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`}
+                      onClick={() => n.href
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                グループツアーの未紐付け予約を、同一 TourOption の催行回へ仮紐付けします。確定紐付け（無料キャンセル締切後）は催行回詳細で行います。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="crumbs">
+                <a href="#" onClick={e => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
+                <span className="sep">›</span>
+                <a href="予約一覧.html?filter=unassigned">未割り当て一覧</a>
+                <span className="sep">›</span>
+                <span className="current">割り当て</span>
+              </div>
+              <div className="page-title">
+                <h1>予約割り当て</h1>
+                <span className="sub">未紐付け予約を催行回へ仮紐付けします</span>
+              </div>
+
+              {/* ── ① 割り当て対象の予約情報 ── */}
+              <Card title="割り当て対象の予約"
+                action={<span className="status-pill muted"><span className="dot"></span>未紐付け</span>}
+                label="割り当て対象の予約">
+                <div className="def-grid">
+                  <div className="dt">予約ID</div>
+                  <div className="dd"><span className="code-mono">{BOOKING.id}</span></div>
+                  <div className="dt">ゲスト名</div>
+                  <div className="dd"><span className="strong">{BOOKING.guest}</span></div>
+
+                  <div className="dt">参加人数</div>
+                  <div className="dd"><span className="strong">{BOOKING.pax}</span><span className="sub">（計{BOOKING.paxTotal}名）</span></div>
+                  <div className="dt">予約元 / チャネル</div>
+                  <div className="dd"><span className="badge blue">{BOOKING.channel}</span></div>
+
+                  <div className="dt">TourOption</div>
+                  <div className="dd"><span className="code-mono">{BOOKING.toCode}</span><span className="sub">{BOOKING.toName}</span></div>
+                  <div className="dt">希望ツアー日時</div>
+                  <div className="dd"><span className="strong">{BOOKING.wishDate}</span></div>
+                  <div className="dt">ゲスト言語</div>
+                  <div className="dd"><span className="badge teal">{BOOKING.lang}</span></div>
+
+                  <div className="dt">TourOptionバージョン</div>
+                  <div className="dd" style={{ gridColumn: "2 / -1" }}>
+                    <span className="ver-chip" title={`TourOption ID（TourOptionバージョン）：${BOOKING.toId}。予約作成時に確定（ピン留め）したTourOptionバージョン。催行回はこのバージョンIDが一致する回のみ同乗できます`}>{BOOKING.verLabel}</span>
+                    <span className="sub">予約時に確定したTourOptionバージョン（TourOption ID: {BOOKING.toId}）</span>
+                  </div>
+
+                  <div className="dt">現在の紐付けステータス</div>
+                  <div className="dd" style={{ gridColumn: "2 / -1" }}><span className="status-pill muted"><span className="dot"></span>未紐付け</span></div>
+                </div>
+              </Card>
+
+              {/* ── ② 割り当て方法 ── */}
+              <Card no="2" title="割り当て方法" label="② 割り当て方法">
+                <div className="method-tabs">
+                  <button className={`method-tab ${tab === "existing" ? "active" : ""}`}
+                    onClick={() => setTab("existing")}>
+                    <span className="mt-ic">既存</span>
+                    <span>
+                      <span className="mt-title">既存の催行回に紐付け</span>
+                      <span className="mt-desc">同じ TourOption（TourOptionバージョン＝TourOption ID）・同じツアー日時・同じゲスト言語の既存催行回から、空きのある回を選んで仮紐付けします。</span>
+                    </span>
+                    <span className="mt-check">{tab === "existing" ? "✓" : ""}</span>
+                  </button>
+                  <button className={`method-tab ${tab === "create" ? "active" : ""}`}
+                    onClick={() => setTab("create")}>
+                    <span className="mt-ic">新規</span>
+                    <span>
+                      <span className="mt-title">新規催行回を作成</span>
+                      <span className="mt-desc">既存の催行回に入らない場合のみ、新しい催行回を作成して割り当てます。</span>
+                    </span>
+                    <span className="mt-check">{tab === "create" ? "✓" : ""}</span>
+                  </button>
+                </div>
+              </Card>
+
+              {/* ── タブA：既存の催行回に紐付け ── */}
+              {tab === "existing" && (
+                <Card no="3" title="催行回候補" hint={`${BOOKING.toCode}・${BOOKING.paxTotal}名分の空きが必要`} label="③ 既存催行回に紐付け"
+                  foot={
+                    <React.Fragment>
+                      <span className="foot-note">
+                        {selectedCand
+                          ? <span><span className="code-mono">{selectedCand.id}</span> を選択中{override[selectedCand.id] && <span className="badge amber" style={{ marginLeft: 6 }}>特例拡張 {override[selectedCand.id].was}→{override[selectedCand.id].newMax}名</span>}</span>
+                          : "紐付け先の催行回を1件選択してください"}
+                      </span>
+                      <button className="btn primary" disabled={!selectedCand} onClick={doAssign}>この催行回に仮紐付けする</button>
+                    </React.Fragment>
+                  }>
+                  <div className="result-meta">
+                    <span><strong>{CANDIDATES.length}</strong> 件の催行回候補</span>
+                    <span className="match-tags">
+                      <span className="code-mono">{BOOKING.toCode}</span>
+                      <span className="m-dot">·</span>{BOOKING.wishDate}
+                      <span className="m-dot">·</span><span className="badge teal">{BOOKING.lang}</span>
+                      <span className="m-dot">·</span><span className="ver-chip" title={`TourOption ID（TourOptionバージョン）：${BOOKING.toId}`}>{BOOKING.verLabel}</span>
+                      <span className="m-suffix">が完全一致する回のみ</span>
+                    </span>
+                  </div>
+                  {CANDIDATES.length === 0 ? (
+                    <div className="empty-state">
+                      <div className="es-ic">∅</div>
+                      <div className="es-title">条件に合う催行回がありません</div>
+                      <div className="es-desc">TourOption・ツアー日時・ゲスト言語が完全一致する催行回が見つかりませんでした。タブ「新規催行回を作成」で新しい回を作成してください。</div>
+                      <button className="btn primary" onClick={() => setTab("create")}>新規催行回を作成</button>
+                    </div>
+                  ) : (
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th className="center" style={{ width: 52 }}>選択</th>
+                          <th>催行回ID</th>
+                          <th>ツアー日時</th>
+                          <th className="center">ゲスト言語</th>
+                          <th>現在人数 / 定員</th>
+                          <th className="center" style={{ width: 84 }}>空き枠</th>
+                          <th className="center">手配状況</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {CANDIDATES.map(c => {
+                          const max = effMax(c);                  // ソフト上限（特例拡張後の実効定員）
+                          const ov = override[c.id];              // 特例拡張が適用済みか
+                          const slots = max - c.cur;
+                          const full = slots <= 0;
+                          const short = !full && slots < BOOKING.paxTotal;   // 枠不足
+                          const overCap = full || short;          // 定員（ソフト上限）超過
+                          const resOver = resBlocked(c);          // リソース上限（ハード）超過＝特例でも受入不可
+                          const blocked = overCap && !ov;         // 行は通常選択不可。特例拡張を適用すると選択可。
+                          const resRem = c.resMax - c.resCur;
+                          const isSel = c.id === selected;
+                          return (
+                            <tr key={c.id}
+                              className={`${blocked ? "disabled" : ""} ${isSel ? "is-selected" : ""}`}
+                              onClick={() => !blocked && setSelected(c.id)}>
+                              <td className="center radio-cell">
+                                <input type="radio" name="cand" checked={isSel} disabled={blocked}
+                                  onChange={() => setSelected(c.id)} />
+                              </td>
+                              <td>
+                                <span className="code-mono">{c.id}</span>
+                                {ov && <div><span className="badge amber" style={{ marginTop: 4 }}>特例拡張 {ov.was}→{ov.newMax}名</span></div>}
+                              </td>
+                              <td>
+                                <div className="cell-date">
+                                  {c.date}
+                                  <div className="time">{c.time}</div>
+                                </div>
+                              </td>
+                              <td className="center"><span className="badge teal">{c.lang}</span></td>
+                              <td>
+                                <CapGauge cur={c.cur} max={max} blocked={blocked} />
+                                <div className={`res-line${resOver ? " over" : ""}`}>
+                                  リソース（{c.resName}・ハード）: {c.resCur}/{c.resMax}（残{resRem}）
+                                  {resOver && <span className="res-tag">上限超過</span>}
+                                </div>
+                              </td>
+                              <td className="center">
+                                {full
+                                  ? <span className="slots zero"><span className="slots-num">残り0</span><span className="full-tag">満員</span></span>
+                                  : short
+                                    ? <span className="slots zero"><span className="slots-num">残り{slots}</span><span className="full-tag">枠不足</span></span>
+                                    : <span className="slots"><span className="slots-num">残り{slots}</span></span>}
+                                {overCap && (
+                                  <div style={{ marginTop: 6 }}>
+                                    {resOver
+                                      ? <span className="lock" title="リソース上限（ハード）は特例の対象外で免除しません（§4-9）">⊘ リソース超過のため特例不可</span>
+                                      : <button className="btn amber sm" onClick={e => { e.stopPropagation(); openEx(c); }}>{ov ? "特例を編集" : "特例承認で受入"}</button>}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="center">
+                                {c.arrange === "arranged"
+                                  ? <span className="status-pill teal"><span className="dot"></span>手配済</span>
+                                  : <span className="status-pill muted"><span className="dot"></span>未手配</span>}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  )}
+                  {EXCLUDED.length > 0 && (
+                    <div className="excluded-note">
+                      <div className="ex-head">
+                        <span className="ex-ic">⊘</span>
+                        TourOptionバージョンが異なるため候補から除外（同一コード・同一日時・同一言語）
+                        <span className="ex-count">{EXCLUDED.length}件</span>
+                      </div>
+                      {EXCLUDED.map(e => (
+                        <div className="ex-row" key={e.id} title={e.reason}>
+                          <span className="code-mono">{e.id}</span>
+                          <span className="ver-chip warn" title={`TourOption ID（TourOptionバージョン）：${e.toId}`}>{e.ver}</span>
+                          <span className="ex-reason">TourOptionバージョン違いのため同乗不可 — {e.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {CANDIDATES.length > 0 && (
+                  <div className="hint-row">
+                    <span className="h-ic">!</span>
+                    <span>候補は <b>TourOption ID（TourOptionバージョン）</b>・ツアー日時・ゲスト言語が完全一致する回のみです。TourOptionバージョン（TourOption ID）が異なる回は、同一コード・同一日時・同一言語でも同乗できません。空き枠が対象予約（{BOOKING.paxTotal}名）に満たない回は「満員」「枠不足」となります。同行が必要な場合は <b>「特例承認で受入（ソフト上限拡張）」</b> で当該催行回の定員（ソフト上限）に限り拡張できます（理由・承認者・拡張前後の定員値を記録）。ただし <b>リソース上限（ハード）は特例の対象外で免除しません</b>。リソース残量が対象人数に満たない回は特例でも受入できません（§4-9）。日時の変更が必要な場合は「変更・キャンセル処理」で対応します。仮紐付けの確定は無料キャンセル締切後に催行回詳細で行います。</span>
+                  </div>
+                  )}
+                </Card>
+              )}
+
+              {/* ── タブB：新規催行回を作成 ── */}
+              {tab === "create" && (
+                <Card no="3" title="新規催行回の作成" label="③ 新規催行回を作成して割り当て"
+                  foot={
+                    <React.Fragment>
+                      <span className="foot-note">作成と同時に <b>{BOOKING.id}</b> を仮紐付けします</span>
+                      <button className="btn primary" disabled={!newId} onClick={doCreate}>催行回を作成して仮紐付けする</button>
+                    </React.Fragment>
+                  }>
+                  <div className="assign-grid">
+                    <div className="a-label">TourOption</div>
+                    <div className="a-val">
+                      <span className="inherit-chip">
+                        <span className="code-mono">{BOOKING.toCode}</span>
+                        <span className="ic-name">{BOOKING.toName}</span>
+                      </span>
+                      <span className="inherit-chip lock" style={{ border: 0, background: "transparent", padding: 0 }}>
+                        <span className="lock">🔒 予約から継承（変更不可）</span>
+                      </span>
+                    </div>
+
+                    <div className="a-label">TourOptionバージョン</div>
+                    <div className="a-val">
+                      <span className="ver-chip" title={`TourOption ID（TourOptionバージョン）：${BOOKING.toId}`}>{BOOKING.verLabel}</span>
+                      <span className="lock">🔒 予約の固定TourOptionバージョンを継承（現時点の最新TourOptionバージョンではない・変更不可）</span>
+                    </div>
+
+                    <div className="a-label">ゲスト言語</div>
+                    <div className="a-val">
+                      <span className="badge teal">{BOOKING.lang}</span>
+                      <span className="lock">🔒 予約から継承（変更不可）</span>
+                    </div>
+
+                    <div className="a-label">ツアー日<span className="req">*</span></div>
+                    <div className="a-val">
+                      <input type="date" className="ctrl" style={{ width: 180 }} value={cDate} onChange={e => setCDate(e.target.value)} />
+                    </div>
+
+                    <div className="a-label">開始時刻<span className="req">*</span></div>
+                    <div className="a-val">
+                      <input type="time" className="ctrl" style={{ width: 130 }} value={cTime} onChange={e => setCTime(e.target.value)} />
+                    </div>
+
+                    <div className="a-label">定員<span className="req">*</span></div>
+                    <div className="a-val">
+                      <input type="number" min="1" className="ctrl" style={{ width: 100 }} value={cCap} onChange={e => setCCap(e.target.value)} />
+                      <span className="filter-label">名　·　TourOption のリソース設定値（8名）を初期表示</span>
+                    </div>
+                  </div>
+
+                  <hr className="assign-divider" />
+
+                  <div className="id-preview">
+                    <div className="ip-label">催行回ID 採番プレビュー<span className="auto">自動採番</span></div>
+                    <div className="ip-value">{newId || "— 日時を入力してください —"}</div>
+                    <div className="ip-parts">
+                      形式：<b>TI</b>-<b>{`{YYYYMMDD}`}</b>-<b>{`{HHMM}`}</b>-<b>{BOOKING.toCode}</b>-<b>{`{連番2桁}`}</b>
+                    </div>
+                  </div>
+
+                  <div className="hint-row">
+                    <span className="h-ic">!</span>
+                    <span>新規催行回は仮紐付け状態で作成され、予約の固定TourOptionバージョン（TourOption ID）を継承します。同一 TourOption ID（TourOptionバージョン）・同日時の既存回がある場合は、まず「既存の催行回に紐付け」での割り当てを検討してください。</span>
+                  </div>
+                </Card>
+              )}
+            </main>
+
+            {/* ── 特例承認で受入（ソフト上限拡張）モーダル §4-9 ── */}
+            {exCand && (
+              <div className="modal-mask" onClick={closeEx}>
+                <div className="modal" onClick={e => e.stopPropagation()}>
+                  <div className="modal-head">
+                    <div>
+                      <div className="mh-title"><span className="mh-ic">!</span>特例承認で受入（ソフト上限拡張）</div>
+                      <div className="mh-sub">当該催行回に限り催行回定員（ソフト上限）を拡張します。例外承認として理由・承認者・拡張前後の定員値を記録します。リソース上限（ハード）は免除しません。</div>
+                    </div>
+                    <button className="modal-close" onClick={closeEx} aria-label="閉じる">×</button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="ex-target">
+                      <span className="code-mono">{exCand.id}</span>
+                      <span className="m-dot">·</span>{exCand.date} {exCand.time}
+                      <span className="m-dot">·</span><span className="badge teal">{exCand.lang}</span>
+                      <span className="m-dot">·</span>現在 {exCand.cur}名 / 対象予約 {BOOKING.paxTotal}名
+                    </div>
+
+                    <div className="cap-change">
+                      <div className="cc-box">
+                        <span className="cc-cap">拡張前の定員</span>
+                        <span className="cc-was">{exCand.max}名</span>
+                      </div>
+                      <span className="cc-arrow">→</span>
+                      <div className="ex-field" style={{ flex: "1 1 160px" }}>
+                        <span className="ef-label">拡張後の定員<span className="req">*</span></span>
+                        <input type="number" min={exCand.max + 1} className="ctrl" value={exNewMax}
+                          onChange={e => setExNewMax(e.target.value)} />
+                      </div>
+                    </div>
+
+                    <div className="ex-field">
+                      <span className="ef-label">特例承認の理由<span className="req">*</span></span>
+                      <textarea className="ctrl" placeholder="例：同一グループで分割不可のため、同行が必要" value={exReason}
+                        onChange={e => setExReason(e.target.value)}></textarea>
+                    </div>
+                    <div className="ex-field">
+                      <span className="ef-label">承認者<span className="req">*</span></span>
+                      <input type="text" className="ctrl" placeholder="例：山田 太郎（運営マネージャー）" value={exApprover}
+                        onChange={e => setExApprover(e.target.value)} />
+                    </div>
+
+                    {resBlocked(exCand)
+                      ? <div className="res-guard ng">
+                          <span className="rg-ic">⊘</span>
+                          <span>リソース上限（ハード）に空きがありません（{exCand.resName} 残{exCand.resMax - exCand.resCur} ＜ 対象{BOOKING.paxTotal}名）。リソース上限は特例の対象外で免除しないため、定員を拡張しても受入できません（§4-9）。</span>
+                        </div>
+                      : <div className="res-guard ok">
+                          <span className="rg-ic">✓</span>
+                          <span>リソース上限（ハード）に空きがあります（{exCand.resName} 残{exCand.resMax - exCand.resCur} ≥ 対象{BOOKING.paxTotal}名）。リソース判定は通常どおり実行しています。</span>
+                        </div>}
+                  </div>
+                  <div className="modal-foot">
+                    <button className="btn outline" onClick={closeEx}>キャンセル</button>
+                    <button className="btn amber" disabled={!exCanApply} onClick={applyEx}>特例承認を記録して定員を拡張</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span><span>{toast}</span>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

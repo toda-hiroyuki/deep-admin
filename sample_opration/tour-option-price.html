@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>料金区分 編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tour-schedule-detail.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState, useCallback, useRef } = React;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function getParam(key) {
+  try { return new URLSearchParams(window.location.search).get(key); }
+  catch (e) { return null; }
+}
+
+const PARTICIPANT_CATEGORY_MASTER = [
+  { id: "cat-adult",  label: "大人" },
+  { id: "cat-child",  label: "小人" },
+  { id: "cat-senior", label: "シニア" },
+  { id: "cat-infant", label: "乳幼児" },
+  { id: "cat-none",   label: "区別なし" },
+];
+
+function getSeedCategories() {
+  try { return window.SEED?.tourOption?.pricingCategories || []; } catch { return []; }
+}
+function getSeedTourOption() {
+  try { return window.SEED?.tourOption || {}; } catch { return {}; }
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+function Sidebar({ resource, counts }) {
+  const opsItems = [
+    { key: "bookings",   href: "予約一覧.html",        icon: "BK", label: "予約一覧" },
+    { key: "unassigned", href: "予約一覧.html?filter=unassigned",   icon: "↳",  label: "未割り当て一覧", child: true },
+    { key: "sessions",   href: "催行回一覧.html",       icon: "SS", label: "催行回一覧" },
+    { key: "unarranged", href: "未手配一覧.html",       icon: "↳",  label: "未手配一覧",     child: true },
+    { key: "today",      href: "当日翌日案件一覧.html", icon: "↳",  label: "当日/翌日案件",  child: true },
+  ];
+  const productItems = [
+    { key: "tourOption", href: "tour-options.html",    icon: "TO", label: "TourOption" },
+    { key: "productPage",href: "products.html",        icon: "PG", label: "商品ページ" },
+    { key: "guideDoc",   href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+  ];
+  const guideItems = [
+    { key: "guides",     href: "ガイド一覧.html",       icon: "GM", label: "ガイド一覧" },
+  ];
+  const payItems = [
+    { key: "settle",     href: "月次精算管理.html",     icon: "ST", label: "月次締め確認" },
+    { key: "import",     href: "金額確認待ち一覧.html", icon: "IM", label: "金額確認待ち一覧" },
+    { key: "ota",        href: "OTA入金照合.html",      icon: "OT", label: "OTA入金照合" },
+    { key: "revenue",    href: "収支一覧.html",         icon: "RV", label: "収支一覧" },
+  ];
+  const facilityItems = [
+    { key: "facilities",     href: "facilities.html",           icon: "FC", label: "施設一覧" },
+  ];
+  const masterItems = [
+    { key: "cancelTemplate", href: "cancel-policies.html",     icon: "CP", label: "キャンセルポリシー" },
+    { key: "feeMaster",      href: "チャネル・手数料設定.html", icon: "FE", label: "チャネル・手数料設定" },
+  ];
+  const active = "tourOption";
+  const renderItems = (arr) => arr.map(it => (
+    <a key={it.key} href={it.href}
+      className={`nav-item ${active === it.key ? "active" : ""} ${it.child ? "nav-child" : ""}`}
+      style={{textDecoration:"none"}}>
+      <span className="nav-icon">{it.icon}</span>
+      <span style={{flex:1,minWidth:0}}>
+        <div>{it.label}</div>
+      </span>
+    </a>
+  ));
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">DE</div>
+        <div>
+          <div className="brand-name">DeepExperience</div>
+          <div className="brand-caption">運営管理</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">{renderItems(opsItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">{renderItems(productItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">{renderItems(guideItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">{renderItems(facilityItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">{renderItems(payItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">マスター管理</div>
+        <div className="nav-group">{renderItems(masterItems)}</div>
+      </div>
+    </aside>
+  );
+}
+
+// ── Tier row ──────────────────────────────────────────────────────────────────
+
+function getUpperLimit(tiers, index) {
+  const sorted = [...tiers].sort((a, b) => a.min - b.min);
+  const sortedIdx = sorted.findIndex(t => t.id === tiers[index].id);
+  const next = sorted[sortedIdx + 1];
+  return next ? next.min - 1 : null;
+}
+
+function TierRow({ tier, tiers, index, onChange, onDelete, onDragStart, onDragOver, onDrop }) {
+  const upperLimit = getUpperLimit(tiers, index);
+  const isLast = upperLimit === null;
+  return (
+    <div
+      draggable
+      onDragStart={e => onDragStart(e, index)}
+      onDragOver={e => { e.preventDefault(); onDragOver(e, index); }}
+      onDrop={e => onDrop(e, index)}
+      style={{
+        display:"flex", alignItems:"center", gap:0,
+        background:"var(--surface)", border:"1px solid var(--line)",
+        borderRadius:6, marginBottom:8, overflow:"hidden", cursor:"grab",
+      }}
+    >
+      <div style={{padding:"14px 12px", color:"var(--muted)", fontSize:16, cursor:"grab", flexShrink:0}}>⠿</div>
+      {/* 人数（下限） */}
+      <div style={{flex:"0 0 180px", display:"flex", alignItems:"center", gap:6, padding:"0 8px"}}>
+        <input
+          type="number" min={1} value={tier.min}
+          onChange={e => onChange(tier.id, "min", parseInt(e.target.value,10)||1)}
+          style={{width:70, textAlign:"right"}}
+        />
+        <span style={{fontSize:13, color:"var(--muted)", whiteSpace:"nowrap"}}>名〜</span>
+        {isLast
+          ? <span style={{fontSize:12, color:"var(--accent)", fontWeight:600}}>上限なし</span>
+          : <span style={{fontSize:12, color:"var(--muted)"}}>{upperLimit}名</span>
+        }
+      </div>
+      <div style={{width:1, height:36, background:"var(--line)", flexShrink:0}} />
+      {/* 1名あたり単価 */}
+      <div style={{flex:1, display:"flex", alignItems:"center", gap:6, padding:"0 16px"}}>
+        <span style={{fontSize:13, color:"var(--muted)"}}>¥</span>
+        <input
+          type="number" min={0} step={100} value={tier.price}
+          onChange={e => onChange(tier.id, "price", parseInt(e.target.value,10)||0)}
+          style={{width:120, fontWeight:600}}
+        />
+        <span style={{fontSize:12, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
+      </div>
+      <div style={{padding:"0 12px", flexShrink:0}}>
+        <button className="btn sm" onClick={() => onDelete(tier.id)} style={{color:"var(--coral)"}}>削除</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Price Preview ─────────────────────────────────────────────────────────────
+
+function PricePreview({ tiers, enabled, basePrice }) {
+  const [pax, setPax] = useState(6);
+  const sorted = [...tiers].sort((a, b) => a.min - b.min);
+  let appliedTier = null, pricePerPerson = null, totalPrice = null, tierLabel = "";
+  if (enabled && tiers.length > 0) {
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (pax >= sorted[i].min) { appliedTier = sorted[i]; break; }
+    }
+    if (appliedTier) {
+      pricePerPerson = appliedTier.price;
+      totalPrice = pricePerPerson * pax;
+      const idx = sorted.findIndex(t => t.id === appliedTier.id);
+      const next = sorted[idx + 1];
+      tierLabel = next ? `${appliedTier.min}〜${next.min-1}名帯` : `${appliedTier.min}名以上帯`;
+    }
+  } else if (!enabled) {
+    pricePerPerson = basePrice;
+    totalPrice = basePrice * pax;
+    tierLabel = "基準販売価格";
+  }
+  return (
+    <div style={{
+      background:"#f0faf8", border:"1.5px solid #5bbfaa",
+      borderRadius:8, padding:"14px 20px",
+    }}>
+      <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:10}}>
+        <span style={{
+          background:"#3aab94", color:"#fff", fontWeight:700, fontSize:12,
+          padding:"3px 10px", borderRadius:5, letterSpacing:"0.04em", whiteSpace:"nowrap", flexShrink:0,
+        }}>計算プレビュー</span>
+        <span style={{fontSize:12.5, color:"#4a7a70"}}>人数を変更すると、適用される単価帯がハイライトされます。</span>
+      </div>
+      <div style={{display:"flex", alignItems:"center", gap:6, flexWrap:"wrap"}}>
+        <span style={{fontSize:13, color:"#4a7a70", marginRight:2}}>例：</span>
+        <input
+          type="number" min={1} value={pax}
+          onChange={e => setPax(Math.max(1, parseInt(e.target.value,10)||1))}
+          style={{width:64, textAlign:"right", background:"#fff", border:"1px solid #9fd4c9", borderRadius:5, padding:"4px 8px", fontSize:14}}
+        />
+        <span style={{fontSize:13, color:"#4a7a70"}}>名 で予約</span>
+        {totalPrice !== null ? (
+          <>
+            <span style={{fontSize:13, color:"#333", margin:"0 4px"}}>
+              <strong>{pax}名 × ¥{pricePerPerson.toLocaleString()}</strong>
+              <span style={{color:"#6aab96", fontSize:12, marginLeft:4}}>（{tierLabel}）</span>
+            </span>
+            <span style={{fontSize:15, color:"#4a7a70", margin:"0 2px"}}>=</span>
+            <span style={{fontSize:20, fontWeight:800, color:"#1a6b5a"}}>¥{totalPrice.toLocaleString()}</span>
+          </>
+        ) : (
+          <span style={{color:"#9abfba", fontSize:13, marginLeft:8}}>
+            {enabled ? "この人数に適用できる段階がありません。" : "段階価格が無効です。"}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
+let nextId = 100;
+function genId() { return `tp-${nextId++}`; }
+
+function App() {
+  const catId  = getParam("id");
+  const seedCats = getSeedCategories();
+  const seedTo   = getSeedTourOption();
+  const existingCat = catId ? seedCats.find(c => c.id === catId) : null;
+
+  const [catName,    setCatName]    = useState(existingCat?.name || "区別なし");
+  const [basePrice,  setBasePrice]  = useState(existingCat?.basePrice  ?? 10000);
+  const [enabled,    setEnabled]    = useState(existingCat?.tieredEnabled ?? false);
+  const [tiers,      setTiers]      = useState(existingCat?.tiers || [
+    { id: "tp-1", min:1, price:10000 },
+    { id: "tp-2", min:3, price:8000  },
+    { id: "tp-3", min:6, price:7000  },
+  ]);
+  const [saved, setSaved]       = useState(false);
+  const [catNameErr, setCatNameErr] = useState("");
+  const dragSrcIndex = useRef(null);
+
+  const usedNames = seedCats.filter(c => !existingCat || c.id !== existingCat.id).map(c => c.name);
+  const isEditing = !!existingCat;
+  const pageTitle = isEditing ? `料金区分 編集 — ${existingCat.name}` : "料金区分 新規追加";
+
+  const handleChange = useCallback((id, field, value) => {
+    setTiers(prev => prev.map(t => t.id === id ? {...t, [field]: value} : t));
+  }, []);
+  const handleDelete = useCallback((id) => {
+    setTiers(prev => prev.filter(t => t.id !== id));
+  }, []);
+  const handleAdd = useCallback(() => {
+    const maxMin = tiers.length > 0 ? Math.max(...tiers.map(t => t.min)) + 3 : 1;
+    setTiers(prev => [...prev, { id: genId(), min: maxMin, price: 10000 }]);
+  }, [tiers]);
+  const handleDragStart = useCallback((e, i) => { dragSrcIndex.current = i; e.dataTransfer.effectAllowed = "move"; }, []);
+  const handleDragOver  = useCallback((e)    => { e.preventDefault(); }, []);
+  const handleDrop      = useCallback((e, dropIdx) => {
+    e.preventDefault();
+    const src = dragSrcIndex.current;
+    if (src === null || src === dropIdx) return;
+    setTiers(prev => { const a=[...prev]; const [m]=a.splice(src,1); a.splice(dropIdx,0,m); return a; });
+    dragSrcIndex.current = null;
+  }, []);
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => { window.location.href = "tour-option-detail.html?tab=sales"; }, 800);
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <main className="workspace">
+
+        {/* ── Topbar ── */}
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" style={{color:"inherit",textDecoration:"none"}}>deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="tour-options.html" className="crumb-link">TourOption一覧</a>
+              <span className="sep">/</span>
+              <a href="tour-option-detail.html?tab=sales" className="crumb-link">TourOption編集</a>
+              <span className="sep">/</span>
+              <span className="current">{isEditing ? `料金区分：${existingCat.name}` : "料金区分 新規追加"}</span>
+            </div>
+            <div className="title-row">
+              <button className="btn ghost sm back-btn"
+                onClick={() => { window.location.href = "tour-option-detail.html?tab=sales"; }}>
+                ← 販売条件に戻る
+              </button>
+              <h1 style={{fontSize:18}}>{pageTitle}</h1>
+            </div>
+          </div>
+          <div className="flex-row" style={{gap:8}}>
+            <button className="btn primary" onClick={handleSave}>
+              {saved ? "✓ 保存しました" : "保存"}
+            </button>
+          </div>
+        </div>
+
+        {/* TourOption 情報バー */}
+        <div style={{
+          background:"var(--surface-warm)", borderBottom:"1px solid var(--line)",
+          padding:"10px 24px", display:"flex", alignItems:"center", gap:16,
+        }}>
+          <div style={{fontSize:11, color:"var(--muted)", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase", marginRight:4}}>TourOption</div>
+          <div style={{fontSize:14, fontWeight:650, color:"var(--ink)"}}>
+            {seedTo.name || "祇園夜の食べ歩きツアー 貸切3時間プラン"}
+          </div>
+          <span className="code" style={{marginLeft:"auto"}}>{seedTo.code || "G-KYO-003-1-PR"}</span>
+        </div>
+
+        {/* ── エディタ本体 ── */}
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+
+            {/* 参加者区分 */}
+            <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
+              <div className="form-section">
+                <div className="section-title">
+                  <div>
+                    <h2>参加者区分</h2>
+                    <p>マスターから区分を選択してください。</p>
+                  </div>
+                </div>
+                <div className="field-grid">
+                  <div className="field">
+                    <label className="field-label">参加者区分</label>
+                    <div className="select-wrap">
+                      <select
+                        value={PARTICIPANT_CATEGORY_MASTER.some(m => m.label === catName) ? catName : "区別なし"}
+                        onChange={e => setCatName(e.target.value)}
+                        style={{width:"100%"}}
+                      >
+                        {PARTICIPANT_CATEGORY_MASTER.filter(m => m.label !== "区別なし").map(m => {
+                          const isUsed = usedNames.includes(m.label);
+                          return (
+                            <option key={m.id} value={m.label} disabled={isUsed}>
+                              {m.label}{isUsed ? "（設定済）" : ""}
+                            </option>
+                          );
+                        })}
+                        <option value="区別なし">区別なし</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label className="field-label">販売価格 <span style={{color:"var(--coral)"}}>*</span></label>
+                    <div style={{display:"flex", alignItems:"center", gap:6}}>
+                      <span style={{color:"var(--muted)", fontSize:13}}>¥</span>
+                      <input
+                        type="number" min={0} step={100} value={basePrice}
+                        onChange={e => setBasePrice(parseInt(e.target.value,10)||0)}
+                        style={{width:140}}
+                      />
+                      <span style={{fontSize:12, color:"var(--muted)", whiteSpace:"nowrap"}}>/人（税込）</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 段階価格 toggle */}
+            <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
+              <div className="form-section">
+                <div className="section-title">
+                  <div>
+                    <h2>段階価格（Tiered Pricing）</h2>
+                    <p>予約人数に応じて1名あたりの単価が変動する場合に設定します。</p>
+                  </div>
+                  <label style={{display:"flex", alignItems:"center", gap:8, cursor:"pointer", userSelect:"none"}}>
+                    <label className="toggle" style={{marginBottom:0}}>
+                      <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />
+                      <span className="toggle-slider" />
+                    </label>
+                    <span style={{fontSize:13, fontWeight:600, color: enabled ? "var(--accent)" : "var(--muted)"}}>
+                      段階価格を使用する
+                    </span>
+                  </label>
+                </div>
+                {enabled && (
+                  <div className="info-box" style={{marginTop:4}}>
+                    段階価格が有効です。基準販売価格は参照されません。予約時の人数に応じて以下の単価が適用されます。
+                  </div>
+                )}
+                {!enabled && tiers.length > 0 && (
+                  <div className="info-box amber" style={{marginTop:4}}>
+                    段階価格が無効のため、設定は保存されますが予約には適用されません。
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 段階価格テーブル */}
+            <div className="editor-content" style={{borderBottom:"1px solid var(--line)", opacity: !enabled ? 0.5 : 1, pointerEvents: !enabled ? "none" : "auto"}}>
+              <div className="form-section">
+                <div className="section-title">
+                  <div>
+                    <h2>人数帯の設定</h2>
+                    <p>下限のみを設定します。上限は次の段階の下限から自動計算されます。最後の段階は「上限なし」になります。</p>
+                  </div>
+                  <button className="btn sm primary" onClick={handleAdd}>＋ 人数帯を追加</button>
+                </div>
+
+                {tiers.length === 0 ? (
+                  <div style={{
+                    padding:"32px 0", textAlign:"center", color:"var(--muted)",
+                    fontSize:13, border:"2px dashed var(--line)", borderRadius:6,
+                  }}>
+                    「＋ 人数帯を追加」ボタンで段階を追加してください。
+                  </div>
+                ) : (
+                  <>
+                    {/* Column header */}
+                    <div style={{
+                      display:"flex", alignItems:"center", padding:"0 44px 6px 44px",
+                      fontSize:11, color:"var(--muted)", fontWeight:600,
+                      letterSpacing:"0.05em", textTransform:"uppercase",
+                    }}>
+                      <div style={{flex:"0 0 180px"}}>人数（下限）</div>
+                      <div style={{width:1, marginRight:16}} />
+                      <div style={{flex:1}}>1名あたり単価（税込）</div>
+                      <div style={{width:60}} />
+                    </div>
+                    {[...tiers].sort((a, b) => a.min - b.min).map((tier, index) => (
+                      <TierRow
+                        key={tier.id} tier={tier} tiers={tiers} index={tiers.indexOf(tier)}
+                        onChange={handleChange} onDelete={handleDelete}
+                        onDragStart={handleDragStart} onDragOver={handleDragOver} onDrop={handleDrop}
+                      />
+                    ))}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* 計算プレビュー */}
+            {(enabled || basePrice > 0) && (
+              <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
+                <div className="form-section">
+                  <div className="section-title">
+                    <div>
+                      <h2>計算プレビュー</h2>
+                      <p>人数を入力すると、適用される1名あたり単価と合計額を確認できます。</p>
+                    </div>
+                  </div>
+                  <PricePreview tiers={tiers} enabled={enabled} basePrice={basePrice} />
+                </div>
+              </div>
+            )}
+
+            {/* Footer actions */}
+            <div style={{padding:"16px 20px", borderTop:"1px solid var(--line)", display:"flex", justifyContent:"flex-end", gap:8}}>
+              <button className="btn ghost"
+                onClick={() => { window.location.href = "tour-option-detail.html?tab=sales"; }}>
+                キャンセル
+              </button>
+              <button className="btn primary" onClick={handleSave}>
+                {saved ? "✓ 保存しました" : "保存"}
+              </button>
+            </div>
+
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

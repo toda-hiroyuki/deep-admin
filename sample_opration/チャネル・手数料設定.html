@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>チャネル・手数料設定 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <template id="__bundler_thumbnail" data-bg-color="#0a5e5a">
+      <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1200" height="800" fill="#0a5e5a" />
+        <rect x="350" y="250" width="500" height="300" rx="28" fill="#fbf7f0" />
+        <rect x="410" y="330" width="200" height="34" rx="10" fill="#0a5e5a" />
+        <rect x="410" y="400" width="380" height="20" rx="8" fill="#d4cabb" />
+        <rect x="410" y="440" width="320" height="20" rx="8" fill="#d4cabb" />
+        <circle cx="760" cy="345" r="9" fill="#8e5b00" />
+      </svg>
+    </template>
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --coral-bg: #fdf1ee;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --green-bg: #f1f8f3;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-2: 0 1px 2px rgba(45, 30, 12, 0.05), 0 6px 24px rgba(45, 30, 12, 0.06);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+      .mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 18px;
+        position: sticky; top: 42px; height: calc(100vh - 42px); min-height: 0; border-right: 1px solid var(--side-line); overflow-y: auto;
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; text-decoration: none; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .page-title { display: flex; flex-direction: column; gap: 6px; max-width: 760px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+      /* ── Tabs ── */
+      .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); }
+      .tab { appearance: none; border: 0; background: none; padding: 9px 16px 11px; font-size: 13.5px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.12s; }
+      .tab:hover { color: var(--ink-soft); }
+      .tab.on { color: var(--accent-strong); border-bottom-color: var(--accent); font-weight: 700; }
+
+      /* ── Badges ── */
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; text-decoration: none; color: var(--ink); }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .lnk { background: none; border: 1px solid var(--line-strong); color: var(--accent-strong); font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius); white-space: nowrap; transition: background 0.1s, border-color 0.1s; }
+      .lnk:hover { background: var(--accent-soft); border-color: var(--accent); }
+      .disable-lnk { background: none; border: 0; padding: 0; color: var(--coral); font-size: 12.5px; font-weight: 600; }
+      .disable-lnk:hover { text-decoration: underline; }
+      .url-ic { background: none; border: 0; padding: 0; font-size: 14px; text-decoration: none; }
+      .url-ic:hover { opacity: 0.7; }
+
+      /* ── Inputs ── */
+      .ctrl { height: 36px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { min-width: 150px; padding-right: 30px; cursor: pointer; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 11px center; }
+      textarea.ctrl { height: auto; min-height: 38px; padding: 8px 10px; resize: vertical; line-height: 1.5; font-family: inherit; }
+      .num-affix { position: relative; display: inline-flex; align-items: center; }
+      .num-affix .pfx { position: absolute; left: 10px; color: var(--muted); font-size: 13px; pointer-events: none; font-weight: 600; }
+      .num-affix .sfx { position: absolute; right: 10px; color: var(--muted); font-size: 13px; pointer-events: none; font-weight: 600; }
+      .num-affix input { padding-left: 22px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; width: 120px; }
+      .num-affix.pct input { padding-left: 10px; padding-right: 24px; width: 90px; }
+
+      /* ── Card / table ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-toolbar { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-toolbar .result-count { margin-left: auto; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .card-toolbar .result-count strong { color: var(--ink); font-weight: 700; }
+      .tbl-scroll { overflow-x: auto; }
+      .m-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; min-width: 980px; }
+      .m-table thead th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 13px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .m-table thead th.right { text-align: right; }
+      .m-table tbody td { padding: 12px 13px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; white-space: nowrap; }
+      .m-table tbody td.right { text-align: right; }
+      .m-table tbody tr:last-child td { border-bottom: 0; }
+      .m-table tbody tr { transition: background 0.12s; }
+      .m-table tbody tr:hover td { background: var(--bg-sunken); }
+      .m-table tbody tr.inactive td { color: var(--muted-soft); }
+      .m-table tbody tr.inactive .ch-name { color: var(--muted); }
+      .ch-name { font-weight: 650; color: var(--ink); }
+      .rate-val { font-weight: 700; }
+      .fixed-sub { font-size: 11px; color: var(--muted-soft); font-weight: 500; margin-left: 4px; }
+
+      /* ── Slide-over ── */
+      .so-overlay { position: fixed; top: 42px; left: 0; right: 0; bottom: 0; background: rgba(29, 26, 23, 0.28); z-index: 380; opacity: 0; pointer-events: none; transition: opacity 0.22s; }
+      .so-overlay.open { opacity: 1; pointer-events: auto; }
+      .slide-over { position: fixed; top: 42px; right: 0; bottom: 0; width: 460px; max-width: 94vw; background: var(--surface); box-shadow: var(--shadow-pop); border-left: 1px solid var(--line); z-index: 390; transform: translateX(104%); transition: transform 0.26s cubic-bezier(0.32, 0.72, 0.28, 1); display: flex; flex-direction: column; }
+      .slide-over.open { transform: translateX(0); }
+      .so-head { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); flex-shrink: 0; }
+      .so-head h2 { margin: 0; font-size: 15.5px; font-weight: 750; letter-spacing: -0.01em; }
+      .so-close { margin-left: auto; width: 30px; height: 30px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: var(--radius); display: grid; place-items: center; font-size: 14px; color: var(--muted); transition: background 0.1s; }
+      .so-close:hover { background: var(--surface-tint); color: var(--ink); }
+      .so-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+      .so-foot { flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-top: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .so-foot .spacer { flex: 1; }
+
+      .fld { display: flex; flex-direction: column; gap: 6px; }
+      .fld > label { font-size: 11.5px; font-weight: 650; color: var(--muted); letter-spacing: 0.02em; }
+      .fld .num-affix { align-self: flex-start; }
+      .fld .req { color: var(--coral); margin-left: 3px; font-weight: 700; }
+      .fld .opt { color: var(--muted-soft); margin-left: 5px; font-weight: 500; }
+      .fld-static { height: 36px; display: flex; align-items: center; padding: 0 10px; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius); font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+      .fld-static small { margin-left: 8px; color: var(--muted-soft); font-weight: 500; }
+      .switch-row { display: flex; align-items: center; gap: 10px; }
+      .switch-row .sw-state { font-size: 13px; font-weight: 650; color: var(--ink-soft); }
+      .switch { appearance: none; width: 42px; height: 24px; border-radius: 999px; background: var(--line-strong); border: 0; position: relative; transition: background 0.15s; padding: 0; flex-shrink: 0; }
+      .switch .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left 0.15s; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22); }
+      .switch.on { background: var(--accent); }
+      .switch.on .knob { left: 21px; }
+      .switch.amber.on { background: var(--amber); }
+      .switch:focus-visible { outline: none; box-shadow: var(--ring); }
+
+      .verify-note { background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 24%, transparent); border-radius: var(--radius); padding: 10px 13px; font-size: 12px; line-height: 1.65; color: #5c3c04; display: flex; gap: 9px; }
+      .verify-note .vn-ic { flex-shrink: 0; color: var(--amber); font-weight: 800; }
+
+      .expand { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.24s ease; }
+      .expand.open { grid-template-rows: 1fr; }
+      .expand > .expand-inner { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 16px; }
+      .sub-flds { border-left: 2px solid var(--amber-soft); padding-left: 14px; margin-left: 4px; display: flex; flex-direction: column; gap: 16px; }
+
+      /* ── History (collapsible) ── */
+      .hist { border-top: 1px solid var(--line-soft); padding-top: 14px; }
+      .hist-toggle { background: none; border: 0; padding: 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 650; color: var(--ink-soft); }
+      .hist-toggle:hover { color: var(--accent-strong); }
+      .hist-toggle .tri { display: inline-block; transition: transform 0.16s; font-size: 10px; color: var(--muted-soft); }
+      .hist-toggle.open .tri { transform: rotate(90deg); }
+      .hist-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-variant-numeric: tabular-nums; }
+      .hist-table th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 7px 11px; background: var(--surface-tint); border-bottom: 1px solid var(--line); }
+      .hist-table td { padding: 8px 11px; font-size: 12.5px; border-bottom: 1px solid var(--line-soft); color: var(--ink-soft); }
+      .hist-table tr:last-child td { border-bottom: 0; }
+      .hist-table .h-old { color: var(--muted); }
+      .hist-table .h-new { font-weight: 700; color: var(--ink); }
+
+      /* ── Scenario bar (dev/QA only) ── */
+      body { padding-top: 42px; }
+      .scenario-bar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 400;
+        height: 42px; display: flex; align-items: center; gap: 14px;
+        padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8;
+        font-size: 11.5px; color: #6b6b6b;
+        overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+      }
+      .scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
+      .scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
+      .scenario-bar .sb-cap { color: #8a8a8a; }
+      .sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
+      .sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; }
+      .sb-seg button + button { border-left: 1px solid #e4dfd4; }
+      .sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
+      .sb-seg button.on { background: var(--accent); color: #fff; }
+      .scenario-bar .sb-check { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #6b6b6b; white-space: nowrap; cursor: pointer; }
+      .scenario-bar .sb-check input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; }
+      @media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; min-height: 0; } }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 500; display: flex; align-items: center; gap: 9px; max-width: 80vw; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+
+      @media (max-width: 1180px) {
+        .app-shell { grid-template-columns: 1fr; }
+        .side-nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-right: 0; border-bottom: 1px solid var(--side-line); top: 0; }
+        .brand-block { padding-bottom: 0; border-bottom: 0; }
+        .nav-group { flex-direction: row; }
+        .nav-section-label, .side-note, .nav-count { display: none; }
+        .nav-item.active::before { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useEffect, useMemo } = React;
+
+      /* ── helpers ── */
+      const num = (v) => { const n = Number(String(v).replace(/[^0-9.\-]/g, "")); return isNaN(n) ? 0 : n; };
+      const yen = (n) => "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
+      const pct = (n) => (Number.isInteger(n) ? n : n.toFixed(1)) + "%";
+
+      /* ── 統一ナビ（ACTIVE_KEY = feeMaster）── */
+      const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",            group: "ops"                            , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",      group: "ops",    child: true            , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",          group: "ops"                            , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",          group: "ops",    child: true            , href: "未手配一覧.html" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",       group: "ops",    child: true            , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",         group: "product"                        , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",           group: "product"                        , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",           group: "product"                        , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",           group: "guide"                          , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",         group: "pay"                            , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",     group: "pay",    count: 4, alert: true   , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",          group: "pay",    count: 4, alert: true   , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",             group: "pay"                            , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",   group: "master"                         , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定", group: "master"                         , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+      ].map(n => ({ ...n, active: n.key === "feeMaster" }));
+
+      const NAV_GROUPS = [
+        { grp: "ops",     label: "予約オペレーション" },
+        { grp: "product", label: "商品管理" },
+        { grp: "guide",    label: "ガイド管理" },
+        { grp: "facility", label: "施設管理" },
+        { grp: "pay",      label: "精算・経営" },
+        { grp: "master",  label: "マスター管理" },
+      ];
+
+      /* ── マスターデータ ── */
+      const TYPE_LABELS = ["OTA", "アフィリエイト", "リセラー", "自社"];
+      const TYPE_ORDER = { "自社": 0, "OTA": 1, "アフィリエイト": 2, "リセラー": 3 };
+      const TYPE_BADGE = { "OTA": "blue", "自社": "teal", "アフィリエイト": "", "リセラー": "" };
+      const TARGET_LABELS = { price: "販売価格", fee: "チャネル手数料", both: "両方" };
+
+      const initialChannels = [
+        { id: "direct",   name: "自社サイト",          type: "自社",     rate: 0,  verify: false, target: null,   url: "",                                       active: true,  note: "", history: [] },
+        { id: "airbnb",   name: "Airbnb",              type: "OTA",      rate: 20, verify: true,  target: "both", url: "https://www.airbnb.com/hosting",         active: true,  note: "Bokun取込の金額が実額とズレるため金額検証を実施。実額はAirbnb管理画面で確認する。",
+          history: [
+            { at: "2026/04/01 10:00", from: "18%", to: "20%", by: "山田" },
+            { at: "2025/10/01 09:00", from: "15%", to: "18%", by: "佐藤" },
+          ] },
+        { id: "klook",    name: "Klook",               type: "OTA",      rate: 25, verify: false, target: null,   url: "https://merchant.klook.com",             active: true,  note: "",
+          history: [
+            { at: "2026/04/01 10:00", from: "22%", to: "25%", by: "山田" },
+            { at: "2025/10/01 09:00", from: "20%", to: "22%", by: "佐藤" },
+          ] },
+        { id: "viator",   name: "Viator",              type: "OTA",      rate: 20, verify: false, target: null,   url: "https://supplier.viator.com",            active: true,  note: "", history: [] },
+        { id: "getyourguide", name: "GetYourGuide",    type: "OTA",      rate: 20, verify: false, target: null,   url: "https://supplier.getyourguide.com",      active: true,  note: "", history: [] },
+      ];
+
+      const initialPayments = [
+        { id: "stripe", name: "クレジットカード（Stripe）", rate: 3.6, fixed: 0,  active: true, note: "" },
+        { id: "bank",   name: "銀行振込",                   rate: 0,   fixed: 0,  active: true, note: "振込手数料はゲスト負担。" },
+        { id: "paypal", name: "PayPal",                     rate: 4.1, fixed: 40, active: true, note: "" },
+        { id: "cash",   name: "現地現金",                   rate: 0,   fixed: 0,  active: true, note: "" },
+      ];
+
+      /* ── 共通小物 ── */
+      const Switch = ({ on, onChange, amber }) => (
+        <button type="button" role="switch" aria-checked={on} className={`switch${on ? " on" : ""}${amber ? " amber" : ""}`} onClick={() => onChange(!on)}>
+          <span className="knob"></span>
+        </button>
+      );
+
+      const Fld = ({ label, required, optional, children }) => (
+        <div className="fld">
+          <label>{label}{required && <span className="req">*</span>}{optional && <span className="opt">任意</span>}</label>
+          {children}
+        </div>
+      );
+
+      const StatusBadge = ({ active }) => active
+        ? <span className="badge green"><span className="dot"></span>有効</span>
+        : <span className="badge muted">無効</span>;
+
+      /* ── チャネル編集フォーム ── */
+      function ChannelForm({ channel, isNew, verify, setVerify, histOpen, setHistOpen, onSave, onCancel, onDisable }) {
+        const [name, setName] = useState(channel ? channel.name : "");
+        const [type, setType] = useState(channel ? channel.type : "OTA");
+        const [rate, setRate] = useState(channel ? channel.rate : "");
+        const [target, setTarget] = useState(channel && channel.target ? channel.target : "both");
+        const [url, setUrl] = useState(channel ? channel.url : "");
+        const [active, setActive] = useState(channel ? channel.active : true);
+        const [note, setNote] = useState(channel ? channel.note : "");
+        const history = (channel && channel.history) || [];
+
+        const save = () => {
+          if (!name.trim() || rate === "") { onSave(null, "チャネル名と手数料率は必須です"); return; }
+          onSave({ name: name.trim(), type, rate: num(rate), verify, target: verify ? target : null, url: url.trim(), active, note });
+        };
+
+        return (
+          <React.Fragment>
+            <div className="so-body" data-screen-label={isNew ? "チャネルを追加" : "チャネルを編集"}>
+              <Fld label="チャネル名" required>
+                <input className="ctrl" value={name} placeholder="例：Klook" onChange={(e) => setName(e.target.value)} />
+              </Fld>
+              <Fld label="手数料種別" required>
+                <select className="ctrl" value={type} onChange={(e) => setType(e.target.value)}>
+                  {TYPE_LABELS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </Fld>
+              <Fld label="手数料率（%）" required>
+                <span className="num-affix pct">
+                  <input className="ctrl" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} />
+                  <span className="sfx">%</span>
+                </span>
+              </Fld>
+              <Fld label="手数料計算ベース">
+                <div className="fld-static">グロス販売金額<small>初期はグロスのみ対応</small></div>
+              </Fld>
+
+              <Fld label="金額検証要否">
+                <div className="switch-row">
+                  <Switch on={verify} onChange={setVerify} amber={true} />
+                  <span className="sw-state">{verify ? "要" : "不要"}</span>
+                </div>
+              </Fld>
+              <div className={`expand${verify ? " open" : ""}`}>
+                <div className="expand-inner">
+                  <div className="verify-note">
+                    <span className="vn-ic">⚠</span>
+                    <span>ONにすると、このチャネルからBokun取込した予約は「金額確認待ち」として保留され、<a href="金額確認待ち一覧.html" style={{ color: "inherit", fontWeight: 700 }}>取込確認画面</a>に表示されます。担当者がOTA管理画面で実額を確認・修正するまで収支計算は行われません。</span>
+                  </div>
+                  <div className="sub-flds">
+                    <Fld label="検証対象項目" required>
+                      <select className="ctrl" value={target} onChange={(e) => setTarget(e.target.value)}>
+                        <option value="price">販売価格</option>
+                        <option value="fee">チャネル手数料</option>
+                        <option value="both">両方</option>
+                      </select>
+                    </Fld>
+                    <Fld label="OTA管理画面URL" optional>
+                      <input className="ctrl" type="url" value={url} placeholder="https://" onChange={(e) => setUrl(e.target.value)} />
+                      <span style={{ fontSize: 11.5, color: "var(--muted-soft)", lineHeight: 1.55 }}>設定すると取込確認画面で［開く］ボタンになります。</span>
+                    </Fld>
+                  </div>
+                </div>
+              </div>
+
+              <Fld label="状態">
+                <div className="switch-row">
+                  <Switch on={active} onChange={setActive} />
+                  <span className="sw-state">{active ? "有効" : "無効"}</span>
+                </div>
+              </Fld>
+              <Fld label="備考" optional>
+                <textarea className="ctrl" rows="3" placeholder="手数料の詳細条件・注意事項など" value={note} onChange={(e) => setNote(e.target.value)}></textarea>
+              </Fld>
+
+              {!isNew && history.length > 0 && (
+                <div className="hist">
+                  <button type="button" className={`hist-toggle${histOpen ? " open" : ""}`} onClick={() => setHistOpen(!histOpen)}>
+                    <span className="tri">▶</span>手数料率の変更履歴
+                    <span style={{ fontWeight: 500, color: "var(--muted-soft)" }}>（{history.length}件）</span>
+                  </button>
+                  <div className={`expand${histOpen ? " open" : ""}`}>
+                    <div className="expand-inner">
+                      <table className="hist-table">
+                        <thead>
+                          <tr><th>変更日時</th><th>変更前</th><th>変更後</th><th>変更者</th></tr>
+                        </thead>
+                        <tbody>
+                          {history.map((h, i) => (
+                            <tr key={i}>
+                              <td className="mono" style={{ fontSize: 11.5 }}>{h.at}</td>
+                              <td className="h-old">{h.from}</td>
+                              <td className="h-new">{h.to}</td>
+                              <td>{h.by}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="so-foot">
+              <button className="btn primary" onClick={save}>保存する</button>
+              <button className="btn" onClick={onCancel}>キャンセル</button>
+              <span className="spacer"></span>
+              {!isNew && active && <button className="disable-lnk" onClick={() => { setActive(false); onDisable(); }}>無効にする</button>}
+            </div>
+          </React.Fragment>
+        );
+      }
+
+      /* ── 決済方法編集フォーム ── */
+      function PaymentForm({ payment, isNew, onSave, onCancel, onDisable }) {
+        const [name, setName] = useState(payment ? payment.name : "");
+        const [rate, setRate] = useState(payment ? payment.rate : "");
+        const [fixed, setFixed] = useState(payment ? payment.fixed : "");
+        const [active, setActive] = useState(payment ? payment.active : true);
+        const [note, setNote] = useState(payment ? payment.note : "");
+
+        const save = () => {
+          if (!name.trim() || rate === "") { onSave(null, "決済方法名と手数料率は必須です"); return; }
+          onSave({ name: name.trim(), rate: num(rate), fixed: num(fixed), active, note });
+        };
+
+        return (
+          <React.Fragment>
+            <div className="so-body" data-screen-label={isNew ? "決済方法を追加" : "決済方法を編集"}>
+              <Fld label="決済方法名" required>
+                <input className="ctrl" value={name} placeholder="例：クレジットカード（Stripe）" onChange={(e) => setName(e.target.value)} />
+              </Fld>
+              <Fld label="手数料率（%）" required>
+                <span className="num-affix pct">
+                  <input className="ctrl" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} />
+                  <span className="sfx">%</span>
+                </span>
+              </Fld>
+              <Fld label="固定手数料（¥）" optional>
+                <span className="num-affix">
+                  <span className="pfx">¥</span>
+                  <input className="ctrl" inputMode="numeric" value={fixed} placeholder="0" onChange={(e) => setFixed(e.target.value)} />
+                </span>
+                <span style={{ fontSize: 11.5, color: "var(--muted-soft)" }}>1取引あたりの固定額</span>
+              </Fld>
+              <Fld label="状態">
+                <div className="switch-row">
+                  <Switch on={active} onChange={setActive} />
+                  <span className="sw-state">{active ? "有効" : "無効"}</span>
+                </div>
+              </Fld>
+              <Fld label="備考" optional>
+                <textarea className="ctrl" rows="3" placeholder="注意事項など" value={note} onChange={(e) => setNote(e.target.value)}></textarea>
+              </Fld>
+            </div>
+            <div className="so-foot">
+              <button className="btn primary" onClick={save}>保存する</button>
+              <button className="btn" onClick={onCancel}>キャンセル</button>
+              <span className="spacer"></span>
+              {!isNew && active && <button className="disable-lnk" onClick={() => { setActive(false); onDisable(); }}>無効にする</button>}
+            </div>
+          </React.Fragment>
+        );
+      }
+
+      /* ───────────────────────── App ───────────────────────── */
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const showToast = (msg) => { if (typeof msg !== "string") { console.log(msg); return; } setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2600); };
+
+        const [channels, setChannels] = useState(initialChannels);
+        const [payments, setPayments] = useState(initialPayments);
+
+        const [tab, setTab] = useState("channel"); // channel | payment
+        // panel: null | { kind: 'channel'|'payment', mode: 'new'|'edit', id }
+        const [panel, setPanel] = useState({ kind: "channel", mode: "edit", id: "airbnb" });
+        const [panelSeed, setPanelSeed] = useState(0); // bump to remount form
+
+        // shared form states (scenario bar ↔ form)
+        const [formVerify, setFormVerify] = useState(true);
+        const [histOpen, setHistOpen] = useState(false);
+
+        const editingChannel = panel && panel.kind === "channel" && panel.mode === "edit" ? channels.find(c => c.id === panel.id) : null;
+        const editingPayment = panel && panel.kind === "payment" && panel.mode === "edit" ? payments.find(p => p.id === panel.id) : null;
+
+        const openPanel = (p) => {
+          if (p && p.kind === "channel") {
+            const ch = p.mode === "edit" ? channels.find(c => c.id === p.id) : null;
+            setFormVerify(ch ? ch.verify : false);
+            setHistOpen(false);
+          }
+          setPanel(p);
+          setPanelSeed(s => s + 1);
+        };
+        const closePanel = () => setPanel(null);
+
+        useEffect(() => {
+          const onKey = (e) => { if (e.key === "Escape") setPanel(null); };
+          window.addEventListener("keydown", onKey);
+          return () => window.removeEventListener("keydown", onKey);
+        }, []);
+
+        /* ── sorting ── */
+        const sortedChannels = useMemo(() => channels.slice().sort((a, b) =>
+          (Number(b.active) - Number(a.active)) ||
+          (TYPE_ORDER[a.type] - TYPE_ORDER[b.type]) ||
+          a.name.localeCompare(b.name, "ja")
+        ), [channels]);
+
+        /* ── save handlers ── */
+        const saveChannel = (form, err) => {
+          if (!form) { showToast(err); return; }
+          if (panel.mode === "edit") {
+            setChannels(cs => cs.map(c => c.id === panel.id ? { ...c, ...form } : c));
+          } else {
+            setChannels(cs => [...cs, { id: "ch-" + Date.now(), history: [], ...form }]);
+          }
+          closePanel();
+          showToast("チャネルを保存しました");
+        };
+        const savePayment = (form, err) => {
+          if (!form) { showToast(err); return; }
+          if (panel.mode === "edit") {
+            setPayments(ps => ps.map(p => p.id === panel.id ? { ...p, ...form } : p));
+          } else {
+            setPayments(ps => [...ps, { id: "pm-" + Date.now(), ...form }]);
+          }
+          closePanel();
+          showToast("決済方法を保存しました");
+        };
+
+        /* ── scenario controls ── */
+        const scPanelState = !panel ? "closed" : (panel.mode === "new" ? "new" : (panel.kind === "channel" && panel.id === "airbnb" ? "editAirbnb" : "other"));
+        const scSetPanel = (v) => {
+          if (v === "closed") closePanel();
+          else if (v === "new") openPanel({ kind: tab, mode: "new" });
+          else { setTab("channel"); openPanel({ kind: "channel", mode: "edit", id: "airbnb" }); }
+        };
+        const scSetTab = (t) => { setTab(t); if (panel && panel.kind !== t) closePanel(); };
+
+        const navGo = (n) => { if (n.active) return; if (n.href) window.location.href = n.href; else showToast(`「${n.label}」へ移動します`); };
+
+        const panelOpen = !!panel;
+        const panelTitle = !panel ? "" :
+          panel.kind === "channel"
+            ? (panel.mode === "new" ? "チャネルを追加" : "チャネルを編集")
+            : (panel.mode === "new" ? "決済方法を追加" : "決済方法を編集");
+
+        return (
+          <React.Fragment>
+            {/* シナリオ選択バー（開発・確認用） */}
+            <div className="scenario-bar">
+              <span className="sb-label">🎛 シナリオ選択</span>
+              <div className="sb-group">
+                <span className="sb-cap">表示タブ</span>
+                <span className="sb-seg">
+                  <button className={tab === "channel" ? "on" : ""} onClick={() => scSetTab("channel")}>チャネルマスター</button>
+                  <button className={tab === "payment" ? "on" : ""} onClick={() => scSetTab("payment")}>決済方法マスター</button>
+                </span>
+              </div>
+              <div className="sb-group">
+                <span className="sb-cap">編集パネル</span>
+                <span className="sb-seg">
+                  <button className={scPanelState === "closed" ? "on" : ""} onClick={() => scSetPanel("closed")}>閉じる</button>
+                  <button className={scPanelState === "new" ? "on" : ""} onClick={() => scSetPanel("new")}>新規追加</button>
+                  <button className={scPanelState === "editAirbnb" ? "on" : ""} onClick={() => scSetPanel("editAirbnb")}>編集（Airbnb）</button>
+                </span>
+              </div>
+              <label className="sb-check"><input type="checkbox" checked={formVerify} onChange={(e) => setFormVerify(e.target.checked)} />金額検証トグル</label>
+              <label className="sb-check"><input type="checkbox" checked={histOpen} onChange={(e) => setHistOpen(e.target.checked)} />変更履歴</label>
+            </div>
+
+            <div className="app-shell">
+              <nav className="side-nav">
+                <div className="brand-block">
+                  <div className="brand-mark">DE</div>
+                  <div>
+                    <div className="brand-name">DeepExperience</div>
+                    <div className="brand-caption">運営管理</div>
+                  </div>
+                </div>
+                {NAV_GROUPS.map(({ grp, label }) => (
+                  <div className="nav-group" key={grp}>
+                    <div className="nav-section-label">{label}</div>
+                    {NAV.filter(n => n.group === grp).map(n => (
+                      <button key={n.key} className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`} onClick={() => navGo(n)}>
+                        <span className="nav-icon">{n.icon}</span>
+                        <span>{n.label}</span>
+                        {n.count != null && <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+                <div className="side-note">
+                  <strong>手数料マスターについて</strong>
+                  ここで設定した手数料率は、予約取込時・収支計算時の初期値として参照されます。金額検証=要のチャネルは取込時に金額確認待ちになります。
+                </div>
+              </nav>
+
+              <main className="workspace">
+                <div className="crumbs">
+                  <span>商品管理</span>
+                  <span className="sep">›</span>
+                  <span className="current">チャネル・手数料設定</span>
+                </div>
+
+                <div className="page-head">
+                  <div className="page-title">
+                    <h1>チャネル・手数料設定</h1>
+                    <span className="sub">チャネルごとの販売手数料率と、決済方法ごとの手数料を管理します。予約取込・予約収支計算の初期値として参照されます。</span>
+                  </div>
+                </div>
+
+                <div className="tabs" data-screen-label="タブ切替">
+                  <button className={`tab${tab === "channel" ? " on" : ""}`} onClick={() => scSetTab("channel")}>チャネルマスター</button>
+                  <button className={`tab${tab === "payment" ? " on" : ""}`} onClick={() => scSetTab("payment")}>決済方法マスター</button>
+                </div>
+
+                {tab === "channel" ? (
+                  <section className="card" data-screen-label="チャネルマスター一覧">
+                    <div className="card-toolbar">
+                      <button className="btn primary sm" onClick={() => openPanel({ kind: "channel", mode: "new" })}>＋ 新規追加</button>
+                      <span className="result-count"><strong>{channels.length}</strong> 件</span>
+                    </div>
+                    <div className="tbl-scroll">
+                      <table className="m-table">
+                        <thead>
+                          <tr>
+                            <th>チャネル名</th>
+                            <th className="right">手数料率</th>
+                            <th>手数料種別</th>
+                            <th>金額検証</th>
+                            <th>検証対象</th>
+                            <th>OTA管理画面</th>
+                            <th>状態</th>
+                            <th className="right">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedChannels.map(ch => (
+                            <tr key={ch.id} className={ch.active ? "" : "inactive"}>
+                              <td><span className="ch-name">{ch.name}</span></td>
+                              <td className="right"><span className="rate-val">{pct(ch.rate)}</span></td>
+                              <td><span className={`badge ${TYPE_BADGE[ch.type]}`}>{ch.type}</span></td>
+                              <td>{ch.verify
+                                ? <span className="badge amber"><span className="dot"></span>要</span>
+                                : <span className="badge muted">不要</span>}</td>
+                              <td>{ch.verify ? <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--ink-soft)" }}>{TARGET_LABELS[ch.target]}</span> : <span className="muted-dash">—</span>}</td>
+                              <td>{ch.url
+                                ? <a className="url-ic" href={ch.url} target="_blank" rel="noopener noreferrer" title={ch.url} onClick={(e) => e.stopPropagation()}>🔗</a>
+                                : <span className="muted-dash">—</span>}</td>
+                              <td><StatusBadge active={ch.active} /></td>
+                              <td className="right"><button className="lnk" onClick={() => openPanel({ kind: "channel", mode: "edit", id: ch.id })}>編集</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                ) : (
+                  <section className="card" data-screen-label="決済方法マスター一覧">
+                    <div className="card-toolbar">
+                      <button className="btn primary sm" onClick={() => openPanel({ kind: "payment", mode: "new" })}>＋ 新規追加</button>
+                      <span className="result-count"><strong>{payments.length}</strong> 件</span>
+                    </div>
+                    <div className="tbl-scroll">
+                      <table className="m-table" style={{ minWidth: 720 }}>
+                        <thead>
+                          <tr>
+                            <th>決済方法名</th>
+                            <th className="right">手数料率</th>
+                            <th className="right">固定手数料</th>
+                            <th>状態</th>
+                            <th className="right">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {payments.map(pm => (
+                            <tr key={pm.id} className={pm.active ? "" : "inactive"}>
+                              <td><span className="ch-name">{pm.name}</span></td>
+                              <td className="right"><span className="rate-val">{pct(pm.rate)}</span></td>
+                              <td className="right">{pm.fixed > 0
+                                ? <span className="rate-val">{yen(pm.fixed)}<span className="fixed-sub">/取引</span></span>
+                                : <span className="muted-dash">—</span>}</td>
+                              <td><StatusBadge active={pm.active} /></td>
+                              <td className="right"><button className="lnk" onClick={() => openPanel({ kind: "payment", mode: "edit", id: pm.id })}>編集</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                )}
+              </main>
+            </div>
+
+            {/* ── 右スライドオーバー ── */}
+            <div className={`so-overlay${panelOpen ? " open" : ""}`} onClick={closePanel}></div>
+            <aside className={`slide-over${panelOpen ? " open" : ""}`} data-screen-label="編集パネル" aria-hidden={!panelOpen}>
+              {panel && (
+                <React.Fragment>
+                  <div className="so-head">
+                    <h2>{panelTitle}</h2>
+                    <button className="so-close" onClick={closePanel} aria-label="閉じる">✕</button>
+                  </div>
+                  {panel.kind === "channel" ? (
+                    <ChannelForm
+                      key={`ch-${panel.mode}-${panel.id || "new"}-${panelSeed}`}
+                      channel={editingChannel}
+                      isNew={panel.mode === "new"}
+                      verify={formVerify} setVerify={setFormVerify}
+                      histOpen={histOpen} setHistOpen={setHistOpen}
+                      onSave={saveChannel}
+                      onCancel={closePanel}
+                      onDisable={() => showToast("状態を「無効」にしました。保存で確定します")}
+                    />
+                  ) : (
+                    <PaymentForm
+                      key={`pm-${panel.mode}-${panel.id || "new"}-${panelSeed}`}
+                      payment={editingPayment}
+                      isNew={panel.mode === "new"}
+                      onSave={savePayment}
+                      onCancel={closePanel}
+                      onDisable={() => showToast("状態を「無効」にしました。保存で確定します")}
+                    />
+                  )}
+                </React.Fragment>
+              )}
+            </aside>
+
+            <div className={`toast${toast ? " show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </React.Fragment>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

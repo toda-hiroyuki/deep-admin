@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>経費 編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tour-schedule-detail.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script src="js/master-data.js"></script>
+    <script type="text/babel" data-presets="react">
+const { useState, useCallback } = React;
+
+// ── 費用区分・費用タイプ定義 ────────────────────────────────────────────────
+
+const COST_CATEGORIES = [
+  { key: "A", label: "A：施設へ元払い（立替払い）", desc: "施設への支払いをガイドが立替えず、直接精算" },
+  { key: "B", label: "B：施設へ・ガイド立替",       desc: "施設への支払いをガイドが一時立替" },
+  { key: "C", label: "C：施設外・ガイド立替",        desc: "施設マスター外の経費をガイドが立替" },
+  { key: "D", label: "D：ガイド自身の経費",          desc: "ガイドの交通費・人件費など" },
+];
+
+const COST_TYPES = [
+  { key: "固定費",         label: "固定費",         desc: "参加人数に関わらず一定" },
+  { key: "変動・人数割",   label: "変動・人数割",   desc: "単価 × 人数" },
+  { key: "変動・スライド", label: "変動・スライド", desc: "人数帯によって単価が変わる" },
+  { key: "変動・完全変動", label: "変動・完全変動", desc: "毎回金額が異なる（手動入力）" },
+];
+
+// サンプルの既存データ（実際はURLパラメータで取得）
+const SAMPLE_EXPENSE = {
+  id: "exp-1",
+  name: "施設入場料",
+  category: "A",
+  costType: "変動・スライド",
+  unitPrice: 0,
+  note: "",
+  slideTiers: [
+    { id: "st-1", minPax: 1,  maxPax: 5,  unitPrice: 1000 },
+    { id: "st-2", minPax: 6,  maxPax: 18, unitPrice: 800  },
+  ],
+};
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
+function Sidebar({ resource, counts }) {
+  const opsItems = [
+    { key: "bookings",   href: "予約一覧.html",        icon: "BK", label: "予約一覧" },
+    { key: "unassigned", href: "予約一覧.html?filter=unassigned",   icon: "↳",  label: "未割り当て一覧", child: true },
+    { key: "sessions",   href: "催行回一覧.html",       icon: "SS", label: "催行回一覧" },
+    { key: "unarranged", href: "未手配一覧.html",       icon: "↳",  label: "未手配一覧",     child: true },
+    { key: "today",      href: "当日翌日案件一覧.html", icon: "↳",  label: "当日/翌日案件",  child: true },
+  ];
+  const productItems = [
+    { key: "tourOption", href: "tour-options.html",    icon: "TO", label: "TourOption" },
+    { key: "productPage",href: "products.html",        icon: "PG", label: "商品ページ" },
+    { key: "guideDoc",   href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+  ];
+  const guideItems = [
+    { key: "guides",     href: "ガイド一覧.html",       icon: "GM", label: "ガイド一覧" },
+  ];
+  const payItems = [
+    { key: "settle",     href: "月次精算管理.html",     icon: "ST", label: "月次締め確認" },
+    { key: "import",     href: "金額確認待ち一覧.html", icon: "IM", label: "金額確認待ち一覧" },
+    { key: "ota",        href: "OTA入金照合.html",      icon: "OT", label: "OTA入金照合" },
+    { key: "revenue",    href: "収支一覧.html",         icon: "RV", label: "収支一覧" },
+  ];
+  const facilityItems = [
+    { key: "facilities",     href: "facilities.html",           icon: "FC", label: "施設一覧" },
+  ];
+  const masterItems = [
+    { key: "cancelTemplate", href: "cancel-policies.html",     icon: "CP", label: "キャンセルポリシー" },
+    { key: "feeMaster",      href: "チャネル・手数料設定.html", icon: "FE", label: "チャネル・手数料設定" },
+  ];
+  const active = "tourOption";
+  const renderItems = (arr) => arr.map(it => (
+    <a key={it.key} href={it.href}
+      className={`nav-item ${active === it.key ? "active" : ""} ${it.child ? "nav-child" : ""}`}
+      style={{textDecoration:"none"}}>
+      <span className="nav-icon">{it.icon}</span>
+      <span style={{flex:1,minWidth:0}}>
+        <div>{it.label}</div>
+      </span>
+    </a>
+  ));
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">DE</div>
+        <div>
+          <div className="brand-name">DeepExperience</div>
+          <div className="brand-caption">運営管理</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">{renderItems(opsItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">{renderItems(productItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">{renderItems(guideItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">{renderItems(facilityItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">{renderItems(payItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">マスター管理</div>
+        <div className="nav-group">{renderItems(masterItems)}</div>
+      </div>
+    </aside>
+  );
+}
+
+// ── SlideTierTable ────────────────────────────────────────────────────────────
+
+function SlideTierTable({ tiers, onChange }) {
+  const update = (id, patch) => onChange(tiers.map(r => r.id === id ? {...r, ...patch} : r));
+  const remove = (id) => onChange(tiers.filter(r => r.id !== id));
+  const add = () => {
+    const last = tiers[tiers.length - 1];
+    const nextMin = last ? (last.maxPax != null ? last.maxPax + 1 : last.minPax + 1) : 1;
+    onChange([...tiers, { id: `st-${Date.now()}`, minPax: nextMin, maxPax: null, unitPrice: 0 }]);
+  };
+  return (
+    <div style={{marginTop:16,border:"1px solid var(--line)",borderRadius:8,overflow:"hidden"}}>
+      <div style={{background:"var(--bg-sunken)",padding:"8px 16px",borderBottom:"1px solid var(--line)",fontSize:12,fontWeight:600,color:"var(--muted)",letterSpacing:".05em",textTransform:"uppercase"}}>
+        人数帯単価テーブル
+      </div>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+        <thead>
+          <tr style={{background:"var(--bg-sunken)"}}>
+            <th style={{padding:"6px 16px",textAlign:"left",fontWeight:600,borderBottom:"1px solid var(--line)"}}>下限（人）</th>
+            <th style={{padding:"6px 16px",textAlign:"left",fontWeight:600,borderBottom:"1px solid var(--line)"}}>上限（人）</th>
+            <th style={{padding:"6px 16px",textAlign:"right",fontWeight:600,borderBottom:"1px solid var(--line)"}}>1名あたり単価（税込）</th>
+            <th style={{width:64,borderBottom:"1px solid var(--line)"}}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {tiers.map((r, i) => (
+            <tr key={r.id} style={{borderBottom:"1px solid var(--line)"}}>
+              <td style={{padding:"8px 16px"}}>
+                <input type="number" min={1} value={r.minPax}
+                  onChange={e => update(r.id, {minPax: Number(e.target.value)||1})}
+                  style={{width:80,padding:"4px 8px",border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",fontSize:13}} />
+              </td>
+              <td style={{padding:"8px 16px"}}>
+                <input type="number" min={1} value={r.maxPax ?? ""} placeholder="上限なし"
+                  onChange={e => update(r.id, {maxPax: e.target.value === "" ? null : Number(e.target.value)})}
+                  style={{width:100,padding:"4px 8px",border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",fontSize:13}} />
+              </td>
+              <td style={{padding:"8px 16px",textAlign:"right"}}>
+                <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"flex-end"}}>
+                  <span style={{color:"var(--muted)"}}>¥</span>
+                  <input type="number" min={0} value={r.unitPrice}
+                    onChange={e => update(r.id, {unitPrice: Number(e.target.value)||0})}
+                    style={{width:120,padding:"4px 8px",border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",fontSize:13,textAlign:"right",fontWeight:600}} />
+                </div>
+              </td>
+              <td style={{textAlign:"center",padding:"4px"}}>
+                <button type="button" onClick={() => remove(r.id)}
+                  style={{padding:"3px 8px",border:"1px solid var(--coral)",borderRadius:"var(--radius)",background:"none",color:"var(--coral)",cursor:"pointer",fontSize:12}}
+                  disabled={tiers.length <= 1}>削除</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{padding:"8px 16px"}}>
+        <button type="button" onClick={add}
+          style={{padding:"5px 14px",border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"none",cursor:"pointer",fontSize:12}}>
+          ＋ 人数帯を追加
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
+function App() {
+  const seedTo = (typeof SEED !== "undefined" && SEED.tourOption) ? SEED.tourOption : {};
+
+  const [name,       setName]       = useState(SAMPLE_EXPENSE.name);
+  const [category,   setCategory]   = useState(SAMPLE_EXPENSE.category);
+  const [costType,   setCostType]   = useState(SAMPLE_EXPENSE.costType);
+  const [unitPrice,  setUnitPrice]  = useState(SAMPLE_EXPENSE.unitPrice);
+  const [note,       setNote]       = useState(SAMPLE_EXPENSE.note);
+  const [slideTiers, setSlideTiers] = useState(SAMPLE_EXPENSE.slideTiers);
+  const [saved,      setSaved]      = useState(false);
+  const [errors,     setErrors]     = useState({});
+
+  const validate = () => {
+    const e = {};
+    if (!name.trim()) e.name = "経費名は必須です";
+    if ((costType === "固定費" || costType === "変動・人数割") && !unitPrice) e.unitPrice = "金額を入力してください";
+    return e;
+  };
+
+  const handleSave = () => {
+    const e = validate();
+    if (Object.keys(e).length) { setErrors(e); return; }
+    setSaved(true);
+    setTimeout(() => { window.location.href = "tour-option-detail.html?tab=expenses"; }, 800);
+  };
+
+  const catInfo = COST_CATEGORIES.find(c => c.key === category);
+  const typeInfo = COST_TYPES.find(t => t.key === costType);
+
+  return (
+    <div className="app-shell">
+      <Sidebar />
+      <main className="workspace">
+
+        {/* Topbar */}
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" style={{color:"inherit",textDecoration:"none"}}>deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="tour-options.html" className="crumb-link">TourOption一覧</a>
+              <span className="sep">/</span>
+              <a href="tour-option-detail.html?tab=expenses" className="crumb-link">TourOption編集</a>
+              <span className="sep">/</span>
+              <span className="current">経費 編集：{name}</span>
+            </div>
+            <div className="title-row">
+              <button className="btn ghost sm back-btn"
+                onClick={() => { window.location.href = "tour-option-detail.html?tab=expenses"; }}>
+                ← 経費管理に戻る
+              </button>
+              <h1 style={{fontSize:18}}>経費 編集</h1>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn" onClick={() => { window.location.href = "tour-option-detail.html?tab=expenses"; }}>キャンセル</button>
+            <button className="btn primary" onClick={handleSave}>
+              {saved ? "✓ 保存しました" : "更新保存"}
+            </button>
+          </div>
+        </div>
+
+        {/* TourOption 情報バー */}
+        <div style={{background:"var(--surface-warm)",borderBottom:"1px solid var(--line)",padding:"10px 24px",display:"flex",alignItems:"center",gap:16}}>
+          <div style={{fontSize:11,color:"var(--muted)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase",marginRight:4}}>TourOption</div>
+          <div style={{fontSize:14,fontWeight:650,color:"var(--ink)"}}>
+            {seedTo.name || "祇園夜の食べ歩きツアー 貸切3時間プラン"}
+          </div>
+          <span className="code" style={{marginLeft:"auto"}}>{seedTo.code || "G-KYO-003-1-PR"}</span>
+        </div>
+
+        {/* エディタ */}
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            <div className="editor-content">
+              <div className="form-section">
+                <div className="section-title">
+                  <div>
+                    <h2>経費情報</h2>
+                    <p>費用区分・費用タイプを選択してから金額を設定してください。</p>
+                  </div>
+                </div>
+
+                <div className="field-grid">
+                  {/* 経費名 */}
+                  <div className="field-wide">
+                    <label className="field-label">
+                      <span className="req" />
+                      <span>経費名</span>
+                    </label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)}
+                      placeholder="例：施設入場料"
+                      style={{width:"100%",padding:"6px 10px",border:`1px solid ${errors.name ? "var(--coral)" : "var(--line-strong)"}`,borderRadius:"var(--radius)",fontSize:13}} />
+                    {errors.name && <div style={{fontSize:12,color:"var(--coral)",marginTop:3}}>{errors.name}</div>}
+                  </div>
+
+                  {/* 費用区分 */}
+                  <div className="field">
+                    <label className="field-label">
+                      <span className="req" />
+                      <span>費用区分</span>
+                    </label>
+                    <div className="select-wrap">
+                      <select value={category} onChange={e => setCategory(e.target.value)} style={{width:"100%"}}>
+                        {COST_CATEGORIES.map(c => (
+                          <option key={c.key} value={c.key}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {catInfo && <div style={{fontSize:11,color:"var(--muted)",marginTop:4}}>{catInfo.desc}</div>}
+                  </div>
+
+                  {/* 費用タイプ */}
+                  <div className="field">
+                    <label className="field-label">
+                      <span className="req" />
+                      <span>費用タイプ</span>
+                    </label>
+                    <div className="select-wrap">
+                      <select value={costType} onChange={e => setCostType(e.target.value)} style={{width:"100%"}}>
+                        {COST_TYPES.map(t => (
+                          <option key={t.key} value={t.key}>{t.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {typeInfo && <div style={{fontSize:11,color:"var(--muted)",marginTop:4}}>{typeInfo.desc}</div>}
+                  </div>
+
+                  {/* 金額（固定費 / 変動・人数割） */}
+                  {(costType === "固定費" || costType === "変動・人数割") && (
+                    <div className="field">
+                      <label className="field-label">
+                        <span className="req" />
+                        <span>{costType === "固定費" ? "金額（1催行あたり）" : "単価（1名あたり）"}</span>
+                      </label>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <span style={{color:"var(--muted)",fontSize:13}}>¥</span>
+                        <input type="number" min={0} value={unitPrice}
+                          onChange={e => setUnitPrice(Number(e.target.value)||0)}
+                          style={{width:140,border:`1px solid ${errors.unitPrice ? "var(--coral)" : "var(--line-strong)"}`,borderRadius:"var(--radius)",padding:"6px 10px",fontSize:13}} />
+                      </div>
+                      {errors.unitPrice && <div style={{fontSize:12,color:"var(--coral)",marginTop:3}}>{errors.unitPrice}</div>}
+                    </div>
+                  )}
+
+                  {/* 完全変動の注意 */}
+                  {costType === "変動・完全変動" && (
+                    <div className="field-wide">
+                      <div style={{padding:"10px 14px",background:"#fff8e1",border:"1px solid #f5c842",borderRadius:"var(--radius)",fontSize:12,color:"#7a6800"}}>
+                        完全変動費は毎回の催行時に金額を手動入力します。ここでは金額の設定は不要です。
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 備考 */}
+                  <div className="field-wide">
+                    <label className="field-label"><span>備考</span></label>
+                    <input type="text" value={note} onChange={e => setNote(e.target.value)}
+                      placeholder="任意"
+                      style={{width:"100%",padding:"6px 10px",border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",fontSize:13}} />
+                  </div>
+                </div>
+
+                {/* スライド人数帯テーブル */}
+                {costType === "変動・スライド" && (
+                  <SlideTierTable tiers={slideTiers} onChange={setSlideTiers} />
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

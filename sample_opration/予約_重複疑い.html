@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>予約一覧 — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell {
+        display: grid;
+        grid-template-columns: 244px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      .side-nav {
+        background: var(--side-bg);
+        color: var(--side-ink);
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: sticky;
+        top: 0;
+        height: 100vh; min-height: 0;
+        overflow-y: auto;
+        border-right: 1px solid var(--side-line);
+      }
+      .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--side-line);
+      }
+      .brand-mark {
+        width: 32px; height: 32px;
+        display: grid; place-items: center;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        border-radius: 8px;
+        letter-spacing: -0.02em;
+      }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label {
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--side-ink-soft);
+        padding: 0 8px 6px;
+      }
+      .nav-item {
+        appearance: none; border: 0; background: transparent;
+        color: var(--side-ink);
+        display: flex; align-items: center; gap: 10px;
+        min-height: 36px; padding: 6px 10px;
+        border-radius: 7px; text-align: left;
+        font-size: 13.5px; font-weight: 500;
+        position: relative; transition: background 0.12s;
+        width: 100%;
+      }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before {
+        content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px;
+        width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+      }
+      .nav-icon {
+        width: 22px; height: 22px; display: grid; place-items: center;
+        border-radius: 5px; background: rgba(255, 255, 255, 0.08);
+        font-size: 10px; font-weight: 700; letter-spacing: 0.02em;
+        color: var(--side-ink-soft); flex-shrink: 0;
+      }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count {
+        margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums;
+        color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06);
+        padding: 1px 6px; border-radius: 4px;
+      }
+      .side-note {
+        margin-top: auto; border-top: 1px solid var(--side-line);
+        padding-top: 16px; color: var(--side-ink-soft);
+        font-size: 11.5px; line-height: 1.55;
+      }
+      .side-note strong {
+        display: block; font-size: 10.5px; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--side-ink);
+        margin-bottom: 6px; font-weight: 700;
+      }
+
+      /* ── Workspace ── */
+      .workspace {
+        padding: 20px 24px;
+        display: flex; flex-direction: column; gap: 16px;
+        min-width: 0;
+      }
+      .topbar {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 16px;
+      }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+      .topbar .crumbs { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      .topbar-right { display: flex; align-items: center; gap: 16px; }
+      .top-date {
+        font-size: 12.5px; color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        display: flex; align-items: center; gap: 7px;
+      }
+      .top-date .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+      .avatar {
+        width: 34px; height: 34px; border-radius: 50%;
+        background: var(--accent-soft); color: var(--accent-strong);
+        display: grid; place-items: center; border: 1px solid var(--line-strong);
+        font-weight: 700; font-size: 12px;
+      }
+
+      /* ── Filter bar ── */
+      .filter-bar {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-1);
+        padding: 16px 18px;
+      }
+      .filter-grid {
+        display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end;
+      }
+      .filter-row {
+        display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end;
+      }
+      .filter-row + .filter-row {
+        margin-top: 12px; padding-top: 12px;
+        border-top: 1px solid var(--line-soft);
+      }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      .filter-label {
+        font-size: 11px; font-weight: 600; color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+      .ctrl {
+        height: var(--field-h);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--ink);
+        padding: 0 10px;
+        font-size: 13px;
+        transition: border-color 0.1s, box-shadow 0.1s;
+      }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { appearance: none; padding-right: 28px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2.5 4.5L6 8l3.5-3.5' fill='none' stroke='%23756d63' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat; background-position: right 9px center;
+      }
+      .date-range { display: flex; align-items: center; gap: 7px; }
+      .date-range .sep { color: var(--muted-soft); }
+      .date-range .ctrl { width: 140px; }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      /* multi-select */
+      .ms { position: relative; }
+      .ms-trigger {
+        height: var(--field-h); min-width: 180px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
+        background: var(--surface); padding: 0 10px;
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        font-size: 13px;
+      }
+      .ms-trigger:hover { border-color: var(--ink-soft); }
+      .ms-trigger.open { border-color: var(--accent); box-shadow: var(--ring); }
+      .ms-trigger .caret { color: var(--muted); transition: transform 0.12s; }
+      .ms-trigger.open .caret { transform: rotate(180deg); }
+      .ms-count {
+        font-size: 11px; font-weight: 700; color: var(--accent-strong);
+        background: var(--accent-soft); border-radius: 999px;
+        padding: 0 7px; line-height: 18px;
+      }
+      .ms-pop {
+        position: absolute; top: calc(100% + 4px); left: 0; z-index: 30;
+        min-width: 100%; background: var(--surface);
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
+        box-shadow: var(--shadow-pop); padding: 6px;
+      }
+      .ms-opt {
+        display: flex; align-items: center; gap: 9px;
+        padding: 7px 9px; border-radius: var(--radius-sm);
+        font-size: 13px; white-space: nowrap;
+      }
+      .ms-opt:hover { background: var(--surface-tint); }
+      .ms-opt input { width: 15px; height: 15px; accent-color: var(--accent); }
+
+      /* checkbox filters */
+      .check-filter {
+        display: flex; align-items: center; gap: 8px;
+        height: var(--field-h); padding: 0 4px;
+        font-size: 13px; color: var(--ink-soft); user-select: none;
+      }
+      .check-filter input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+      /* buttons */
+      .btn {
+        height: var(--field-h); padding: 0 16px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        border-radius: var(--radius); border: 1px solid var(--line-strong);
+        background: var(--surface); font-size: 13px; font-weight: 600;
+        transition: background 0.1s, border-color 0.1s;
+      }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary {
+        background: var(--accent); border-color: var(--accent); color: #fff;
+      }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn-link {
+        background: none; border: 0; color: var(--accent);
+        font-size: 13px; font-weight: 600; padding: 0 6px; height: var(--field-h);
+      }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .filter-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+      /* ── Result meta ── */
+      .result-meta {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 12.5px; color: var(--muted); padding: 0 2px;
+      }
+      .result-meta strong { color: var(--ink); font-weight: 650; }
+
+      /* ── Table ── */
+      .table-wrap {
+        border: 1px solid var(--line); border-radius: var(--radius-lg);
+        overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1);
+      }
+      .table-scroll { overflow-x: auto; }
+      table {
+        width: 100%; border-collapse: separate; border-spacing: 0;
+        min-width: 1180px; background: var(--surface);
+        font-variant-numeric: tabular-nums;
+      }
+      thead th {
+        position: sticky; top: 0; z-index: 1;
+        background: var(--surface-tint); text-align: left;
+        font-size: 10.5px; font-weight: 700; color: var(--muted);
+        text-transform: uppercase; letter-spacing: 0.05em;
+        padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+      }
+      thead th.center { text-align: center; }
+      th.sortable { cursor: pointer; user-select: none; }
+      th.sortable:hover { color: var(--ink); }
+      th .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
+      th .sort-arrow.idle { color: var(--muted-soft); }
+      tbody td {
+        padding: 12px 14px; border-bottom: 1px solid var(--line-soft);
+        vertical-align: middle; font-size: 13px;
+      }
+      tbody td.center { text-align: center; }
+      tbody tr { transition: background 0.08s; cursor: pointer; }
+      tbody tr:hover { background: var(--surface-warm); }
+      tbody tr:last-child td { border-bottom: 0; }
+      .code-mono {
+        font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 12px; color: var(--ink-soft); font-weight: 600;
+      }
+      .cell-strong { font-weight: 600; color: var(--ink); }
+      .cell-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+      .cell-date { font-variant-numeric: tabular-nums; }
+      .cell-date .time { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+      .pax { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .channel { display: inline-flex; align-items: center; gap: 6px; }
+      .channel .ch-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+      .ch-own { background: var(--accent); }
+      .ch-ota { background: var(--blue); }
+      .ch-agent { background: #614aa4; }
+      .ch-inquiry { background: var(--amber); }
+
+      /* badges / pills */
+      .status-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 12px; font-weight: 600; padding: 3px 10px 3px 8px;
+        border-radius: 999px; background: var(--bg-sunken); color: var(--muted);
+        white-space: nowrap;
+      }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 11.5px; font-weight: 600; padding: 2px 8px;
+        border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft);
+        white-space: nowrap;
+      }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Pagination ── */
+      .pagination {
+        display: flex; align-items: center; justify-content: center; gap: 4px;
+        padding: 4px 0 8px;
+      }
+      .page-btn {
+        min-width: 34px; height: 34px; padding: 0 10px;
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
+        background: var(--surface); font-size: 13px; font-weight: 600;
+        color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center;
+      }
+      .page-btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .page-btn.nav { font-weight: 500; color: var(--muted); }
+
+      /* ── Tabs ── */
+      .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--line); }
+      .tab-btn { appearance: none; border: 0; background: transparent; padding: 11px 16px 13px; font-size: 14px; font-weight: 600; color: var(--muted); position: relative; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+      .tab-btn:hover { color: var(--ink-soft); }
+      .tab-btn.active { color: var(--accent-strong); }
+      .tab-btn.active::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2.5px; background: var(--accent); border-radius: 2px 2px 0 0; }
+      .tab-count { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 1px 7px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); }
+      .tab-count.alert { background: var(--amber-soft); color: var(--amber); }
+      .tab-count.coral { background: var(--coral-soft); color: var(--coral); }
+
+      /* ── Info banner ── */
+      .info-banner { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: var(--radius); font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+      .info-banner .ib-ic { flex: none; font-size: 15px; line-height: 1.4; }
+      .info-banner.amber { background: var(--amber-soft); border: 1px solid color-mix(in srgb, var(--amber) 28%, transparent); }
+      .empty-ok { padding: 30px 24px; text-align: center; color: var(--green); background: var(--green-soft); border: 1px solid color-mix(in srgb, var(--green) 25%, transparent); border-radius: var(--radius-lg); font-size: 14px; font-weight: 650; }
+      .deadline-soon { color: var(--coral); font-weight: 700; white-space: nowrap; }
+
+      /* ── Review tab ── */
+      .rv-table { min-width: 1040px; }
+      .row-actions { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+      tr.expand-row > td { padding: 0; background: var(--bg-sunken); border-bottom: 1px solid var(--line-soft); }
+      .inline-form { display: flex; align-items: flex-end; gap: 14px; padding: 14px 16px; flex-wrap: wrap; }
+      .inline-form .if-field { display: flex; flex-direction: column; gap: 5px; }
+      .inline-form .if-field label { font-size: 11px; font-weight: 600; color: var(--muted); }
+      .inline-form .if-field .ctrl { width: 220px; }
+      .inline-form .if-actions { display: flex; gap: 8px; margin-left: auto; }
+      .btn.sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+
+      /* ── Duplicate tab ── */
+      .dup-stack { display: flex; flex-direction: column; gap: 16px; }
+      .dup-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-1); overflow: hidden; }
+      .dup-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; background: var(--surface-warm); border-bottom: 1px solid var(--line-soft); }
+      .dup-head .dh-title { font-weight: 700; font-size: 13.5px; }
+      .dup-grid { display: grid; grid-template-columns: 160px 1fr 1fr; }
+      .dup-grid .dg { padding: 9px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; min-width: 0; }
+      .dup-grid .dg.head { background: var(--surface-tint); font-weight: 700; color: var(--accent-strong); font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 12px; }
+      .dup-grid .dg.lab { color: var(--muted); font-weight: 600; }
+      .dup-grid .dg.val { color: var(--ink); word-break: break-word; }
+      .dup-grid .dg.match { background: var(--amber-soft); }
+      .dup-grid .dg.match.val { color: var(--amber); font-weight: 700; }
+      .dup-grid > .dg:nth-last-child(-n+3) { border-bottom: 0; }
+      .dup-foot { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+      .dup-reason { font-size: 12.5px; color: var(--amber); font-weight: 650; display: flex; align-items: center; gap: 7px; }
+      .dup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .dup-resolve { padding: 16px 18px; border-top: 1px solid var(--line-soft); background: var(--bg-sunken); display: flex; flex-direction: column; gap: 15px; }
+      .drf-lab { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 7px; display: block; }
+      .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+      .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 7px 12px; font-size: 13px; font-weight: 600; color: var(--ink-soft); background: var(--surface); cursor: pointer; user-select: none; }
+      .chip input { width: 15px; height: 15px; accent-color: var(--accent); }
+      .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); }
+      .drf-treat { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+      .drf-treat strong { color: var(--coral); }
+      .dup-processed { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius-lg); font-size: 13px; }
+      .dup-processed .dp-left { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); }
+
+      /* ── Import log tab ── */
+      .log-filters { display: flex; flex-wrap: wrap; gap: 14px 16px; align-items: flex-end; }
+      .imp-table { min-width: 1080px; }
+      .lnk { color: var(--accent); font-weight: 600; cursor: pointer; }
+      .lnk:hover { color: var(--accent-strong); text-decoration: underline; }
+
+      /* ── Reveal (reduced-motion safe) ── */
+      @keyframes lstReveal { from { transform: translateY(-4px); } to { transform: none; } }
+      .reveal { }
+      @media (prefers-reduced-motion: no-preference) { .reveal { animation: lstReveal 0.2s ease; } }
+
+      /* ── Toast ── */
+      .toast {
+        position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px);
+        background: var(--ink); color: #fff; padding: 11px 18px;
+        border-radius: 999px; font-size: 13px; font-weight: 550;
+        box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none;
+        transition: opacity 0.2s, transform 0.2s; z-index: 60;
+        display: flex; align-items: center; gap: 9px;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+
+      a.btn { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useEffect } = React;
+
+      const NAV = [
+        { key: "bookings",       icon: "BK", label: "予約一覧",             group: "ops"                           , href: "予約一覧.html" },
+        { key: "unassigned",     icon: "↳",  label: "未割り当て一覧",       group: "ops",    child: true           , href: "予約一覧.html?filter=unassigned" },
+        { key: "sessions",       icon: "SS", label: "催行回一覧",           group: "ops"                           , href: "催行回一覧.html" },
+        { key: "unarranged",     icon: "↳",  label: "未手配一覧",           group: "ops",    child: true           , href: "催行回一覧.html?arrange=未手配" },
+        { key: "today",          icon: "↳",  label: "当日/翌日案件",        group: "ops",    child: true           , href: "当日翌日案件一覧.html" },
+        { key: "tourOption",     icon: "TO", label: "TourOption",          group: "product"                       , href: "tour-options.html" },
+        { key: "productPage",    icon: "PG", label: "商品ページ",            group: "product"                       , href: "products.html" },
+        { key: "guideDoc",       icon: "GD", label: "ガイド資料",            group: "product"                       , href: "guide-materials.html" },
+        { key: "guides",         icon: "GM", label: "ガイド一覧",            group: "guide"                         , href: "ガイド一覧.html" },
+        { key: "settle",         icon: "ST", label: "月次締め確認",          group: "pay"                           , href: "月次精算管理.html" },
+        { key: "import",         icon: "IM", label: "金額確認待ち一覧",      group: "pay",    count: 4, alert: true  , href: "金額確認待ち一覧.html" },
+        { key: "ota",            icon: "OT", label: "OTA入金照合",           group: "pay",    count: 4, alert: true  , href: "OTA入金照合.html" },
+        { key: "revenue",        icon: "RV", label: "収支一覧",              group: "pay"                           , href: "収支一覧.html" },
+        { key: "cancelTemplate", icon: "CP", label: "キャンセルポリシー",    group: "master"                        , href: "cancel-policies.html" },
+        { key: "feeMaster",      icon: "FE", label: "チャネル・手数料設定",  group: "master"                        , href: "チャネル・手数料設定.html" },
+        { key: "facilities",     icon: "FC", label: "施設一覧",             group: "facility"                        , href: "facilities.html" },
+        { key: "auditLog",       icon: "HL", label: "操作履歴",             group: "system"                        , href: "操作履歴一覧.html" },
+      ].map(n => ({ ...n, active: n.key === "bookings" }));
+
+      const DUP_FIELDS = [
+        { k: "guest", lab: "ゲスト名" },
+        { k: "date", lab: "ツアー日" },
+        { k: "time", lab: "開始時間" },
+        { k: "code", lab: "TourOption" },
+        { k: "channel", lab: "チャネル" },
+        { k: "ext", lab: "外部予約番号" },
+      ];
+      const DUP_PAIRS = [
+        { pid: "001",
+          a: { id: "BK-260601-00002", guest: "Smith John", date: "2026/06/15", time: "09:00", code: "G-WAK-001-2-GR", channel: "Viator", ext: "VTR-8923401" },
+          b: { id: "BK-260603-00015", guest: "Smith J.",   date: "2026/06/15", time: "09:00", code: "G-WAK-001-2-GR", channel: "Viator", ext: "VTR-8923388" },
+          matchKeys: ["date", "time", "code", "channel"], reason: "同一ゲスト・同一ツアー日時・同一TourOption（外部予約番号は別）" },
+      ];
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        return (
+          <div className="app-shell">
+
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",     label: "予約オペレーション" },
+                { grp: "product", label: "商品管理" },
+                { grp: "guide",    label: "ガイド管理" },
+                { grp: "facility", label: "施設管理" },
+                { grp: "pay",      label: "精算・経営" },
+                { grp: "master",  label: "マスター管理" },
+                { grp: "system",   label: "システム管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}${n.child ? " nav-child" : ""}`}
+                      onClick={() => n.href
+                        ? (window.location.href = n.href)
+                        : showToast(`「${n.label}」へ移動します`)
+                      }
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (
+                        <span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                当日・翌日案件は朝7時に自動更新されます。データ不備フラグは運営が内容確認のうえ「確認済み」にします。
+              </div>
+            </nav>
+
+            <main className="workspace">
+
+              <div className="topbar">
+                <div>
+                  <div className="crumbs">予約オペレーション</div>
+                  <h1>予約一覧</h1>
+                </div>
+              </div>
+              <div className="tab-bar">
+                <a href="予約一覧.html" className="tab-btn" style={{textDecoration:"none"}}>全予約</a>
+                <a href="予約_データ不備.html" className="tab-btn" style={{textDecoration:"none"}}>データ不備<span className="tab-count alert">3</span></a>
+                <a href="予約_重複疑い.html" className="tab-btn active" style={{textDecoration:"none"}}>重複疑い</a>
+                <a href="予約_取込ログ.html" className="tab-btn" style={{textDecoration:"none"}}>取込ログ</a>
+              </div>
+              {DUP_PAIRS.length === 0 && (
+                <div className="empty-ok">現在、重複疑いの予約はありません。</div>
+              )}
+              <div className="dup-stack">
+                {DUP_PAIRS.map(p => {
+                  return (
+                    <div className="dup-card" key={p.pid}>
+                      <div className="dup-head">
+                        <span className="dh-title">重複疑いペア #{p.pid}</span>
+                        <span className="status-pill coral"><span className="dot"></span>重複疑い</span>
+                      </div>
+                      <div className="dup-grid">
+                        <div className="dg lab"></div>
+                        <div className="dg head">予約A：{p.a.id}</div>
+                        <div className="dg head">予約B：{p.b.id}</div>
+                        {DUP_FIELDS.map(f => {
+                          const m = p.matchKeys.includes(f.k);
+                          return (
+                            <React.Fragment key={f.k}>
+                              <div className="dg lab">{f.lab}</div>
+                              <div className={`dg val ${m ? "match" : ""}`}>{p.a[f.k]}</div>
+                              <div className={`dg val ${m ? "match" : ""}`}>{p.b[f.k]}</div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                      <div className="dup-foot">
+                        <span className="dup-reason">🔴 重複の可能性：{p.reason}</span>
+                        <div className="dup-actions">
+                          <a href={`予約詳細.html?id=${p.a.id}`} className="btn">予約A詳細</a>
+                          <a href={`予約詳細.html?id=${p.b.id}`} className="btn">予約B詳細</a>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

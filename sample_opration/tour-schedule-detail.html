@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ツアー行程 登録・編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tour-schedule-detail.css">
+  </head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+function Sidebar({ resource, counts }) {
+  const opsItems = [
+    { key: "bookings",   href: "予約一覧.html",        icon: "BK", label: "予約一覧" },
+    { key: "unassigned", href: "予約一覧.html?filter=unassigned",   icon: "↳",  label: "未割り当て一覧", child: true },
+    { key: "sessions",   href: "催行回一覧.html",       icon: "SS", label: "催行回一覧" },
+    { key: "unarranged", href: "未手配一覧.html",       icon: "↳",  label: "未手配一覧",     child: true },
+    { key: "today",      href: "当日翌日案件一覧.html", icon: "↳",  label: "当日/翌日案件",  child: true },
+  ];
+  const productItems = [
+    { key: "tourOption", href: "tour-options.html",    icon: "TO", label: "TourOption" },
+    { key: "productPage",href: "products.html",        icon: "PG", label: "商品ページ" },
+    { key: "guideDoc",   href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
+  ];
+  const guideItems = [
+    { key: "guides",     href: "ガイド一覧.html",       icon: "GM", label: "ガイド一覧" },
+  ];
+  const payItems = [
+    { key: "settle",     href: "月次精算管理.html",     icon: "ST", label: "月次締め確認" },
+    { key: "import",     href: "金額確認待ち一覧.html", icon: "IM", label: "金額確認待ち一覧" },
+    { key: "ota",        href: "OTA入金照合.html",      icon: "OT", label: "OTA入金照合" },
+    { key: "revenue",    href: "収支一覧.html",         icon: "RV", label: "収支一覧" },
+  ];
+  const facilityItems = [
+    { key: "facilities",     href: "facilities.html",           icon: "FC", label: "施設一覧" },
+  ];
+  const masterItems = [
+    { key: "cancelTemplate", href: "cancel-policies.html",     icon: "CP", label: "キャンセルポリシー" },
+    { key: "feeMaster",      href: "チャネル・手数料設定.html", icon: "FE", label: "チャネル・手数料設定" },
+  ];
+  const active = "tourOption";
+  const renderItems = (arr) => arr.map(it => (
+    <a key={it.key} href={it.href}
+      className={`nav-item ${active === it.key ? "active" : ""} ${it.child ? "nav-child" : ""}`}
+      style={{textDecoration:"none"}}>
+      <span className="nav-icon">{it.icon}</span>
+      <span style={{flex:1,minWidth:0}}>
+        <div>{it.label}</div>
+      </span>
+    </a>
+  ));
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">DE</div>
+        <div>
+          <div className="brand-name">DeepExperience</div>
+          <div className="brand-caption">運営管理</div>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">{renderItems(opsItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">{renderItems(productItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">{renderItems(guideItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">{renderItems(facilityItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">{renderItems(payItems)}</div>
+      </div>
+      <div>
+        <div className="nav-section-label">マスター管理</div>
+        <div className="nav-group">{renderItems(masterItems)}</div>
+      </div>
+    </aside>
+  );
+}
+
+const TOUR_NAME = "Osaka: LED E-Bike Night Ride to Dotonbori, Namba & Shinsekai";
+const LANG_TABS = ["English", "日本語"];
+const SCHEDULE_TYPES = [
+  { key: "gather", label: "集合", desc: "ツアー開始の集合場所" },
+  { key: "stop", label: "立ち寄りスポット", desc: "必ず訪れる場所・体験" },
+  { key: "optional", label: "任意スポット", desc: "状況に応じて訪れる場所" },
+  { key: "move", label: "移動", desc: "移動" },
+  { key: "dismiss", label: "解散", desc: "ツアー終了の解散場所" },
+];
+
+function App() {
+  const counts = { to: 4, pg: 3, gd: 5, ct: 3 };
+  const [scheduleType, setScheduleType] = useState("stop");
+  const [lang, setLang] = useState("English");
+  const [pinDisplay, setPinDisplay] = useState(true);
+  const [lat, setLat] = useState("34.6713");
+  const [lng, setLng] = useState("135.5017");
+  const [address, setAddress] = useState("大阪府大阪市中央区道頓堀1丁目");
+  const [titleVal, setTitleVal] = useState("Dotonbori Canal Stroll & Food Stop");
+  const [bodyVal, setBodyVal] = useState("Walk along the famous Dotonbori canal. See the Glico sign and try local street food like takoyaki and kushikatsu.");
+
+  return (
+    <div className="app-shell">
+      <Sidebar resource="productPage" counts={counts} />
+      <main className="workspace">
+        <div className="topbar">
+          <div>
+            <div className="crumbs">
+              <span>deep_Admin</span>
+              <span className="sep">/</span>
+              <a className="crumb-link" href="tour-options.html">TourOption</a>
+              <span className="sep">/</span>
+              <a className="crumb-link" href="tour-option-detail.html?tab=schedule">ツアー行程</a>
+              <span className="sep">/</span>
+              <span className="current">行程登録</span>
+            </div>
+            <div className="title-row">
+              <button className="btn ghost sm back-btn" onClick={() => { window.location.href = 'tour-option-detail.html?tab=schedule'; }}>← 一覧に戻る</button>
+              <h1 style={{fontSize:18}}>『<span style={{color:"var(--accent)"}}>{TOUR_NAME}</span>』の行程登録</h1>
+            </div>
+          </div>
+          <div className="flex-row" style={{gap:8}}>
+            <button className="btn primary">保存</button>
+          </div>
+        </div>
+
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            {/* ── 分類セクション ── */}
+            <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
+              <div className="form-section">
+                <div className="section-title">
+                  <div><h2>行程タイプ</h2><p>この行程の分類を選択してください。</p></div>
+                </div>
+                <div className="type-selector">
+                  {SCHEDULE_TYPES.map(t => (
+                    <button key={t.key}
+                      className={`type-card ${scheduleType === t.key ? "active" : ""}`}
+                      onClick={() => setScheduleType(t.key)}>
+                      <strong>{t.label}</strong>
+                      <span>{t.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── 地図設定 ── */}
+            {scheduleType !== "move" && (
+            <div className="editor-content" style={{borderBottom:"1px solid var(--line)"}}>
+              <div className="form-section">
+                <div className="section-title">
+                  <div><h2>地図設定</h2><p>Google Mapsでスポットの位置を設定します。</p></div>
+                </div>
+                <div className="map-placeholder">
+                  <div className="map-icon">🗺</div>
+                  <span>Google Maps プレビュー</span>
+                  <span style={{fontSize:11,color:"var(--muted-soft)"}}>緯度・経度を入力すると地図に反映されます</span>
+                </div>
+                <div className="field-grid">
+                  <div className="field">
+                    <label className="field-label">緯度 (Latitude)</label>
+                    <input type="text" value={lat} onChange={e => setLat(e.target.value)} placeholder="例: 34.6713" />
+                  </div>
+                  <div className="field">
+                    <label className="field-label">経度 (Longitude)</label>
+                    <input type="text" value={lng} onChange={e => setLng(e.target.value)} placeholder="例: 135.5017" />
+                  </div>
+                  <div className="field-wide">
+                    <label className="field-label">住所</label>
+                    <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="住所を入力..." />
+                  </div>
+                  {scheduleType === "gather" && (
+                    <div className="field-wide">
+                      <label className="field-label">Google Map URL</label>
+                      <input type="url" placeholder="https://maps.google.com/..." />
+                      <div className="field-help"><span>集合場所のGoogle MapsリンクURLを入力してください</span></div>
+                    </div>
+                  )}
+                  <div className="field">
+                    <label className="field-label">ピン表示</label>
+                    <div className="flex-row" style={{gap:12,paddingTop:6}}>
+                      <label className="toggle-row" style={{flex:1,cursor:"pointer"}} onClick={() => setPinDisplay(true)}>
+                        <input type="radio" name="pin" checked={pinDisplay} onChange={() => setPinDisplay(true)} style={{accentColor:"var(--accent)"}}/>
+                        <div className="tx"><strong>On</strong><span>地図にピンを表示</span></div>
+                      </label>
+                      <label className="toggle-row" style={{flex:1,cursor:"pointer"}} onClick={() => setPinDisplay(false)}>
+                        <input type="radio" name="pin" checked={!pinDisplay} onChange={() => setPinDisplay(false)} style={{accentColor:"var(--accent)"}}/>
+                        <div className="tx"><strong>Off</strong><span>ピンを非表示</span></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
+
+            {/* ── 多言語テキスト ── */}
+            <div>
+              <div className="section-title" style={{padding:"14px 20px 10px",borderBottom:"1px solid var(--line)"}}>
+                <div><h2>多言語テキスト</h2><p>各言語でタイトルと本文を入力します。</p></div>
+              </div>
+              <div className="lang-tab-row">
+                {LANG_TABS.map(l => (
+                  <button key={l} className={`lang-tab ${lang === l ? "active" : ""}`} onClick={() => setLang(l)}>{l}</button>
+                ))}
+              </div>
+              <div className="editor-content">
+                <div className="form-section">
+                  <div className="field-wide">
+                    <label className="field-label">タイトル <span className="req" style={{width:5,height:5,background:"var(--coral)",borderRadius:"50%",display:"inline-block"}}></span></label>
+                    <input type="text" value={titleVal} onChange={e => setTitleVal(e.target.value)} placeholder={`${lang}でタイトルを入力...`} />
+                  </div>
+                  <div className="field-wide">
+                    <label className="field-label">本文</label>
+                    <textarea rows={5} value={bodyVal} onChange={e => setBodyVal(e.target.value)} placeholder={`${lang}で本文を入力...`} />
+                    <div className="field-help">
+                      <span className="char-count">{bodyVal.length} 文字</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 画像 ── */}
+            <div className="editor-content" style={{borderTop:"1px solid var(--line)"}}>
+              <div className="form-section">
+                <div className="section-title">
+                  <div><h2>画像</h2><p>この行程の代表画像をアップロードします。</p></div>
+                </div>
+                <div className="empty-state">
+                  <strong>画像が未設定です</strong>
+                  対応形式: JPG / PNG / WebP。推奨サイズ: 1200×800px。
+                </div>
+              </div>
+            </div>
+
+            <div style={{padding:"16px 20px",borderTop:"1px solid var(--line)",display:"flex",justifyContent:"flex-end",gap:8}}>
+              <button className="btn ghost" onClick={() => { window.location.href = 'tour-option-detail.html?tab=schedule'; }}>キャンセル</button>
+              <button className="btn primary">保存</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
