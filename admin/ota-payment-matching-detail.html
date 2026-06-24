@@ -509,8 +509,14 @@
 
       /* ── App ── */
       function App() {
-        const [rows, setRows] = useState(buildRows);
-        const [deposit, setDeposit] = useState(DEPOSIT);
+        const isNew = new URLSearchParams(window.location.search).get("mode") === "new";
+        const [rows, setRows] = useState(() => isNew ? [] : buildRows());
+        const [deposit, setDeposit] = useState(() => isNew ? {
+          id:"OTA-NEW-001", channel:"viator", monthLabel:"新規登録分",
+          periodStart:"2026-06-04", periodEnd:"2026-06-05", bankDate:"2026-06-17",
+          status:"unmatched", completedBy:"", completedAt:"", completed: false,
+          bankAmount: 0, otaReportTotal: 0,
+        } : DEPOSIT);
         const [editInfo, setEditInfo] = useState(false);
         const [addRowOpen, setAddRowOpen] = useState(false);
         const [searchRowId, setSearchRowId] = useState(null);
@@ -532,7 +538,7 @@
         const doneCount = counts.matched + counts.diff;
         const pct = total ? Math.round(doneCount/total*100) : 0;
         const reportTotal = rows.reduce((s,r)=>s+r.net,0);
-        const bankAmount = reportTotal; // デモ：差異なし
+        const bankAmount = isNew ? 0 : reportTotal;
         const bankDelta = bankAmount - reportTotal;
 
         const confirmMatch = (rid, cand) => {
@@ -686,6 +692,14 @@
                       </tr>
                     </thead>
                     <tbody>
+                      {rows.length === 0 && (
+                        <tr>
+                          <td colSpan={9} style={{padding:"48px 20px",textAlign:"center"}}>
+                            <div style={{color:"var(--muted)",fontSize:14,fontWeight:600,marginBottom:6}}>OTAレポート行がまだありません</div>
+                            <div style={{color:"var(--muted-soft)",fontSize:13}}>「+ 行を手動追加」からレポートの予約行を登録してください。</div>
+                          </td>
+                        </tr>
+                      )}
                       {rows.map(r => {
                         const rr = ROW_RESULT[r.result];
                         return (
