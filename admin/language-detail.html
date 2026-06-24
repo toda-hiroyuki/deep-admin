@@ -34,6 +34,9 @@ function Sidebar({ resource, counts = {} }) {
     { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
     { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
   ];
+  const guideItems = [
+    { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
+  ];
   const masterItems = [
     { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
     { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
@@ -63,6 +66,19 @@ function Sidebar({ resource, counts = {} }) {
         <div className="nav-section-label">精算・経営</div>
         <div className="nav-group">
           {payItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">
+          {guideItems.map(it => (
             <a key={it.key} href={it.href}
               className={`nav-item ${resource === it.key ? "active" : ""}`}
               style={{textDecoration:"none"}}>
