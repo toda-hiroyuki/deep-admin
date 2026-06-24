@@ -60,6 +60,15 @@
       .date-range .ctrl { width: 140px; }
       .sort-arrow { margin-left: 5px; color: var(--accent); font-size: 11px; }
       .sort-arrow.idle { color: var(--muted-soft); }
+      .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--line); }
+      .tab-btn { appearance: none; border: 0; background: transparent; padding: 11px 16px 13px; font-size: 14px; font-weight: 600; color: var(--muted); position: relative; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; cursor: pointer; }
+      .tab-btn:hover { color: var(--ink-soft); }
+      .tab-btn.active { color: var(--accent-strong); }
+      .tab-btn.active::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2.5px; background: var(--accent); border-radius: 2px 2px 0 0; }
+      .tab-count { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; padding: 1px 7px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); }
+      .tab-count.alert { background: var(--amber-soft); color: var(--amber); }
+      .tab-count.coral { background: var(--coral-soft); color: var(--coral); }
+      .list-table-wrap { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-1); }
     </style>
   </head>
   <body>
@@ -84,17 +93,17 @@
       }
 
       const ROWS = [
-        { id: "BK-260511-00001", guest: "田中 花子", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-11", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
-        { id: "BK-260601-00002", guest: "Smith John", code: "G-WAK-001-2-GR", tour: "里山ハイキング", booked: "2026-06-01", date: "2026-06-15", time: "09:00", pax: "大人4 子供1", channel: "Viator", lang: "英語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "要確認", cls: "amber" } },
-        { id: "BK-260519-00003", guest: "佐藤 太郎", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-19", date: "2026-06-02", time: "13:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" } },
-        { id: "BK-260527-00004", guest: "Lee Minjun", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-27", date: "2026-06-03", time: "14:00", pax: "大人3", channel: "Airbnb", lang: "韓国語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "募集中", cls: "blue" } },
-        { id: "BK-260507-00005", guest: "鈴木 一郎", code: "G-WAK-001-2-GR", tour: "里山ハイキング", booked: "2026-05-07", date: "2026-05-28", time: "09:00", pax: "大人6", channel: "旅行会社", lang: "日本語", status: { label: "キャンセル済み", cls: "coral" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "—", cls: "dash" } },
-        { id: "BK-260515-00006", guest: "Brown Emily", code: null, tour: "漁村体験", booked: "2026-05-15", date: "2026-06-05", time: "07:00", pax: "大人2 子供2", channel: "GetYourGuide", lang: "英語", status: { label: "確定予約", cls: "green" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" } },
-        { id: "BK-260523-00007", guest: "山本 健二", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-23", date: "2026-06-06", time: "10:00", pax: "大人1", channel: "問い合わせ", lang: "日本語", status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" } },
-        { id: "BK-260510-00008", guest: "Chen Wei", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-10", date: "2026-06-07", time: "15:00", pax: "大人2", channel: "自社サイト", lang: "中国語(簡体)", status: { label: "確定予約", cls: "green" }, link: { label: "仮紐付け", cls: "amber" }, arrange: { label: "未手配", cls: "muted" } },
-        { id: "BK-260518-00016", guest: "Wilson Kate", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-18", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "Viator", lang: "英語", status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
-        { id: "BK-260521-00017", guest: "Dubois Marie", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-21", date: "2026-06-03", time: "14:00", pax: "大人2", channel: "GetYourGuide", lang: "フランス語", status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
-        { id: "BK-260524-00018", guest: "高橋 直樹", code: "G-MIE-005-1-PR", tour: "漁村体験", booked: "2026-05-24", date: "2026-06-05", time: "07:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "No-show", cls: "coral" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" } },
+        { id: "BK-260511-00001", guest: "田中 花子", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-11", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+        { id: "BK-260601-00002", guest: "Smith John", code: "G-WAK-001-2-GR", tour: "里山ハイキング", booked: "2026-06-01", date: "2026-06-15", time: "09:00", pax: "大人4 子供1", channel: "Viator", lang: "英語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "要確認", cls: "amber" }, flag: true, changed: true },
+        { id: "BK-260519-00003", guest: "佐藤 太郎", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-19", date: "2026-06-02", time: "13:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" }, flag: false, changed: false },
+        { id: "BK-260527-00004", guest: "Lee Minjun", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-27", date: "2026-06-03", time: "14:00", pax: "大人3", channel: "Airbnb", lang: "韓国語", status: { label: "確定予約", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "募集中", cls: "blue" }, flag: false, changed: false },
+        { id: "BK-260507-00005", guest: "鈴木 一郎", code: "G-WAK-001-2-GR", tour: "里山ハイキング", booked: "2026-05-07", date: "2026-05-28", time: "09:00", pax: "大人6", channel: "旅行会社", lang: "日本語", status: { label: "キャンセル済み", cls: "coral" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "—", cls: "dash" }, flag: false, changed: false },
+        { id: "BK-260515-00006", guest: "Brown Emily", code: null, tour: "漁村体験", booked: "2026-05-15", date: "2026-06-05", time: "07:00", pax: "大人2 子供2", channel: "GetYourGuide", lang: "英語", status: { label: "確定予約", cls: "green" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" }, flag: true, changed: false },
+        { id: "BK-260523-00007", guest: "山本 健二", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-23", date: "2026-06-06", time: "10:00", pax: "大人1", channel: "問い合わせ", lang: "日本語", status: { label: "確定待ち", cls: "amber" }, link: { label: "未紐付け", cls: "muted" }, arrange: { label: "未手配", cls: "muted" }, flag: false, changed: false },
+        { id: "BK-260510-00008", guest: "Chen Wei", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-10", date: "2026-06-07", time: "15:00", pax: "大人2", channel: "自社サイト", lang: "中国語(簡体)", status: { label: "確定予約", cls: "green" }, link: { label: "仮紐付け", cls: "amber" }, arrange: { label: "未手配", cls: "muted" }, flag: false, changed: false },
+        { id: "BK-260518-00016", guest: "Wilson Kate", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", booked: "2026-05-18", date: "2026-06-01", time: "10:00", pax: "大人2", channel: "Viator", lang: "英語", status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+        { id: "BK-260521-00017", guest: "Dubois Marie", code: "G-AIC-005-1-GR", tour: "茶道体験", booked: "2026-05-21", date: "2026-06-03", time: "14:00", pax: "大人2", channel: "GetYourGuide", lang: "フランス語", status: { label: "Completed", cls: "green" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
+        { id: "BK-260524-00018", guest: "高橋 直樹", code: "G-MIE-005-1-PR", tour: "漁村体験", booked: "2026-05-24", date: "2026-06-05", time: "07:00", pax: "大人2", channel: "自社サイト", lang: "日本語", status: { label: "No-show", cls: "coral" }, link: { label: "確定紐付け", cls: "green" }, arrange: { label: "確定済み", cls: "green" }, flag: false, changed: false },
       ];
 
       function Caret() {
@@ -270,15 +279,20 @@
 }
 
       function App() {
+        const [activeTab, setActiveTab] = useState("all");
         const [statusSel, setStatusSel] = useState([]);
         const [idQuery, setIdQuery] = useState("");
         const [from, setFrom] = useState("2026-06-01");
         const [to, setTo] = useState("2026-06-30");
+        const [bookFrom, setBookFrom] = useState("");
+        const [bookTo, setBookTo] = useState("");
         const [tourQuery, setTourQuery] = useState("");
         const [channel, setChannel] = useState("すべて");
         const [lang, setLang] = useState("すべて");
         const [arrange, setArrange] = useState("すべて");
         const [unassignedOnly, setUnassignedOnly] = useState(false);
+        const [flagOnly, setFlagOnly] = useState(false);
+        const [changedOnly, setChangedOnly] = useState(false);
         const [sortKey, setSortKey] = useState("tour");
         const [sortDir, setSortDir] = useState("asc");
         const [toast, setToast] = useState(null);
@@ -303,8 +317,9 @@
 
         const reset = () => {
           setStatusSel([]); setIdQuery(""); setFrom("2026-06-01"); setTo("2026-06-30");
+          setBookFrom(""); setBookTo("");
           setTourQuery(""); setChannel("すべて"); setLang("すべて"); setArrange("すべて");
-          setUnassignedOnly(false);
+          setUnassignedOnly(false); setFlagOnly(false); setChangedOnly(false);
           showToast("フィルターをリセットしました");
         };
 
@@ -330,6 +345,13 @@
                 </div>
               </div>
 
+              <div className="tab-bar">
+                <button className={`tab-btn ${activeTab === "all" ? "active" : ""}`} onClick={() => setActiveTab("all")}>全予約</button>
+                <button className={`tab-btn ${activeTab === "flag" ? "active" : ""}`} onClick={() => setActiveTab("flag")}>データ不備<span className="tab-count alert">{ROWS.filter(r => r.flag).length}</span></button>
+                <button className={`tab-btn ${activeTab === "dup" ? "active" : ""}`} onClick={() => setActiveTab("dup")}>重複疑い<span className="tab-count coral">0</span></button>
+                <button className={`tab-btn ${activeTab === "log" ? "active" : ""}`} onClick={() => setActiveTab("log")}>取込ログ</button>
+              </div>
+
               <div className="filter-bar">
                 <div className="filter-row">
                   <div className="filter-field">
@@ -341,6 +363,14 @@
                     <span className="filter-label">TourOption</span>
                     <input className="ctrl" style={{width:200}} placeholder="コード・名称で検索"
                       value={tourQuery} onChange={e => setTourQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="filter-label">予約日</span>
+                    <div className="date-range">
+                      <input type="date" className="ctrl" value={bookFrom} onChange={e => setBookFrom(e.target.value)} />
+                      <span className="sep">–</span>
+                      <input type="date" className="ctrl" value={bookTo} onChange={e => setBookTo(e.target.value)} />
+                    </div>
                   </div>
                   <div className="filter-field">
                     <span className="filter-label">ツアー日</span>
@@ -379,6 +409,14 @@
                     <input type="checkbox" checked={unassignedOnly} onChange={e => setUnassignedOnly(e.target.checked)} />
                     未割り当てのみ
                   </label>
+                  <label className="check-filter">
+                    <input type="checkbox" checked={flagOnly} onChange={e => setFlagOnly(e.target.checked)} />
+                    データ不備のみ
+                  </label>
+                  <label className="check-filter">
+                    <input type="checkbox" checked={changedOnly} onChange={e => setChangedOnly(e.target.checked)} />
+                    変更フラグのみ
+                  </label>
                   <div className="filter-actions">
                     <button className="btn-link" onClick={reset}>リセット</button>
                     <button className="btn primary" onClick={() => showToast("絞り込みを適用しました")}>絞り込む</button>
@@ -393,9 +431,10 @@
 
               <div className="list-table-wrap">
                 <div className="table-scroll">
-                  <table className="list-table" style={{minWidth:1100}}>
+                  <table className="list-table" style={{minWidth:1200}}>
                     <thead>
                       <tr>
+                        <th>ID</th>
                         <th>予約ID</th>
                         <th>ゲスト名</th>
                         <th>TourOption</th>
@@ -410,8 +449,9 @@
                       </tr>
                     </thead>
                     <tbody>
-                      {rows.map(r => (
-                        <tr key={r.id} onClick={() => showToast(`予約詳細: ${r.id}`)} style={{cursor:"pointer"}}>
+                      {rows.map((r, idx) => (
+                        <tr key={r.id} onClick={() => window.location.href = "booking-detail.html"} style={{cursor:"pointer"}}>
+                          <td><span className="code-mono">{String(idx + 1).padStart(4, "0")}</span></td>
                           <td><span className="code-mono" style={{fontSize:12,color:"var(--ink-soft)",fontWeight:600}}>{r.id}</span></td>
                           <td><strong>{r.guest}</strong></td>
                           <td>
