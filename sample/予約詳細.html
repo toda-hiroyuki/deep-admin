@@ -303,6 +303,23 @@
         cancelled: { label: "取消", cls: "muted" },
       };
 
+      // 返金ステータス定義（6値・支払い設計 §4-2）
+      const RE_STATUS = {
+        unprocessed: { label: "未処理", cls: "amber" },
+        done:        { label: "完了", cls: "green" },
+        none:        { label: "不要", cls: "muted" },
+        ota:         { label: "OTA返金済み（Deep対応不要）", cls: "blue" },
+        check:       { label: "要確認", cls: "coral" },
+        special:     { label: "特別対応中", cls: "amber" },
+      };
+
+      // 返金レコード（複数レコード＝部分返金に対応・時系列）
+      const REFUNDS = [
+        { amount: 36000, method: "Stripe返金", ref: "re_3Q9xAb2eZvKYlo2C0abcd", to: "ゲストカード（Visa ****4242）",
+          exec: "2026/06/03", done: "2026/06/03 14:22", by: "OP・田中",
+          note: "キャンセル料 ¥9,000（開催7日前 20%）控除後の全額返金" },
+      ];
+
       // 変更・キャンセル履歴（各イベントの変更前後詳細を保持）
       const HISTORY = [
         { type: "日時変更", typeCls: "blue", origin: "ゲスト都合", dt: "2026/06/05 10:15", by: "OP",
@@ -368,6 +385,10 @@
         const [acExpiry, setAcExpiry] = useState("");
         const [acSent, setAcSent] = useState("");
         const [acMethod, setAcMethod] = useState("email");
+        // ── 返金管理（追加請求 hasAddCharge と対）──
+        const hasRefund = true;                             // 返金レコードの有無
+        const [reOpen, setReOpen] = useState(false);
+        const [reStatus, setReStatus] = useState("done");
         // ── 変更履歴の前後詳細展開（変更3）──
         const [histOpen, setHistOpen] = useState(null);
         // ── 催行回紐付け操作（グループツアーのみ・§3-8①-補足）──
@@ -796,7 +817,14 @@
                     { k: "追加請求ステータス", v: <span className={`badge ${AC_STATUS[acStatus].cls}`}>{AC_STATUS[acStatus].label}</span> },
                   ] : []),
                   { k: "支払い済み合計", v: <span className="strong">¥45,000<span className="sub">（当初 ¥25,000 ＋ 追加請求 ¥20,000）</span></span> },
-                  { k: "返金", v: <span className="muted-dash">なし</span> },
+                  ...(hasRefund ? [
+                    { k: "返金対象金額", v: <span>¥45,000</span> },
+                    { k: "キャンセル料", v: <span>¥9,000<span className="sub">（キャンセルポリシー: 開催7日前 20%）</span></span> },
+                    { k: "実返金額", v: <span className="strong">¥36,000</span> },
+                    { k: "返金ステータス", v: <span className={`badge ${RE_STATUS[reStatus].cls}`}>{RE_STATUS[reStatus].label}</span> },
+                  ] : [
+                    { k: "返金", v: <span className="muted-dash">なし</span> },
+                  ]),
                 ]} />
                 {hasAddCharge && (
                   <div className="add-charge-block">
@@ -832,6 +860,46 @@
                         <div className="ac-note"><span className="an-ic">ℹ️</span><span>決済リンクは Stripe 管理画面で発行し URL を記録してください。送付後にステータスを「請求済み」に更新してください。</span></div>
                         <div style={{ display: "flex", justifyContent: "flex-end" }}>
                           <button className="btn primary" onClick={() => showToast("追加請求の管理内容を保存しました")}>保存する</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {hasRefund && (
+                  <div className="add-charge-block">
+                    <button className="disclosure" onClick={() => setReOpen(o => !o)}>{reOpen ? "▲" : "▼"} 返金の詳細を管理する</button>
+                    {reOpen && (
+                      <div className="ac-panel reveal">
+                        <div className="ac-title">💸 返金の管理</div>
+                        {REFUNDS.map((r, i) => (
+                          <div key={i} style={{ borderTop: i ? "1px solid var(--line)" : "none", paddingTop: i ? 12 : 0 }}>
+                            <Def items={[
+                              { k: "返金額", v: <span className="strong">¥{r.amount.toLocaleString()}</span> },
+                              { k: "返金方法", v: r.method },
+                              { k: "返金参照ID", v: <span style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{r.ref}</span> },
+                              { k: "返金受領先", v: r.to },
+                              { k: "実行日 / 完了日時", v: <span>{r.exec}<span className="sub">完了 {r.done}</span></span> },
+                              { k: "処理者", v: r.by },
+                              { k: "メモ", v: r.note },
+                            ]} />
+                          </div>
+                        ))}
+                        <div className="form-field">
+                          <label className="f-label">返金ステータス</label>
+                          <select className="ctrl" value={reStatus} onChange={e => setReStatus(e.target.value)}>
+                            <option value="unprocessed">未処理</option>
+                            <option value="done">完了</option>
+                            <option value="none">不要</option>
+                            <option value="ota">OTA返金済み（Deep対応不要）</option>
+                            <option value="check">要確認</option>
+                            <option value="special">特別対応中</option>
+                          </select>
+                        </div>
+                        <div className="ac-note"><span className="an-ic">ℹ️</span><span>{reStatus === "ota"
+                          ? "OTA経由の返金です。返金はチャネル（OTA）側で完了しており、Deep側での返金処理は不要です。"
+                          : "返金は Stripe 等の決済管理画面で実行し、返金参照ID・実返金額を記録してください。部分返金が複数回ある場合は「返金処理を記録」から追加すると時系列で表示されます。"}</span></div>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <button className="btn primary" onClick={() => showToast("返金の管理内容を保存しました")}>保存する</button>
                         </div>
                       </div>
                     )}

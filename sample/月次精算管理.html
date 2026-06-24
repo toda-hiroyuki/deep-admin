@@ -200,7 +200,6 @@
       .num-input input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
       .num-input input.miss { border-color: var(--amber); background: var(--amber-bg); }
       .miss-flag { display: block; font-size: 10px; font-weight: 700; color: var(--amber); text-align: right; margin-top: 3px; }
-      .alloc-note { display: block; font-size: 10px; font-weight: 500; color: var(--muted-soft); text-align: right; margin-top: 2px; font-variant-numeric: tabular-nums; }
       .act-cell { display: flex; gap: 6px; justify-content: flex-end; }
 
       /* ── Close bar ── */
@@ -210,6 +209,68 @@
       .close-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
       .close-hint { font-size: 12px; color: var(--amber); font-weight: 600; }
       .close-hint.ok { color: var(--green); }
+
+      /* ── Session cards (催行回ベース) ── */
+      /* ── Session table (案C1: 1行/催行回・展開式) ── */
+      .caret { transition: transform 0.15s; display: block; color: var(--muted); }
+      .caret.open { transform: rotate(90deg); }
+      .settle-table.master { min-width: 1360px; }
+      .settle-table.master tbody tr.master-row { cursor: pointer; }
+      .settle-table.master tbody tr.master-row:hover td { background: var(--surface-warm); }
+      .settle-table.master tbody tr.master-row.attention:hover td { background: var(--amber-bg); }
+      .settle-table.master .c-exp { width: 30px; text-align: center; padding-left: 10px; padding-right: 0; }
+      .settle-table.master .c-date { white-space: nowrap; }
+      .settle-table.master .c-date .d-time { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+      .settle-table.master .c-tour { min-width: 170px; max-width: 280px; white-space: normal; }
+      .settle-table.master .c-tour .t-name { font-weight: 700; font-size: 13px; }
+      .settle-table.master .c-tour .t-code { display: block; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+      .settle-table.master .c-guide { color: var(--ink-soft); white-space: nowrap; }
+      .master-row .act-cell .btn { height: 30px; padding: 0 12px; font-size: 12px; }
+      .cost-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+      .cost-dot.amber { background: var(--amber); }
+      .state-chips { display: inline-flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+      .chip-mini { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .chip-mini .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .chip-mini.amber { background: var(--amber-soft); color: var(--amber); }
+      .chip-mini.coral { background: var(--coral-soft); color: var(--coral); }
+      .chip-mini.green { background: var(--green-soft); color: var(--green); }
+
+      /* 展開行 */
+      tr.expand-row > td { padding: 0; background: var(--bg-sunken); border-bottom: 1px solid var(--line); }
+      .exp-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+      .exp-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .exp-head .exp-meta { font-size: 12px; color: var(--muted); }
+      .exp-body .sess-cost { margin-top: 0; }
+
+      .sub-label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 9px; }
+      .sub-label .sl-hint { font-size: 10.5px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted-soft); }
+      .inner-wrap { overflow-x: auto; }
+      .settle-table.inner { min-width: 720px; }
+      .settle-table.inner thead th { position: static; }
+      .settle-table tfoot td { padding: 11px 12px; border-top: 2px solid var(--line-strong); font-weight: 700; font-size: 12.5px; background: var(--surface-tint); white-space: nowrap; }
+      .settle-table tfoot td.right { text-align: right; }
+      .settle-table tbody tr.row-cancelled td { color: var(--muted-soft); }
+      .settle-table tbody tr.row-cancelled .money { text-decoration: line-through; color: var(--muted-soft); }
+
+      .sess-cost { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-tint); overflow: hidden; }
+      .cost-row { display: grid; grid-template-columns: 200px 150px minmax(0, 1fr); align-items: center; gap: 6px 16px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); }
+      .cost-row:last-child { border-bottom: 0; }
+      .cost-label { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-weight: 650; color: var(--ink-soft); font-size: 13px; }
+      .cost-val { display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right; font-variant-numeric: tabular-nums; }
+      .cost-val .money { font-size: 14px; }
+      .cost-breakdown { font-size: 11px; color: var(--muted); line-height: 1.5; }
+      .cost-breakdown .bd-note { display: block; color: var(--muted-soft); margin-top: 2px; }
+      .cost-breakdown .lnk { margin-top: 5px; }
+      @media (max-width: 760px) { .cost-row { grid-template-columns: 1fr auto; } .cost-breakdown { grid-column: 1 / -1; } }
+
+      .sess-formula { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; font-variant-numeric: tabular-nums; padding: 2px 2px 0; }
+      .fx-term { display: flex; flex-direction: column; gap: 2px; }
+      .fx-term .fx-lab { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+      .fx-term .fx-num { font-size: 13.5px; font-weight: 650; color: var(--ink-soft); }
+      .fx-term.result .fx-num { font-size: 17px; font-weight: 800; color: var(--ink); }
+      .fx-term.result .fx-num.neg { color: var(--coral); }
+      .fx-op { font-size: 15px; color: var(--muted-soft); font-weight: 600; padding-bottom: 2px; }
+      .filter-note { font-size: 11.5px; color: var(--muted); padding: 12px 20px 0; display: flex; align-items: center; gap: 7px; }
 
       /* ── Empty ── */
       .empty-state { padding: 56px 20px; text-align: center; color: var(--muted); }
@@ -274,75 +335,105 @@
         diff:      { label: "差異あり", cls: "coral" },
         unmatched: { label: "未照合",  cls: "amber" },
       };
+      // 催行回横断データ（ガイド報酬・施設費）は、ガイド精算と同様に別画面で確定 → ここには確定額＋ステータスが出る。
+      const FACILITY_META = {
+        confirmed: { label: "確定",    cls: "green" },
+        pending:   { label: "未確定", cls: "amber" },
+      };
+      const SESSION_ST = {
+        operated: { label: "実施済み", cls: "green" },
+      };
+      const LANG_LABEL = { en: "英語", zh: "中国語", ko: "韓国語", ja: "日本語" };
+
+      const Caret = ({ open }) => (
+        <svg className={`caret${open ? " open" : ""}`} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M5 3l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
 
       const DATA_MONTH = "2026-06";
 
-      // 当月のツアー実施済み 全予約（変更・キャンセル有無・OTA/自社を混在）
-      // guideReward は「催行回（sessionId）のガイド報酬」総額。同一催行回の複数予約は同額を保持し、
-      // 人数（pax）按分で各予約へ配賦する（guideRewardOf）。配賦合計は催行回のガイド報酬に一致。
-      const ROWS_SEED = [
-        // ── 同一催行回（里山ハイキング G-WAK-001-2-GR）にグループ予約2件 → 人数按分配賦 ──
-        { id: "BK-260605-00012", code: "G-WAK-001-2-GR", name: "里山ハイキング", channel: "viator",
-          sessionId: "TI-20260605-0900-G-WAK-001-2-GR-01", pax: 3,
-          date: "2026/06/05", gross: 75000, otaFee: 15000, payFee: 0, guideReward: 10500,
-          facility: "5000", changed: false, facilityCancel: "", guide: "confirmed", ota: "matched" },
-        { id: "BK-260605-00018", code: "G-WAK-001-2-GR", name: "里山ハイキング", channel: "direct",
-          sessionId: "TI-20260605-0900-G-WAK-001-2-GR-01", pax: 2,
-          date: "2026/06/05", gross: 50000, otaFee: 0, payFee: 1800, guideReward: 10500,
-          facility: "5000", changed: false, facilityCancel: "", guide: "confirmed", ota: null },
-        { id: "BK-260608-00021", code: "G-AIC-005-1-GR", name: "茶道体験", channel: "direct",
-          sessionId: "TI-20260608-1000-G-AIC-005-1-GR-01", pax: 2,
-          date: "2026/06/08", gross: 24000, otaFee: 0, payFee: 864, guideReward: 6000,
-          facility: "", changed: false, facilityCancel: "", guide: "confirmed", ota: null },
-        { id: "BK-260520-00034", code: "G-KYO-006-1-GR", name: "祇園食べ歩き", channel: "getyourguide",
-          sessionId: "TI-20260604-1800-G-KYO-006-1-GR-01", pax: 4,
-          date: "2026/06/04", gross: 48000, otaFee: 9600, payFee: 0, guideReward: 9000,
-          facility: "3000", changed: false, facilityCancel: "", guide: "pending", ota: "matched" },
-        { id: "BK-260522-00045", code: "G-KYO-003-1-PR", name: "京都プライベートツアー", channel: "viator",
-          sessionId: "TI-20260606-0900-G-KYO-003-1-PR-01", pax: 5,
-          date: "2026/06/06", gross: 120000, otaFee: 24000, payFee: 0, guideReward: 24000,
-          facility: "8000", changed: false, facilityCancel: "", guide: "confirmed", ota: "unmatched" },
-        { id: "BK-260525-00027", code: "G-GIF-017-1-GR", name: "城下町ウォーキング", channel: "klook",
-          sessionId: "TI-20260606-1300-G-GIF-017-1-GR-01", pax: 4,
-          date: "2026/06/06", gross: 40000, otaFee: 10000, payFee: 0, guideReward: 8000,
-          facility: "2000", changed: false, facilityCancel: "", guide: "confirmed", ota: "matched" },
-        { id: "BK-260530-00039", code: "G-MIE-005-1-GR", name: "漁村体験", channel: "airbnb",
-          sessionId: "TI-20260607-0900-G-MIE-005-1-GR-01", pax: 3,
-          date: "2026/06/07", gross: 35000, otaFee: 7000, payFee: 0, guideReward: 7000,
-          facility: "1500", changed: false, facilityCancel: "", guide: "confirmed", ota: "matched" },
-        { id: "BK-260603-00015", code: "G-OSK-005-3-PR", name: "大阪ナイトツアー", channel: "direct",
-          sessionId: "TI-20260603-1900-G-OSK-005-3-PR-01", pax: 2,
-          date: "2026/06/03", gross: 30000, otaFee: 0, payFee: 1080, guideReward: 0,
-          facility: "0", changed: true, facilityCancel: "3000", guide: "confirmed", ota: null },
+      // 当月のツアー実施済み 全催行回（TI-…）。1催行回に複数予約（reservations）がぶら下がる。
+      //  ・予約独自データ（売上・チャネル手数料・決済手数料・OTA照合）= reservations[] に保持
+      //  ・催行回横断データ（ガイド報酬・施設費）= 催行回トップレベルに1回だけ保持（按分しない／読み取り＝他画面で確定）
+      const SESSIONS_SEED = [
+        // 大阪ナイトツアー（PR）— ガイド報酬¥0・施設費は変更に伴うキャンセル料相当¥3,000（施設費に内包）
+        { id: "TI-20260603-1900-G-OSK-005-3-PR-01", code: "G-OSK-005-3-PR", tour: "大阪ナイトツアー",
+          date: "2026/06/03", time: "19:00", lang: "en", guide: { name: "中村 隆" }, status: "operated",
+          guideReward: { wage: 0, transport: 0, other: 0, total: 0 }, guideStatus: "confirmed",
+          facility: 3000, facilityStatus: "confirmed",
+          reservations: [
+            { id: "BK-260603-00015", channel: "direct", pax: 2, gross: 30000, otaFee: 0, payFee: 1080, ota: null, cancelled: false },
+          ] },
+        // 祇園食べ歩き（GR）— ガイド精算が未確定
+        { id: "TI-20260604-1800-G-KYO-006-1-GR-01", code: "G-KYO-006-1-GR", tour: "祇園食べ歩き",
+          date: "2026/06/04", time: "18:00", lang: "zh", guide: { name: "佐藤 由美" }, status: "operated",
+          guideReward: { wage: 7500, transport: 1500, other: 0, total: 9000 }, guideStatus: "pending",
+          facility: 3000, facilityStatus: "confirmed",
+          reservations: [
+            { id: "BK-260520-00034", channel: "getyourguide", pax: 4, gross: 48000, otaFee: 9600, payFee: 0, ota: "matched", cancelled: false },
+          ] },
+        // 里山ハイキング（GR）— グループ予約2件（Viator + 自社）。横断のガイド報酬・施設費は催行回で1回だけ
+        { id: "TI-20260605-0900-G-WAK-001-2-GR-01", code: "G-WAK-001-2-GR", tour: "里山ハイキング",
+          date: "2026/06/05", time: "09:00", lang: "en", guide: { name: "田中 誠" }, status: "operated",
+          guideReward: { wage: 9000, transport: 1500, other: 0, total: 10500 }, guideStatus: "confirmed",
+          facility: 5000, facilityStatus: "confirmed",
+          reservations: [
+            { id: "BK-260605-00012", channel: "viator", pax: 3, gross: 75000, otaFee: 15000, payFee: 0,    ota: "matched", cancelled: false },
+            { id: "BK-260605-00018", channel: "direct", pax: 2, gross: 50000, otaFee: 0,     payFee: 1800, ota: null,      cancelled: false },
+          ] },
+        // 京都プライベートツアー（PR）— OTA入金が未照合
+        { id: "TI-20260606-0900-G-KYO-003-1-PR-01", code: "G-KYO-003-1-PR", tour: "京都プライベートツアー",
+          date: "2026/06/06", time: "09:00", lang: "en", guide: { name: "高橋 葵" }, status: "operated",
+          guideReward: { wage: 21000, transport: 3000, other: 0, total: 24000 }, guideStatus: "confirmed",
+          facility: 8000, facilityStatus: "confirmed",
+          reservations: [
+            { id: "BK-260522-00045", channel: "viator", pax: 5, gross: 120000, otaFee: 24000, payFee: 0, ota: "unmatched", cancelled: false },
+          ] },
+        // 城下町ウォーキング（GR）— 全項目確定
+        { id: "TI-20260606-1300-G-GIF-017-1-GR-01", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング",
+          date: "2026/06/06", time: "13:00", lang: "en", guide: { name: "渡辺 武" }, status: "operated",
+          guideReward: { wage: 6500, transport: 1500, other: 0, total: 8000 }, guideStatus: "confirmed",
+          facility: 2000, facilityStatus: "confirmed",
+          reservations: [
+            { id: "BK-260525-00027", channel: "klook", pax: 4, gross: 40000, otaFee: 10000, payFee: 0, ota: "matched", cancelled: false },
+          ] },
+        // 漁村体験（GR）— 全項目確定
+        { id: "TI-20260607-0900-G-MIE-005-1-GR-01", code: "G-MIE-005-1-GR", tour: "漁村体験",
+          date: "2026/06/07", time: "09:00", lang: "ko", guide: { name: "山本 彩" }, status: "operated",
+          guideReward: { wage: 6000, transport: 1000, other: 0, total: 7000 }, guideStatus: "confirmed",
+          facility: 1500, facilityStatus: "confirmed",
+          reservations: [
+            { id: "BK-260530-00039", channel: "airbnb", pax: 3, gross: 35000, otaFee: 7000, payFee: 0, ota: "matched", cancelled: false },
+          ] },
+        // 茶道体験（GR）— 施設費が未確定（他画面で実績入力待ち）
+        { id: "TI-20260608-1000-G-AIC-005-1-GR-01", code: "G-AIC-005-1-GR", tour: "茶道体験",
+          date: "2026/06/08", time: "10:00", lang: "en", guide: { name: "鈴木 健" }, status: "operated",
+          guideReward: { wage: 5000, transport: 1000, other: 0, total: 6000 }, guideStatus: "confirmed",
+          facility: 0, facilityStatus: "pending",
+          reservations: [
+            { id: "BK-260608-00021", channel: "direct", pax: 2, gross: 24000, otaFee: 0, payFee: 864, ota: null, cancelled: false },
+          ] },
       ];
 
-      const isOta = (r) => CHANNEL[r.channel].ota;
-      const netOf = (r) => r.gross - r.otaFee - r.payFee;
+      // ── 予約単位（reservation）の計算 ──
+      const isOta = (b) => CHANNEL[b.channel].ota;
+      const netOf = (b) => b.gross - b.otaFee - b.payFee;
 
-      // 催行回のガイド報酬を、同一催行回(sessionId)の各予約へ「その予約の人数 ÷ 催行回の合計人数」で按分配賦。
-      // 端数は最大剰余法で1円単位に配分し、配賦合計が催行回のガイド報酬に一致（過不足なし）するよう保証。
-      const guideRewardOf = (r, all) => {
-        const group = all.filter(x => x.sessionId === r.sessionId);
-        const totalPax = group.reduce((s, x) => s + (x.pax || 0), 0);
-        const sessionReward = r.guideReward; // 催行回のガイド報酬総額（同一催行回内で同額）
-        if (totalPax <= 0 || group.length <= 1) return sessionReward; // 単独予約・人数不明はそのまま
-        const raws = group.map(x => sessionReward * (x.pax || 0) / totalPax);
-        const bases = raws.map(Math.floor);
-        let remainder = sessionReward - bases.reduce((s, v) => s + v, 0);
-        // 端数の大きい順に1円ずつ配分（同点はリスト順で安定）
-        const order = group
-          .map((x, i) => ({ i, frac: raws[i] - bases[i] }))
-          .sort((a, b) => b.frac - a.frac);
-        for (let k = 0; k < order.length && remainder > 0; k++, remainder--) bases[order[k].i] += 1;
-        const idx = group.findIndex(x => x.id === r.id);
-        return bases[idx];
-      };
+      // ── 催行回単位（session）の計算：按分はしない（横断データは催行回で1回） ──
+      const activeRes   = (s) => s.reservations.filter(b => !b.cancelled);
+      const sumB        = (s, k) => activeRes(s).reduce((t, b) => t + (b[k] || 0), 0);
+      const paxOf       = (s) => activeRes(s).reduce((t, b) => t + (b.pax || 0), 0);
+      const netTotalOf  = (s) => activeRes(s).reduce((t, b) => t + netOf(b), 0);
+      const facilityCost = (s) => (s.facility || 0); // 施設費（変更時のキャンセル料も施設費に内包）
+      const profitOf    = (s) => netTotalOf(s) - s.guideReward.total - facilityCost(s);
 
-      const profitOf = (r, all) => netOf(r) - guideRewardOf(r, all) - num(r.facility) - num(r.facilityCancel);
-      const facilityMissing = (r) => !filled(r.facility);
-      const otaPending = (r) => isOta(r) && r.ota !== "matched";
-      const guidePending = (r) => r.guide !== "confirmed";
-      const isAttention = (r) => facilityMissing(r) || guidePending(r) || otaPending(r);
+      // ── 確定状況の判定（施設費・ガイド精算＝催行回単位／OTA照合＝予約単位を催行回に集約） ──
+      const facilityPending = (s) => s.facilityStatus !== "confirmed";
+      const guidePending    = (s) => s.guideStatus !== "confirmed";
+      const otaPendingRes   = (s) => activeRes(s).filter(b => isOta(b) && b.ota !== "matched");
+      const sessAttention   = (s) => facilityPending(s) || guidePending(s) || otaPendingRes(s).length > 0;
+      const sessReady       = (s) => !sessAttention(s);
 
       function App() {
         const [toast, setToast] = useState(null);
@@ -354,50 +445,80 @@
         };
 
         const [month, setMonth] = useState(DATA_MONTH);
-        const [rows, setRows] = useState(ROWS_SEED);
         const [fChannel, setFChannel] = useState("all");
         const [tFacility, setTFacility] = useState(false);
         const [tGuide, setTGuide] = useState(false);
         const [tOta, setTOta] = useState(false);
         const [closed, setClosed] = useState(false);
+        const [expanded, setExpanded] = useState({}); // 催行回ごとの展開状態（グループは既定で折りたたみ）
+        const [sessConfirmed, setSessConfirmed] = useState({}); // 催行回ごとの確認済みフラグ
 
         const isDataMonth = month === DATA_MONTH;
-        const monthRows = isDataMonth ? rows : [];
+        const monthSessions = isDataMonth ? SESSIONS_SEED : [];
         const monthLabel = month.replace("-", "年") + "月";
 
-        const setField = (id, key, v) => setRows(prev => prev.map(r => r.id === id ? { ...r, [key]: v } : r));
+        const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
+        const confirmSession = (id) => setSessConfirmed(p => ({ ...p, [id]: true }));
+        const unconfirm = (id) => setSessConfirmed(p => ({ ...p, [id]: false }));
 
-        // ── 集計 ──
-        const sum = (fn) => monthRows.reduce((s, r) => s + fn(r), 0);
-        const grossTotal = sum(r => r.gross);
-        const otaFeeTotal = sum(r => r.otaFee);
-        const payFeeTotal = sum(r => r.payFee);
-        const netTotal = sum(netOf);
-        const guideRewardConfirmed = sum(r => r.guide === "confirmed" ? guideRewardOf(r, monthRows) : 0);
-        const facilityConfirmed = sum(r => filled(r.facility) ? num(r.facility) : 0);
-        const guidePendingCount = monthRows.filter(r => r.guide !== "confirmed").length;
-        const profitTotal = sum(r => r.guide === "confirmed" ? profitOf(r, monthRows) : 0);
-        const pendingCount = monthRows.filter(isAttention).length;
+        const visibleRes = (s) => fChannel === "all" ? s.reservations : s.reservations.filter(b => b.channel === fChannel);
+        const issueText = (s) => {
+          const out = [];
+          if (guidePending(s)) out.push("ガイド精算 未確定");
+          if (facilityPending(s)) out.push("施設費 未確定");
+          if (otaPendingRes(s).length) out.push(`OTA照合 未完了${otaPendingRes(s).length}件`);
+          return out.join("・");
+        };
+        // 状態列のチップ（未確定だけを出す減算表示。確定可/確認済みは緑1個）
+        const issueChips = (s) => {
+          if (sessConfirmed[s.id]) return [{ cls: "green", label: "確認済み", dot: true }];
+          if (sessReady(s)) return [{ cls: "green", label: "確認可", dot: true }];
+          const out = [];
+          if (guidePending(s)) out.push({ cls: "amber", label: "ガイド精算" });
+          if (facilityPending(s)) out.push({ cls: "amber", label: "施設費" });
+          const op = otaPendingRes(s).length;
+          if (op) out.push({ cls: "coral", label: `OTA照合${op}` });
+          return out;
+        };
 
-        const display = monthRows.filter(r =>
-          (fChannel === "all" || r.channel === fChannel) &&
-          (!tFacility || facilityMissing(r)) &&
-          (!tGuide || guidePending(r)) &&
-          (!tOta || otaPending(r))
+        // ── 集計（売上系＝予約をflatして合算／原価系＝催行回をflatして合算・按分しない） ──
+        const sumS = (fn) => monthSessions.reduce((t, s) => t + fn(s), 0);
+        const sessionCount = monthSessions.length;
+        const bookingCount = sumS(s => activeRes(s).length);
+        const grossTotal = sumS(s => sumB(s, "gross"));
+        const otaFeeTotal = sumS(s => sumB(s, "otaFee"));
+        const payFeeTotal = sumS(s => sumB(s, "payFee"));
+        const netTotal = sumS(netTotalOf);
+        const guideRewardConfirmed = sumS(s => guidePending(s) ? 0 : s.guideReward.total);
+        const facilityConfirmed = sumS(s => facilityPending(s) ? 0 : (s.facility || 0));
+        const profitTotal = sumS(s => sessReady(s) ? profitOf(s) : 0);
+        const pendingSessions = monthSessions.filter(s => !sessReady(s)).length;
+        const confirmedCount = monthSessions.filter(s => sessConfirmed[s.id]).length;
+        const unconfirmedCount = sessionCount - confirmedCount;
+
+        const display = monthSessions.filter(s =>
+          (fChannel === "all" || s.reservations.some(b => b.channel === fChannel)) &&
+          (!tFacility || facilityPending(s)) &&
+          (!tGuide || guidePending(s)) &&
+          (!tOta || otaPendingRes(s).length > 0)
         );
 
-        const canClose = monthRows.length > 0 && pendingCount === 0 && !closed;
+        const allOpen = display.length > 0 && display.every(s => expanded[s.id]);
+        const toggleAll = () => { const v = !allOpen; const next = { ...expanded }; display.forEach(s => { next[s.id] = v; }); setExpanded(next); };
+
+        const canClose = sessionCount > 0 && unconfirmedCount === 0 && !closed;
         const doClose = () => { if (!canClose) return; setClosed(true); showToast(`${monthLabel}を締めました`); };
 
         const STATS = [
-          { lab: "総予約件数", note: "（当月ツアー実施分）", val: <span>{monthRows.length}<span className="stat-unit">件</span></span> },
+          { lab: "催行回数", note: "（当月実施分）", val: <span>{sessionCount}<span className="stat-unit">回</span></span> },
+          { lab: "総予約件数", val: <span>{bookingCount}<span className="stat-unit">件</span></span> },
           { lab: "グロス売上合計", val: yen(grossTotal) },
           { lab: "チャネル手数料合計", val: yen(otaFeeTotal) },
           { lab: "決済手数料合計", val: yen(payFeeTotal) },
           { lab: "ネット受取額合計", val: yen(netTotal), cls: "accent" },
           { lab: "ガイド報酬合計", note: "（確定分）", val: yen(guideRewardConfirmed) },
           { lab: "施設費合計", note: "（確定分）", val: yen(facilityConfirmed) },
-          { lab: "粗利合計", note: `（確定分）※未確定${guidePendingCount}件（ガイド報酬確認待ち）を除く`, val: yen(profitTotal), cls: "accent" },
+          { lab: "粗利合計", note: `（確定分）※未確定${pendingSessions}催行回を除く`, val: yen(profitTotal), cls: "accent" },
         ];
 
         return (
@@ -438,7 +559,7 @@
               ))}
               <div className="side-note">
                 <strong>運用メモ</strong>
-                当月のツアー実施済み全予約の収支項目を確認します。施設費・ガイド精算・OTA照合がすべて確定すると月次締めを実行できます。
+                当月のツアー実施済み全催行回の収支を確認します。ガイド報酬・施設費は別画面で確定した額がここに反映されます。各催行回を確認するとその月を締められます。
               </div>
             </nav>
 
@@ -451,14 +572,14 @@
               <div className="page-head">
                 <div className="page-title">
                   <h1>月次締め確認</h1>
-                  <span className="sub">当月の全予約の収支項目を確認し、月次締めを完了します</span>
+                  <span className="sub">催行回ごとに当月の収支を確認し、月次締めを完了します</span>
                 </div>
               </div>
 
               {/* ── 月次サマリー ── */}
               <section className="card" data-screen-label="月次サマリー">
                 <div className="card-head">
-                  <div className="card-title">月次サマリー<span className="sec-hint">当月のツアー実施済み全予約の収支</span></div>
+                  <div className="card-title">月次サマリー<span className="sec-hint">当月のツアー実施済み催行回の収支</span></div>
                   <div className="month-nav">
                     <button className="mn-btn" onClick={() => { const [y, m] = month.split("-").map(Number); const d = new Date(y, m - 2); setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`); }} aria-label="前の月">‹</button>
                     <span className="mn-label">{monthLabel}</span>
@@ -473,15 +594,15 @@
                         <span className="stat-lab">{s.lab}{s.note && <span className="lab-note">{s.note}</span>}</span>
                       </div>
                     ))}
-                    <div className={`stat alert ${pendingCount === 0 ? "zero" : ""}`}>
-                      <span className="stat-num">{pendingCount}<span className="stat-unit">件</span></span>
-                      <span className="stat-lab">未確定件数{pendingCount === 0 ? "（なし）" : "（要対応）"}</span>
+                    <div className={`stat alert ${pendingSessions === 0 ? "zero" : ""}`}>
+                      <span className="stat-num">{pendingSessions}<span className="stat-unit">回</span></span>
+                      <span className="stat-lab">未確定催行回{pendingSessions === 0 ? "（なし）" : "（要対応）"}</span>
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* ── 明細テーブル ── */}
+              {/* ── 催行回明細 ── */}
               <section className="card" data-screen-label="月次締め明細">
                 <div className="filter-bar">
                   <div className="filter-field">
@@ -524,100 +645,226 @@
                       </label>
                     </div>
                   </div>
-                  <span className="result-count">{display.length} / {monthRows.length}件表示</span>
+                  {display.length > 0 && (
+                    <div className="filter-field">
+                      <span className="ff-lab">内訳</span>
+                      <button className="btn" onClick={toggleAll}>{allOpen ? "すべて折りたたむ" : "すべて展開"}</button>
+                    </div>
+                  )}
+                  <span className="result-count">{display.length} / {sessionCount}催行回</span>
                 </div>
 
-                {monthRows.length === 0 ? (
+                {fChannel !== "all" && (
+                  <div className="filter-note">
+                    <span className="badge blue sq">絞り込み中</span>
+                    チャネル「{CHANNEL[fChannel].label}」の予約を含む催行回のみ表示。各催行回の原価・粗利は催行回全体の値です（予約按分はしません）。
+                  </div>
+                )}
+
+                {sessionCount === 0 ? (
                   <div className="empty-state">
                     <div className="es-ic">◷</div>
-                    <div className="es-main">{monthLabel}にツアー実施済みの予約はありません</div>
-                    <div className="es-sub">対象月を変更すると、ここに収支明細が表示されます。</div>
+                    <div className="es-main">{monthLabel}にツアー実施済みの催行回はありません</div>
+                    <div className="es-sub">対象月を変更すると、ここに催行回ごとの収支が表示されます。</div>
                   </div>
                 ) : display.length === 0 ? (
                   <div className="empty-state">
                     <div className="es-ic">⌕</div>
-                    <div className="es-main">条件に一致する予約がありません</div>
+                    <div className="es-main">条件に一致する催行回がありません</div>
                     <div className="es-sub">フィルター条件を変更してください。</div>
                   </div>
                 ) : (
                   <div className="tbl-scroll">
-                    <table className="settle-table">
+                    <table className="settle-table master">
                       <thead>
                         <tr>
-                          <th>予約ID</th>
-                          <th>TourOption</th>
-                          <th>チャネル</th>
-                          <th>ツアー日</th>
+                          <th className="c-exp"></th>
+                          <th>日付</th>
+                          <th>ツアー</th>
+                          <th>ガイド</th>
+                          <th className="right">予約·人数</th>
                           <th className="right">グロス売上</th>
                           <th className="right">チャネル手数料</th>
                           <th className="right">決済手数料</th>
-                          <th className="right calc">ネット受取額</th>
-                          <th className="right">ガイド報酬<br/>（人数按分配賦）</th>
-                          <th className="right edit">施設費<br/>（実績）</th>
-                          <th className="right edit">施設<br/>キャンセル料</th>
+                          <th className="right calc">ネット受取</th>
+                          <th className="right">ガイド報酬</th>
+                          <th className="right">施設費</th>
                           <th className="right calc">粗利</th>
-                          <th>ガイド精算</th>
-                          <th>OTA照合</th>
-                          <th className="right">アクション</th>
+                          <th>状態</th>
+                          <th className="right">確認</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {display.map(r => {
-                          const att = isAttention(r);
-                          const ch = CHANNEL[r.channel];
-                          const gm = GUIDE_META[r.guide];
-                          const om = r.ota ? OTA_META[r.ota] : null;
-                          const facMiss = facilityMissing(r);
+                        {display.map(s => {
+                          const att = sessAttention(s);
+                          const exp = !!expanded[s.id];
+                          const confirmed = !!sessConfirmed[s.id];
+                          const profit = profitOf(s);
+                          const stop = (e) => e.stopPropagation();
                           return (
-                            <tr key={r.id} className={att ? "attention" : "confirmed"}>
-                              <td><span className="code-mono">{r.id}</span></td>
-                              <td>
-                                <span className="tour-cell">
-                                  <span className="t-code">{r.code}</span>
-                                  <span className="t-name">{r.name}</span>
-                                </span>
-                              </td>
-                              <td><span className={`badge ${ch.cls} sq`}>{ch.label}</span></td>
-                              <td><span className="col-date">{r.date}</span></td>
-                              <td className="right"><span className="money">{yen(r.gross)}</span></td>
-                              <td className="right">{r.otaFee ? <span className="money">{yen(r.otaFee)}</span> : <span className="muted-dash">—</span>}</td>
-                              <td className="right">{r.payFee ? <span className="money">{yen(r.payFee)}</span> : <span className="muted-dash">—</span>}</td>
-                              <td className="right calc"><span className="money calc-val">{yen(netOf(r))}</span></td>
-                              <td className="right">
-                                <span className="money">{yen(guideRewardOf(r, monthRows))}</span>
-                                {monthRows.filter(x => x.sessionId === r.sessionId).length > 1 && (
-                                  <span className="alloc-note">
-                                    {yen(r.guideReward)} × {r.pax}/{monthRows.filter(x => x.sessionId === r.sessionId).reduce((s, x) => s + (x.pax || 0), 0)}名
+                            <React.Fragment key={s.id}>
+                              <tr className={`master-row${att ? " attention" : ""}`} onClick={() => toggle(s.id)}>
+                                <td className="c-exp"><Caret open={exp} /></td>
+                                <td className="c-date">{s.date.slice(5)}<span className="d-time">{s.time}</span></td>
+                                <td className="c-tour">
+                                  <span className="t-name">{s.tour}</span>
+                                  <span className="t-code">{s.code}</span>
+                                </td>
+                                <td className="c-guide">{s.guide ? s.guide.name : <span className="muted-dash">未定</span>}</td>
+                                <td className="right">{activeRes(s).length}予約 / {paxOf(s)}名</td>
+                                <td className="right"><span className="money">{yen(sumB(s, "gross"))}</span></td>
+                                <td className="right">{sumB(s, "otaFee") ? <span className="money">{yen(sumB(s, "otaFee"))}</span> : <span className="muted-dash">—</span>}</td>
+                                <td className="right">{sumB(s, "payFee") ? <span className="money">{yen(sumB(s, "payFee"))}</span> : <span className="muted-dash">—</span>}</td>
+                                <td className="right calc"><span className="money calc-val">{yen(netTotalOf(s))}</span></td>
+                                <td className="right">
+                                  {guidePending(s) && <span className="cost-dot amber" title="ガイド精算 未確定"></span>}
+                                  <span className="money">{yen(s.guideReward.total)}</span>
+                                </td>
+                                <td className="right">
+                                  {facilityPending(s)
+                                    ? <span className="muted-dash" title="施設費 未確定">未</span>
+                                    : <span className="money">{yen(s.facility)}</span>}
+                                </td>
+                                <td className="right calc"><span className={`money calc-val${profit < 0 ? " neg" : ""}`}>{yen(profit)}</span></td>
+                                <td>
+                                  <span className="state-chips">
+                                    {issueChips(s).map((c, i) => (
+                                      <span className={`chip-mini ${c.cls}`} key={i}>{c.dot && <span className="dot"></span>}{c.label}</span>
+                                    ))}
                                   </span>
-                                )}
-                              </td>
-                              <td className="right edit edit-cell">
-                                <span className="num-input">
-                                  <span className="pfx">¥</span>
-                                  <input className={facMiss ? "miss" : ""} inputMode="numeric" placeholder="未入力" disabled={closed}
-                                    value={r.facility} onChange={e => setField(r.id, "facility", e.target.value)} />
-                                </span>
-                                {facMiss && <span className="miss-flag">要入力</span>}
-                              </td>
-                              <td className="right edit edit-cell">
-                                {r.changed
-                                  ? <span className="num-input">
-                                      <span className="pfx">¥</span>
-                                      <input inputMode="numeric" placeholder="0" disabled={closed}
-                                        value={r.facilityCancel} onChange={e => setField(r.id, "facilityCancel", e.target.value)} />
-                                    </span>
-                                  : <span className="muted-dash">—</span>}
-                              </td>
-                              <td className="right calc"><span className="money calc-val">{yen(profitOf(r, monthRows))}</span></td>
-                              <td><span className={`badge ${gm.cls}`}><span className="dot"></span>{gm.label}</span></td>
-                              <td>{om ? <span className={`badge ${om.cls}`}><span className="dot"></span>{om.label}</span> : <span className="muted-dash">—</span>}</td>
-                              <td>
-                                <span className="act-cell">
-                                  <a className="lnk" href="精算確認.html">精算確認</a>
-                                  {isOta(r) && <a className="lnk" href="OTA入金照合.html">OTA照合</a>}
-                                </span>
-                              </td>
-                            </tr>
+                                </td>
+                                <td className="right" onClick={stop}>
+                                  <span className="act-cell">
+                                    {confirmed
+                                      ? <button className="btn" disabled={closed} onClick={() => unconfirm(s.id)}>取消</button>
+                                      : sessReady(s)
+                                      ? <button className="btn primary" disabled={closed} onClick={() => confirmSession(s.id)}>この回を確認</button>
+                                      : <button className="btn" disabled title={issueText(s)}>確認不可</button>}
+                                  </span>
+                                </td>
+                              </tr>
+                              {exp && (
+                                <tr className="expand-row">
+                                  <td colSpan={14}>
+                                    <div className="exp-body">
+                                      <div className="exp-head">
+                                        <span className="code-mono">{s.id}</span>
+                                        <span className={`badge ${SESSION_ST[s.status].cls}`}><span className="dot"></span>{SESSION_ST[s.status].label}</span>
+                                        <span className="exp-meta">{LANG_LABEL[s.lang] || s.lang} · ガイド {s.guide ? s.guide.name : "未定"}</span>
+                                      </div>
+
+                                      <div>
+                                        <div className="sub-label">予約内訳<span className="sl-hint">予約ごとの売上・チャネル手数料（予約独自データ）</span></div>
+                                        <div className="inner-wrap">
+                                          <table className="settle-table inner">
+                                            <thead>
+                                              <tr>
+                                                <th>予約ID</th>
+                                                <th>チャネル</th>
+                                                <th className="right">人数</th>
+                                                <th className="right">グロス売上</th>
+                                                <th className="right">チャネル手数料</th>
+                                                <th className="right">決済手数料</th>
+                                                <th className="right calc">ネット受取</th>
+                                                <th>OTA照合</th>
+                                                <th className="right">アクション</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {visibleRes(s).map(b => {
+                                                const ch = CHANNEL[b.channel];
+                                                const om = b.ota ? OTA_META[b.ota] : null;
+                                                const bAtt = !b.cancelled && isOta(b) && b.ota !== "matched";
+                                                return (
+                                                  <tr key={b.id} className={b.cancelled ? "row-cancelled" : (bAtt ? "attention" : "confirmed")}>
+                                                    <td>
+                                                      <span className="code-mono">{b.id}</span>
+                                                      {b.cancelled && <span className="badge coral sq" style={{ marginLeft: 6 }}>キャンセル</span>}
+                                                    </td>
+                                                    <td><span className={`badge ${ch.cls} sq`}>{ch.label}</span></td>
+                                                    <td className="right">{b.pax}名</td>
+                                                    <td className="right"><span className="money">{yen(b.gross)}</span></td>
+                                                    <td className="right">{b.otaFee ? <span className="money">{yen(b.otaFee)}</span> : <span className="muted-dash">—</span>}</td>
+                                                    <td className="right">{b.payFee ? <span className="money">{yen(b.payFee)}</span> : <span className="muted-dash">—</span>}</td>
+                                                    <td className="right calc"><span className="money calc-val">{yen(netOf(b))}</span></td>
+                                                    <td>{om ? <span className={`badge ${om.cls}`}><span className="dot"></span>{om.label}</span> : <span className="muted-dash">—</span>}</td>
+                                                    <td className="right">
+                                                      <span className="act-cell">
+                                                        <a className="lnk" href="予約詳細.html">予約詳細</a>
+                                                        {isOta(b) && <a className="lnk" href="OTA入金照合.html">OTA照合</a>}
+                                                      </span>
+                                                    </td>
+                                                  </tr>
+                                                );
+                                              })}
+                                            </tbody>
+                                            <tfoot>
+                                              <tr>
+                                                <td colSpan={2}>予約合計</td>
+                                                <td className="right">{paxOf(s)}名</td>
+                                                <td className="right"><span className="money">{yen(sumB(s, "gross"))}</span></td>
+                                                <td className="right"><span className="money">{yen(sumB(s, "otaFee"))}</span></td>
+                                                <td className="right"><span className="money">{yen(sumB(s, "payFee"))}</span></td>
+                                                <td className="right calc"><span className="money calc-val">{yen(netTotalOf(s))}</span></td>
+                                                <td colSpan={2}></td>
+                                              </tr>
+                                            </tfoot>
+                                          </table>
+                                        </div>
+                                      </div>
+
+                                      {/* 催行回原価（横断・催行回で1回だけ・読み取り） */}
+                                      <div className="sess-cost">
+                                        <div className="cost-row">
+                                          <div className="cost-label">
+                                            ガイド報酬
+                                            <span className="badge muted sq">催行回1回</span>
+                                            <span className={`badge ${GUIDE_META[s.guideStatus].cls}`}><span className="dot"></span>{GUIDE_META[s.guideStatus].label}</span>
+                                          </div>
+                                          <div className="cost-val"><span className="money">{yen(s.guideReward.total)}</span></div>
+                                          <div className="cost-breakdown">
+                                            {s.guideReward.total > 0
+                                              ? `ツアー報酬 ${yen(s.guideReward.wage)} ＋ 現地までの交通費(往復) ${yen(s.guideReward.transport)}${s.guideReward.other ? ` ＋ その他 ${yen(s.guideReward.other)}` : ""}`
+                                              : "このツアーはガイド報酬の発生なし"}
+                                            <span className="bd-note">ガイドには立替含め全額を「報酬」表示／内部原価では分離（§11・§14-9）</span>
+                                            <a className="lnk" href="精算確認.html">{guidePending(s) ? "ガイド精算で確定する" : "精算明細を見る"}</a>
+                                          </div>
+                                        </div>
+                                        <div className="cost-row">
+                                          <div className="cost-label">
+                                            施設費<span className="badge muted sq">実績</span>
+                                            <span className={`badge ${FACILITY_META[s.facilityStatus].cls}`}><span className="dot"></span>{FACILITY_META[s.facilityStatus].label}</span>
+                                          </div>
+                                          <div className="cost-val">
+                                            {facilityPending(s)
+                                              ? <span className="muted-dash">未入力</span>
+                                              : <span className="money">{yen(s.facility)}</span>}
+                                          </div>
+                                          <div className="cost-breakdown">
+                                            施設の固定費・変動費（人数依存）・変更時のキャンセル料を含む実績額
+                                            <span className="bd-note">金額はガイド精算と同様、別画面で確定 → ここに反映されます</span>
+                                            <button className="lnk" onClick={() => showToast("施設費の入力・確認画面は準備中です")}>
+                                              {facilityPending(s) ? "施設費を入力（準備中）" : "施設費を確認（準備中）"}
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* 収支式 */}
+                                      <div className="sess-formula">
+                                        <span className="fx-term"><span className="fx-lab">ネット受取合計</span><span className="fx-num">{yen(netTotalOf(s))}</span></span>
+                                        <span className="fx-op">−</span>
+                                        <span className="fx-term"><span className="fx-lab">ガイド報酬</span><span className="fx-num">{yen(s.guideReward.total)}</span></span>
+                                        <span className="fx-op">−</span>
+                                        <span className="fx-term"><span className="fx-lab">施設費</span><span className="fx-num">{yen(facilityCost(s))}</span></span>
+                                        <span className="fx-op">=</span>
+                                        <span className="fx-term result"><span className="fx-lab">催行回粗利</span><span className={`fx-num${profit < 0 ? " neg" : ""}`}>{yen(profit)}</span></span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
                           );
                         })}
                       </tbody>
@@ -625,21 +872,21 @@
                   </div>
                 )}
 
-                {monthRows.length > 0 && (
+                {sessionCount > 0 && (
                   <div className="close-bar">
                     <div className="close-status">
                       {closed
                         ? <React.Fragment><span className="badge green"><span className="dot"></span>締め完了</span><span className="cs-strong">{monthLabel}は締め処理済みです</span></React.Fragment>
-                        : pendingCount === 0
-                        ? <React.Fragment><span className="badge green"><span className="dot"></span>全件確定</span><span>すべての収支項目が確定しています。月次締めを実行できます。</span></React.Fragment>
-                        : <React.Fragment><span className="badge amber"><span className="dot"></span>未確定 {pendingCount}件</span><span>施設費・ガイド精算・OTA照合の未確定をすべて解消してください。</span></React.Fragment>}
+                        : unconfirmedCount === 0
+                        ? <React.Fragment><span className="badge green"><span className="dot"></span>全催行回 確認済み</span><span>すべての催行回が確認済みです。月次締めを実行できます。</span></React.Fragment>
+                        : <React.Fragment><span className="badge amber"><span className="dot"></span>未確認 {unconfirmedCount}催行回</span><span>{pendingSessions > 0 ? `うち${pendingSessions}催行回はガイド精算・施設費・OTA照合が未確定です。各画面で確定してください。` : "各催行回の収支を確認してください。"}</span></React.Fragment>}
                     </div>
                     <div className="close-right">
-                      {!closed && (pendingCount === 0
+                      {!closed && (unconfirmedCount === 0
                         ? <span className="close-hint ok">締め可能</span>
-                        : <span className="close-hint">{pendingCount}件未確定</span>)}
+                        : <span className="close-hint">{unconfirmedCount}催行回 未確認</span>)}
                       <button className="btn primary lg" disabled={!canClose} onClick={doClose}
-                        title={closed ? "締め処理済み" : pendingCount > 0 ? `${pendingCount}件未確定のため締められません` : "この月を締める"}>
+                        title={closed ? "締め処理済み" : unconfirmedCount > 0 ? `${unconfirmedCount}催行回が未確認のため締められません` : "この月を締める"}>
                         {closed ? "締め処理済み" : "この月を締める"}
                       </button>
                     </div>
