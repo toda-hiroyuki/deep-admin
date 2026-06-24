@@ -130,15 +130,14 @@ function Sidebar({ resource, counts = {} }) {
               <span className="nav-count">{it.count}</span>
             </a>
           ))}
-        </div>
-        <div className="nav-section-label" style={{paddingTop:"10px"}}>マスター</div>
-        <div className="nav-group">
+          <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
           {masterSubItems.map(it => (
             <a key={it.key} href={it.href}
               className={`nav-item ${resource === it.key ? "active" : ""}`}
               style={{textDecoration:"none"}}>
               <span className="nav-icon">{it.icon}</span>
               <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+              <span className="nav-count">{it.count}</span>
             </a>
           ))}
         </div>

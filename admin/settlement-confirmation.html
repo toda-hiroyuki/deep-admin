@@ -516,66 +516,59 @@ function App() {
               <div className="nav-group" style={{marginBottom:"8px"}}>
                 <a href="index.html" className="nav-item" style={{textDecoration:"none"}}>
                   <span className="nav-icon">⊞</span>
-                  <span>ダッシュボード</span>
+                  <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
                 </a>
+              </div>
+              <div>
+                <div className="nav-section-label">予約オペレーション</div>
+                <div className="nav-group">
+              <a href="bookings.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">BK</span><span style={{flex:1,minWidth:0}}><div>予約一覧</div></span></a>
+              <a href="unassigned.html" className="nav-item nav-child" style={{textDecoration:"none"}}><span className="nav-icon">↳</span><span style={{flex:1,minWidth:0}}><div>未割り当て一覧</div></span></a>
+              <a href="sessions.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">SS</span><span style={{flex:1,minWidth:0}}><div>催行回一覧</div></span></a>
+              <a href="unarranged.html" className="nav-item nav-child" style={{textDecoration:"none"}}><span className="nav-icon">↳</span><span style={{flex:1,minWidth:0}}><div>未手配一覧</div></span></a>
+              <a href="today-tomorrow.html" className="nav-item nav-child" style={{textDecoration:"none"}}><span className="nav-icon">↳</span><span style={{flex:1,minWidth:0}}><div>当日/翌日案件</div></span></a>
+                </div>
               </div>
               <div>
                 <div className="nav-section-label">精算・経営</div>
                 <div className="nav-group">
-                  <a href="ota-payment-matching.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">OT</span><span>OTA入金照合</span>
-                  </a>
-                  <a href="revenue-summary.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">RV</span><span>収支一覧</span>
-                  </a>
+              <a href="monthly-settlement.html" className="nav-item active" style={{textDecoration:"none"}}><span className="nav-icon">ST</span><span style={{flex:1,minWidth:0}}><div>月次締め確認</div></span></a>
+              <a href="ota-payment-matching.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">OT</span><span style={{flex:1,minWidth:0}}><div>OTA入金照合</div></span></a>
+              <a href="revenue-summary.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">RV</span><span style={{flex:1,minWidth:0}}><div>収支一覧</div></span></a>
+                </div>
+              </div>
+              <div>
+                <div className="nav-section-label">ガイド管理</div>
+                <div className="nav-group">
+              <a href="guides.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">GM</span><span style={{flex:1,minWidth:0}}><div>ガイド一覧</div></span></a>
                 </div>
               </div>
               <div>
                 <div className="nav-section-label">施設管理</div>
                 <div className="nav-group">
-                  <a href="facilities.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">FC</span><span>施設一覧</span>
-                  </a>
+              <a href="facilities.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">FC</span><span style={{flex:1,minWidth:0}}><div>施設一覧</div></span></a>
                 </div>
               </div>
               <div>
                 <div className="nav-section-label">商品管理</div>
                 <div className="nav-group">
-                  <a href="tour-options.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">TO</span><span>TourOption</span>
-                  </a>
-                  <a href="products.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">PG</span><span>商品ページ</span>
-                  </a>
-                </div>
-                <div className="nav-section-label" style={{paddingTop:"10px"}}>マスター</div>
-                <div className="nav-group">
-                  <a href="resources.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">RS</span><span>リソース管理</span>
-                  </a>
-                  <a href="areas.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">AR</span><span>エリア管理</span>
-                  </a>
-                  <a href="languages.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">LG</span><span>言語マスター管理</span>
-                  </a>
-                  <a href="guide-materials.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">GD</span><span>ガイド資料</span>
-                  </a>
-                  <a href="cancel-policies.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">CP</span><span>キャンセルポリシー</span>
-                  </a>
-                  <a href="channel-fees.html" className="nav-item" style={{textDecoration:"none"}}>
-                    <span className="nav-icon">FE</span><span>チャネル・手数料設定</span>
-                  </a>
+              <a href="tour-options.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">TO</span><span style={{flex:1,minWidth:0}}><div>TourOption</div></span></a>
+              <a href="products.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">PG</span><span style={{flex:1,minWidth:0}}><div>商品ページ</div></span></a>
+                  <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+              <a href="resources.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">RS</span><span style={{flex:1,minWidth:0}}><div>リソース管理</div></span></a>
+              <a href="areas.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">AR</span><span style={{flex:1,minWidth:0}}><div>エリア管理</div></span></a>
+              <a href="languages.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">LG</span><span style={{flex:1,minWidth:0}}><div>言語マスター管理</div></span></a>
+              <a href="guide-materials.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">GD</span><span style={{flex:1,minWidth:0}}><div>ガイド資料</div></span></a>
+              <a href="cancel-policies.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">CP</span><span style={{flex:1,minWidth:0}}><div>キャンセルポリシー</div></span></a>
+              <a href="channel-fees.html" className="nav-item" style={{textDecoration:"none"}}><span className="nav-icon">FE</span><span style={{flex:1,minWidth:0}}><div>チャネル・手数料設定</div></span></a>
                 </div>
               </div>
-              <div class="sidebar-footer">
-    <a href="login.html" class="nav-item nav-logout">
-      <span class="nav-icon">↩</span><span>ログアウト</span>
-    </a>
-  </div>
-</nav>
+              <div className="sidebar-footer">
+                <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">↩</span><span>ログアウト</span>
+                </a>
+              </div>
+            </nav>
 
         <main className="workspace">
           <div className="crumbs">
