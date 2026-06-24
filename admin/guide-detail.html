@@ -137,16 +137,20 @@
       const guideItems = [
         { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
       ];
-      const masterItems = [
+      const facilityItems = [
+        { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設一覧" },
+      ];
+      const masterMainItems = [
         { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption" },
         { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ" },
+      ];
+      const masterSubItems = [
         { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
         { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
-        { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設管理" },
         { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
         { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料" },
         { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
-    { key: "channelFee",      href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+        { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
       ];
       return (
         <aside className="side-nav">
@@ -186,9 +190,29 @@
             </div>
           </div>
           <div>
+            <div className="nav-section-label">施設管理</div>
+            <div className="nav-group">
+              {facilityItems.map(it => (
+                <a key={it.key} href={it.href} className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span>{it.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
             <div className="nav-section-label">商品管理</div>
             <div className="nav-group">
-              {masterItems.map(it => (
+              {masterMainItems.map(it => (
+                <a key={it.key} href={it.href} className="nav-item" style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span>{it.label}</span>
+                </a>
+              ))}
+            </div>
+            <div className="nav-section-label" style={{paddingTop:"10px"}}>マスター</div>
+            <div className="nav-group">
+              {masterSubItems.map(it => (
                 <a key={it.key} href={it.href} className="nav-item" style={{textDecoration:"none"}}>
                   <span className="nav-icon">{it.icon}</span>
                   <span>{it.label}</span>
