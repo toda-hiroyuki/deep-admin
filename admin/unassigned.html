@@ -362,7 +362,7 @@
                             <td><span className={`status-pill ${r.status.cls}`}><span className="dot"></span>{r.status.label}</span></td>
                             <td><span className="status-pill muted"><span className="dot"></span>未紐付け</span></td>
                             <td>
-                              <button className="btn primary sm" onClick={() => { window.location.href = "assignment.html?booking=" + r.id; }}>催行回へ割り当て</button>
+                              <a href="booking-assign.html" className="btn primary sm" style={{textDecoration:"none"}}>催行回へ割り当て</a>
                             </td>
                           </tr>
                         );
