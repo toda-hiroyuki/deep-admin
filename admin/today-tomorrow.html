@@ -364,7 +364,7 @@
                     </thead>
                     <tbody>
                       {rows.map((r, i) => (
-                        <tr key={i} className={r.row === "urgent" ? "row-urgent" : r.row === "warn" ? "row-warn" : ""} style={{cursor:"pointer"}} onClick={() => showToast("催行回詳細へ移動します")}>
+                        <tr key={i} className={r.row === "urgent" ? "row-urgent" : r.row === "warn" ? "row-warn" : ""} style={{cursor:"pointer"}} onClick={() => { window.location.href = "session-detail.html"; }}>
                           <td><span className="start-time">{r.time}</span></td>
                           <td>
                             <div className="code-mono">{r.code}</div>

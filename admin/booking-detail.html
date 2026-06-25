@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>予約詳細 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1160px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+      /* ── Detail header ── */
+      .detail-head { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 20px 22px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+      .head-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+      .id-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+      .id-row .bk-id { font-size: 24px; font-weight: 750; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+      .id-row .ext-id { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .badge-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .head-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex-shrink: 0; }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+      .pill-label { font-size: 10px; color: var(--muted-soft); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-right: 2px; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-body { padding: 18px 20px; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; }
+
+      /* ── Definition grid ── */
+      .def-grid { display: grid; grid-template-columns: 200px 1fr; gap: 0; }
+      .def-grid .dt { color: var(--muted); font-size: 12.5px; font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+      .def-grid .dt:last-of-type, .def-grid .dd:last-of-type { border-bottom: 0; }
+      .def-grid .dd .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; margin-left: 8px; }
+      .def-grid .dd .quote { color: var(--ink-soft); font-style: italic; }
+      .def-grid .dd .strong { font-weight: 650; }
+      .ext-link { color: var(--accent); font-size: 13px; text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+      .ext-link:hover { border-bottom-color: var(--accent); }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Two-column card grid ── */
+      .col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
+      /* ── Tables in cards ── */
+      table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); }
+
+      /* ── Flag banner ── */
+      .flag-banner { display: flex; align-items: center; gap: 10px; background: var(--amber-soft); border: 1px solid var(--amber-soft); border-left: 3px solid var(--amber); border-radius: var(--radius); padding: 11px 14px; color: var(--amber); font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+
+      .field-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; font-size: 13px; }
+      .field-meta .lbl { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+
+      /* ── Memo textareas ── */
+      .memo-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+      .memo-field:last-of-type { margin-bottom: 0; }
+      .memo-field .filter-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      textarea.ctrl { min-height: 78px; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+      .ctrl { border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { height: var(--field-h); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; }
+      input[type="number"].ctrl, input[type="date"].ctrl, input[type="text"].ctrl { height: var(--field-h); }
+      input[type="date"].ctrl { font-variant-numeric: tabular-nums; }
+
+      /* ── Inline edit ── */
+      .def-grid .dd .ctrl { max-width: 320px; }
+      .def-grid .dd .ctrl.narrow { max-width: 220px; }
+      .def-grid .dd .ctrl.wide { max-width: 100%; }
+      .def-grid .dd textarea.ctrl { min-height: 58px; }
+      .edit-pair { display: flex; gap: 8px; flex-wrap: wrap; }
+      .edit-pair .ctrl { max-width: 170px; }
+      .locked-note { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--muted-soft); margin-left: 10px; }
+      .locked-note::before { content: ""; width: 11px; height: 11px; flex-shrink: 0; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 7V5a4 4 0 018 0v2h1v8H3V7h1zm2 0h4V5a2 2 0 10-4 0v2z'/%3E%3C/svg%3E") center/contain no-repeat; }
+      .toggle { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+      .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .toggle .track { width: 40px; height: 23px; border-radius: 999px; background: var(--line-strong); transition: background 0.15s; flex-shrink: 0; }
+      .toggle .thumb { position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(45,30,12,0.25); transition: transform 0.15s; }
+      .toggle input:checked + .track { background: var(--accent); }
+      .toggle input:checked + .track + .thumb { transform: translateX(17px); }
+      .toggle .t-label { font-size: 13px; color: var(--ink-soft); }
+
+      /* ── Alert banners ── */
+      .alert-stack { display: flex; flex-direction: column; gap: 10px; }
+      .alert-banner { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; border-radius: var(--radius); border-left: 4px solid; }
+      .alert-banner.amber { background: var(--amber-soft); border-left-color: var(--amber); }
+      .alert-banner.coral { background: var(--coral-soft); border-left-color: var(--coral); }
+      .alert-banner .ab-body { flex: 1; min-width: 0; }
+      .alert-banner .ab-title { font-size: 13.5px; font-weight: 700; }
+      .alert-banner.amber .ab-title { color: var(--amber); }
+      .alert-banner.coral .ab-title { color: var(--coral); }
+      .alert-banner .ab-sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+      .alert-banner .ab-actions { display: flex; gap: 10px; align-items: flex-end; margin-top: 12px; flex-wrap: wrap; }
+      .alert-banner .ab-dismiss { background: none; border: 0; color: var(--muted); font-size: 17px; line-height: 1; padding: 2px 3px; flex: none; border-radius: 5px; }
+      .alert-banner .ab-dismiss:hover { background: rgba(0,0,0,0.06); color: var(--ink); }
+
+      /* ── 追加請求 ── */
+      .add-charge-block { margin-top: 14px; }
+      .disclosure { background: none; border: 0; color: var(--accent); font-size: 13px; font-weight: 650; padding: 4px 0; display: inline-flex; align-items: center; gap: 6px; }
+      .disclosure:hover { color: var(--accent-strong); }
+      .ac-panel { margin-top: 12px; border: 1px solid var(--line); border-left: 4px solid var(--amber); border-radius: var(--radius); background: #fdf4dd; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+      .ac-panel .ac-title { font-size: 13.5px; font-weight: 800; color: var(--amber); display: flex; align-items: center; gap: 8px; }
+      .ac-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .ac-note { display: flex; gap: 9px; font-size: 12px; color: var(--ink-soft); line-height: 1.6; background: var(--blue-soft); border-radius: var(--radius); padding: 11px 13px; }
+      .ac-note .an-ic { flex: none; color: var(--blue); font-weight: 700; }
+      .ac-warn { display: flex; gap: 9px; font-size: 12.5px; color: var(--coral); font-weight: 600; line-height: 1.55; background: var(--coral-soft); border-radius: var(--radius); padding: 11px 13px; }
+
+      /* ── 変更・キャンセル履歴 ── */
+      .hist-toggle { background: none; border: 0; color: var(--accent); font-size: 12.5px; font-weight: 650; padding: 0; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+      .hist-toggle:hover { color: var(--accent-strong); }
+      tr.hist-detail-row > td { padding: 0; background: var(--bg-sunken); border-bottom: 1px solid var(--line-soft); }
+      .hist-detail { padding: 14px 16px; }
+      .ba-table { width: 100%; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+      .ba-table th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 13px; border-bottom: 1px solid var(--line); background: var(--surface-tint); }
+      .ba-table td { padding: 9px 13px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+      .ba-table tr:last-child td { border-bottom: 0; }
+      .ba-table td.ba-lab { color: var(--muted); font-weight: 600; width: 180px; }
+      .ba-table td.val-before { color: var(--muted); }
+      .ba-table td.val-after { color: var(--ink); font-weight: 650; }
+      .ba-table tr.changed td.val-after { background: var(--amber-soft); }
+      .ba-reason { margin-top: 10px; font-size: 12.5px; color: var(--ink-soft); }
+      .ba-reason .brl { color: var(--muted); font-weight: 600; margin-right: 6px; }
+
+      /* ── chip ── */
+      .chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 5px 11px; font-size: 13px; font-weight: 600; color: var(--ink-soft); background: var(--surface); cursor: pointer; user-select: none; }
+      .chip input { width: 15px; height: 15px; accent-color: var(--accent); }
+      .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); }
+      .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+      /* ── Form fields ── */
+      .form-field { display: flex; flex-direction: column; gap: 6px; }
+      .form-field .f-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+      .form-field .f-label .req { color: var(--coral); margin-left: 3px; }
+      .input-prefix { position: relative; display: flex; align-items: center; }
+      .input-prefix .pfx { position: absolute; left: 11px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-prefix .ctrl { padding-left: 24px; }
+
+      @keyframes dtlReveal { from { transform: translateY(-4px); } to { transform: none; } }
+      @media (prefers-reduced-motion: no-preference) { .reveal { animation: dtlReveal 0.2s ease; } }
+
+      @media (max-width: 760px) {
+        .col-2 { grid-template-columns: 1fr; }
+        .def-grid { grid-template-columns: 130px 1fr; }
+        .ac-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const AC_STATUS = {
+        unsent:    { label: "未送付", cls: "muted" },
+        invoiced:  { label: "請求済み（未払い）", cls: "amber" },
+        paid:      { label: "支払い済み", cls: "green" },
+        expired:   { label: "期限切れ", cls: "coral" },
+        cancelled: { label: "取消", cls: "muted" },
+      };
+
+      const RE_STATUS = {
+        unprocessed: { label: "未処理", cls: "amber" },
+        done:        { label: "完了", cls: "green" },
+        none:        { label: "不要", cls: "muted" },
+        ota:         { label: "OTA返金済み（Deep対応不要）", cls: "blue" },
+        check:       { label: "要確認", cls: "coral" },
+        special:     { label: "特別対応中", cls: "amber" },
+      };
+
+      const HISTORY = [
+        { type: "日時変更", typeCls: "blue", origin: "ゲスト都合", dt: "2026/06/05 10:15", by: "OP",
+          rows: [
+            { lab: "ツアー日", before: "2026/06/10（水）", after: "2026/06/15（月）", changed: true },
+            { lab: "開始時間", before: "09:00", after: "09:00", changed: false },
+            { lab: "旧催行回ID", before: "TI-20260610-0900-G-WAK-001-2-GR-01", after: "—", changed: true },
+            { lab: "新催行回ID", before: "—", after: "TI-20260615-0900-G-WAK-001-2-GR-01", changed: true },
+          ], reason: "ゲストの旅程変更", notify: true, memo: "ガイドの佐藤さんに日時変更の連絡済み（WhatsApp送信）" },
+        { type: "人数変更", typeCls: "green", origin: "ゲスト都合", dt: "2026/06/03 16:40", by: "MK",
+          rows: [
+            { lab: "参加人数", before: "大人2・子供1", after: "大人4・子供1", changed: true },
+            { lab: "販売金額", before: "¥25,000", after: "¥45,000", changed: true },
+            { lab: "追加請求額", before: "—", after: "¥20,000（決済リンク・支払い済み）", changed: true },
+          ], reason: "ゲストからの増員依頼", notify: false, memo: "" },
+      ];
+
+      function Sidebar({ resource, counts = {} }) {
+        const opsItems = [
+          { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+          { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+          { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+          { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+          { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+        ];
+        const payItems = [
+          { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
+          { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+          { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
+        ];
+        const guideItems = [
+          { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
+        ];
+        const facilityItems = [
+          { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設一覧" },
+        ];
+        const masterMainItems = [
+          { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
+          { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
+        ];
+        const masterSubItems = [
+          { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+          { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+          { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+          { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",         count: counts.gd },
+          { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+          { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+        ];
+        return (
+          <aside className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+              </div>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span>
+                <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+              </a>
+            </div>
+            <div>
+              <div className="nav-section-label">予約オペレーション</div>
+              <div className="nav-group">
+                {opsItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">
+                {payItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">ガイド管理</div>
+              <div className="nav-group">
+                {guideItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">施設管理</div>
+              <div className="nav-group">
+                {facilityItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group">
+                {masterMainItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                    <span className="nav-count">{it.count}</span>
+                  </a>
+                ))}
+                <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+                {masterSubItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                    <span className="nav-count">{it.count}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="sidebar-footer">
+              <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+                <span className="nav-icon">↩</span><span>ログアウト</span>
+              </a>
+            </div>
+          </aside>
+        );
+      }
+
+      function Def({ items }) {
+        return (
+          <div className="def-grid">
+            {items.map((it, i) => (
+              <React.Fragment key={i}>
+                <div className="dt">{it.k}</div>
+                <div className="dd">{it.v}</div>
+              </React.Fragment>
+            ))}
+          </div>
+        );
+      }
+
+      function Card({ no, title, action, foot, children }) {
+        return (
+          <section className="card" data-screen-label={title}>
+            <div className="card-head">
+              <div className="card-title"><span className="sec-no">{no}</span>{title}</div>
+              {action}
+            </div>
+            <div className="card-body">{children}</div>
+            {foot && <div className="card-foot">{foot}</div>}
+          </section>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [memoA, setMemoA] = useState("");
+        const [memoB, setMemoB] = useState("");
+        const [refUrls, setRefUrls] = useState([
+          {label: "DeepExperience", url: "https://www.deep-exp.com/"},
+        ]);
+        const [refUrlDraft, setRefUrlDraft] = useState([]);
+        const [editRefUrls, setEditRefUrls] = useState(false);
+        const [reAddOpen, setReAddOpen] = useState(false);
+        const [reAddAmount, setReAddAmount] = useState("");
+        const [reAddMethod, setReAddMethod] = useState("Stripe返金");
+        const [reAddExec, setReAddExec] = useState("");
+        const [reAddRef, setReAddRef] = useState("");
+        const [reAddMemo, setReAddMemo] = useState("");
+
+        const [dataFlag, setDataFlag] = useState(true);
+        const [dupFlag, setDupFlag] = useState(true);
+        const [acRecords, setAcRecords] = useState([]);
+        const hasAddCharge = acRecords.length > 0;
+        const [acRegOpen, setAcRegOpen] = useState(false);
+        const [acRegAmount, setAcRegAmount] = useState("");
+        const [acRegDesc, setAcRegDesc] = useState("");
+        const [acRegDate, setAcRegDate] = useState("");
+        const [acOpen, setAcOpen] = useState(false);
+        const [refunds, setRefunds] = useState([]);
+        const hasRefund = refunds.length > 0;
+        const [reOpen, setReOpen] = useState(false);
+        const [reStatus, setReStatus] = useState("unprocessed");
+        const [histOpen, setHistOpen] = useState(null);
+        const tourType = "group";
+        const [linkStatus, setLinkStatus] = useState("confirmed");
+
+        const [editBasic, setEditBasic] = useState(false);
+        const [basic, setBasic] = useState({ channel: "Viator", extNo: "VTR-8923401", sourceSystem: "", sourceSystemId: "", externalUrl: "", channelMemo: "" });
+        const [basicDraft, setBasicDraft] = useState(basic);
+        const startBasic = () => { setBasicDraft(basic); setEditBasic(true); };
+        const saveBasic = () => { setBasic(basicDraft); setEditBasic(false); showToast("予約基本情報を保存しました"); };
+
+        const [editGuest, setEditGuest] = useState(false);
+        const [guest, setGuest] = useState({
+          lastName: "Smith", firstName: "John",
+          nameJp: "スミス ジョン",
+          email: "smith.john@email.com",
+          phone: "+1-234-567-8900",
+          nationality: "アメリカ",
+          language: "英語",
+          contactMethods: [],
+          diet: "",
+          allergy: "なし",
+          wheelchair: false,
+          specialCare: "",
+          request: "Please arrange an English-speaking guide.",
+        });
+        const [guestDraft, setGuestDraft] = useState(guest);
+        const startGuest = () => { setGuestDraft(guest); setEditGuest(true); };
+        const saveGuest = () => { setGuest(guestDraft); setEditGuest(false); showToast("ゲスト情報を保存しました"); };
+
+        const [editMeet, setEditMeet] = useState(false);
+        const [meet, setMeet] = useState({
+          jp: "白山比咩神社 駐車場", en: "Hakusan Hime Shrine Parking",
+          map: "maps.google.com/?q=白山比咩神社", pickup: false, pickupPlace: "",
+          memo: "",
+        });
+        const [meetDraft, setMeetDraft] = useState(meet);
+        const startMeet = () => { setMeetDraft(meet); setEditMeet(true); };
+        const saveMeet = () => { setMeet(meetDraft); setEditMeet(false); showToast("集合・ピックアップ情報を保存しました"); };
+
+        const EditBtn = ({ onClick }) => (
+          <button className="btn sm" onClick={onClick}>編集</button>
+        );
+        const editFoot = (onSave, onCancel) => (
+          <React.Fragment>
+            <button className="btn primary" onClick={onSave}>保存</button>
+            <button className="btn" onClick={onCancel}>キャンセル</button>
+          </React.Fragment>
+        );
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
+
+        return (
+          <div className="app-shell">
+            <Sidebar resource="bookings" counts={{}} />
+
+            <main className="workspace">
+              <div className="crumbs">
+                <a href="bookings.html">予約一覧</a>
+                <span className="sep">›</span>
+                <span className="current">BK-260601-00002</span>
+              </div>
+
+              {(dataFlag || dupFlag) && (
+                <div className="alert-stack">
+                  {dataFlag && (
+                    <div className="alert-banner amber">
+                      <div className="ab-body">
+                        <div className="ab-title">⚠️ データ不備フラグがONです：TourOptionマッピング未確定</div>
+                        <div className="ab-actions">
+                          <button className="btn sm" onClick={() => { setDataFlag(false); showToast("データ不備を確認済みにしました"); }}>確認済みにする</button>
+                        </div>
+                      </div>
+                      <button className="ab-dismiss" title="折りたたむ" onClick={() => setDataFlag(false)}>×</button>
+                    </div>
+                  )}
+                  {dupFlag && (
+                    <div className="alert-banner coral">
+                      <div className="ab-body">
+                        <div className="ab-title">🔴 重複疑いフラグがONです</div>
+                        <div className="ab-sub">類似予約：<span className="code-mono">BK-260603-00015</span>（同一ゲスト・同一ツアー日時・同一TourOption／外部予約番号は別）</div>
+                        <div className="ab-actions">
+                          <button className="btn sm" onClick={() => { setDupFlag(false); showToast("別予約として確定しました"); }}>別予約として確定</button>
+                          <button className="btn sm primary" onClick={() => { setDupFlag(false); showToast("重複と判定しました"); }}>重複と判定</button>
+                        </div>
+                      </div>
+                      <button className="ab-dismiss" title="折りたたむ" onClick={() => setDupFlag(false)}>×</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── ① Header ── */}
+              <div className="detail-head">
+                <div className="head-left">
+                  <div className="id-row">
+                    <span className="bk-id">BK-260601-00002</span>
+                    <span className="ext-id">外部予約番号 VTR-8923401</span>
+                  </div>
+                  <div className="badge-row">
+                    <span className="status-pill teal"><span className="pill-label">予約</span><span className="dot"></span>確定予約</span>
+                    <span className="status-pill green"><span className="pill-label">支払い</span><span className="dot"></span>支払い済み</span>
+                    <span className="status-pill teal"><span className="pill-label">催行回</span><span className="dot"></span>確定紐付け</span>
+                    <span className="status-pill amber"><span className="pill-label">手配</span><span className="dot"></span>要確認</span>
+                  </div>
+                </div>
+                <div className="head-actions">
+                  <button className="btn" onClick={() => showToast("変更・キャンセル処理画面を開きます")}>変更・キャンセル処理</button>
+                  <button className="btn" onClick={() => showToast("手配操作画面を開きます")}>手配操作を開く</button>
+                  <button className="btn" onClick={() => showToast("外部予約管理画面を開きます")}>外部予約管理画面を開く</button>
+                  <button className="btn" onClick={() => showToast("操作履歴を開きます")}>操作履歴を開く</button>
+                </div>
+              </div>
+
+              {/* 催行回紐付け操作 */}
+              {tourType === "group" && (
+                <Card no="＋" title="催行回紐付け操作"
+                  action={
+                    linkStatus === "unlinked"
+                      ? <span className="status-pill muted"><span className="dot"></span>未紐付け</span>
+                      : linkStatus === "tentative"
+                      ? <span className="status-pill amber"><span className="dot"></span>仮紐付け</span>
+                      : <span className="status-pill teal"><span className="dot"></span>確定紐付け</span>
+                  }>
+                  <div className="field-meta">
+                    <span className="lbl">表示状態（プロトタイプ確認用）</span>
+                    <button className={`btn sm${linkStatus === "unlinked" ? " primary" : ""}`} onClick={() => setLinkStatus("unlinked")}>未紐付け</button>
+                    <button className={`btn sm${linkStatus === "tentative" ? " primary" : ""}`} onClick={() => setLinkStatus("tentative")}>仮紐付け</button>
+                    <button className={`btn sm${linkStatus === "confirmed" ? " primary" : ""}`} onClick={() => setLinkStatus("confirmed")}>確定紐付け</button>
+                  </div>
+                  {linkStatus === "unlinked" && (
+                    <div className="field-meta" style={{ marginBottom: 0 }}>
+                      <span className="lbl">この予約はまだ催行回に紐付いていません。</span>
+                      <button className="btn primary" onClick={() => showToast("催行回割り当て画面を開きます")}>催行回に割り当てる</button>
+                    </div>
+                  )}
+                  {linkStatus === "tentative" && (
+                    <div className="field-meta" style={{ marginBottom: 0 }}>
+                      <span className="lbl">催行回に仮紐付け中です。確定するとガイド手配を開始できます。</span>
+                      <button className="btn" onClick={() => showToast("催行回変更画面を開きます")}>催行回を変更する</button>
+                    </div>
+                  )}
+                  {linkStatus === "confirmed" && (
+                    <div className="field-meta" style={{ marginBottom: 0 }}>
+                      <span className="lbl muted-dash">確定紐付け済みです。確定後は催行回の変更はできません。</span>
+                    </div>
+                  )}
+                </Card>
+              )}
+
+              {/* ── ② & ③ ── */}
+              <div className="col-2">
+                <Card no="2" title="予約基本情報"
+                  action={!editBasic && <EditBtn onClick={startBasic} />}
+                  foot={editBasic && editFoot(saveBasic, () => setEditBasic(false))}>
+                  <div className="def-grid">
+                    <div className="dt">TourOption</div>
+                    <div className="dd">
+                      <span className="code-mono">G-WAK-001-2-GR</span><span className="sub">里山ハイキング</span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">TourOptionバージョン</div>
+                    <div className="dd">
+                      <span className="strong">v3（2026-04-01〜・現在のTourOptionバージョン）</span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">ツアー日時</div>
+                    <div className="dd">
+                      <span className="strong">2026/06/15（月）09:00〜12:00</span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">参加人数</div>
+                    <div className="dd">
+                      <span>大人4・子供1<span className="sub">（計5名）</span></span>
+                      {editBasic && <span className="locked-note">変更・キャンセル処理から</span>}
+                    </div>
+
+                    <div className="dt">予約元 / チャネル</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <select className="ctrl narrow" value={basicDraft.channel}
+                            onChange={e => setBasicDraft({ ...basicDraft, channel: e.target.value })}>
+                            <option>Viator</option>
+                            <option>GetYourGuide</option>
+                            <option>Klook</option>
+                            <option>Airbnb</option>
+                            <option>その他</option>
+                          </select>
+                        : basic.channel}
+                    </div>
+
+                    <div className="dt">外部予約番号</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <input type="text" className="ctrl narrow code-mono" value={basicDraft.extNo}
+                            onChange={e => setBasicDraft({ ...basicDraft, extNo: e.target.value })} />
+                        : <span className="code-mono">{basic.extNo}</span>}
+                    </div>
+
+                    <div className="dt">取込元システム</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <input type="text" className="ctrl narrow" placeholder="例：Bokun" value={basicDraft.sourceSystem}
+                            onChange={e => setBasicDraft({ ...basicDraft, sourceSystem: e.target.value })} />
+                        : (basic.sourceSystem || <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">取込元システム予約ID</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <input type="text" className="ctrl narrow code-mono" placeholder="例：VTR-8923415" value={basicDraft.sourceSystemId}
+                            onChange={e => setBasicDraft({ ...basicDraft, sourceSystemId: e.target.value })} />
+                        : (basic.sourceSystemId ? <span className="code-mono">{basic.sourceSystemId}</span> : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">外部管理画面URL</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <input type="url" className="ctrl code-mono" placeholder="https://" value={basicDraft.externalUrl}
+                            onChange={e => setBasicDraft({ ...basicDraft, externalUrl: e.target.value })} />
+                        : (basic.externalUrl
+                            ? <a className="ext-link" href={basic.externalUrl} target="_blank" rel="noreferrer">{basic.externalUrl}</a>
+                            : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">チャネル別メモ</div>
+                    <div className="dd">
+                      {editBasic
+                        ? <textarea className="ctrl wide" placeholder="チャネル固有の備考・対応メモなど" value={basicDraft.channelMemo}
+                            onChange={e => setBasicDraft({ ...basicDraft, channelMemo: e.target.value })}></textarea>
+                        : (basic.channelMemo || <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">予約受付方式</div>
+                    <div className="dd">即時確定</div>
+                    <div className="dt">予約作成日時</div>
+                    <div className="dd">2026/06/01 14:32</div>
+                    <div className="dt">確定日時</div>
+                    <div className="dd">2026/06/01 14:32</div>
+                  </div>
+                </Card>
+
+                <Card no="3" title="ゲスト情報"
+                  action={!editGuest && <EditBtn onClick={startGuest} />}
+                  foot={editGuest && editFoot(saveGuest, () => setEditGuest(false))}>
+                  <div className="def-grid">
+                    <div className="dt">予約者名（英語）</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <span className="edit-pair">
+                            <input type="text" className="ctrl" placeholder="姓 / Last name" value={guestDraft.lastName}
+                              onChange={e => setGuestDraft({ ...guestDraft, lastName: e.target.value })} />
+                            <input type="text" className="ctrl" placeholder="名 / First name" value={guestDraft.firstName}
+                              onChange={e => setGuestDraft({ ...guestDraft, firstName: e.target.value })} />
+                          </span>
+                        : <span>{guest.lastName} {guest.firstName}</span>}
+                    </div>
+
+                    <div className="dt">予約者名（日本語）</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl" placeholder="例：スミス ジョン" value={guestDraft.nameJp}
+                            onChange={e => setGuestDraft({ ...guestDraft, nameJp: e.target.value })} />
+                        : (guest.nameJp ? guest.nameJp : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">連絡先メール</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl code-mono" value={guestDraft.email}
+                            onChange={e => setGuestDraft({ ...guestDraft, email: e.target.value })} />
+                        : <span className="code-mono">{guest.email}</span>}
+                    </div>
+
+                    <div className="dt">電話番号</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl narrow code-mono" value={guestDraft.phone}
+                            onChange={e => setGuestDraft({ ...guestDraft, phone: e.target.value })} />
+                        : <span className="code-mono">{guest.phone}</span>}
+                    </div>
+
+                    <div className="dt">国籍</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <select className="ctrl narrow" value={guestDraft.nationality}
+                            onChange={e => setGuestDraft({ ...guestDraft, nationality: e.target.value })}>
+                            <option value="">選択してください</option>
+                            <option>日本</option><option>アメリカ</option><option>イギリス</option>
+                            <option>オーストラリア</option><option>中国</option><option>台湾</option>
+                            <option>韓国</option><option>フランス</option><option>ドイツ</option>
+                            <option>シンガポール</option><option>その他</option>
+                          </select>
+                        : (guest.nationality || <span className="muted-dash">未設定</span>)}
+                    </div>
+
+                    <div className="dt">使用言語</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <select className="ctrl narrow" value={guestDraft.language}
+                            onChange={e => setGuestDraft({ ...guestDraft, language: e.target.value })}>
+                            <option>日本語</option><option>英語</option>
+                            <option>中国語(簡体)</option><option>中国語(繁体)</option>
+                            <option>韓国語</option><option>フランス語</option><option>その他</option>
+                          </select>
+                        : (guest.language || <span className="muted-dash">未設定</span>)}
+                    </div>
+
+                    <div className="dt">連絡可能手段</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <div className="chip-group">
+                            {["メール","WhatsApp","LINE","電話"].map(m => (
+                              <label key={m} className={`chip ${guestDraft.contactMethods.includes(m) ? "on" : ""}`}>
+                                <input type="checkbox" checked={guestDraft.contactMethods.includes(m)}
+                                  onChange={e => {
+                                    const next = e.target.checked
+                                      ? [...guestDraft.contactMethods, m]
+                                      : guestDraft.contactMethods.filter(x => x !== m);
+                                    setGuestDraft({ ...guestDraft, contactMethods: next });
+                                  }} />
+                                {m}
+                              </label>
+                            ))}
+                          </div>
+                        : (guest.contactMethods.length > 0
+                            ? <div className="chip-group">{guest.contactMethods.map(m => <span key={m} className="badge">{m}</span>)}</div>
+                            : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">食事制限</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl" placeholder="例：ベジタリアン、ハラール" value={guestDraft.diet}
+                            onChange={e => setGuestDraft({ ...guestDraft, diet: e.target.value })} />
+                        : (guest.diet ? guest.diet : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">アレルギー</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <input type="text" className="ctrl" placeholder="例：ピーナッツ、甲殻類" value={guestDraft.allergy}
+                            onChange={e => setGuestDraft({ ...guestDraft, allergy: e.target.value })} />
+                        : (guest.allergy && guest.allergy !== "なし"
+                            ? guest.allergy : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">車椅子・移動補助の有無</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <label className="toggle">
+                            <input type="checkbox" checked={guestDraft.wheelchair}
+                              onChange={e => setGuestDraft({ ...guestDraft, wheelchair: e.target.checked })} />
+                            <span className="track"></span>
+                            <span className="thumb"></span>
+                            <span className="t-label">{guestDraft.wheelchair ? "あり" : "なし"}</span>
+                          </label>
+                        : (guest.wheelchair ? "あり" : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">その他の特別配慮事項</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <textarea className="ctrl wide" placeholder="妊娠中の方、高齢の方、お子様連れなど"
+                            value={guestDraft.specialCare}
+                            onChange={e => setGuestDraft({ ...guestDraft, specialCare: e.target.value })}></textarea>
+                        : (guest.specialCare ? guest.specialCare : <span className="muted-dash">なし</span>)}
+                    </div>
+
+                    <div className="dt">ゲスト要望</div>
+                    <div className="dd">
+                      {editGuest
+                        ? <textarea className="ctrl wide" value={guestDraft.request}
+                            onChange={e => setGuestDraft({ ...guestDraft, request: e.target.value })}></textarea>
+                        : (guest.request
+                            ? <span className="quote">"{guest.request}"</span> : <span className="muted-dash">なし</span>)}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* ── ④ 変更・キャンセル履歴 ── */}
+              <Card no="4" title="変更・キャンセル履歴"
+                foot={<button className="btn" onClick={() => showToast("変更・キャンセル処理画面を開きます")}>変更・キャンセル処理を行う</button>}>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>変更種別</th>
+                      <th>発生元</th>
+                      <th>処理日時</th>
+                      <th>処理者</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {HISTORY.map((h, i) => (
+                      <React.Fragment key={i}>
+                        <tr>
+                          <td><span className={`badge ${h.typeCls}`}>{h.type}</span></td>
+                          <td>{h.origin}</td>
+                          <td>{h.dt}</td>
+                          <td>{h.by}</td>
+                          <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                            <button className="hist-toggle" onClick={() => setHistOpen(histOpen === i ? null : i)}>
+                              {histOpen === i ? "▲ 閉じる" : "▼ 詳細を見る"}
+                            </button>
+                          </td>
+                        </tr>
+                        {histOpen === i && (
+                          <tr className="hist-detail-row">
+                            <td colSpan={5}>
+                              <div className="hist-detail reveal">
+                                <table className="ba-table">
+                                  <thead><tr><th>項目</th><th>変更前</th><th>変更後</th></tr></thead>
+                                  <tbody>
+                                    {h.rows.map((r, j) => (
+                                      <tr key={j} className={r.changed ? "changed" : ""}>
+                                        <td className="ba-lab">{r.lab}</td>
+                                        <td className="val-before">{r.before}</td>
+                                        <td className="val-after">{r.after}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                                {h.reason && <div className="ba-reason"><span className="brl">変更理由</span>{h.reason}</div>}
+                                <div className="ba-reason"><span className="brl">ガイドへの通知要否</span>{h.notify ? "通知する" : "通知しない"}</div>
+                                {h.memo && <div className="ba-reason"><span className="brl">メモ</span>{h.memo}</div>}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+
+              {/* ── ⑤ 集合・ピックアップ情報 ── */}
+              <Card no="5" title="集合・ピックアップ情報"
+                action={!editMeet && <EditBtn onClick={startMeet} />}
+                foot={editMeet && editFoot(saveMeet, () => setEditMeet(false))}>
+                <div className="def-grid">
+                  <div className="dt">集合場所（日本語）</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <input type="text" className="ctrl wide" value={meetDraft.jp}
+                          onChange={e => setMeetDraft({ ...meetDraft, jp: e.target.value })} />
+                      : meet.jp}
+                  </div>
+
+                  <div className="dt">集合場所（英語）</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <input type="text" className="ctrl wide" value={meetDraft.en}
+                          onChange={e => setMeetDraft({ ...meetDraft, en: e.target.value })} />
+                      : meet.en}
+                  </div>
+
+                  <div className="dt">Google Map URL</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <input type="text" className="ctrl wide code-mono" value={meetDraft.map}
+                          onChange={e => setMeetDraft({ ...meetDraft, map: e.target.value })} />
+                      : <a className="ext-link" href="#" onClick={e => { e.preventDefault(); showToast("地図リンクを開きます"); }}>{meet.map}</a>}
+                  </div>
+
+                  <div className="dt">ピックアップ</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <label className="toggle">
+                          <input type="checkbox" checked={meetDraft.pickup}
+                            onChange={e => setMeetDraft({ ...meetDraft, pickup: e.target.checked })} />
+                          <span className="track"></span>
+                          <span className="thumb"></span>
+                          <span className="t-label">{meetDraft.pickup ? "あり" : "なし"}</span>
+                        </label>
+                      : (meet.pickup ? "あり" : <span className="muted-dash">なし</span>)}
+                  </div>
+
+                  {(editMeet ? meetDraft.pickup : meet.pickup) && (
+                    <React.Fragment>
+                      <div className="dt">ピックアップ場所</div>
+                      <div className="dd">
+                        {editMeet
+                          ? <input type="text" className="ctrl wide" placeholder="ピックアップ場所を入力（例：金沢駅 東口ロータリー）" value={meetDraft.pickupPlace}
+                              onChange={e => setMeetDraft({ ...meetDraft, pickupPlace: e.target.value })} />
+                          : (meet.pickupPlace ? meet.pickupPlace : <span className="muted-dash">未設定</span>)}
+                      </div>
+                    </React.Fragment>
+                  )}
+
+                  <div className="dt">集合方法メモ</div>
+                  <div className="dd">
+                    {editMeet
+                      ? <textarea className="ctrl wide" placeholder="目印・合流方法・遅刻時の連絡先など"
+                          value={meetDraft.memo}
+                          onChange={e => setMeetDraft({ ...meetDraft, memo: e.target.value })}></textarea>
+                      : (meet.memo ? meet.memo : <span className="muted-dash">なし</span>)}
+                  </div>
+                </div>
+              </Card>
+
+              {/* ── ⑥ ガイド手配情報 ── */}
+              <Card no="6" title="ガイド手配情報"
+                action={<span className="status-pill amber"><span className="dot"></span>要確認</span>}
+                foot={<button className="btn primary" onClick={() => showToast("手配操作画面を開きます")}>手配操作を開く</button>}>
+                <div className="flag-banner">⚠ 再手配要否を確認してください</div>
+                <div className="field-meta">
+                  <span className="lbl">変更理由区分</span>
+                  <span className="badge blue">日時変更</span>
+                  <span className="lbl" style={{ marginLeft: 10 }}>精算ステータス</span>
+                  <span className="badge">見込み設定済み</span>
+                </div>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>ガイド名</th>
+                      <th>役割</th>
+                      <th>手配ステータス</th>
+                      <th>確定日時</th>
+                      <th>適用時給</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>田中 誠</strong></td>
+                      <td>メインガイド</td>
+                      <td><span className="status-pill teal"><span className="dot"></span>確定</span></td>
+                      <td>2026/05/10</td>
+                      <td>¥3,500/h</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Card>
+
+              {/* ── ⑦ 支払いサマリー ── */}
+              <Card no="7" title="支払いサマリー">
+                <Def items={[
+                  { k: "販売金額", v: <span className="strong">¥45,000</span> },
+                  { k: "当初支払い額", v: <span>¥25,000<span className="sub">（2026/06/01）</span></span> },
+                  { k: "決済元", v: "Viator" },
+                  { k: "料金メモ", v: <span className="muted-dash">なし</span> },
+                  ...acRecords.flatMap((r, i) => [
+                    { k: `追加請求 #${i + 1}`, v: <span>¥{Number(r.amount).toLocaleString()}<span className="sub">（{r.desc}{r.date ? "　" + r.date : ""}）</span></span> },
+                    { k: "ステータス", v: <span className={`badge ${AC_STATUS[r.status].cls}`}>{AC_STATUS[r.status].label}</span> },
+                  ]),
+                  { k: "支払い済み合計", v: (() => {
+                    const totalAc = acRecords.reduce((s, r) => s + Number(r.amount), 0);
+                    return hasAddCharge
+                      ? <span className="strong">¥{(25000 + totalAc).toLocaleString()}<span className="sub">（当初 ¥25,000 ＋ 追加請求 ¥{totalAc.toLocaleString()}）</span></span>
+                      : <span className="strong">¥25,000</span>;
+                  })() },
+                  ...(hasRefund ? [
+                    { k: "実返金額（合計）", v: <span className="strong">¥{refunds.reduce((s, r) => s + r.amount, 0).toLocaleString()}</span> },
+                    { k: "返金ステータス", v: <span className={`badge ${RE_STATUS[reStatus].cls}`}>{RE_STATUS[reStatus].label}</span> },
+                  ] : [
+                    { k: "返金", v: <span className="muted-dash">なし</span> },
+                  ]),
+                ]} />
+                {!hasAddCharge && (
+                  <div className="add-charge-block">
+                    {!acRegOpen ? (
+                      <button className="btn sm" onClick={() => setAcRegOpen(true)}>＋ 追加請求を登録</button>
+                    ) : (
+                      <div style={{ padding: 14, background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--radius)" }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--amber)", marginBottom: 12 }}>追加請求を登録</div>
+                        <div className="ac-grid">
+                          <div className="form-field">
+                            <label className="f-label">追加請求金額<span className="req">*</span></label>
+                            <div className="input-prefix">
+                              <span className="pfx">¥</span>
+                              <input type="number" className="ctrl" placeholder="0" value={acRegAmount} onChange={e => setAcRegAmount(e.target.value)} />
+                            </div>
+                          </div>
+                          <div className="form-field">
+                            <label className="f-label">日付<span className="req">*</span></label>
+                            <input type="date" className="ctrl" value={acRegDate} onChange={e => setAcRegDate(e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="form-field" style={{ marginTop: 10 }}>
+                          <label className="f-label">理由・メモ</label>
+                          <input type="text" className="ctrl" placeholder="例：人数変更による増額" value={acRegDesc} onChange={e => setAcRegDesc(e.target.value)} />
+                        </div>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 10 }}>
+                          <button className="btn sm" onClick={() => { setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate(""); }}>キャンセル</button>
+                          <button className="btn primary sm" onClick={() => {
+                            setAcRecords(prev => [...prev, { id: Date.now(), amount: acRegAmount, desc: acRegDesc, date: acRegDate, status: "unsent", url: "", expiry: "", sent: "", method: "email", statusHistory: [] }]);
+                            setAcRegOpen(false); setAcRegAmount(""); setAcRegDesc(""); setAcRegDate("");
+                            showToast("追加請求を登録しました");
+                          }}>登録する</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {hasAddCharge && (
+                  <div className="add-charge-block">
+                    <button className="disclosure" onClick={() => setAcOpen(o => !o)}>{acOpen ? "▲" : "▼"} 追加請求の詳細を管理する</button>
+                    {acOpen && (
+                      <div className="ac-panel reveal">
+                        <div className="ac-title">💳 追加請求の管理</div>
+                        {acRecords.map((r, idx) => (
+                          <div key={r.id} style={{ borderTop: idx ? "1px solid var(--line-soft)" : "none", paddingTop: idx ? 16 : 0, marginTop: idx ? 16 : 0 }}>
+                            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
+                              <span style={{ fontWeight: 700, fontSize: 13 }}>追加請求 #{idx + 1}</span>
+                              <span style={{ fontWeight: 700 }}>¥{Number(r.amount).toLocaleString()}</span>
+                              {r.desc && <span style={{ color: "var(--muted)", fontSize: 12 }}>{r.desc}</span>}
+                            </div>
+                            <div className="form-field">
+                              <label className="f-label">追加請求ステータス</label>
+                              <select className="ctrl" value={r.status}
+                                onChange={e => setAcRecords(prev => prev.map(rec => rec.id === r.id ? { ...rec, status: e.target.value } : rec))}>
+                                <option value="unsent">未送付</option>
+                                <option value="invoiced">請求済み（未払い）</option>
+                                <option value="paid">支払い済み</option>
+                                <option value="expired">期限切れ</option>
+                                <option value="cancelled">取消</option>
+                              </select>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                              <button className="btn primary" onClick={() => showToast("追加請求の管理内容を保存しました")}>保存する</button>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="ac-note"><span className="an-ic">ℹ️</span><span>決済リンクは Stripe 管理画面で発行し URL を記録してください。送付後にステータスを「請求済み」に更新してください。</span></div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {!hasRefund && (
+                  <div className="add-charge-block">
+                    {!reAddOpen ? (
+                      <button className="btn sm" onClick={() => setReAddOpen(true)}>＋ 返金を登録</button>
+                    ) : (
+                      <div style={{ padding: 14, background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--radius)" }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--amber)", marginBottom: 12 }}>返金を登録</div>
+                        <div className="ac-grid">
+                          <div className="form-field">
+                            <label className="f-label">返金額<span className="req">*</span></label>
+                            <div className="input-prefix">
+                              <span className="pfx">¥</span>
+                              <input type="number" className="ctrl" placeholder="0" value={reAddAmount} onChange={e => setReAddAmount(e.target.value)} />
+                            </div>
+                          </div>
+                          <div className="form-field">
+                            <label className="f-label">返金方法<span className="req">*</span></label>
+                            <select className="ctrl" value={reAddMethod} onChange={e => setReAddMethod(e.target.value)}>
+                              <option>Stripe返金</option>
+                              <option>銀行振込</option>
+                              <option>OTA経由</option>
+                              <option>その他</option>
+                            </select>
+                          </div>
+                          <div className="form-field">
+                            <label className="f-label">実行日<span className="req">*</span></label>
+                            <input type="date" className="ctrl" value={reAddExec} onChange={e => setReAddExec(e.target.value)} />
+                          </div>
+                          {reAddMethod === "Stripe返金" && (
+                            <div className="form-field">
+                              <label className="f-label">Stripe返金参照ID</label>
+                              <input type="text" className="ctrl" placeholder="re_xxxxxxxxxxxx" value={reAddRef} onChange={e => setReAddRef(e.target.value)} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="form-field" style={{ marginTop: 10 }}>
+                          <label className="f-label">メモ</label>
+                          <textarea className="ctrl" placeholder="返金に関するメモを入力…" value={reAddMemo} onChange={e => setReAddMemo(e.target.value)}></textarea>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 10 }}>
+                          <button className="btn sm" onClick={() => { setReAddOpen(false); setReAddAmount(""); setReAddMethod("Stripe返金"); setReAddExec(""); setReAddRef(""); setReAddMemo(""); }}>キャンセル</button>
+                          <button className="btn primary sm" onClick={() => {
+                            setRefunds(prev => [...prev, { amount: Number(reAddAmount), method: reAddMethod, ref: reAddRef || "—", exec: reAddExec, note: reAddMemo }]);
+                            setReAddOpen(false); setReAddAmount(""); setReAddMethod("Stripe返金"); setReAddExec(""); setReAddRef(""); setReAddMemo("");
+                            showToast("返金処理を記録しました");
+                          }}>記録する</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {hasRefund && (
+                  <div className="add-charge-block">
+                    <button className="disclosure" onClick={() => setReOpen(o => !o)}>{reOpen ? "▲" : "▼"} 返金の詳細を管理する</button>
+                    {reOpen && (
+                      <div className="ac-panel reveal">
+                        <div className="ac-title">💸 返金の管理</div>
+                        {refunds.map((r, i) => (
+                          <div key={i} style={{ borderTop: i ? "1px solid var(--line)" : "none", paddingTop: i ? 12 : 0 }}>
+                            <Def items={[
+                              { k: "返金額", v: <span className="strong">¥{r.amount.toLocaleString()}</span> },
+                              { k: "返金方法", v: r.method },
+                              { k: "実行日", v: r.exec },
+                              { k: "メモ", v: r.note || <span className="muted-dash">なし</span> },
+                            ]} />
+                          </div>
+                        ))}
+                        <div className="form-field" style={{ marginTop: 12 }}>
+                          <label className="f-label">返金ステータス</label>
+                          <select className="ctrl" value={reStatus} onChange={e => setReStatus(e.target.value)}>
+                            <option value="unprocessed">未処理</option>
+                            <option value="done">完了</option>
+                            <option value="none">不要</option>
+                            <option value="ota">OTA返金済み（Deep対応不要）</option>
+                            <option value="check">要確認</option>
+                            <option value="special">特別対応中</option>
+                          </select>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                          <button className="btn primary" onClick={() => showToast("返金の管理内容を保存しました")}>保存する</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+
+              {/* ── ⑧ 社内メモ ── */}
+              <Card no="8" title="社内メモ"
+                foot={<button className="btn primary" onClick={() => showToast("メモを保存しました")}>保存</button>}>
+                <div className="memo-field">
+                  <label className="filter-label">社内メモ（ガイド非公開）</label>
+                  <textarea className="ctrl" placeholder="社内向けメモを入力…" value={memoA} onChange={e => setMemoA(e.target.value)}></textarea>
+                </div>
+                <div className="memo-field">
+                  <label className="filter-label">ガイド共有メモ</label>
+                  <textarea className="ctrl" placeholder="ガイドと共有するメモを入力…" value={memoB} onChange={e => setMemoB(e.target.value)}></textarea>
+                </div>
+                <div className="memo-field" style={{ marginBottom: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
+                    <label className="filter-label">参照URL</label>
+                    {!editRefUrls && (
+                      <button className="btn sm" onClick={() => { setRefUrlDraft(refUrls.map(r => ({ ...r }))); setEditRefUrls(true); }}>編集</button>
+                    )}
+                  </div>
+                  {editRefUrls ? (
+                    <React.Fragment>
+                      {refUrlDraft.length === 0 && (
+                        <p style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 8 }}>URLを追加してください（最大5件）</p>
+                      )}
+                      {refUrlDraft.map((r, i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: 8, marginBottom: 8, alignItems: "center" }}>
+                          <input type="text" className="ctrl" placeholder="ラベル（任意）" value={r.label}
+                            onChange={e => setRefUrlDraft(refUrlDraft.map((x, j) => j === i ? { ...x, label: e.target.value } : x))} />
+                          <input type="text" className="ctrl code-mono" placeholder="https://" value={r.url}
+                            onChange={e => setRefUrlDraft(refUrlDraft.map((x, j) => j === i ? { ...x, url: e.target.value } : x))} />
+                          <button className="btn sm" style={{ color: "var(--coral)", borderColor: "var(--coral)" }}
+                            onClick={() => setRefUrlDraft(refUrlDraft.filter((_, j) => j !== i))}>削除</button>
+                        </div>
+                      ))}
+                      <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                        <button className="btn sm" disabled={refUrlDraft.length >= 5}
+                          onClick={() => setRefUrlDraft([...refUrlDraft, { label: "", url: "" }])}>＋ 追加</button>
+                        <button className="btn primary sm"
+                          onClick={() => { setRefUrls(refUrlDraft); setEditRefUrls(false); }}>更新</button>
+                        <button className="btn sm" onClick={() => setEditRefUrls(false)}>キャンセル</button>
+                      </div>
+                    </React.Fragment>
+                  ) : (
+                    refUrls.length === 0
+                      ? <span className="muted-dash">なし</span>
+                      : <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {refUrls.map((r, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 8, fontSize: 13 }}>
+                              {r.label && <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-soft)", whiteSpace: "nowrap" }}>{r.label}</span>}
+                              <a className="ext-link" href={r.url} target="_blank" rel="noreferrer">{r.url}</a>
+                            </div>
+                          ))}
+                        </div>
+                  )}
+                </div>
+              </Card>
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
