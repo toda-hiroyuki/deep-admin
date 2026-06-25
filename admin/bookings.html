@@ -347,9 +347,9 @@
 
               <div className="tab-bar">
                 <button className={`tab-btn ${activeTab === "all" ? "active" : ""}`} onClick={() => setActiveTab("all")}>全予約</button>
-                <button className={`tab-btn ${activeTab === "flag" ? "active" : ""}`} onClick={() => setActiveTab("flag")}>データ不備<span className="tab-count alert">{ROWS.filter(r => r.flag).length}</span></button>
-                <button className={`tab-btn ${activeTab === "dup" ? "active" : ""}`} onClick={() => setActiveTab("dup")}>重複疑い<span className="tab-count coral">0</span></button>
-                <button className={`tab-btn ${activeTab === "log" ? "active" : ""}`} onClick={() => setActiveTab("log")}>取込ログ</button>
+                <a href="booking-errors.html" className="tab-btn" style={{textDecoration:"none"}}>データ不備<span className="tab-count alert">{ROWS.filter(r => r.flag).length}</span></a>
+                <a href="booking-duplicates.html" className="tab-btn" style={{textDecoration:"none"}}>重複疑い<span className="tab-count coral">0</span></a>
+                <a href="booking-import-log.html" className="tab-btn" style={{textDecoration:"none"}}>取込ログ</a>
               </div>
 
               <div className="filter-bar">
