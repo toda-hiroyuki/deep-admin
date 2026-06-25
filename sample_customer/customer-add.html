@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>新規顧客追加 | deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="admin-customer.css" />
+</head>
+<body>
+<div class="app-shell">
+
+<!-- Sidebar -->
+<nav class="side-nav">
+  <div class="brand-block">
+    <div class="brand-mark">d.</div>
+    <div>
+      <div class="brand-name">deep_Admin</div>
+      <div class="brand-caption">deep experience</div>
+    </div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-section-label">Manage</div>
+    <a href="customers.html" class="nav-item active"><span class="nav-icon">👤</span>顧客管理<span class="nav-count">247</span></a>
+  </div>
+</nav>
+
+<!-- Page content -->
+<div class="page-wrap">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <a href="customers.html" class="back-btn">← 顧客一覧に戻る</a>
+      <h1>新規顧客追加</h1>
+    </div>
+    <a href="customers.html" class="btn ghost">キャンセル</a>
+  </div>
+
+  <!-- ── 基本情報カード ── -->
+  <div class="section-card">
+    <div class="section-card-head">
+      <h2>基本情報</h2>
+      <p>氏名・メールアドレスは必須項目です。その他は後から編集できます。</p>
+    </div>
+
+    <div class="info-note">
+      <p><strong>ヒント:</strong> UUID と登録日時は自動付与されます。</p>
+    </div>
+
+    <div class="field-grid">
+      <div class="field has-error">
+        <label class="field-label">姓（lastName）<span class="req"></span></label>
+        <input type="text" placeholder="例: 山田" />
+        <span class="field-help error">姓を入力してください。</span>
+      </div>
+      <div class="field">
+        <label class="field-label">名（firstName）<span class="req"></span></label>
+        <input type="text" placeholder="例: 太郎" />
+      </div>
+      <div class="field-wide">
+        <label class="field-label">メールアドレス（email）<span class="req"></span></label>
+        <input type="email" placeholder="例: taro.yamada@example.com" />
+      </div>
+      <div class="field">
+        <label class="field-label">性別（sex）<span class="opt">任意</span></label>
+        <select>
+          <option value="">— 選択 —</option>
+          <option value="MALE">男性 (MALE)</option>
+          <option value="FEMALE">女性 (FEMALE)</option>
+          <option value="OTHER">その他 (OTHER)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">生年月日（dateOfBirth）<span class="opt">任意</span></label>
+        <input type="date" />
+      </div>
+      <div class="field">
+        <label class="field-label">言語（language）<span class="opt">任意</span></label>
+        <select>
+          <option value="">— 選択 —</option>
+          <option value="ja">日本語 (ja)</option>
+          <option value="en">英語 (en)</option>
+          <option value="zh">中国語 (zh)</option>
+          <option value="ko">韓国語 (ko)</option>
+          <option value="de">ドイツ語 (de)</option>
+          <option value="fr">フランス語 (fr)</option>
+          <option value="es">スペイン語 (es)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">国籍（nationality）<span class="opt">任意</span></label>
+        <select>
+          <option value="">— 選択 —</option>
+          <optgroup label="アジア">
+            <option value="JP">日本 (JP)</option>
+            <option value="CN">中国 (CN)</option>
+            <option value="KR">韓国 (KR)</option>
+            <option value="TW">台湾 (TW)</option>
+            <option value="HK">香港 (HK)</option>
+            <option value="SG">シンガポール (SG)</option>
+            <option value="TH">タイ (TH)</option>
+            <option value="VN">ベトナム (VN)</option>
+            <option value="MY">マレーシア (MY)</option>
+            <option value="ID">インドネシア (ID)</option>
+            <option value="PH">フィリピン (PH)</option>
+            <option value="IN">インド (IN)</option>
+          </optgroup>
+          <optgroup label="ヨーロッパ">
+            <option value="GB">イギリス (GB)</option>
+            <option value="DE">ドイツ (DE)</option>
+            <option value="FR">フランス (FR)</option>
+            <option value="IT">イタリア (IT)</option>
+            <option value="ES">スペイン (ES)</option>
+            <option value="NL">オランダ (NL)</option>
+            <option value="CH">スイス (CH)</option>
+            <option value="AT">オーストリア (AT)</option>
+            <option value="SE">スウェーデン (SE)</option>
+            <option value="NO">ノルウェー (NO)</option>
+            <option value="DK">デンマーク (DK)</option>
+            <option value="FI">フィンランド (FI)</option>
+          </optgroup>
+          <optgroup label="北米">
+            <option value="US">アメリカ合衆国 (US)</option>
+            <option value="CA">カナダ (CA)</option>
+            <option value="MX">メキシコ (MX)</option>
+          </optgroup>
+          <optgroup label="オセアニア">
+            <option value="AU">オーストラリア (AU)</option>
+            <option value="NZ">ニュージーランド (NZ)</option>
+          </optgroup>
+          <optgroup label="中東・南米・アフリカ">
+            <option value="AE">アラブ首長国連邦 (AE)</option>
+            <option value="SA">サウジアラビア (SA)</option>
+            <option value="BR">ブラジル (BR)</option>
+            <option value="AR">アルゼンチン (AR)</option>
+            <option value="ZA">南アフリカ (ZA)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field-wide">
+        <label class="field-label">組織名（organization）<span class="opt">任意</span></label>
+        <input type="text" placeholder="所属組織・会社名など" />
+      </div>
+    </div>
+
+    <!-- 連絡先 -->
+    <div class="sub-section">
+      <div class="sub-section-title">連絡先</div>
+      <div class="field-grid">
+        <div class="field">
+          <label class="field-label">電話番号国コード（phoneNumberCountryCode）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: +81" />
+        </div>
+        <div class="field">
+          <label class="field-label">電話番号（phoneNumber）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: 90-1234-5678" />
+        </div>
+        <div class="field-wide">
+          <label class="field-label">住所（address）<span class="opt">任意</span></label>
+          <input type="text" placeholder="番地・建物名など" />
+        </div>
+        <div class="field">
+          <label class="field-label">市区町村（place）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: 渋谷区" />
+        </div>
+        <div class="field">
+          <label class="field-label">都道府県・州（state）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: 東京都" />
+        </div>
+        <div class="field">
+          <label class="field-label">郵便番号（postCode）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: 150-0043" />
+        </div>
+        <div class="field">
+          <label class="field-label">国（country）<span class="opt">任意</span></label>
+          <select>
+            <option value="">— 選択 —</option>
+            <optgroup label="アジア">
+              <option value="JP">日本 (JP)</option>
+              <option value="CN">中国 (CN)</option>
+              <option value="KR">韓国 (KR)</option>
+              <option value="TW">台湾 (TW)</option>
+              <option value="HK">香港 (HK)</option>
+              <option value="SG">シンガポール (SG)</option>
+              <option value="TH">タイ (TH)</option>
+              <option value="VN">ベトナム (VN)</option>
+              <option value="MY">マレーシア (MY)</option>
+              <option value="ID">インドネシア (ID)</option>
+              <option value="PH">フィリピン (PH)</option>
+              <option value="IN">インド (IN)</option>
+            </optgroup>
+            <optgroup label="ヨーロッパ">
+              <option value="GB">イギリス (GB)</option>
+              <option value="DE">ドイツ (DE)</option>
+              <option value="FR">フランス (FR)</option>
+              <option value="IT">イタリア (IT)</option>
+              <option value="ES">スペイン (ES)</option>
+              <option value="NL">オランダ (NL)</option>
+              <option value="CH">スイス (CH)</option>
+              <option value="AT">オーストリア (AT)</option>
+              <option value="SE">スウェーデン (SE)</option>
+              <option value="NO">ノルウェー (NO)</option>
+              <option value="DK">デンマーク (DK)</option>
+              <option value="FI">フィンランド (FI)</option>
+            </optgroup>
+            <optgroup label="北米">
+              <option value="US">アメリカ合衆国 (US)</option>
+              <option value="CA">カナダ (CA)</option>
+              <option value="MX">メキシコ (MX)</option>
+            </optgroup>
+            <optgroup label="オセアニア">
+              <option value="AU">オーストラリア (AU)</option>
+              <option value="NZ">ニュージーランド (NZ)</option>
+            </optgroup>
+            <optgroup label="中東・南米・アフリカ">
+              <option value="AE">アラブ首長国連邦 (AE)</option>
+              <option value="SA">サウジアラビア (SA)</option>
+              <option value="BR">ブラジル (BR)</option>
+              <option value="AR">アルゼンチン (AR)</option>
+              <option value="ZA">南アフリカ (ZA)</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- パスポート -->
+    <div class="sub-section">
+      <div class="sub-section-title">パスポート情報</div>
+      <div class="field-grid three">
+        <div class="field">
+          <label class="field-label">パスポート番号（passportId）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: TK1234567" />
+        </div>
+        <div class="field">
+          <label class="field-label">有効期限 月（passportExpMonth）<span class="opt">任意</span></label>
+          <select>
+            <option value="">— 月 —</option>
+            <option value="01">1月</option><option value="02">2月</option>
+            <option value="03">3月</option><option value="04">4月</option>
+            <option value="05">5月</option><option value="06">6月</option>
+            <option value="07">7月</option><option value="08">8月</option>
+            <option value="09">9月</option><option value="10">10月</option>
+            <option value="11">11月</option><option value="12">12月</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">有効期限 年（passportExpYear）<span class="opt">任意</span></label>
+          <input type="text" placeholder="例: 2030" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer buttons -->
+    <div class="form-footer">
+      <a href="customers.html" class="btn ghost">キャンセル</a>
+      <button class="btn primary">顧客を追加</button>
+    </div>
+
+  </div><!-- /section-card -->
+
+</div><!-- /page-wrap -->
+</div><!-- /app-shell -->
+</body>
+</html>
