@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ガイド支払一覧・振込確認チェック — DeepExperience 運営管理</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <style>
+      :root {
+        --bg: #fbf7f0;
+        --bg-sunken: #f4efe5;
+        --surface: #ffffff;
+        --surface-warm: #fffdf8;
+        --surface-tint: #f7f3eb;
+        --ink: #1d1a17;
+        --ink-soft: #3d3833;
+        --muted: #756d63;
+        --muted-soft: #9a9389;
+        --line: #e8e0d3;
+        --line-strong: #d4cabb;
+        --line-soft: #efe9dc;
+        --side-bg: #0f2e2b;
+        --side-ink: #f3ebdb;
+        --side-ink-soft: #aac3bf;
+        --side-line: rgba(255, 255, 255, 0.12);
+        --accent: #0a5e5a;
+        --accent-strong: #064a47;
+        --accent-soft: #d6ebe8;
+        --blue: #2a5db0;
+        --blue-soft: #e1ebfa;
+        --coral: #ba4530;
+        --coral-soft: #f6dfd8;
+        --coral-bg: #fdf1ee;
+        --amber: #8e5b00;
+        --amber-soft: #f4e3bd;
+        --amber-bg: #fdf4dd;
+        --green: #1f6440;
+        --green-soft: #d6ecdd;
+        --radius: 6px;
+        --radius-sm: 4px;
+        --radius-lg: 10px;
+        --field-h: 38px;
+        --shadow-1: 0 1px 2px rgba(45, 30, 12, 0.04), 0 1px 0 rgba(45, 30, 12, 0.02);
+        --shadow-pop: 0 8px 28px rgba(45, 30, 12, 0.12);
+        --ring: 0 0 0 3px rgba(10, 94, 90, 0.18);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .page-title { display: flex; flex-direction: column; gap: 3px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge.sq { border-radius: 4px; }
+      .muted-dash { color: var(--muted-soft); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.danger { color: var(--coral); border-color: var(--coral-soft); }
+      .btn.danger:hover { background: var(--coral-bg); border-color: var(--coral); }
+      .btn.lg { height: 42px; padding: 0 22px; font-size: 14px; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn:disabled:hover { background: var(--surface); border-color: var(--line-strong); }
+      .btn.primary:disabled:hover { background: var(--accent); border-color: var(--accent); }
+      .lnk { background: none; border: 1px solid var(--line-strong); color: var(--accent-strong); font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--radius); white-space: nowrap; }
+      .lnk:hover { background: var(--accent-soft); border-color: var(--accent); }
+      a.lnk { text-decoration: none; display: inline-block; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 18px 20px; }
+
+      /* ── Month picker ── */
+      .month-nav { display: inline-flex; align-items: center; gap: 4px; }
+      .month-nav .mn-btn { width: 34px; height: 34px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: var(--radius); display: grid; place-items: center; font-size: 16px; font-weight: 700; color: var(--accent-strong); }
+      .month-nav .mn-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+      .month-nav .mn-label { min-width: 150px; text-align: center; font-size: 15px; font-weight: 750; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+      .month-nav .mn-label .mn-tag { display: block; font-size: 10.5px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+
+      /* ── Summary stats ── */
+      .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+      .stat { border: 1px solid var(--line); border-radius: var(--radius); padding: 13px 15px; background: var(--surface-tint); display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      .stat.accent { background: var(--accent-soft); border-color: rgba(10,94,90,0.18); }
+      .stat.alert { background: var(--amber-bg); border-color: var(--amber-soft); }
+      .stat.alert.zero { background: var(--green-soft); border-color: rgba(31,100,64,0.2); }
+      .stat.coral { background: var(--coral-bg); border-color: var(--coral-soft); }
+      .stat.coral.zero { background: var(--surface-tint); border-color: var(--line); }
+      .stat .stat-num { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+      .stat.accent .stat-num { color: var(--accent-strong); }
+      .stat.alert .stat-num { color: var(--amber); }
+      .stat.alert.zero .stat-num { color: var(--green); }
+      .stat.coral .stat-num { color: var(--coral); }
+      .stat.coral.zero .stat-num { color: var(--ink); }
+      .stat .stat-num .stat-unit { font-size: 12px; font-weight: 600; margin-left: 2px; color: var(--muted); }
+      .stat .stat-sub { font-size: 11.5px; font-weight: 650; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .stat .stat-lab { font-size: 11px; font-weight: 600; color: var(--muted); }
+      .stat .stat-lab .lab-note { color: var(--muted-soft); font-weight: 500; }
+      @media (max-width: 1180px) { .stat-row { grid-template-columns: repeat(3, 1fr); } }
+      @media (max-width: 720px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+
+      /* ── Filter bar ── */
+      .filter-bar { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .filter-field { display: flex; flex-direction: column; gap: 5px; }
+      .filter-field .ff-lab { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
+      .ctrl { height: 36px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      select.ctrl { min-width: 148px; padding-right: 30px; cursor: pointer; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 11px center; }
+      input.ctrl.search { min-width: 200px; }
+      .toggles { display: flex; flex-direction: column; gap: 8px; padding: 2px 0; }
+      .toggle { position: relative; display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+      .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .toggle .track { width: 36px; height: 21px; border-radius: 999px; background: var(--line-strong); transition: background 0.15s; flex-shrink: 0; position: relative; }
+      .toggle .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(45,30,12,0.25); transition: transform 0.15s; }
+      .toggle input:checked + .track { background: var(--accent); }
+      .toggle input:checked + .track::after { transform: translateX(15px); }
+      .toggle .t-label { font-size: 12.5px; color: var(--ink-soft); font-weight: 550; }
+      .filter-bar .result-count { margin-left: auto; align-self: flex-end; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+      /* ── Settlement table ── */
+      .tbl-scroll { overflow-x: auto; }
+      .settle-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .settle-table thead th { text-align: left; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; position: sticky; top: 0; }
+      .settle-table thead th.right { text-align: right; }
+      .settle-table thead th.calc { background: #eef4f3; }
+      .settle-table tbody td { padding: 11px 12px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; white-space: nowrap; }
+      .settle-table tbody td.right { text-align: right; }
+      .settle-table tbody tr:last-child td { border-bottom: 0; }
+      .settle-table tbody tr.attention td { background: var(--amber-bg); }
+      .settle-table tbody tr.confirmed td { background: #fbfdfb; }
+      .settle-table tbody tr.held td { background: var(--coral-bg); }
+      .settle-table td.calc { background: rgba(10,94,90,0.04); }
+      .settle-table tr.attention td.calc { background: rgba(142,91,0,0.06); }
+      .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .money { font-weight: 600; color: var(--ink-soft); }
+      .money.calc-val { font-weight: 750; color: var(--ink); }
+      .money.neg { color: var(--coral); }
+      .act-cell { display: flex; gap: 6px; justify-content: flex-end; }
+
+      /* ── master / expandable ── */
+      .caret { transition: transform 0.15s; display: block; color: var(--muted); }
+      .caret.open { transform: rotate(90deg); }
+      .settle-table.master { min-width: 1280px; }
+      .settle-table.master tbody tr.master-row { cursor: pointer; }
+      .settle-table.master tbody tr.master-row:hover td { background: var(--surface-warm); }
+      .settle-table.master tbody tr.master-row.attention:hover td { background: var(--amber-bg); }
+      .settle-table.master tbody tr.master-row.held:hover td { background: var(--coral-bg); }
+      .settle-table.master .c-check { width: 34px; text-align: center; padding-right: 0; }
+      .settle-table.master .c-exp { width: 28px; text-align: center; padding-left: 6px; padding-right: 0; }
+      .settle-table.master .c-guide { min-width: 168px; white-space: nowrap; }
+      .settle-table.master .c-guide .g-name { font-weight: 700; font-size: 13px; }
+      .settle-table.master .c-guide .g-id { display: block; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+      .bank-cell { white-space: nowrap; }
+      .bank-cell .bk-main { font-size: 12.5px; color: var(--ink-soft); }
+      .bank-cell .bk-acct { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; color: var(--muted); }
+      .master-row .act-cell .btn { height: 30px; padding: 0 11px; font-size: 12px; }
+      .row-check { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+      .row-check:disabled { cursor: not-allowed; opacity: 0.4; }
+      .state-chips { display: inline-flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+      .chip-mini { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .chip-mini .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .chip-mini.amber { background: var(--amber-soft); color: var(--amber); }
+      .chip-mini.coral { background: var(--coral-soft); color: var(--coral); }
+      .chip-mini.green { background: var(--green-soft); color: var(--green); }
+
+      /* 展開行 */
+      tr.expand-row > td { padding: 0; background: var(--bg-sunken); border-bottom: 1px solid var(--line); }
+      .exp-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 16px; }
+      .exp-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .exp-head .exp-meta { font-size: 12px; color: var(--muted); }
+      .sub-label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 9px; }
+      .sub-label .sl-hint { font-size: 10.5px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--muted-soft); }
+      .inner-wrap { overflow-x: auto; }
+      .settle-table.inner { min-width: 720px; }
+      .settle-table.inner thead th { position: static; }
+      .settle-table.inner .t-name { font-weight: 650; font-size: 12.5px; }
+      .settle-table.inner .t-code { display: block; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+      .settle-table tfoot td { padding: 11px 12px; border-top: 2px solid var(--line-strong); font-weight: 700; font-size: 12.5px; background: var(--surface-tint); white-space: nowrap; }
+      .settle-table tfoot td.right { text-align: right; }
+
+      .exp-note { font-size: 12px; color: var(--muted); line-height: 1.55; background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 10px 12px; }
+      .exp-note.amber { border-color: var(--amber-soft); background: var(--amber-bg); color: var(--amber); }
+
+      /* その他支払項目リスト */
+      .other-list { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-tint); overflow: hidden; }
+      .other-row { display: grid; grid-template-columns: minmax(0,1fr) 130px 220px; align-items: center; gap: 6px 16px; padding: 10px 14px; border-bottom: 1px solid var(--line-soft); }
+      .other-row:last-child { border-bottom: 0; }
+      .other-row .o-item { font-weight: 650; color: var(--ink-soft); font-size: 13px; }
+      .other-row .o-amt { text-align: right; font-variant-numeric: tabular-nums; }
+      .other-row .o-meta { font-size: 11px; color: var(--muted); text-align: right; }
+      .other-row.foot { background: var(--surface-tint); font-weight: 700; }
+      @media (max-width: 720px) { .other-row { grid-template-columns: 1fr auto; } .other-row .o-meta { grid-column: 1 / -1; text-align: left; } }
+
+      /* 振込情報パネル */
+      .pay-panel { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+      @media (max-width: 900px) { .pay-panel { grid-template-columns: 1fr; } }
+      .pay-box { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+      .pay-box-head { padding: 9px 14px; background: var(--surface-warm); border-bottom: 1px solid var(--line-soft); font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .def-grid { display: grid; grid-template-columns: 132px 1fr; gap: 0; }
+      .def-grid dt { padding: 8px 14px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line-soft); background: var(--surface-tint); font-weight: 600; }
+      .def-grid dd { margin: 0; padding: 8px 14px; font-size: 12.5px; color: var(--ink-soft); border-bottom: 1px solid var(--line-soft); font-weight: 600; }
+      .def-grid dt:last-of-type, .def-grid dd:last-of-type { border-bottom: 0; }
+      .def-grid dd .mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+      .nobank-box { padding: 14px; display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+      .nobank-box .nb-msg { font-size: 12.5px; color: var(--coral); font-weight: 650; }
+      .layer-note { font-size: 11.5px; color: var(--muted); line-height: 1.6; background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 10px 12px; }
+      .layer-note strong { color: var(--ink-soft); }
+
+      /* ── batch / action bar ── */
+      .close-bar { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-top: 1px solid var(--line); background: var(--surface-warm); flex-wrap: wrap; }
+      .close-status { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+      .close-status .cs-strong { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+      .close-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+      /* ── Empty ── */
+      .empty-state { padding: 56px 20px; text-align: center; color: var(--muted); }
+      .empty-state .es-ic { width: 46px; height: 46px; border-radius: 12px; background: var(--bg-sunken); display: grid; place-items: center; margin: 0 auto 12px; font-size: 20px; color: var(--muted-soft); }
+      .empty-state .es-main { font-size: 14px; font-weight: 650; color: var(--ink-soft); }
+      .empty-state .es-sub { font-size: 12.5px; margin-top: 4px; }
+      .filter-note { font-size: 11.5px; color: var(--muted); padding: 12px 20px 0; display: flex; align-items: center; gap: 7px; }
+
+      /* ── Modal ── */
+      .modal-overlay { position: fixed; inset: 0; background: rgba(29, 26, 23, 0.46); display: none; place-items: center; padding: 24px; z-index: 90; }
+      .modal-overlay.show { display: grid; }
+      .modal { width: 100%; max-width: 480px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); display: flex; flex-direction: column; }
+      @media (prefers-reduced-motion: no-preference) { .modal-overlay.show .modal { animation: modalIn 0.16s ease; } }
+      @keyframes modalIn { from { transform: translateY(10px) scale(0.99); } to { transform: none; } }
+      .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); }
+      .modal-head .m-title { font-size: 15px; font-weight: 700; letter-spacing: -0.005em; }
+      .modal-close { width: 30px; height: 30px; border-radius: 6px; border: 0; background: transparent; color: var(--muted); font-size: 18px; display: grid; place-items: center; }
+      .modal-close:hover { background: var(--surface-tint); color: var(--ink); }
+      .modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 13px; font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+      .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line-soft); }
+      .m-field { display: flex; flex-direction: column; gap: 5px; }
+      .m-field label { font-size: 11.5px; font-weight: 650; color: var(--muted); }
+      .m-field .ctrl, .m-field textarea.ctrl { width: 100%; }
+      .m-field textarea.ctrl { height: auto; min-height: 60px; padding: 8px 10px; resize: vertical; line-height: 1.5; }
+      .m-summary { background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius); padding: 11px 13px; display: flex; flex-direction: column; gap: 7px; }
+      .m-summary .ms-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+      .m-summary .ms-row .ms-val { font-weight: 750; font-variant-numeric: tabular-nums; }
+      .m-summary .ms-list { font-size: 11.5px; color: var(--muted); line-height: 1.55; max-height: 96px; overflow-y: auto; }
+      .m-warn { font-size: 11.5px; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); padding: 9px 11px; line-height: 1.55; }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
+
+      const yen = (n) => (n < 0 ? "−" : "") + "¥" + Math.abs(Math.round(n)).toLocaleString("ja-JP");
+      const nowStr = () => { const d = new Date(); const p = (x) => String(x).padStart(2, "0"); return `${d.getFullYear()}/${p(d.getMonth() + 1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+      const maskAcct = (a) => a ? "****" + String(a).slice(-4) : "";
+      const csvCell = (v) => { const s = String(v == null ? "" : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+
+      // 経理の操作者（将来は権限管理）
+      const CURRENT_USER = "経理 田村";
+
+      const NAV = [
+        { key: "dashboard",   icon: "DB", label: "ダッシュボード（準備中）",          group: "ops" },
+        { key: "bookings",    icon: "BK", label: "予約一覧",                group: "ops",    count: 26,             href: "予約一覧.html" },
+        { key: "unassigned",  icon: "UN", label: "未割り当て一覧",          group: "ops",    count: 6,  alert: true, href: "未割り当て一覧.html" },
+        { key: "unarranged",  icon: "UA", label: "未手配一覧",              group: "ops",    count: 5,  alert: true, href: "未手配一覧.html" },
+        { key: "sessions",    icon: "SS", label: "催行回一覧",              group: "ops",    count: 18,             href: "催行回一覧.html" },
+        { key: "today",       icon: "TD", label: "当日/翌日案件一覧",           group: "ops",    count: 4,              href: "当日翌日案件一覧.html" },
+        { key: "guides",      icon: "GM", label: "ガイド一覧",              group: "guide",                         href: "ガイド一覧.html" },
+        { key: "settle",      icon: "ST", label: "月次締め確認",            group: "pay",                           href: "月次精算管理.html" },
+        { key: "guidePay",    icon: "GP", label: "ガイド支払一覧",          group: "pay",    count: 3,  alert: true, href: "ガイド支払一覧.html" },
+        { key: "import",      icon: "IM", label: "金額確認待ち一覧",                group: "pay",    count: 4,  alert: true, href: "金額確認待ち一覧.html" },
+        { key: "ota",         icon: "OT", label: "OTA入金照合",             group: "pay",    count: 4,  alert: true, href: "OTA入金照合.html" },
+        { key: "revenue",     icon: "RV", label: "収支一覧",                group: "pay",                           href: "収支一覧.html" },
+        { key: "tourOption",  icon: "TO", label: "TourOption",         group: "master",                        href: "TourOption.html" },
+        { key: "productPage", icon: "PG", label: "商品ページ",          group: "master",                        href: "商品ページ.html" },
+        { key: "guideDoc",    icon: "GD", label: "ガイド資料",      group: "master",                        href: "ガイド資料.html" },
+        { key: "cancelTmpl",  icon: "CP", label: "キャンセルポリシー文言",  group: "master",                        href: "キャンセルポリシー文言.html" },
+        { key: "feeMaster",   icon: "FE", label: "チャネル・手数料設定",    group: "master",                        href: "チャネル・手数料設定.html" },
+      ].map(n => ({ ...n, active: n.key === "guidePay" }));
+
+      const STATUS_META = {
+        unpaid: { label: "未振込", cls: "amber" },
+        paid:   { label: "振込済", cls: "green" },
+        onhold: { label: "保留",   cls: "coral" },
+      };
+
+      // 支払対象月（振込月）。当月＝2026年7月で、2026年6月の催行確定分を支払う。
+      const PAY_MONTH = "2026-07";
+      const TOUR_MONTH = "2026-06";
+
+      // ガイド×支払対象月の支払行。
+      //  ・sessions = 当月支払対象に含む「確定済み」催行回（ガイド精算が確定したもの）。金額は月次精算管理.html と整合。
+      //    reward.wage=ツアー報酬（内部:時給報酬）／transport=現地までの交通費（往復）（内部:通勤交通費）／expense=ツアー経費〔立替・実費〕
+      //  ・others = ツアー非紐付けの その他支払項目（運営登録）
+      //  ・bank = 振込先（ガイド情報設計資料 §6）。null は口座未登録
+      //  ・status/paid/hold = 支払工程の状態（初期値）
+      const GUIDES_SEED = [
+        { id: "G-001", name: "田中 誠",
+          bank: { name: "三井住友銀行", branchNo: "135", branch: "渋谷支店", type: "普通", acct: "1234567", holder: "タナカ マコト" },
+          invoice: "T1234567890123",
+          sessions: [
+            { tiId: "TI-20260605-0900-G-WAK-001-2-GR-01", code: "G-WAK-001-2-GR", tour: "里山ハイキング", tourMonth: "2026/06", date: "2026/06/05", reward: { wage: 9000, transport: 1500, expense: 0 } },
+          ],
+          others: [ { item: "研修交通費", amount: 2000, regDate: "2026/06/20", regBy: "運営 戸田" } ],
+          status: "unpaid", paid: null, hold: null, pendingNote: null },
+
+        { id: "G-005", name: "高橋 葵",
+          bank: { name: "三菱UFJ銀行", branchNo: "472", branch: "京都支店", type: "普通", acct: "2345678", holder: "タカハシ アオイ" },
+          invoice: "T2345678901234",
+          sessions: [
+            { tiId: "TI-20260606-0900-G-KYO-003-1-PR-01", code: "G-KYO-003-1-PR", tour: "京都プライベートツアー", tourMonth: "2026/06", date: "2026/06/06", reward: { wage: 21000, transport: 3000, expense: 0 } },
+          ],
+          others: [ { item: "翻訳費（ツアー資料）", amount: 5000, regDate: "2026/06/18", regBy: "運営 奥野" } ],
+          status: "unpaid", paid: null, hold: null, pendingNote: null },
+
+        { id: "G-003", name: "佐藤 由美",
+          bank: { name: "りそな銀行", branchNo: "153", branch: "京都支店", type: "普通", acct: "6789012", holder: "サトウ ユミ" },
+          invoice: "T5678901234567",
+          sessions: [],
+          others: [ { item: "翻訳費（多言語対応）", amount: 8000, regDate: "2026/06/22", regBy: "運営 奥野" } ],
+          status: "unpaid", paid: null, hold: null,
+          pendingNote: "祇園食べ歩き（2026/06/04・TI-20260604-1800-G-KYO-006-1-GR-01）はガイド精算が未確定のため、当月の支払対象に含めていません（確定後に翌支払月へ繰越）。" },
+
+        { id: "G-014", name: "鈴木 健",
+          bank: null,
+          invoice: null,
+          sessions: [
+            { tiId: "TI-20260608-1000-G-AIC-005-1-GR-01", code: "G-AIC-005-1-GR", tour: "茶道体験", tourMonth: "2026/06", date: "2026/06/08", reward: { wage: 5000, transport: 1000, expense: 0 } },
+          ],
+          others: [],
+          status: "unpaid", paid: null, hold: null, pendingNote: null },
+
+        { id: "G-017", name: "中村 隆",
+          bank: { name: "みずほ銀行", branchNo: "532", branch: "心斎橋支店", type: "普通", acct: "5678901", holder: "ナカムラ タカシ" },
+          invoice: "T4567890123456",
+          sessions: [
+            { tiId: "TI-20260603-1900-G-OSK-005-3-PR-01", code: "G-OSK-005-3-PR", tour: "大阪ナイトツアー", tourMonth: "2026/06", date: "2026/06/03", reward: { wage: 0, transport: 0, expense: 0 } },
+          ],
+          others: [],
+          status: "unpaid", paid: null, hold: null,
+          pendingNote: "このツアーはガイド報酬の発生がなく（適用時給×催行時間＝¥0）、その他支払項目もないため支払総額は¥0です。振込対象から除外します。" },
+
+        { id: "G-011", name: "山本 彩",
+          bank: { name: "横浜銀行", branchNo: "201", branch: "関内支店", type: "普通", acct: "4567890", holder: "ヤマモト アヤ" },
+          invoice: "T3456789012345",
+          sessions: [
+            { tiId: "TI-20260607-0900-G-MIE-005-1-GR-01", code: "G-MIE-005-1-GR", tour: "漁村体験", tourMonth: "2026/06", date: "2026/06/07", reward: { wage: 6000, transport: 1000, expense: 0 } },
+          ],
+          others: [],
+          status: "onhold", paid: null, hold: { reason: "口座名義のカナ表記が本人確認書類と相違。確認中のため当月は保留。", at: "2026/07/22 10:14", by: "経理 田村" }, pendingNote: null },
+
+        { id: "G-008", name: "渡辺 武",
+          bank: { name: "ゆうちょ銀行", branchNo: "〇一八", branch: "〇一八支店", type: "普通", acct: "3456789", holder: "ワタナベ タケシ" },
+          invoice: null,
+          sessions: [
+            { tiId: "TI-20260606-1300-G-GIF-017-1-GR-01", code: "G-GIF-017-1-GR", tour: "城下町ウォーキング", tourMonth: "2026/06", date: "2026/06/06", reward: { wage: 6500, transport: 1500, expense: 0 } },
+          ],
+          others: [],
+          status: "paid",
+          paid: { date: "2026-07-24", by: "経理 田村", ref: "FB-20260724-008", memo: "", at: "2026/07/24 15:32", snapTotal: 8000 },
+          hold: null, pendingNote: null },
+      ];
+
+      // ── 集計ヘルパ ──
+      const tourRewardOf = (g) => g.sessions.reduce((t, s) => t + s.reward.wage + s.reward.transport + s.reward.expense, 0);
+      const otherOf = (g) => g.others.reduce((t, o) => t + o.amount, 0);
+      const totalOf = (g) => tourRewardOf(g) + otherOf(g);
+      const noBank = (g) => !g.bank;
+      const payableOf = (g) => g.status === "unpaid" && !noBank(g) && totalOf(g) > 0;
+      const sessionCountOf = (g) => g.sessions.length;
+
+      const Caret = ({ open }) => (
+        <svg className={`caret${open ? " open" : ""}`} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M5 3l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const showToast = (msg) => { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 2400); };
+
+        const [month, setMonth] = useState(PAY_MONTH);
+        const [rows, setRows] = useState(GUIDES_SEED);
+        const [fStatus, setFStatus] = useState("all");
+        const [query, setQuery] = useState("");
+        const [tNoBank, setTNoBank] = useState(false);
+        const [expanded, setExpanded] = useState({});
+        const [selected, setSelected] = useState({});
+
+        // モーダル：{ type: "pay"|"hold"|"cancel", ids: [...] }
+        const [modal, setModal] = useState(null);
+        const [payDate, setPayDate] = useState(PAY_MONTH + "-25");
+        const [payRef, setPayRef] = useState("");
+        const [payMemo, setPayMemo] = useState("");
+        const [holdReason, setHoldReason] = useState("");
+        const [cancelReason, setCancelReason] = useState("");
+
+        const isDataMonth = month === PAY_MONTH;
+        const monthRows = isDataMonth ? rows : [];
+        const monthLabel = month.replace("-", "年") + "月";
+        const tourMonthLabel = TOUR_MONTH.replace("-", "年") + "月";
+
+        const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
+
+        // ── 集計（サマリー） ──
+        const sumBy = (pred, fn) => monthRows.filter(pred).reduce((t, g) => t + fn(g), 0);
+        const cntBy = (pred) => monthRows.filter(pred).length;
+        const guideCount = monthRows.length;
+        const grandTotal = monthRows.reduce((t, g) => t + totalOf(g), 0);
+        const unpaidCount = cntBy(g => g.status === "unpaid");
+        const unpaidAmt = sumBy(g => g.status === "unpaid", totalOf);
+        const paidCount = cntBy(g => g.status === "paid");
+        const paidAmt = sumBy(g => g.status === "paid", g => g.paid ? g.paid.snapTotal : totalOf(g));
+        const holdCount = cntBy(g => g.status === "onhold");
+        const holdAmt = sumBy(g => g.status === "onhold", totalOf);
+
+        // ── 表示フィルタ ──
+        const q = query.trim().toLowerCase();
+        const display = monthRows.filter(g =>
+          (fStatus === "all" || g.status === fStatus) &&
+          (!tNoBank || noBank(g)) &&
+          (q === "" || g.name.toLowerCase().includes(q) || g.id.toLowerCase().includes(q))
+        );
+
+        const allOpen = display.length > 0 && display.every(g => expanded[g.id]);
+        const toggleAll = () => { const v = !allOpen; const next = { ...expanded }; display.forEach(g => { next[g.id] = v; }); setExpanded(next); };
+
+        // ── 選択（支払可能行のみ） ──
+        const selectableDisplay = display.filter(payableOf);
+        const selectedIds = Object.keys(selected).filter(id => selected[id] && monthRows.some(g => g.id === id && payableOf(g)));
+        const selectedRows = monthRows.filter(g => selectedIds.includes(g.id));
+        const selectedTotal = selectedRows.reduce((t, g) => t + totalOf(g), 0);
+        const allSelDisplay = selectableDisplay.length > 0 && selectableDisplay.every(g => selected[g.id]);
+        const toggleSel = (id) => setSelected(p => ({ ...p, [id]: !p[id] }));
+        const toggleSelAll = () => { const v = !allSelDisplay; const next = { ...selected }; selectableDisplay.forEach(g => { next[g.id] = v; }); setSelected(next); };
+
+        // ── 操作 ──
+        const openPay = (ids) => { setPayDate(PAY_MONTH + "-25"); setPayRef(""); setPayMemo(""); setModal({ type: "pay", ids }); };
+        const openHold = (id) => { setHoldReason(""); setModal({ type: "hold", ids: [id] }); };
+        const openCancel = (id) => { setCancelReason(""); setModal({ type: "cancel", ids: [id] }); };
+
+        const doPay = () => {
+          const ids = modal.ids;
+          setRows(rs => rs.map(g => ids.includes(g.id)
+            ? { ...g, status: "paid", paid: { date: payDate, by: CURRENT_USER, ref: payRef, memo: payMemo, at: nowStr(), snapTotal: totalOf(g) } }
+            : g));
+          setSelected(p => { const n = { ...p }; ids.forEach(id => { delete n[id]; }); return n; });
+          setModal(null);
+          showToast(`${ids.length}名を振込済にしました`);
+        };
+        const doHold = () => {
+          const id = modal.ids[0];
+          setRows(rs => rs.map(g => g.id === id ? { ...g, status: "onhold", hold: { reason: holdReason, at: nowStr(), by: CURRENT_USER } } : g));
+          setSelected(p => { const n = { ...p }; delete n[id]; return n; });
+          setModal(null);
+          showToast("保留にしました");
+        };
+        const unhold = (id) => { setRows(rs => rs.map(g => g.id === id ? { ...g, status: "unpaid", hold: null } : g)); showToast("保留を解除しました"); };
+        const doCancel = () => {
+          const id = modal.ids[0];
+          setRows(rs => rs.map(g => g.id === id ? { ...g, status: "unpaid", paid: null, cancelLog: { at: nowStr(), by: CURRENT_USER, reason: cancelReason } } : g));
+          setModal(null);
+          showToast("振込済を取り消しました（監査ログに記録）");
+        };
+
+        // ── CSV出力 ──
+        const exportCSV = (guides) => {
+          if (!guides.length) { showToast("出力対象がありません"); return; }
+          const header = ["ガイドID", "氏名", "銀行名", "支店番号", "口座種別", "口座番号", "口座名義", "振込額", "インボイス番号", "支払対象月"];
+          const lines = [header.join(",")];
+          guides.forEach(g => {
+            const b = g.bank || {};
+            lines.push([g.id, g.name, b.name || "", b.branchNo || "", b.type || "", b.acct || "", b.holder || "", totalOf(g), g.invoice || "未登録", monthLabel].map(csvCell).join(","));
+          });
+          const csv = "﻿" + lines.join("\r\n");
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url; a.download = `ガイド振込_${month}.csv`;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast(`${guides.length}名分のCSVを出力しました`);
+        };
+        const csvTargets = () => selectedRows.length ? selectedRows : monthRows.filter(payableOf);
+
+        const stepMonth = (delta) => { const [y, m] = month.split("-").map(Number); const d = new Date(y, m - 1 + delta); setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`); };
+
+        const STATS = [
+          { lab: "対象ガイド数", val: <span>{guideCount}<span className="stat-unit">名</span></span>, sub: `支払総額 ${yen(grandTotal)}` },
+          { lab: "支払総額", val: yen(grandTotal), cls: "accent", sub: `${tourMonthLabel}催行 確定分` },
+          { lab: "未振込", val: <span>{unpaidCount}<span className="stat-unit">名</span></span>, cls: `alert${unpaidCount === 0 ? " zero" : ""}`, sub: yen(unpaidAmt) },
+          { lab: "振込済", val: <span>{paidCount}<span className="stat-unit">名</span></span>, sub: yen(paidAmt) },
+          { lab: "保留", val: <span>{holdCount}<span className="stat-unit">名</span></span>, cls: `coral${holdCount === 0 ? " zero" : ""}`, sub: yen(holdAmt) },
+        ];
+
+        const renderStatusChips = (g) => {
+          const m = STATUS_META[g.status];
+          const out = [<span className={`badge ${m.cls}`} key="st"><span className="dot"></span>{m.label}</span>];
+          if (g.status === "unpaid" && noBank(g)) out.push(<span className="chip-mini coral" key="nb">口座未登録</span>);
+          if (g.status === "unpaid" && totalOf(g) <= 0) out.push(<span className="chip-mini amber" key="z0">金額0</span>);
+          return out;
+        };
+
+        return (
+          <div className="app-shell">
+            <nav className="side-nav">
+              <div className="brand-block">
+                <div className="brand-mark">DE</div>
+                <div>
+                  <div className="brand-name">DeepExperience</div>
+                  <div className="brand-caption">運営管理</div>
+                </div>
+              </div>
+              {[
+                { grp: "ops",    label: "予約オペレーション" },
+                { grp: "guide",  label: "ガイド管理" },
+                { grp: "pay",    label: "精算・経営" },
+                { grp: "master", label: "商品管理" },
+              ].map(({ grp, label }) => (
+                <div className="nav-group" key={grp}>
+                  <div className="nav-section-label">{label}</div>
+                  {NAV.filter(n => n.group === grp).map(n => (
+                    <button
+                      key={n.key}
+                      className={`nav-item${n.active ? " active" : ""}`}
+                      onClick={() => n.href && !n.active ? (window.location.href = n.href) : showToast(`「${n.label}」へ移動します`)}
+                    >
+                      <span className="nav-icon">{n.icon}</span>
+                      <span>{n.label}</span>
+                      {n.count != null && (<span className={`nav-count${n.alert ? " alert" : ""}`}>{n.count}</span>)}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              <div className="side-note">
+                <strong>運用メモ</strong>
+                確定したガイド報酬をガイド別に集計し、振込状況を記録します。経理は自行で実振込し、ここで「振込済」をチェックします。送金の自動実行はしません（手動振込の管理・記録）。
+              </div>
+            </nav>
+
+            <main className="workspace">
+              <div className="crumbs">
+                <span>精算・経営</span>
+                <span className="sep">›</span>
+                <span className="current">ガイド支払一覧</span>
+              </div>
+              <div className="page-head">
+                <div className="page-title">
+                  <h1>ガイド支払一覧・振込確認チェック</h1>
+                  <span className="sub">確定したガイド報酬を支払対象月ごとに集計し、振込の実行状況を記録します（手動振込の管理／自動送金は行いません）</span>
+                </div>
+              </div>
+
+              {/* ── サマリー ── */}
+              <section className="card">
+                <div className="card-head">
+                  <div className="card-title">支払サマリー<span className="sec-hint">支払対象月（振込月）の集計</span></div>
+                  <div className="month-nav">
+                    <button className="mn-btn" onClick={() => stepMonth(-1)} aria-label="前の月">‹</button>
+                    <span className="mn-label">{monthLabel}<span className="mn-tag">支払対象月（振込月）</span></span>
+                    <button className="mn-btn" onClick={() => stepMonth(1)} aria-label="次の月">›</button>
+                  </div>
+                </div>
+                <div className="card-body">
+                  <div className="stat-row">
+                    {STATS.map((s, i) => (
+                      <div className={`stat ${s.cls || ""}`} key={i}>
+                        <span className="stat-num">{s.val}</span>
+                        {s.sub && <span className="stat-sub">{s.sub}</span>}
+                        <span className="stat-lab">{s.lab}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* ── 支払明細 ── */}
+              <section className="card">
+                <div className="filter-bar">
+                  <div className="filter-field">
+                    <span className="ff-lab">支払対象月（振込月）</span>
+                    <select className="ctrl" value={month} onChange={e => { setMonth(e.target.value); setSelected({}); }}>
+                      <option value="2026-05">2026年05月</option>
+                      <option value="2026-06">2026年06月</option>
+                      <option value="2026-07">2026年07月</option>
+                      <option value="2026-08">2026年08月</option>
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">ステータス</span>
+                    <select className="ctrl" value={fStatus} onChange={e => setFStatus(e.target.value)}>
+                      <option value="all">すべて</option>
+                      <option value="unpaid">未振込</option>
+                      <option value="paid">振込済</option>
+                      <option value="onhold">保留</option>
+                    </select>
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">検索（ガイドID・氏名）</span>
+                    <input className="ctrl search" type="text" placeholder="G-001 / 田中…" value={query} onChange={e => setQuery(e.target.value)} />
+                  </div>
+                  <div className="filter-field">
+                    <span className="ff-lab">絞り込み</span>
+                    <div className="toggles">
+                      <label className="toggle">
+                        <input type="checkbox" checked={tNoBank} onChange={e => setTNoBank(e.target.checked)} />
+                        <span className="track"></span>
+                        <span className="t-label">口座未登録のみ表示</span>
+                      </label>
+                    </div>
+                  </div>
+                  {display.length > 0 && (
+                    <div className="filter-field">
+                      <span className="ff-lab">内訳</span>
+                      <button className="btn" onClick={toggleAll}>{allOpen ? "すべて折りたたむ" : "すべて展開"}</button>
+                    </div>
+                  )}
+                  <span className="result-count">{display.length} / {guideCount}名</span>
+                </div>
+
+                <div className="filter-note">
+                  <span className="badge teal sq">対象月の意味</span>
+                  「支払対象月（振込月）」は <strong>{monthLabel}に振り込む</strong> 対象を表します。原資は {tourMonthLabel}催行で<strong>ガイド精算が「確定」</strong>した分（§10/§11）＋当月の その他支払項目（運営登録）。月次締め（粗利確定）とは独立して扱います。
+                </div>
+
+                {guideCount === 0 ? (
+                  <div className="empty-state">
+                    <div className="es-ic">◷</div>
+                    <div className="es-main">{monthLabel}に支払対象のガイドはありません</div>
+                    <div className="es-sub">支払対象月を変更すると、ここにガイド別の支払が表示されます。</div>
+                  </div>
+                ) : display.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="es-ic">⌕</div>
+                    <div className="es-main">条件に一致するガイドがありません</div>
+                    <div className="es-sub">フィルター・検索条件を変更してください。</div>
+                  </div>
+                ) : (
+                  <div className="tbl-scroll">
+                    <table className="settle-table master">
+                      <thead>
+                        <tr>
+                          <th className="c-check">
+                            <input className="row-check" type="checkbox" checked={allSelDisplay} disabled={selectableDisplay.length === 0} onChange={toggleSelAll} aria-label="支払可能行を全選択" />
+                          </th>
+                          <th className="c-exp"></th>
+                          <th>ガイド</th>
+                          <th className="right">担当件数</th>
+                          <th className="right">ツアー報酬合計</th>
+                          <th className="right">その他支払項目</th>
+                          <th className="right calc">支払総額</th>
+                          <th>振込先</th>
+                          <th>インボイス</th>
+                          <th>ステータス</th>
+                          <th className="right">アクション</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {display.map(g => {
+                          const exp = !!expanded[g.id];
+                          const total = totalOf(g);
+                          const payable = payableOf(g);
+                          const rowCls = g.status === "paid" ? "confirmed" : g.status === "onhold" ? "held" : (noBank(g) || total <= 0) ? "attention" : "";
+                          const stop = (e) => e.stopPropagation();
+                          return (
+                            <React.Fragment key={g.id}>
+                              <tr className={`master-row${rowCls ? " " + rowCls : ""}`} onClick={() => toggle(g.id)}>
+                                <td className="c-check" onClick={stop}>
+                                  <input className="row-check" type="checkbox" disabled={!payable} checked={!!selected[g.id] && payable} onChange={() => toggleSel(g.id)} aria-label={`${g.name}を選択`} />
+                                </td>
+                                <td className="c-exp"><Caret open={exp} /></td>
+                                <td className="c-guide">
+                                  <span className="g-name">{g.name}</span>
+                                  <span className="g-id">{g.id}</span>
+                                </td>
+                                <td className="right">{sessionCountOf(g) ? `${sessionCountOf(g)}件` : <span className="muted-dash">0件</span>}</td>
+                                <td className="right">{tourRewardOf(g) ? <span className="money">{yen(tourRewardOf(g))}</span> : <span className="muted-dash">—</span>}</td>
+                                <td className="right">{otherOf(g) ? <span className="money">{yen(otherOf(g))}</span> : <span className="muted-dash">—</span>}</td>
+                                <td className="right calc"><span className={`money calc-val${total <= 0 ? " neg" : ""}`}>{yen(total)}</span></td>
+                                <td className="bank-cell">
+                                  {g.bank
+                                    ? <React.Fragment><span className="bk-main">{g.bank.name} / {g.bank.branch}</span><br /><span className="bk-acct">{g.bank.type} {maskAcct(g.bank.acct)}</span></React.Fragment>
+                                    : <span className="badge coral sq">口座未登録</span>}
+                                </td>
+                                <td>{g.invoice ? <span className="badge green"><span className="dot"></span>適格</span> : <span className="badge muted">未登録</span>}</td>
+                                <td><span className="state-chips">{renderStatusChips(g)}</span></td>
+                                <td className="right" onClick={stop}>
+                                  <span className="act-cell">
+                                    {g.status === "paid" && (<React.Fragment>
+                                      <button className="btn" onClick={() => toggle(g.id)}>詳細</button>
+                                      <button className="btn danger" onClick={() => openCancel(g.id)}>取消</button>
+                                    </React.Fragment>)}
+                                    {g.status === "onhold" && (
+                                      <button className="btn" onClick={() => unhold(g.id)}>保留を解除</button>
+                                    )}
+                                    {g.status === "unpaid" && (<React.Fragment>
+                                      {payable
+                                        ? <button className="btn primary" onClick={() => openPay([g.id])}>振込済にする</button>
+                                        : <button className="btn" disabled title={noBank(g) ? "口座情報が未登録のため振込できません" : "支払総額が0以下のため振込対象外です"}>振込不可</button>}
+                                      <button className="btn" onClick={() => openHold(g.id)}>保留</button>
+                                    </React.Fragment>)}
+                                  </span>
+                                </td>
+                              </tr>
+                              {exp && (
+                                <tr className="expand-row">
+                                  <td colSpan={11}>
+                                    <div className="exp-body">
+                                      <div className="exp-head">
+                                        <span className="code-mono">{g.id}</span>
+                                        <span className="badge teal">{g.name}</span>
+                                        <span className="exp-meta">支払対象月 {monthLabel}（{tourMonthLabel}催行 確定分）</span>
+                                      </div>
+
+                                      {/* (A) 当月精算内訳（催行回単位・読み取り） */}
+                                      <div>
+                                        <div className="sub-label">当月の精算内訳<span className="sl-hint">確定済みガイド精算（§10/§11）から反映・読み取り専用</span></div>
+                                        {g.sessions.length > 0 ? (
+                                          <div className="inner-wrap">
+                                            <table className="settle-table inner">
+                                              <thead>
+                                                <tr>
+                                                  <th>催行月</th>
+                                                  <th>催行回 / ツアー</th>
+                                                  <th className="right">ツアー報酬</th>
+                                                  <th className="right">現地までの交通費（往復）</th>
+                                                  <th className="right">ツアー経費〔立替・実費〕</th>
+                                                  <th className="right calc">小計</th>
+                                                  <th className="right">精算</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {g.sessions.map(s => {
+                                                  const sub = s.reward.wage + s.reward.transport + s.reward.expense;
+                                                  return (
+                                                    <tr key={s.tiId}>
+                                                      <td>{s.tourMonth}</td>
+                                                      <td>
+                                                        <span className="t-name">{s.tour}</span>
+                                                        <span className="t-code">{s.tiId}</span>
+                                                      </td>
+                                                      <td className="right"><span className="money">{yen(s.reward.wage)}</span></td>
+                                                      <td className="right">{s.reward.transport ? <span className="money">{yen(s.reward.transport)}</span> : <span className="muted-dash">—</span>}</td>
+                                                      <td className="right">{s.reward.expense ? <span className="money">{yen(s.reward.expense)}</span> : <span className="muted-dash">—</span>}</td>
+                                                      <td className="right calc"><span className="money calc-val">{yen(sub)}</span></td>
+                                                      <td className="right"><a className="lnk" href="精算確認.html">精算明細</a></td>
+                                                    </tr>
+                                                  );
+                                                })}
+                                              </tbody>
+                                              <tfoot>
+                                                <tr>
+                                                  <td colSpan={5}>ツアー報酬合計</td>
+                                                  <td className="right calc"><span className="money calc-val">{yen(tourRewardOf(g))}</span></td>
+                                                  <td></td>
+                                                </tr>
+                                              </tfoot>
+                                            </table>
+                                          </div>
+                                        ) : (
+                                          <div className="exp-note">当月の確定済み催行回はありません（その他支払項目のみ）。</div>
+                                        )}
+                                        {g.pendingNote && <div className="exp-note amber" style={{ marginTop: 9 }}>{g.pendingNote}</div>}
+                                      </div>
+
+                                      {/* (B) その他支払項目（運営登録） */}
+                                      <div>
+                                        <div className="sub-label">その他支払項目（運営登録）<span className="sl-hint">ツアー非紐付け・研修交通費／翻訳費 等（§11-4）。編集は登録元で</span></div>
+                                        {g.others.length > 0 ? (
+                                          <div className="other-list">
+                                            {g.others.map((o, i) => (
+                                              <div className="other-row" key={i}>
+                                                <span className="o-item">{o.item}</span>
+                                                <span className="o-amt"><span className="money">{yen(o.amount)}</span></span>
+                                                <span className="o-meta">登録 {o.regDate} ／ {o.regBy}</span>
+                                              </div>
+                                            ))}
+                                            <div className="other-row foot">
+                                              <span className="o-item">その他支払項目 小計</span>
+                                              <span className="o-amt"><span className="money calc-val">{yen(otherOf(g))}</span></span>
+                                              <span className="o-meta"></span>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className="exp-note">当月のその他支払項目はありません。</div>
+                                        )}
+                                      </div>
+
+                                      {/* (C) 振込情報パネル */}
+                                      <div>
+                                        <div className="sub-label">振込情報<span className="sl-hint">振込先（ガイド情報 §6）／実行記録</span></div>
+                                        <div className="pay-panel">
+                                          <div className="pay-box">
+                                            <div className="pay-box-head">
+                                              <span>振込先口座</span>
+                                              {g.invoice ? <span className="badge green sq">適格 {g.invoice}</span> : <span className="badge muted sq">インボイス未登録</span>}
+                                            </div>
+                                            {g.bank ? (
+                                              <dl className="def-grid">
+                                                <dt>銀行名</dt><dd>{g.bank.name}</dd>
+                                                <dt>支店</dt><dd>{g.bank.branchNo} {g.bank.branch}</dd>
+                                                <dt>口座種別</dt><dd>{g.bank.type}</dd>
+                                                <dt>口座番号</dt><dd><span className="mono">{g.bank.acct}</span></dd>
+                                                <dt>口座名義</dt><dd>{g.bank.holder}</dd>
+                                                <dt>インボイス番号</dt><dd>{g.invoice ? <span className="mono">{g.invoice}</span> : <span className="muted-dash">未登録</span>}</dd>
+                                              </dl>
+                                            ) : (
+                                              <div className="nobank-box">
+                                                <span className="nb-msg">振込先口座が未登録です。振込できません。</span>
+                                                <a className="lnk" href="ガイド編集.html">ガイド情報を編集</a>
+                                              </div>
+                                            )}
+                                          </div>
+
+                                          <div className="pay-box">
+                                            <div className="pay-box-head"><span>振込実行記録</span><span>{STATUS_META[g.status].label}</span></div>
+                                            <dl className="def-grid">
+                                              <dt>振込予定日</dt><dd>{g.status === "paid" ? <span className="mono">{g.paid.date}</span> : <span className="mono">{PAY_MONTH}-25</span>}</dd>
+                                              <dt>振込実行日</dt><dd>{g.status === "paid" ? <span className="mono">{g.paid.date}</span> : <span className="muted-dash">—</span>}</dd>
+                                              <dt>実行者</dt><dd>{g.status === "paid" ? g.paid.by : <span className="muted-dash">—</span>}</dd>
+                                              <dt>参照番号</dt><dd>{g.status === "paid" ? <span className="mono">{g.paid.ref}</span> : <span className="muted-dash">—</span>}</dd>
+                                              <dt>記録日時</dt><dd>{g.status === "paid" ? <span className="mono">{g.paid.at}</span> : <span className="muted-dash">—</span>}</dd>
+                                            </dl>
+                                          </div>
+                                        </div>
+
+                                        {g.status === "onhold" && g.hold && (
+                                          <div className="exp-note amber" style={{ marginTop: 10 }}>
+                                            <strong>保留理由：</strong>{g.hold.reason}<br />（{g.hold.at} ／ {g.hold.by}）
+                                          </div>
+                                        )}
+
+                                        <div className="layer-note" style={{ marginTop: 10 }}>
+                                          この支払総額 <strong>{yen(total)}</strong> は、ガイドに支払う<strong>総額（＝振込額）</strong>です（ガイド向け表示：ツアー報酬＋現地までの交通費＋ツアー経費＋その他支払項目）。社内の<strong>原価科目への分離</strong>（ガイド人件費／施設費／単発経費）は売上・原価レコード側（売上・原価管理設計資料 §6-2）で行われ、本画面には現れません（二層分離・§11）。立替の科目振替により、収支系画面の「ガイド報酬原価」とは一致しないことがあります。
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {guideCount > 0 && (
+                  <div className="close-bar">
+                    <div className="close-status">
+                      {selectedIds.length > 0
+                        ? <React.Fragment><span className="badge teal"><span className="dot"></span>選択中</span><span><span className="cs-strong">{selectedIds.length}名</span> 選択 ／ 合計 <span className="cs-strong">{yen(selectedTotal)}</span></span></React.Fragment>
+                        : <React.Fragment><span className="badge muted"><span className="dot"></span>未選択</span><span>振込する支払行を選択してください（保留・口座未登録・金額0は選択できません）。</span></React.Fragment>}
+                    </div>
+                    <div className="close-right">
+                      <button className="btn" onClick={() => exportCSV(csvTargets())} title="選択行（未選択時は未振込の支払可能行すべて）の振込データをCSV出力">
+                        CSV出力{selectedIds.length > 0 ? `（${selectedIds.length}名）` : "（未振込全件）"}
+                      </button>
+                      <button className="btn primary lg" disabled={selectedIds.length === 0} onClick={() => openPay(selectedIds)}>
+                        選択を振込済にする
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
+            </main>
+
+            {/* ── モーダル：振込済にする ── */}
+            <div className={`modal-overlay ${modal && modal.type === "pay" ? "show" : ""}`} onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
+              {modal && modal.type === "pay" && (() => {
+                const targets = monthRows.filter(g => modal.ids.includes(g.id));
+                const total = targets.reduce((t, g) => t + totalOf(g), 0);
+                return (
+                  <div className="modal">
+                    <div className="modal-head"><span className="m-title">振込済にする（{targets.length}名）</span><button className="modal-close" onClick={() => setModal(null)}>×</button></div>
+                    <div className="modal-body">
+                      <div className="m-summary">
+                        <div className="ms-row"><span>対象</span><span className="ms-val">{targets.length}名</span></div>
+                        <div className="ms-row"><span>振込総額</span><span className="ms-val">{yen(total)}</span></div>
+                        <div className="ms-list">{targets.map(g => `${g.name}（${g.id}） ${yen(totalOf(g))}`).join(" ／ ")}</div>
+                      </div>
+                      <div className="m-field">
+                        <label>振込実行日</label>
+                        <input className="ctrl" type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
+                      </div>
+                      <div className="m-field">
+                        <label>参照番号（振込連番・FB番号 等）</label>
+                        <input className="ctrl" type="text" placeholder="例：FB-20260725-001" value={payRef} onChange={e => setPayRef(e.target.value)} />
+                      </div>
+                      <div className="m-field">
+                        <label>メモ（任意）</label>
+                        <textarea className="ctrl" placeholder="補足があれば記入" value={payMemo} onChange={e => setPayMemo(e.target.value)} />
+                      </div>
+                      <div className="m-warn">振込済にすると当月の当該ガイド支払は<strong>ロック</strong>され、支払総額・内訳・口座がスナップショットとして固定されます。以後の精算変更は当月の振込済額に反映されません（差額は翌月で調整）。</div>
+                    </div>
+                    <div className="modal-foot">
+                      <button className="btn" onClick={() => setModal(null)}>キャンセル</button>
+                      <button className="btn primary" onClick={doPay}>振込済にする</button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ── モーダル：保留 ── */}
+            <div className={`modal-overlay ${modal && modal.type === "hold" ? "show" : ""}`} onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
+              {modal && modal.type === "hold" && (() => {
+                const g = monthRows.find(x => x.id === modal.ids[0]);
+                return (
+                  <div className="modal">
+                    <div className="modal-head"><span className="m-title">支払を保留にする</span><button className="modal-close" onClick={() => setModal(null)}>×</button></div>
+                    <div className="modal-body">
+                      <div>{g.name}（{g.id}）／ {yen(totalOf(g))} を当月の振込対象から外し、保留にします。翌月以降に再度支払対象へ戻せます。</div>
+                      <div className="m-field">
+                        <label>保留理由（必須）</label>
+                        <textarea className="ctrl" placeholder="例：口座情報の確認中／支払額の係争中 など" value={holdReason} onChange={e => setHoldReason(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="modal-foot">
+                      <button className="btn" onClick={() => setModal(null)}>キャンセル</button>
+                      <button className="btn primary" disabled={holdReason.trim() === ""} onClick={doHold}>保留にする</button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* ── モーダル：振込済の取消（限定取消） ── */}
+            <div className={`modal-overlay ${modal && modal.type === "cancel" ? "show" : ""}`} onMouseDown={e => { if (e.target === e.currentTarget) setModal(null); }}>
+              {modal && modal.type === "cancel" && (() => {
+                const g = monthRows.find(x => x.id === modal.ids[0]);
+                return (
+                  <div className="modal">
+                    <div className="modal-head"><span className="m-title">振込済を取り消す</span><button className="modal-close" onClick={() => setModal(null)}>×</button></div>
+                    <div className="modal-body">
+                      <div>{g.name}（{g.id}）の「振込済」を取り消し、未振込に戻します。<strong>誤操作対応の限定取消</strong>です。取消は監査ログに記録されます。</div>
+                      <div className="m-field">
+                        <label>取消理由（必須）</label>
+                        <textarea className="ctrl" placeholder="例：参照番号の誤り／重複登録 など" value={cancelReason} onChange={e => setCancelReason(e.target.value)} />
+                      </div>
+                      <div className="m-warn">実際の送金が既に行われている場合は、銀行側の組戻し等が別途必要です。本操作はシステム上の記録の取消のみを行います。</div>
+                    </div>
+                    <div className="modal-foot">
+                      <button className="btn" onClick={() => setModal(null)}>キャンセル</button>
+                      <button className="btn danger" disabled={cancelReason.trim() === ""} onClick={doCancel}>取り消す</button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
