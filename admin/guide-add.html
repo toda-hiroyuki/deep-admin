@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ガイド登録 | deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="css/common.css" />
+  <style>
+    .workspace { padding: 20px 28px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 860px; }
+    .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .crumbs .sep { color: var(--muted-soft); }
+    .crumbs a { color: var(--muted); text-decoration: none; }
+    .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+    .crumbs .current { color: var(--ink); font-weight: 600; }
+    .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .page-head h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg, 10px); box-shadow: var(--shadow-1); overflow: hidden; }
+    .card-head { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); font-size: 14px; font-weight: 700; }
+    .card-body { padding: 20px; }
+    .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; justify-content: flex-end; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .form-field.full { grid-column: 1 / -1; }
+    .f-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+    .f-req { color: var(--coral, #e05); font-size: 11px; }
+    .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="react" src="js/sidebar.js"></script>
+  <script type="text/babel" data-presets="react">
+    const { useState } = React;
+
+    const AREA_OPTS = ["大阪・京都・奈良", "東京・関東", "北海道", "沖縄", "九州", "中部・東海", "東北", "中国・四国"];
+    const LANG_OPTS = ["日本語", "English", "中文", "한국어", "Français", "Deutsch", "Español"];
+    const RANK_OPTS = ["S", "A", "B", "C"];
+
+    function Field({ label, required, children, full }) {
+      return (
+        <div className={`form-field${full ? " full" : ""}`}>
+          <label className="f-label">
+            {label}
+            {required && <span className="f-req">必須</span>}
+          </label>
+          {children}
+        </div>
+      );
+    }
+
+    function App() {
+      const [form, setForm] = useState({
+        lastNameKanji: "", firstNameKanji: "",
+        lastNameKana: "", firstNameKana: "",
+        lastNameRoma: "", firstNameRoma: "",
+        tel: "", email: "",
+        status: "active", rank: "B",
+        area: [], lang: [],
+        rate: "", nationality: "",
+        prefecture: "", city: "", address: "",
+        memo: "",
+        whatsapp: false,
+      });
+
+      const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+      const toggleArr = (k, v) => setForm(f => {
+        const arr = f[k];
+        return { ...f, [k]: arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v] };
+      });
+
+      return (
+        <div className="app-shell">
+          <Sidebar resource="guides" />
+          <main className="workspace">
+            <div className="crumbs">
+              <a href="guides.html">ガイド一覧</a>
+              <span className="sep">›</span>
+              <span className="current">ガイド登録</span>
+            </div>
+            <div className="page-head">
+              <h1>ガイド登録</h1>
+              <div style={{display:"flex",gap:8}}>
+                <a href="guides.html" className="btn" style={{textDecoration:"none"}}>キャンセル</a>
+                <button className="btn primary" onClick={() => { alert("登録しました"); location.href="guides.html"; }}>登録する</button>
+              </div>
+            </div>
+
+            {/* 基本情報 */}
+            <div className="card">
+              <div className="card-head">
+                <span className="sec-no">1</span>基本情報
+              </div>
+              <div className="card-body">
+                <div className="form-grid">
+                  <Field label="姓（漢字）" required>
+                    <input className="ctrl" value={form.lastNameKanji} onChange={e => set("lastNameKanji", e.target.value)} placeholder="山田" />
+                  </Field>
+                  <Field label="名（漢字）" required>
+                    <input className="ctrl" value={form.firstNameKanji} onChange={e => set("firstNameKanji", e.target.value)} placeholder="太郎" />
+                  </Field>
+                  <Field label="姓（カタカナ）" required>
+                    <input className="ctrl" value={form.lastNameKana} onChange={e => set("lastNameKana", e.target.value)} placeholder="ヤマダ" />
+                  </Field>
+                  <Field label="名（カタカナ）" required>
+                    <input className="ctrl" value={form.firstNameKana} onChange={e => set("firstNameKana", e.target.value)} placeholder="タロウ" />
+                  </Field>
+                  <Field label="姓（ローマ字）" required>
+                    <input className="ctrl" value={form.lastNameRoma} onChange={e => set("lastNameRoma", e.target.value)} placeholder="Yamada" />
+                  </Field>
+                  <Field label="名（ローマ字）" required>
+                    <input className="ctrl" value={form.firstNameRoma} onChange={e => set("firstNameRoma", e.target.value)} placeholder="Taro" />
+                  </Field>
+                  <Field label="電話番号" required>
+                    <input className="ctrl" value={form.tel} onChange={e => set("tel", e.target.value)} placeholder="090-0000-0000" />
+                  </Field>
+                  <Field label="メールアドレス" required>
+                    <input className="ctrl" type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="example@email.com" />
+                  </Field>
+                  <Field label="稼働状況" required>
+                    <select className="ctrl select-arrow" value={form.status} onChange={e => set("status", e.target.value)}>
+                      <option value="active">アクティブ</option>
+                      <option value="paused">一時停止</option>
+                      <option value="retired">退会</option>
+                    </select>
+                  </Field>
+                  <Field label="スキルランク" required>
+                    <select className="ctrl select-arrow" value={form.rank} onChange={e => set("rank", e.target.value)}>
+                      {RANK_OPTS.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="基本時給（円/時）" required>
+                    <input className="ctrl" type="number" value={form.rate} onChange={e => set("rate", e.target.value)} placeholder="3000" />
+                  </Field>
+                  <Field label="WhatsAppコミュニティ参加">
+                    <label style={{display:"flex",alignItems:"center",gap:8,height:"var(--field-h)",cursor:"pointer"}}>
+                      <input type="checkbox" checked={form.whatsapp} onChange={e => set("whatsapp", e.target.checked)} />
+                      <span style={{fontSize:13}}>参加済み</span>
+                    </label>
+                  </Field>
+                  <Field label="メモ" full>
+                    <textarea className="ctrl" rows={3} value={form.memo} onChange={e => set("memo", e.target.value)} placeholder="連絡手段・特記事項など" style={{resize:"vertical"}} />
+                  </Field>
+                </div>
+              </div>
+            </div>
+
+            {/* 個人情報 */}
+            <div className="card">
+              <div className="card-head">
+                <span className="sec-no">2</span>個人情報
+              </div>
+              <div className="card-body">
+                <div className="form-grid">
+                  <Field label="国籍">
+                    <input className="ctrl" value={form.nationality} onChange={e => set("nationality", e.target.value)} placeholder="日本" />
+                  </Field>
+                  <Field label="都道府県">
+                    <input className="ctrl" value={form.prefecture} onChange={e => set("prefecture", e.target.value)} placeholder="東京都" />
+                  </Field>
+                  <Field label="市区町村">
+                    <input className="ctrl" value={form.city} onChange={e => set("city", e.target.value)} placeholder="新宿区" />
+                  </Field>
+                  <Field label="住所（それ以降）">
+                    <input className="ctrl" value={form.address} onChange={e => set("address", e.target.value)} placeholder="西新宿1-2-3 ○○マンション401" />
+                  </Field>
+                </div>
+              </div>
+            </div>
+
+            {/* 対応エリア・言語 */}
+            <div className="card">
+              <div className="card-head">
+                <span className="sec-no">3</span>対応エリア・言語
+              </div>
+              <div className="card-body">
+                <div className="form-grid">
+                  <Field label="対応エリア" full>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"8px 16px"}}>
+                      {AREA_OPTS.map(a => (
+                        <label key={a} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,cursor:"pointer"}}>
+                          <input type="checkbox" checked={form.area.includes(a)} onChange={() => toggleArr("area", a)} />
+                          {a}
+                        </label>
+                      ))}
+                    </div>
+                  </Field>
+                  <Field label="対応言語" full>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"8px 16px"}}>
+                      {LANG_OPTS.map(l => (
+                        <label key={l} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,cursor:"pointer"}}>
+                          <input type="checkbox" checked={form.lang.includes(l)} onChange={() => toggleArr("lang", l)} />
+                          {l}
+                        </label>
+                      ))}
+                    </div>
+                  </Field>
+                </div>
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+              <a href="guides.html" className="btn" style={{textDecoration:"none"}}>キャンセル</a>
+              <button className="btn primary" onClick={() => { alert("登録しました"); location.href="guides.html"; }}>登録する</button>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
