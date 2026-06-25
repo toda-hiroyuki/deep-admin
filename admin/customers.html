@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>顧客管理 | deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/customer.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <nav class="side-nav">
+    <div class="brand-block">
+      <div class="brand-mark">d.</div>
+      <div>
+        <div class="brand-name">deep_Admin</div>
+        <div class="brand-caption">Product &amp; Sales · Phase 1</div>
+      </div>
+    </div>
+    <div class="nav-group" style="margin-bottom:8px;">
+      <a href="index.html" class="nav-item" style="text-decoration:none;">
+        <span class="nav-icon">⊞</span>
+        <span style="flex:1;min-width:0;"><div>ダッシュボード</div></span>
+      </a>
+    </div>
+    <div>
+      <div class="nav-section-label">予約オペレーション</div>
+      <div class="nav-group">
+        <a href="bookings.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">BK</span><span style="flex:1;min-width:0;"><div>予約一覧</div></span></a>
+        <a href="unassigned.html" class="nav-item nav-child" style="text-decoration:none;"><span class="nav-icon" style="font-size:11px;opacity:0.55;width:18px;">↳</span><span style="flex:1;min-width:0;"><div>未割り当て一覧</div></span></a>
+        <a href="sessions.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">SS</span><span style="flex:1;min-width:0;"><div>催行回一覧</div></span></a>
+        <a href="unarranged.html" class="nav-item nav-child" style="text-decoration:none;"><span class="nav-icon" style="font-size:11px;opacity:0.55;width:18px;">↳</span><span style="flex:1;min-width:0;"><div>未手配一覧</div></span></a>
+        <a href="today-tomorrow.html" class="nav-item nav-child" style="text-decoration:none;"><span class="nav-icon" style="font-size:11px;opacity:0.55;width:18px;">↳</span><span style="flex:1;min-width:0;"><div>当日/翌日案件</div></span></a>
+      </div>
+    </div>
+    <div>
+      <div class="nav-section-label">精算・経営</div>
+      <div class="nav-group">
+        <a href="monthly-settlement.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">ST</span><span style="flex:1;min-width:0;"><div>月次締め確認</div></span></a>
+        <a href="ota-payment-matching.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">OT</span><span style="flex:1;min-width:0;"><div>OTA入金照合</div></span></a>
+        <a href="revenue-summary.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">RV</span><span style="flex:1;min-width:0;"><div>収支一覧</div></span></a>
+        <a href="guide-payments.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">GP</span><span style="flex:1;min-width:0;"><div>ガイド支払一覧</div></span></a>
+      </div>
+    </div>
+    <div>
+      <div class="nav-section-label">ガイド管理</div>
+      <div class="nav-group">
+        <a href="guides.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">GM</span><span style="flex:1;min-width:0;"><div>ガイド一覧</div></span></a>
+      </div>
+    </div>
+    <div>
+      <div class="nav-section-label">顧客管理</div>
+      <div class="nav-group">
+        <a href="customers.html" class="nav-item active" style="text-decoration:none;"><span class="nav-icon">CU</span><span style="flex:1;min-width:0;"><div>顧客一覧</div></span></a>
+      </div>
+    </div>
+    <div>
+      <div class="nav-section-label">施設管理</div>
+      <div class="nav-group">
+        <a href="facilities.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">FC</span><span style="flex:1;min-width:0;"><div>施設一覧</div></span></a>
+      </div>
+    </div>
+    <div>
+      <div class="nav-section-label">商品管理</div>
+      <div class="nav-group">
+        <a href="tour-options.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">TO</span><span style="flex:1;min-width:0;"><div>TourOption</div></span></a>
+        <a href="products.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">PG</span><span style="flex:1;min-width:0;"><div>商品ページ</div></span></a>
+        <div class="nav-section-label" style="font-size:10px;color:#999;padding:8px 12px 4px;margin-top:4px;">マスター</div>
+        <a href="resources.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">RS</span><span style="flex:1;min-width:0;"><div>リソース管理</div></span></a>
+        <a href="areas.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">AR</span><span style="flex:1;min-width:0;"><div>エリア管理</div></span></a>
+        <a href="languages.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">LG</span><span style="flex:1;min-width:0;"><div>言語マスター管理</div></span></a>
+        <a href="guide-materials.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">GD</span><span style="flex:1;min-width:0;"><div>ガイド資料</div></span></a>
+        <a href="cancel-policies.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">CP</span><span style="flex:1;min-width:0;"><div>キャンセルポリシー</div></span></a>
+        <a href="channel-fees.html" class="nav-item" style="text-decoration:none;"><span class="nav-icon">FE</span><span style="flex:1;min-width:0;"><div>チャネル・手数料設定</div></span></a>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <a href="login.html" class="nav-item nav-logout" style="text-decoration:none;">
+        <span class="nav-icon">↩</span><span>ログアウト</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main workspace -->
+  <div class="workspace" style="padding:20px 24px;">
+    <div class="list-shell">
+
+      <!-- Topbar -->
+      <div class="topbar list-topbar">
+        <div>
+          <h1>顧客管理</h1>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn">エクスポート</button>
+          <a href="customer-add.html" class="btn primary">＋ 新規顧客追加</a>
+        </div>
+      </div>
+
+      <!-- List view -->
+      <div class="list-view">
+
+        <!-- Header + stats -->
+        <div class="list-header">
+          <div>
+            <h1>顧客一覧<span class="list-count">247</span></h1>
+            <p class="list-desc">顧客情報の一覧です。</p>
+          </div>
+        </div>
+
+        <!-- Summary row -->
+        <div class="list-summary">
+          <div class="s-item">
+            <span class="dot green"></span>
+            <span class="label">総顧客数</span>
+            <strong>247</strong>
+            <span class="unit">名</span>
+          </div>
+          <div class="s-item">
+            <span class="dot blue"></span>
+            <span class="label">今月新規</span>
+            <strong>18</strong>
+            <span class="unit">名</span>
+          </div>
+          <div class="s-item">
+            <span class="dot amber"></span>
+            <span class="label">連絡先非公開</span>
+            <strong>3</strong>
+            <span class="unit">名</span>
+          </div>
+          <div class="s-item">
+            <span class="dot muted"></span>
+            <span class="label">海外顧客</span>
+            <strong>89</strong>
+            <span class="unit">名</span>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="list-filters">
+          <div class="lf-search">
+            <span class="lf-search-ico">⌕</span>
+            <input type="text" placeholder="氏名・メール・電話番号で検索..." />
+          </div>
+          <button class="btn ghost sm" style="margin-left:auto;">フィルターをリセット</button>
+        </div>
+
+        <!-- Table -->
+        <div class="list-table-wrap">
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>氏名</th>
+                <th>メールアドレス</th>
+                <th>電話番号</th>
+                <th>国</th>
+                <th>登録日</th>
+                <th class="actions">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10001</span></td>
+                <td>
+                  <div style="font-weight:600;">山田 太郎</div>
+                  <div class="row-sub">Taro Yamada</div>
+                </td>
+                <td>yamada.taro@example.com</td>
+                <td>+81 90-1234-5678</td>
+                <td><span class="badge teal">JP</span></td>
+                <td>2026-01-15</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10002</span></td>
+                <td>
+                  <div style="font-weight:600;">田中 花子</div>
+                  <div class="row-sub">Hanako Tanaka</div>
+                </td>
+                <td>tanaka.h@example.com</td>
+                <td>+1 555-0123</td>
+                <td><span class="badge blue">US</span></td>
+                <td>2026-01-20</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10003</span></td>
+                <td>
+                  <div style="font-weight:600;">鈴木 一郎</div>
+                  <div class="row-sub">Ichiro Suzuki</div>
+                </td>
+                <td>suzuki.i@email.co.jp</td>
+                <td>+81 80-9876-5432</td>
+                <td><span class="badge teal">JP</span></td>
+                <td>2026-02-01</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10004</span></td>
+                <td>
+                  <div style="font-weight:600;">Smith, John</div>
+                </td>
+                <td>john.smith@email.com</td>
+                <td>+44 7700-900123</td>
+                <td><span class="badge">GB</span></td>
+                <td>2026-02-10</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10005</span></td>
+                <td>
+                  <div style="font-weight:600;">佐藤 美咲</div>
+                  <div class="row-sub">Misaki Sato</div>
+                </td>
+                <td>sato.m@example.jp</td>
+                <td>+81 70-2345-6789</td>
+                <td><span class="badge teal">JP</span></td>
+                <td>2026-02-18</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10006</span></td>
+                <td>
+                  <div style="font-weight:600;">Mueller, Hans</div>
+                </td>
+                <td>hans.m@example.de</td>
+                <td>+49 176-12345678</td>
+                <td><span class="badge">DE</span></td>
+                <td>2026-03-05</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10007</span></td>
+                <td>
+                  <div style="font-weight:600;">高橋 誠</div>
+                  <div class="row-sub">Makoto Takahashi</div>
+                </td>
+                <td>takahashi@example.jp</td>
+                <td>+81 90-5678-1234</td>
+                <td><span class="badge teal">JP</span></td>
+                <td>2026-03-12</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10008</span></td>
+                <td>
+                  <div style="font-weight:600;">Chen, Li</div>
+                </td>
+                <td>chen.li@example.com</td>
+                <td>+86 138-0013-8000</td>
+                <td><span class="badge">CN</span></td>
+                <td>2026-03-20</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10009</span></td>
+                <td>
+                  <div style="font-weight:600;">伊藤 さくら</div>
+                  <div class="row-sub">Sakura Ito</div>
+                </td>
+                <td>sakura.i@mail.com</td>
+                <td>+81 80-4567-8901</td>
+                <td><span class="badge teal">JP</span></td>
+                <td>2026-04-02</td>
+                <td class="actions">
+                  <span class="badge amber" style="margin-right:6px;">連絡先非公開</span>
+                  <a href="customer-detail.html" class="btn sm">詳細</a>
+                </td>
+              </tr>
+              <tr class="list-row" onclick="location.href='customer-detail.html'">
+                <td><span class="code-mono">10010</span></td>
+                <td>
+                  <div style="font-weight:600;">Park, Jiyeon</div>
+                </td>
+                <td>j.park@example.kr</td>
+                <td>+82 10-1234-5678</td>
+                <td><span class="badge">KR</span></td>
+                <td>2026-04-15</td>
+                <td class="actions"><a href="customer-detail.html" class="btn sm">詳細</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div><!-- /list-table-wrap -->
+
+      </div><!-- /list-view -->
+    </div><!-- /list-shell -->
+  </div><!-- /workspace -->
+</div><!-- /app-shell -->
+</body>
+</html>
