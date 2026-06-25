@@ -1,798 +1,757 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>催行回詳細 - deep_Admin</title>
-  <link rel="preconnect" href="https://rsms.me/" />
-  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-  <link rel="stylesheet" href="css/common.css" />
-  <style>
-    /* ── Workspace ── */
-    .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1100px; }
-    .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-    .crumbs .sep { color: var(--muted-soft); }
-    .crumbs a { color: var(--muted); text-decoration: none; }
-    .crumbs a:hover { color: var(--accent); text-decoration: underline; }
-    .crumbs .current { color: var(--ink); font-weight: 600; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; }
-    .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
-    .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
-    .page-title .sub { font-size: 12.5px; color: var(--muted); }
-    .title-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>催行回詳細 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
 
-    /* ── Badges & pills ── */
-    .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
-    .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
-    .status-pill.green { background: var(--green-soft); color: var(--green); }
-    .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
-    .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
-    .status-pill.tealblue { background: var(--teal-blue-soft); color: var(--teal-blue); }
-    .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
-    .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
-    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
-    .badge.blue { background: var(--blue-soft); color: var(--blue); }
-    .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
-    .badge.amber { background: var(--amber-soft); color: var(--amber); }
-    .badge.green { background: var(--green-soft); color: var(--green); }
-    .badge.muted { background: var(--bg-sunken); color: var(--muted); }
-    .muted-dash { color: var(--muted-soft); }
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1100px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
 
-    /* ── Buttons ── */
-    .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
-    .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
-    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
-    .btn.outline { background: var(--surface); border-color: var(--accent); color: var(--accent-strong); }
-    .btn.outline:hover { background: var(--accent-soft); border-color: var(--accent); }
-    .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn-link { background: none; border: 0; color: var(--accent); font-size: 12.5px; font-weight: 600; padding: 0; height: auto; text-decoration: none; }
-    .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+      .status-pill.tealblue { background: var(--teal-blue-soft); color: var(--teal-blue); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .status-pill.coral { background: var(--coral-soft); color: var(--coral); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge.green { background: var(--green-soft); color: var(--green); }
+      .badge.muted { background: var(--bg-sunken); color: var(--muted); }
+      .muted-dash { color: var(--muted-soft); }
 
-    /* ── Cards ── */
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
-    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
-    .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
-    .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
-    .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
-    .card-body { padding: 18px 20px; }
-    .card-body.flush { padding: 0; }
-    .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; }
-    .card-foot.end { justify-content: flex-end; }
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; cursor: pointer; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.outline { background: var(--surface); border-color: var(--accent); color: var(--accent-strong); }
+      .btn.outline:hover { background: var(--accent-soft); border-color: var(--accent); }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn-link { background: none; border: 0; color: var(--accent); font-size: 12.5px; font-weight: 600; padding: 0; height: auto; cursor: pointer; }
+      .btn-link:hover { color: var(--accent-strong); text-decoration: underline; }
 
-    /* ── Definition grid ── */
-    .def-grid { display: grid; grid-template-columns: 160px 1fr 160px 1fr; gap: 0; }
-    .def-grid .dt { color: var(--muted); font-size: 12px; font-weight: 600; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; }
-    .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .def-grid .dd:not(.span) { padding-right: 18px; }
-    .def-grid .dd.span { grid-column: 2 / -1; }
-    .def-grid .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
-    .def-grid .dd .sub { color: var(--muted); font-size: 12px; }
-    .def-grid .dd .strong { font-weight: 650; }
-    .def-grid .dt:nth-last-child(-n+2), .def-grid .dd:nth-last-child(-n+2) { border-bottom: 0; }
-    .cap-meter { display: inline-flex; align-items: center; gap: 9px; }
-    .cap-bar { width: 76px; height: 6px; border-radius: 999px; background: var(--bg-sunken); overflow: hidden; }
-    .cap-bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
-    @media (max-width: 860px) { .def-grid { grid-template-columns: 140px 1fr; } .def-grid .dd.span { grid-column: 2; } .def-grid .dt:nth-last-child(-n+2), .def-grid .dd:nth-last-child(-n+2) { border-bottom: 1px solid var(--line-soft); } }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 18px 20px; }
+      .card-body.flush { padding: 0; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; }
 
-    /* ── Tables in cards ── */
-    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
-    .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 16px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
-    .data-table thead th.center { text-align: center; }
-    .data-table thead th.right { text-align: right; }
-    .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
-    .data-table tbody td.center { text-align: center; }
-    .data-table tbody td.right { text-align: right; }
-    .data-table tbody tr:last-child td { border-bottom: 0; }
-    .data-table tbody tr { transition: background 0.08s; }
-    .data-table tbody tr:hover { background: var(--surface-warm); }
-    .data-table tbody tr.is-selected { background: var(--accent-soft); }
-    .data-table tbody tr.is-selected:hover { background: var(--accent-soft); }
-    .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
-    .data-table .g-name { font-weight: 650; color: var(--ink); }
-    .data-table tr.is-empty td { color: var(--muted-soft); }
-    .check { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
-    .col-check { width: 44px; }
+      .def-grid { display: grid; grid-template-columns: 160px 1fr 160px 1fr; gap: 0; }
+      .def-grid .dt { color: var(--muted); font-size: 12px; font-weight: 600; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; }
+      .def-grid .dd { color: var(--ink); font-size: 13.5px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .def-grid .dd:not(.span) { padding-right: 18px; }
+      .def-grid .dd.span { grid-column: 2 / -1; }
+      .def-grid .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink-soft); font-weight: 650; }
+      .def-grid .dd .sub { color: var(--muted); font-size: 12px; }
+      .def-grid .dd .strong { font-weight: 650; }
+      .def-grid .dt:nth-last-child(-n+2), .def-grid .dd:nth-last-child(-n+2) { border-bottom: 0; }
+      .cap-meter { display: inline-flex; align-items: center; gap: 9px; }
+      .cap-bar { width: 76px; height: 6px; border-radius: 999px; background: var(--bg-sunken); overflow: hidden; }
+      .cap-bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+      @media (max-width: 860px) { .def-grid { grid-template-columns: 140px 1fr; } .def-grid .dd.span { grid-column: 2; } }
 
-    /* ── Guide chip in table ── */
-    .guide-cell { display: inline-flex; align-items: center; gap: 9px; }
-    .g-ava { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 700; font-size: 12px; border: 1px solid var(--line-strong); flex-shrink: 0; }
-    .g-ava.empty { background: var(--bg-sunken); color: var(--muted-soft); border-style: dashed; }
-    .confirm-mark { color: var(--green); font-weight: 700; }
+      .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+      .data-table thead th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 9px 16px; border-bottom: 1px solid var(--line); background: var(--surface-tint); white-space: nowrap; }
+      .data-table thead th.center { text-align: center; }
+      .data-table thead th.right { text-align: right; }
+      .data-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: middle; }
+      .data-table tbody td.center { text-align: center; }
+      .data-table tbody td.right { text-align: right; }
+      .data-table tbody tr:last-child td { border-bottom: 0; }
+      .data-table tbody tr { transition: background 0.08s; }
+      .data-table tbody tr:hover { background: var(--surface-warm); }
+      .data-table tbody tr.is-selected { background: var(--accent-soft); }
+      .data-table .code-mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+      .data-table .g-name { font-weight: 650; color: var(--ink); }
+      .data-table tr.is-empty td { color: var(--muted-soft); }
+      .check { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+      .col-check { width: 44px; }
+      .confirm-mark { color: var(--green); font-weight: 700; }
 
-    /* ── Foot meta row ── */
-    .settle-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); }
-    .settle-row strong { color: var(--ink-soft); font-weight: 650; }
+      .settle-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); }
+      .settle-row strong { color: var(--ink-soft); font-weight: 650; }
 
-    /* ── Form controls (settlement) ── */
-    .ctrl { height: 34px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
-    .ctrl::placeholder { color: var(--muted-soft); }
-    .ctrl:hover { border-color: var(--ink-soft); }
-    .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
-    .ctrl:disabled { background: var(--surface-tint); color: var(--ink-soft); border-color: var(--line); cursor: not-allowed; }
-    .input-affix { position: relative; display: flex; align-items: center; width: 150px; margin-left: auto; }
-    .input-affix .pfx { position: absolute; left: 12px; color: var(--muted); font-size: 13px; pointer-events: none; }
-    .input-affix .ctrl { padding-left: 22px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+      .ctrl { height: 34px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      .ctrl:disabled { background: var(--surface-tint); color: var(--ink-soft); border-color: var(--line); cursor: not-allowed; }
+      .input-affix { position: relative; display: flex; align-items: center; width: 150px; margin-left: auto; }
+      .input-affix .pfx { position: absolute; left: 12px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .ctrl { padding-left: 22px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+      select.ctrl { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5L6 8l3.5-3.5' stroke='%23756d63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px; cursor: pointer; }
+      textarea.ctrl { width: 100%; height: auto; min-height: 76px; padding: 9px 11px; resize: vertical; line-height: 1.55; }
 
-    /* ── 区分 badges ── */
-    .kbadge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; letter-spacing: 0.01em; }
-    .kbadge.kb-fixed { background: var(--green-soft); color: var(--green); }
-    .kbadge.kb-estimate { background: var(--amber-soft); color: var(--amber); }
-    .kbadge.kb-auto { background: var(--accent-soft); color: var(--accent-strong); }
-    .kbadge.kb-actual { background: var(--blue-soft); color: var(--blue); }
+      .kbadge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; letter-spacing: 0.01em; }
+      .kbadge.kb-fixed { background: var(--green-soft); color: var(--green); }
+      .kbadge.kb-estimate { background: var(--amber-soft); color: var(--amber); }
+      .kbadge.kb-auto { background: var(--accent-soft); color: var(--accent-strong); }
+      .kbadge.kb-actual { background: var(--blue-soft); color: var(--blue); }
 
-    /* ── Guide settlement (④) ── */
-    .seg { display: inline-flex; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 2px; }
-    .seg button { border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 12px; border-radius: 6px; transition: background 0.1s, color 0.1s; white-space: nowrap; }
-    .seg button:hover { color: var(--ink-soft); }
-    .seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+      .seg { display: inline-flex; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: 8px; padding: 3px; gap: 2px; }
+      .seg button { border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 12px; border-radius: 6px; transition: background 0.1s, color 0.1s; white-space: nowrap; cursor: pointer; }
+      .seg button:hover { color: var(--ink-soft); }
+      .seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
 
-    .gs-banner { display: flex; gap: 11px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radius); font-size: 12.5px; line-height: 1.55; margin-bottom: 18px; }
-    .gs-banner .gb-ic { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
-    .gs-banner .gb-title { font-weight: 700; }
-    .gs-banner.info { background: var(--surface-tint); border: 1px solid var(--line); color: var(--ink-soft); }
-    .gs-banner.info .gb-ic { background: var(--bg-sunken); color: var(--muted); }
-    .gs-banner.blue { background: var(--blue-soft); border: 1px solid #cdddf5; color: #274b85; }
-    .gs-banner.blue .gb-ic { background: var(--blue); color: #fff; }
-    .gs-banner.coral { background: var(--coral-soft); border: 1px solid #ecccc3; color: #8f3322; }
-    .gs-banner.coral .gb-ic { background: var(--coral); color: #fff; }
-    .gs-banner.green { background: var(--green-soft); border: 1px solid #c4e2cd; color: var(--green); }
-    .gs-banner.green .gb-ic { background: var(--green); color: #fff; }
-    .gs-banner a { color: inherit; font-weight: 700; text-decoration: underline; }
+      .gs-banner { display: flex; gap: 11px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radius); font-size: 12.5px; line-height: 1.55; margin-bottom: 18px; }
+      .gs-banner .gb-ic { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+      .gs-banner .gb-title { font-weight: 700; }
+      .gs-banner.info { background: var(--surface-tint); border: 1px solid var(--line); color: var(--ink-soft); }
+      .gs-banner.info .gb-ic { background: var(--bg-sunken); color: var(--muted); }
+      .gs-banner.blue { background: var(--blue-soft); border: 1px solid #cdddf5; color: #274b85; }
+      .gs-banner.blue .gb-ic { background: var(--blue); color: #fff; }
+      .gs-banner.coral { background: var(--coral-soft); border: 1px solid #ecccc3; color: #8f3322; }
+      .gs-banner.coral .gb-ic { background: var(--coral); color: #fff; }
+      .gs-banner.green { background: var(--green-soft); border: 1px solid #c4e2cd; color: var(--green); }
+      .gs-banner.green .gb-ic { background: var(--green); color: #fff; }
+      .gs-banner a { color: inherit; font-weight: 700; text-decoration: underline; }
 
-    .calc-block { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding: 16px; background: var(--surface-warm); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 18px; }
-    .calc-field { display: flex; flex-direction: column; gap: 6px; }
-    .calc-field .cf-lab { font-size: 11.5px; font-weight: 600; color: var(--muted); }
-    .calc-field .cf-sub { font-size: 11px; color: var(--muted-soft); }
-    .calc-op { font-size: 18px; font-weight: 700; color: var(--muted-soft); padding-bottom: 8px; }
-    .calc-field.result { margin-left: auto; align-items: flex-end; text-align: right; }
-    .calc-field.result .cf-lab { color: var(--accent-strong); font-weight: 700; }
-    .calc-field.result .cf-val { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--accent-strong); line-height: 1.1; }
-    .unit-input { position: relative; display: flex; align-items: center; }
-    .unit-input .sfx { position: absolute; right: 11px; color: var(--muted); font-size: 12.5px; pointer-events: none; }
-    .unit-input .ctrl { width: 124px; text-align: right; padding-right: 30px; font-variant-numeric: tabular-nums; font-weight: 650; }
-    .calc-static { font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; height: 34px; display: flex; align-items: center; }
+      .calc-block { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding: 16px; background: var(--surface-warm); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 18px; }
+      .calc-field { display: flex; flex-direction: column; gap: 6px; }
+      .calc-field .cf-lab { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+      .calc-field .cf-sub { font-size: 11px; color: var(--muted-soft); }
+      .calc-op { font-size: 18px; font-weight: 700; color: var(--muted-soft); padding-bottom: 8px; }
+      .calc-field.result { margin-left: auto; align-items: flex-end; text-align: right; }
+      .calc-field.result .cf-lab { color: var(--accent-strong); font-weight: 700; }
+      .calc-field.result .cf-val { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--accent-strong); line-height: 1.1; }
+      .unit-input { position: relative; display: flex; align-items: center; }
+      .unit-input .sfx { position: absolute; right: 11px; color: var(--muted); font-size: 12.5px; pointer-events: none; }
+      .unit-input .ctrl { width: 124px; text-align: right; padding-right: 30px; font-variant-numeric: tabular-nums; font-weight: 650; }
+      .calc-static { font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; height: 34px; display: flex; align-items: center; }
 
-    .fin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-    .fin-table th { text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--surface-tint); padding: 10px 16px; border-bottom: 1px solid var(--line); }
-    .fin-table th.right { text-align: right; }
-    .fin-table td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
-    .fin-table tr:last-child td { border-bottom: 0; }
-    .fin-table td.lab { font-size: 13.5px; font-weight: 650; color: var(--ink); }
-    .fin-table td.lab .lab-sub, .fin-table td.total-lab .lab-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 3px; line-height: 1.45; }
-    .fin-table td.kb-cell { width: 132px; white-space: nowrap; }
-    .fin-table td.val-cell { width: 200px; text-align: right; }
-    .fin-table .val-amt { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
-    .fin-table .val-amt.auto { color: var(--accent-strong); }
-    .fin-table tr.total-row td { background: var(--surface-tint); border-top: 2px solid var(--line-strong); }
-    .fin-table td.total-lab { font-size: 14px; font-weight: 800; color: var(--ink); }
-    .fin-table .val-total { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; color: var(--accent-strong); font-variant-numeric: tabular-nums; }
-    .delta-note { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--blue); margin-top: 4px; }
+      .fin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .fin-table th { text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); background: var(--surface-tint); padding: 10px 16px; border-bottom: 1px solid var(--line); }
+      .fin-table th.right { text-align: right; }
+      .fin-table td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+      .fin-table tr:last-child td { border-bottom: 0; }
+      .fin-table td.lab { font-size: 13.5px; font-weight: 650; color: var(--ink); }
+      .fin-table td.lab .lab-sub, .fin-table td.total-lab .lab-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+      .fin-table td.kb-cell { width: 132px; white-space: nowrap; }
+      .fin-table td.val-cell { width: 200px; text-align: right; }
+      .fin-table .val-amt { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+      .fin-table .val-amt.auto { color: var(--accent-strong); }
+      .fin-table tr.total-row td { background: var(--surface-tint); border-top: 2px solid var(--line-strong); }
+      .fin-table td.total-lab { font-size: 14px; font-weight: 800; color: var(--ink); }
+      .fin-table .val-total { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; color: var(--accent-strong); font-variant-numeric: tabular-nums; }
 
-    .pax-step { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; background: var(--surface); vertical-align: middle; }
-    .pax-step button { width: 26px; height: 26px; border: 0; background: var(--surface); font-size: 15px; font-weight: 700; color: var(--accent-strong); display: grid; place-items: center; padding: 0; }
-    .pax-step button:hover { background: var(--accent-soft); }
-    .pax-step button:disabled { color: var(--muted-soft); cursor: not-allowed; background: var(--surface); }
-    .pax-step .pax-n { min-width: 32px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; border-left: 1px solid var(--line); border-right: 1px solid var(--line); height: 26px; display: grid; place-items: center; font-size: 12.5px; }
-    .finalized-tag { font-size: 13px; font-weight: 800; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+      .fin-table th.cmp-col { text-align: right; width: 150px; }
+      .fin-table td.plan-cell { width: 150px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+      .fin-table td.plan-cell .pc-unit { font-size: 11.5px; color: var(--muted-soft); margin-left: 1px; }
+      .fin-table td.act-cell { width: 170px; text-align: right; }
+      .fin-table td.act-cell .input-affix, .fin-table td.act-cell .unit-input { width: 140px; margin-left: auto; }
+      .fin-table td.act-cell .unit-input .ctrl { width: 140px; }
+      .req-mark { color: var(--coral); font-weight: 800; margin-left: 2px; }
+      .req-flag { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--coral); margin-top: 4px; }
 
-    /* ── Actual comparison table (実績タブ) ── */
-    .fin-table th.cmp-col { text-align: right; width: 150px; }
-    .fin-table td.plan-cell { width: 150px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
-    .fin-table td.plan-cell .pc-unit { font-size: 11.5px; color: var(--muted-soft); margin-left: 1px; }
-    .fin-table td.act-cell { width: 170px; text-align: right; }
-    .fin-table td.act-cell .input-affix, .fin-table td.act-cell .unit-input { width: 140px; margin-left: auto; }
-    .fin-table td.act-cell .unit-input .ctrl { width: 140px; }
-    .req-mark { color: var(--coral); font-weight: 800; margin-left: 2px; }
-    .req-flag { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--coral); margin-top: 4px; }
+      .cx-grid { display: grid; grid-template-columns: 180px 1fr; gap: 16px 20px; align-items: start; max-width: 640px; }
+      .cx-grid .cx-lab { font-size: 12.5px; font-weight: 650; color: var(--muted); padding-top: 8px; }
+      .cx-grid .cx-lab .cx-req { color: var(--coral); margin-left: 2px; }
+      .cx-field { display: flex; flex-direction: column; gap: 6px; }
+      .cx-field .cx-hint { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+      .cx-static { font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; }
 
-    /* ── Cancel-confirm form (中止確定タブ) ── */
-    .cx-grid { display: grid; grid-template-columns: 180px 1fr; gap: 16px 20px; align-items: start; max-width: 640px; }
-    .cx-grid .cx-lab { font-size: 12.5px; font-weight: 650; color: var(--muted); padding-top: 8px; }
-    .cx-grid .cx-lab .cx-req { color: var(--coral); margin-left: 2px; }
-    .cx-field { display: flex; flex-direction: column; gap: 6px; }
-    .cx-field .cx-hint { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
-    select.ctrl { width: auto; min-width: 200px; padding-right: 30px; cursor: pointer; }
-    textarea.ctrl { width: 100%; height: auto; min-height: 76px; padding: 9px 11px; resize: vertical; line-height: 1.55; }
-    .cx-static { font-size: 18px; font-weight: 750; font-variant-numeric: tabular-nums; }
+      .pax-step { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; background: var(--surface); vertical-align: middle; }
+      .pax-step button { width: 26px; height: 26px; border: 0; background: var(--surface); font-size: 15px; font-weight: 700; color: var(--accent-strong); display: grid; place-items: center; padding: 0; cursor: pointer; }
+      .pax-step button:hover { background: var(--accent-soft); }
+      .pax-step button:disabled { color: var(--muted-soft); cursor: not-allowed; background: var(--surface); }
+      .pax-step .pax-n { min-width: 32px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; border-left: 1px solid var(--line); border-right: 1px solid var(--line); height: 26px; display: grid; place-items: center; font-size: 12.5px; }
+      .finalized-tag { font-size: 13px; font-weight: 800; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
 
-    /* ── Scenario bar (dev/QA only) ── */
-    body { padding-top: 42px; }
-    .side-nav { top: 42px; height: calc(100vh - 42px); min-height: 0; }
-    .scenario-bar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-      height: 42px; display: flex; align-items: center; gap: 16px;
-      padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8;
-      font-size: 11.5px; color: #6b6b6b;
-    }
-    .scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
-    .scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
-    .scenario-bar .sb-cap { color: #8a8a8a; }
-    .sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
-    .sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; }
-    .sb-seg button + button { border-left: 1px solid #e4dfd4; }
-    .sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
-    .sb-seg button.on { background: var(--accent); color: #fff; }
-    .scenario-bar .sb-scenario { margin-left: auto; color: #8a8a8a; white-space: nowrap; }
-    .scenario-bar .sb-scenario strong { color: #555; font-weight: 700; }
-    @media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; } }
+      body { padding-top: 42px; }
+      .side-nav { top: 42px; height: calc(100vh - 42px); min-height: 0; }
+      .scenario-bar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+        height: 42px; display: flex; align-items: center; gap: 16px;
+        padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8;
+        font-size: 11.5px; color: #6b6b6b;
+      }
+      .scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
+      .scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
+      .scenario-bar .sb-cap { color: #8a8a8a; }
+      .sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
+      .sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; cursor: pointer; }
+      .sb-seg button + button { border-left: 1px solid #e4dfd4; }
+      .sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
+      .sb-seg button.on { background: var(--accent); color: #fff; }
+      .scenario-bar .sb-scenario { margin-left: auto; color: #8a8a8a; white-space: nowrap; }
+      .scenario-bar .sb-scenario strong { color: #555; font-weight: 700; }
+      @media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; } }
 
-    /* ── Toast ── */
-    .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
 
-    /* sidebar footer */
-    .sidebar-footer { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 12px; }
-    .nav-logout { color: var(--side-ink-soft) !important; }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
-  <script type="text/babel" data-presets="react">
-    const { useState, useRef } = React;
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-    const SESSION_ID = "TI-20260602-1000-G-AIC-005-1-GR-01";
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef } = React;
 
-    const yen = (n) => "¥" + Math.round(Number(n) || 0).toLocaleString("ja-JP");
-    const num = (v) => { const n = Number(String(v).replace(/[^0-9.-]/g, "")); return isNaN(n) ? 0 : n; };
+      const SESSION_ID = "TI-20260602-1000-G-AIC-005-1-GR-01";
+      const yen = (n) => "¥" + Math.round(Number(n) || 0).toLocaleString("ja-JP");
+      const num = (v) => { const n = Number(String(v).replace(/[^0-9.-]/g, "")); return isNaN(n) ? 0 : n; };
 
-    const PER_GUEST = 800;
-    const CAPACITY = 10;
+      const PER_GUEST = 800;
+      const CAPACITY = 10;
 
-    const KUBUN = {
-      auto:     { t: "自動計算", c: "kb-auto" },
-      estimate: { t: "見込み",   c: "kb-estimate" },
-      actual:   { t: "実績",     c: "kb-actual" },
-      fixed:    { t: "確定",     c: "kb-fixed" },
-    };
-    function Kubun({ k }) { const m = KUBUN[k]; return <span className={`kbadge ${m.c}`}>{m.t}</span>; }
+      const KUBUN = {
+        auto:     { t: "自動計算", c: "kb-auto" },
+        estimate: { t: "見込み",   c: "kb-estimate" },
+        actual:   { t: "実績",     c: "kb-actual" },
+        fixed:    { t: "確定",     c: "kb-fixed" },
+      };
+      function Kubun({ k }) { const m = KUBUN[k]; return <span className={`kbadge ${m.c}`}>{m.t}</span>; }
 
-    const SETTLE_BASE = {
-      estimate:  { rate: 3200, hours: 2.5, meal: 1500, expense: 0,   commute: 1200 },
-      actual:    { rate: 3200, hours: 3.0, meal: 1800, expense: 600, commute: 1200 },
-      cancelled: { rate: 3200, hours: 0,   meal: 0,    expense: 0,   commute: 1200 },
-    };
-    const PLAN_HOURS = 2.5;
+      const SETTLE_BASE = {
+        estimate:  { rate: 3200, hours: 2.5, meal: 1500, expense: 0,   commute: 1200 },
+        cancelled: { rate: 3200, hours: 0,   meal: 0,    expense: 0,   commute: 1200 },
+      };
 
-    const SESSION_STATUS_KEYS = ["pending", "operated", "not_operated", "aborted", "cancelled"];
-    const SESSION_STATUS = {
-      pending:      { label: "未催行",       cls: "muted", desc: "ツアー実施前の状態" },
-      operated:     { label: "Operated",     cls: "green", desc: "催行済み：ツアーを実施した" },
-      not_operated: { label: "Not Operated", cls: "coral", desc: "不催行：紐づく予約が全て No-show または Guide_No-show の場合" },
-      aborted:      { label: "Aborted",      cls: "amber", desc: "中断：ツアー開始後に中断した場合" },
-      cancelled:    { label: "Cancelled（中止）", cls: "coral", desc: "中止：催行回が無効化された場合" },
-    };
-    const SESSION_STATUS_LABEL = Object.fromEntries(SESSION_STATUS_KEYS.map(k => [k, SESSION_STATUS[k].label]));
+      const SESSION_STATUS_KEYS = ["pending", "operated", "not_operated", "aborted", "cancelled"];
+      const SESSION_STATUS = {
+        pending:      { label: "未催行",           cls: "muted", desc: "ツアー実施前の状態" },
+        operated:     { label: "Operated",         cls: "green", desc: "催行済み：ツアーを実施した" },
+        not_operated: { label: "Not Operated",     cls: "coral", desc: "不催行：紐づく予約が全て No-show または Guide_No-show の場合" },
+        aborted:      { label: "Aborted",          cls: "amber", desc: "中断：ツアー開始後に中断した場合" },
+        cancelled:    { label: "Cancelled（中止）", cls: "coral", desc: "中止：催行回が無効化された場合" },
+      };
+      const SESSION_STATUS_LABEL = Object.fromEntries(SESSION_STATUS_KEYS.map(k => [k, SESSION_STATUS[k].label]));
 
-    const BOOKINGS = [
-      { id: "BK-260602-00010", guest: "佐藤 花子", initials: "佐", pax: "大人2", status: "確定予約", statusCls: "green", link: "確定紐付け", linkCls: "teal", tentative: false },
-      { id: "BK-260602-00011", guest: "Kim Jiyeon", initials: "KJ", pax: "大人3", status: "確定予約", statusCls: "green", link: "確定紐付け", linkCls: "teal", tentative: false },
-      { id: "BK-260602-00012", guest: "田村 健", initials: "田", pax: "大人1", status: "確定予約", statusCls: "green", link: "仮紐付け", linkCls: "amber", tentative: true },
-    ];
-
-    const GUIDE_ARRANGE = [
-      { name: "吉田 健太", id: "G-007", initials: "吉", role: "メインガイド", status: "確定", statusCls: "teal", confirm: "確認済み", confirmOk: true, date: "2026/05/15", rate: "¥3,200/h" },
-      { name: null, id: null, initials: null, role: "サブガイド", status: "募集中", statusCls: "blue", confirm: null, confirmOk: false, date: null, rate: null },
-    ];
-
-    const FAC_BASE = {
-      estimate: { postpay: 0 },
-      actual:   { postpay: 0 },
-    };
-
-    function Sidebar({ resource, counts = {} }) {
-      const opsItems = [
-        { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
-        { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
-        { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
-        { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
-        { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+      const BOOKINGS = [
+        { id: "BK-260602-00010", guest: "佐藤 花子", pax: "大人2", status: "確定予約", statusCls: "green", link: "確定紐付け", linkCls: "teal", tentative: false },
+        { id: "BK-260602-00011", guest: "Kim Jiyeon", pax: "大人3", status: "確定予約", statusCls: "green", link: "確定紐付け", linkCls: "teal", tentative: false },
+        { id: "BK-260602-00012", guest: "田村 健", pax: "大人1", status: "確定予約", statusCls: "green", link: "仮紐付け", linkCls: "amber", tentative: true },
       ];
-      const payItems = [
-        { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
-        { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
-        { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
+
+      const GUIDE_ARRANGE = [
+        { name: "吉田 健太", id: "G-007", role: "メインガイド", status: "確定", statusCls: "teal", confirm: "確認済み", date: "2026/05/15", rate: "¥3,200/h" },
+        { name: null, id: null, role: "サブガイド", status: "募集中", statusCls: "blue", confirm: null, date: null, rate: null },
       ];
-      const guideItems = [
-        { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
-      ];
-      const facilityItems = [
-        { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設一覧" },
-      ];
-      const masterMainItems = [
-        { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
-        { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
-      ];
-      const masterSubItems = [
-        { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
-        { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
-        { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
-        { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",         count: counts.gd },
-        { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
-        { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
-      ];
-      return (
-        <aside className="side-nav">
-          <div className="brand-block">
-            <div className="brand-mark">d.</div>
+
+      const FAC_BASE = { estimate: { postpay: 0 } };
+
+      function Sidebar({ resource, counts = {} }) {
+        const opsItems = [
+          { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+          { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+          { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+          { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+          { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+        ];
+        const payItems = [
+          { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
+          { key: "ota",        href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+          { key: "revenue",    href: "revenue-summary.html",    icon: "RV", label: "収支一覧" },
+        ];
+        const guideItems = [
+          { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
+        ];
+        const facilityItems = [
+          { key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" },
+        ];
+        const masterMainItems = [
+          { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption",  count: counts.to },
+          { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ",    count: counts.pg },
+        ];
+        const masterSubItems = [
+          { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+          { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+          { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+          { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",        count: counts.gd },
+          { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+          { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+        ];
+        return (
+          <aside className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+              </div>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span>
+                <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+              </a>
+            </div>
             <div>
-              <div className="brand-name">deep_Admin</div>
-              <div className="brand-caption">Product &amp; Sales · Phase 1</div>
-            </div>
-          </div>
-          <div className="nav-group" style={{marginBottom:"8px"}}>
-            <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
-              <span className="nav-icon">⊞</span>
-              <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
-            </a>
-          </div>
-          <div>
-            <div className="nav-section-label">予約オペレーション</div>
-            <div className="nav-group">
-              {opsItems.map(it => (
-                <a key={it.key} href={it.href}
-                  className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
-                  style={{textDecoration:"none"}}>
-                  <span className="nav-icon">{it.icon}</span>
-                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="nav-section-label">精算・経営</div>
-            <div className="nav-group">
-              {payItems.map(it => (
-                <a key={it.key} href={it.href}
-                  className={`nav-item ${resource === it.key ? "active" : ""}`}
-                  style={{textDecoration:"none"}}>
-                  <span className="nav-icon">{it.icon}</span>
-                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="nav-section-label">ガイド管理</div>
-            <div className="nav-group">
-              {guideItems.map(it => (
-                <a key={it.key} href={it.href}
-                  className={`nav-item ${resource === it.key ? "active" : ""}`}
-                  style={{textDecoration:"none"}}>
-                  <span className="nav-icon">{it.icon}</span>
-                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="nav-section-label">施設管理</div>
-            <div className="nav-group">
-              {facilityItems.map(it => (
-                <a key={it.key} href={it.href}
-                  className={`nav-item ${resource === it.key ? "active" : ""}`}
-                  style={{textDecoration:"none"}}>
-                  <span className="nav-icon">{it.icon}</span>
-                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="nav-section-label">商品管理</div>
-            <div className="nav-group">
-              {masterMainItems.map(it => (
-                <a key={it.key} href={it.href}
-                  className={`nav-item ${resource === it.key ? "active" : ""}`}
-                  style={{textDecoration:"none"}}>
-                  <span className="nav-icon">{it.icon}</span>
-                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
-                  <span className="nav-count">{it.count}</span>
-                </a>
-              ))}
-              <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
-              {masterSubItems.map(it => (
-                <a key={it.key} href={it.href}
-                  className={`nav-item ${resource === it.key ? "active" : ""}`}
-                  style={{textDecoration:"none"}}>
-                  <span className="nav-icon">{it.icon}</span>
-                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
-                  <span className="nav-count">{it.count}</span>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div className="sidebar-footer">
-            <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
-              <span className="nav-icon">↩</span><span>ログアウト</span>
-            </a>
-          </div>
-        </aside>
-      );
-    }
-
-    function Card({ no, title, hint, action, foot, footEnd, flush, children, label }) {
-      return (
-        <section className="card" data-screen-label={label || title}>
-          <div className="card-head">
-            <div className="card-title">
-              {no && <span className="sec-no">{no}</span>}{title}
-              {hint && <span className="sec-hint">{hint}</span>}
-            </div>
-            {action}
-          </div>
-          <div className={`card-body ${flush ? "flush" : ""}`}>{children}</div>
-          {foot && <div className={`card-foot ${footEnd ? "end" : ""}`}>{foot}</div>}
-        </section>
-      );
-    }
-
-    function App() {
-      const [toast, setToast] = useState(null);
-      const toastTimer = useRef(null);
-      const [checked, setChecked] = useState({});
-
-      const [pax, setPax] = useState(6);
-      const [sessionStatus, setSessionStatus] = useState("pending");
-      const cancelled = sessionStatus === "cancelled";
-      const operatedLike = sessionStatus === "operated" || sessionStatus === "not_operated" || sessionStatus === "aborted";
-      const [mode, setMode] = useState("estimate");
-      const [edits, setEdits] = useState({});
-      const [actEdits, setActEdits] = useState({});
-      const [confirmed, setConfirmed] = useState(false);
-      const [cxKind, setCxKind] = useState("zero");
-      const [cxAmount, setCxAmount] = useState("");
-      const [cxMemo, setCxMemo] = useState("");
-      const [cxConfirmed, setCxConfirmed] = useState(false);
-
-      const [facMode, setFacMode] = useState("estimate");
-      const [facEdits, setFacEdits] = useState({});
-      const [facActEdits, setFacActEdits] = useState({});
-      const [facConfirmed, setFacConfirmed] = useState(false);
-
-      const showToast = (msg) => {
-        setToast(msg);
-        clearTimeout(toastTimer.current);
-        toastTimer.current = setTimeout(() => setToast(null), 2200);
-      };
-
-      const EST = SETTLE_BASE.estimate;
-      const estV = (f) => (edits[f] !== undefined ? num(edits[f]) : EST[f]);
-      const estGuestAuto = PER_GUEST * pax;
-      const estGuest = edits.guest !== undefined ? num(edits.guest) : estGuestAuto;
-      const estReward = Math.round(estV("rate") * estV("hours"));
-      const estTotal = estReward + estV("meal") + estV("expense") + estV("commute") + estGuest;
-      const estReadOnly = cancelled;
-
-      const filled = (obj, f) => obj[f] !== undefined && obj[f] !== "";
-      const actHours   = filled(actEdits, "hours")   ? num(actEdits.hours)   : estV("hours");
-      const actMeal    = filled(actEdits, "meal")    ? num(actEdits.meal)    : estV("meal");
-      const actExpense = filled(actEdits, "expense") ? num(actEdits.expense) : estV("expense");
-      const actCommute = filled(actEdits, "commute") ? num(actEdits.commute) : estV("commute");
-      const actGuest   = filled(actEdits, "guest")   ? num(actEdits.guest)   : estGuest;
-      const actReward  = Math.round(estV("rate") * actHours);
-      const actTotal   = actReward + actMeal + actExpense + actCommute + actGuest;
-      const commuteMissing = !filled(actEdits, "commute");
-
-      const cxAmountVal = cxKind === "zero" ? 0 : num(cxAmount);
-      const cxCanConfirm = cxKind === "zero" || filled({ a: cxAmount }, "a");
-
-      const setField = (f, v) => setEdits(prev => ({ ...prev, [f]: v }));
-      const setAct = (f, v) => setActEdits(prev => ({ ...prev, [f]: v }));
-      const switchMode = (m) => setMode(m);
-
-      const changeStatus = (s) => {
-        if (s === sessionStatus) return;
-        setSessionStatus(s);
-        setMode(s === "cancelled" ? "cancelled" : (s === "operated" || s === "not_operated" || s === "aborted") ? "actual" : "estimate");
-        setConfirmed(false); setCxConfirmed(false);
-        showToast(`催行回ステータスを「${SESSION_STATUS_LABEL[s]}」に切替えました`);
-      };
-
-      const changePax = (next) => {
-        const n = Math.max(1, Math.min(CAPACITY, next));
-        if (n === pax) return;
-        setPax(n);
-        setEdits(prev => { const cp = { ...prev }; delete cp.guest; return cp; });
-        setActEdits(prev => { const cp = { ...prev }; delete cp.guest; return cp; });
-        showToast(`人数を${n}名に変更：ゲスト立替経費を ${yen(PER_GUEST * n)} に再計算しました`);
-      };
-
-      const toggle = (id) => setChecked(prev => ({ ...prev, [id]: !prev[id] }));
-      const anyChecked = Object.values(checked).some(Boolean);
-      const checkedCount = Object.values(checked).filter(Boolean).length;
-
-      const confirmLinks = () => {
-        showToast(`${checkedCount}件の予約を確定紐付けにしました`);
-        setChecked({});
-      };
-
-      const ST = SESSION_STATUS[sessionStatus];
-      const sessionPill = <span className={`status-pill ${ST.cls}`} title={ST.desc}><span className="dot"></span>{ST.label}</span>;
-
-      return (
-        <React.Fragment>
-          <div className="scenario-bar">
-            <span className="sb-label">🎛 シナリオ選択</span>
-            <div className="sb-group">
-              <span className="sb-cap">催行回ステータス</span>
-              <span className="sb-seg">
-                {SESSION_STATUS_KEYS.map(k => (
-                  <button key={k} className={sessionStatus === k ? "on" : ""} title={SESSION_STATUS[k].desc} onClick={() => changeStatus(k)}>{SESSION_STATUS[k].label}</button>
+              <div className="nav-section-label">予約オペレーション</div>
+              <div className="nav-group">
+                {opsItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
                 ))}
-              </span>
+              </div>
             </div>
-            <span className="sb-scenario">ガイド精算タブ：<strong>{cancelled ? "見込み（参照） / 中止確定" : operatedLike ? "見込み / ツアー後（実績入力）" : "見込み / ツアー後（実績）"}</strong></span>
-          </div>
-
-          <div className="app-shell">
-            <Sidebar resource="sessions" />
-
-            <main className="workspace">
-              <div className="crumbs">
-                <a href="#" onClick={e => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
-                <span className="sep">›</span>
-                <a href="sessions.html">催行回一覧</a>
-                <span className="sep">›</span>
-                <span className="current">{SESSION_ID}</span>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">
+                {payItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
               </div>
-              <div className="page-title">
-                <h1>催行回詳細</h1>
-                <span className="sub">紐づく予約とガイド手配の状況を確認します</span>
+            </div>
+            <div>
+              <div className="nav-section-label">ガイド管理</div>
+              <div className="nav-group">
+                {guideItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
               </div>
+            </div>
+            <div>
+              <div className="nav-section-label">施設管理</div>
+              <div className="nav-group">
+                {facilityItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group">
+                {masterMainItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                    <span className="nav-count">{it.count}</span>
+                  </a>
+                ))}
+                <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+                {masterSubItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                    <span className="nav-count">{it.count}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="sidebar-footer">
+              <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+                <span className="nav-icon">↩</span><span>ログアウト</span>
+              </a>
+            </div>
+          </aside>
+        );
+      }
 
-              {/* ── ① 催行回基本情報 ── */}
-              <Card no="1" title="催行回基本情報" label="① 催行回基本情報"
-                action={sessionPill}>
-                <div className="def-grid">
-                  <div className="dt">催行回ID</div>
-                  <div className="dd span"><span className="code-mono">{SESSION_ID}</span></div>
+      function Card({ no, title, hint, action, foot, flush, children, label }) {
+        return (
+          <section className="card" data-screen-label={label || title}>
+            <div className="card-head">
+              <div className="card-title">
+                {no && <span className="sec-no">{no}</span>}{title}
+                {hint && <span className="sec-hint">{hint}</span>}
+              </div>
+              {action}
+            </div>
+            <div className={`card-body ${flush ? "flush" : ""}`}>{children}</div>
+            {foot && <div className="card-foot">{foot}</div>}
+          </section>
+        );
+      }
 
-                  <div className="dt">TourOption</div>
-                  <div className="dd"><span className="code-mono">G-AIC-005-1-GR</span><span className="sub">茶道体験</span></div>
-                  <div className="dt">TourOptionバージョン</div>
-                  <div className="dd"><span className="strong">v2（2026-05-01〜・現在のTourOptionバージョン）</span><span className="sub" title="この催行回が受け入れる TourOption ID（TourOptionバージョン）。このバージョンIDが一致する予約のみ同乗できます（TourOptionバージョンが異なれば別催行回）">この催行回はこのTourOptionバージョンのみ受入（TourOption ID: TO-2050）</span></div>
-                  <div className="dt">ツアー日時</div>
-                  <div className="dd"><span className="strong">2026/06/02（火）10:00〜12:30</span></div>
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [checked, setChecked] = useState({});
+        const [pax, setPax] = useState(6);
+        const [sessionStatus, setSessionStatus] = useState("pending");
+        const cancelled = sessionStatus === "cancelled";
+        const operatedLike = sessionStatus === "operated" || sessionStatus === "not_operated" || sessionStatus === "aborted";
+        const [mode, setMode] = useState("estimate");
+        const [edits, setEdits] = useState({});
+        const [actEdits, setActEdits] = useState({});
+        const [confirmed, setConfirmed] = useState(false);
+        const [cxKind, setCxKind] = useState("zero");
+        const [cxAmount, setCxAmount] = useState("");
+        const [cxMemo, setCxMemo] = useState("");
+        const [cxConfirmed, setCxConfirmed] = useState(false);
+        const [facMode, setFacMode] = useState("estimate");
+        const [facEdits, setFacEdits] = useState({});
+        const [facActEdits, setFacActEdits] = useState({});
+        const [facConfirmed, setFacConfirmed] = useState(false);
 
-                  <div className="dt">定員 / 現在人数</div>
-                  <div className="dd">
-                    <span className="cap-meter">
-                      <span className="strong">{CAPACITY}名</span>
-                      <span className="sub">/</span>
-                      <span className="strong" style={{ color: "var(--accent-strong)" }}>{pax}名</span>
-                      <span className="cap-bar"><span style={{ width: `${(pax / CAPACITY) * 100}%` }}></span></span>
-                    </span>
-                  </div>
-                  <div className="dt">催行ステータス</div>
-                  <div className="dd">{sessionPill}<span className="sub" style={{ marginLeft: 4 }}>{ST.desc}。上部バーで切替（開発用）</span></div>
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2200);
+        };
 
-                  <div className="dt">催行回紐付け</div>
-                  <div className="dd"><span className="status-pill teal"><span className="dot"></span>確定紐付け</span></div>
-                  <div className="dt">手配状況</div>
-                  <div className="dd"><span className="status-pill tealblue"><span className="dot"></span>一部確定</span></div>
-                </div>
-              </Card>
+        const EST = SETTLE_BASE.estimate;
+        const estV = (f) => (edits[f] !== undefined ? num(edits[f]) : EST[f]);
+        const estGuestAuto = PER_GUEST * pax;
+        const estGuest = edits.guest !== undefined ? num(edits.guest) : estGuestAuto;
+        const estReward = Math.round(estV("rate") * estV("hours"));
+        const estTotal = estReward + estV("meal") + estV("expense") + estV("commute") + estGuest;
+        const estReadOnly = cancelled;
 
-              {/* ── ② 紐づく予約一覧 ── */}
-              <Card no="2" title="紐づく予約一覧" hint="この催行回に紐づく予約" label="② 紐づく予約一覧"
-                flush
-                action={
-                  <button className="btn outline sm" disabled={!anyChecked} onClick={confirmLinks}>
-                    選択した予約を確定紐付けにする
-                  </button>
-                }>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th className="col-check"></th>
-                      <th>予約ID</th>
-                      <th>ゲスト名</th>
-                      <th>参加人数</th>
-                      <th>予約ステータス</th>
-                      <th>催行回紐付け</th>
-                      <th className="right">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {BOOKINGS.map(b => (
-                      <tr key={b.id} className={checked[b.id] ? "is-selected" : ""}>
-                        <td className="center">
-                          {b.tentative
-                            ? <input type="checkbox" className="check" checked={!!checked[b.id]} onChange={() => toggle(b.id)} />
-                            : null}
-                        </td>
-                        <td><span className="code-mono">{b.id}</span></td>
-                        <td>
-                          <span className="g-name">{b.guest}</span>
-                        </td>
-                        <td>{b.pax}</td>
-                        <td><span className={`badge ${b.statusCls}`}>{b.status}</span></td>
-                        <td><span className={`badge ${b.linkCls}`}>{b.link}</span></td>
-                        <td className="right">
-                          <a className="btn-link" href={`booking-detail.html?id=${b.id}`}
-                            onClick={e => { e.preventDefault(); showToast(`予約 ${b.id} の詳細を開きます`); }}>
-                            予約詳細を開く
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
+        const filled = (obj, f) => obj[f] !== undefined && obj[f] !== "";
+        const actHours   = filled(actEdits, "hours")   ? num(actEdits.hours)   : estV("hours");
+        const actMeal    = filled(actEdits, "meal")    ? num(actEdits.meal)    : estV("meal");
+        const actExpense = filled(actEdits, "expense") ? num(actEdits.expense) : estV("expense");
+        const actCommute = filled(actEdits, "commute") ? num(actEdits.commute) : estV("commute");
+        const actGuest   = filled(actEdits, "guest")   ? num(actEdits.guest)   : estGuest;
+        const actReward  = Math.round(estV("rate") * actHours);
+        const actTotal   = actReward + actMeal + actExpense + actCommute + actGuest;
+        const commuteMissing = !filled(actEdits, "commute");
 
-              {/* ── ③ ガイド手配情報 ── */}
-              <Card no="3" title="ガイド手配情報" label="③ ガイド手配情報"
-                action={<span className="status-pill tealblue"><span className="dot"></span>一部確定</span>}
-                flush
-                foot={
-                  <button className="btn primary" onClick={() => showToast("ガイド手配操作を開きます")}>手配操作を開く</button>
-                }>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>ガイド名</th>
-                      <th>役割</th>
-                      <th>手配ステータス</th>
-                      <th className="center">ガイド確認</th>
-                      <th>確定日時</th>
-                      <th className="right">適用時給</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {GUIDE_ARRANGE.map((g, i) => (
-                      <tr key={i} className={g.name ? "" : "is-empty"}>
-                        <td>
-                          {g.name
-                            ? <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-                                <span className="code-mono">{g.id}</span>
-                                <span className="g-name">{g.name}</span>
-                              </span>
-                            : <span className="muted-dash">未定</span>}
-                        </td>
-                        <td>{g.role}</td>
-                        <td><span className={`badge ${g.statusCls}`}>{g.status}</span></td>
-                        <td className="center">
-                          {g.confirm
-                            ? <span className="confirm-mark">{g.confirm} ✓</span>
-                            : <span className="muted-dash">—</span>}
-                        </td>
-                        <td>{g.date ? <span className="code-mono">{g.date}</span> : <span className="muted-dash">—</span>}</td>
-                        <td className="right">{g.rate ? <span className="strong" style={{ fontWeight: 650 }}>{g.rate}</span> : <span className="muted-dash">—</span>}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
+        const cxAmountVal = cxKind === "zero" ? 0 : num(cxAmount);
+        const cxCanConfirm = cxKind === "zero" || filled({ a: cxAmount }, "a");
 
-              {/* ── ④ ガイド精算 ── */}
-              {(() => {
-                const estMoney = (field, value) => estReadOnly
-                  ? <span className="val-amt">{yen(value)}</span>
-                  : <span className="input-affix">
-                      <span className="pfx">¥</span>
-                      <input className="ctrl" inputMode="numeric" placeholder="0"
-                        value={edits[field] !== undefined ? edits[field] : value}
-                        onChange={e => setField(field, e.target.value)} />
-                    </span>;
-                const estRow = (label, sub, field) => (
-                  <tr>
-                    <td className="lab">{label}<span className="lab-sub">{sub}</span></td>
-                    <td className="kb-cell"><Kubun k="estimate" /></td>
-                    <td className="val-cell">{estMoney(field, estV(field))}</td>
-                  </tr>
-                );
+        const setField = (f, v) => setEdits(prev => ({ ...prev, [f]: v }));
+        const setAct = (f, v) => setActEdits(prev => ({ ...prev, [f]: v }));
 
-                const actRow = (label, sub, field, planVal, effVal) => (
-                  <tr>
-                    <td className="lab">{label}<span className="lab-sub">{sub}</span></td>
-                    <td className="plan-cell">{yen(planVal)}</td>
-                    <td className="act-cell">{confirmed
-                      ? <span className="val-amt">{yen(effVal)}</span>
-                      : <span className="input-affix"><span className="pfx">¥</span>
-                          <input className="ctrl" inputMode="numeric" placeholder={String(planVal)}
-                            value={actEdits[field] !== undefined ? actEdits[field] : ""}
-                            onChange={e => setAct(field, e.target.value)} />
-                        </span>}
-                    </td>
-                  </tr>
-                );
+        const changeStatus = (s) => {
+          if (s === sessionStatus) return;
+          setSessionStatus(s);
+          setMode(s === "cancelled" ? "cancelled" : (s === "operated" || s === "not_operated" || s === "aborted") ? "actual" : "estimate");
+          setConfirmed(false); setCxConfirmed(false);
+          showToast(`催行回ステータスを「${SESSION_STATUS_LABEL[s]}」に切替えました`);
+        };
 
-                const banner = mode === "estimate"
-                  ? (cancelled
-                    ? <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">見込み精算（参照用）</span><br />催行回中止のため参照のみの表示です。確定額は「中止確定」タブをご確認ください。</div></div>
-                    : <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">見込み精算</span><br />各項目を編集できます。ツアー実施後は「ツアー後（実績）」タブで実績を入力します。</div></div>)
-                  : mode === "actual"
-                  ? (confirmed
-                    ? <div className="gs-banner green"><span className="gb-ic">✓</span><div><span className="gb-title">実績精算を確定しました</span><br />実績ベースの精算額を月次精算へ連携しました。確定後は編集できません。</div></div>
-                    : <div className="gs-banner blue"><span className="gb-ic">実</span><div><span className="gb-title">{sessionStatus === "not_operated" ? "Not Operated（不催行） — ガイド実績入力" : sessionStatus === "aborted" ? "Aborted（中断） — ガイド実績入力" : "ツアー後 — 実績入力"}</span><br />{sessionStatus === "not_operated" ? "不催行ですが、ガイドの待機・移動などの実績を入力して精算します。" : sessionStatus === "aborted" ? "中断までの催行時間・経費の実績を入力して精算します。" : "見込みと差異がある項目のみ入力します。空欄の項目は見込み値を使用します。"}通勤交通費は必須です。</div></div>)
-                  : (cxConfirmed
-                    ? <div className="gs-banner green"><span className="gb-ic">✓</span><div><span className="gb-title">中止精算を確定しました</span><br />確定額を月次精算へ連携しました。確定後は編集できません。</div></div>
-                    : <div className="gs-banner coral"><span className="gb-ic">!</span><div><span className="gb-title">催行回中止 — 精算確定</span><br /><a href="booking-cancel.html">キャンセル処理（STEP 5 精算確定）</a>で確定した精算額を登録します。精算区分・支払額を確認して確定してください。</div></div>);
+        const changePax = (next) => {
+          const n = Math.max(1, Math.min(CAPACITY, next));
+          if (n === pax) return;
+          setPax(n);
+          setEdits(prev => { const cp = { ...prev }; delete cp.guest; return cp; });
+          setActEdits(prev => { const cp = { ...prev }; delete cp.guest; return cp; });
+          showToast(`人数を${n}名に変更：ゲスト立替経費を ${yen(PER_GUEST * n)} に再計算しました`);
+        };
 
-                const headPill = mode === "estimate"
-                  ? (cancelled
-                    ? <span className="status-pill muted"><span className="dot"></span>参照（編集不可）</span>
-                    : <span className="status-pill amber"><span className="dot"></span>見込み</span>)
-                  : mode === "actual"
-                  ? (confirmed
-                    ? <span className="status-pill green"><span className="dot"></span>実績確定</span>
-                    : <span className="status-pill blue"><span className="dot"></span>実績入力</span>)
-                  : (cxConfirmed
-                    ? <span className="status-pill green"><span className="dot"></span>中止精算確定</span>
-                    : <span className="status-pill" style={{ background: "var(--coral-soft)", color: "var(--coral)" }}><span className="dot"></span>中止精算・要確定</span>);
+        const toggle = (id) => setChecked(prev => ({ ...prev, [id]: !prev[id] }));
+        const anyChecked = Object.values(checked).some(Boolean);
+        const checkedCount = Object.values(checked).filter(Boolean).length;
 
-                const foot = (
-                  <React.Fragment>
-                    <div className="settle-row"><span>精算ステータス</span><span className="badge muted">見込み設定済み</span></div>
-                    {mode === "estimate"
-                      ? (cancelled
-                        ? <React.Fragment>
-                            <div className="settle-row" style={{ marginRight: "auto" }}><span>参照用表示</span><span className="badge muted">編集不可</span></div>
-                            <button className="btn-link" onClick={() => switchMode("cancelled")}>中止確定タブを開く →</button>
-                          </React.Fragment>
-                        : <React.Fragment>
-                            <div className="settle-row" style={{ marginRight: "auto" }}><span>業務委託支払合計（見込み）</span><span className="badge amber" style={{ fontVariantNumeric: "tabular-nums" }}>{yen(estTotal)}</span></div>
-                            <button className="btn outline" onClick={() => showToast("見込み精算を保存しました")}>見込みを保存</button>
-                          </React.Fragment>)
-                      : mode === "actual"
-                      ? (confirmed
-                        ? <span className="finalized-tag" style={{ marginRight: "auto" }}>✓ 実績精算確定済み（月次精算へ連携）</span>
-                        : <React.Fragment>
-                            <div className="settle-row" style={{ marginRight: "auto" }}><span>業務委託支払合計（実績）</span><span className="badge blue" style={{ fontVariantNumeric: "tabular-nums" }}>{yen(actTotal)}</span></div>
-                            {commuteMissing && <span className="req-flag" style={{ marginRight: 8 }}>通勤交通費（実績）は必須です</span>}
-                            <button className="btn primary" disabled={commuteMissing} onClick={() => { setConfirmed(true); showToast("実績精算を確定しました（月次精算へ連携）"); }}>実績を確認して確定する</button>
-                          </React.Fragment>)
-                      : (cxConfirmed
-                        ? <React.Fragment>
-                            <span className="finalized-tag" style={{ marginRight: "auto" }}>✓ 中止精算確定済み（月次精算へ連携）</span>
-                            <a className="btn-link" href="booking-cancel.html" onClick={e => { e.preventDefault(); showToast("キャンセル処理を開きます"); }}>キャンセル処理を開く</a>
-                          </React.Fragment>
-                        : <React.Fragment>
-                            <a className="btn-link" href="booking-cancel.html" style={{ marginRight: "auto" }} onClick={e => { e.preventDefault(); showToast("キャンセル処理を開きます"); }}>キャンセル処理を開く</a>
-                            <button className="btn primary" disabled={!cxCanConfirm} onClick={() => { setCxConfirmed(true); showToast("中止精算を確定しました（月次精算へ連携）"); }}>精算を確定する</button>
-                          </React.Fragment>)}
+        const confirmLinks = () => {
+          showToast(`${checkedCount}件の予約を確定紐付けにしました`);
+          setChecked({});
+        };
+
+        const ST = SESSION_STATUS[sessionStatus];
+        const sessionPill = <span className={`status-pill ${ST.cls}`} title={ST.desc}><span className="dot"></span>{ST.label}</span>;
+
+        const estMoney = (field, value) => estReadOnly
+          ? <span className="val-amt">{yen(value)}</span>
+          : <span className="input-affix">
+              <span className="pfx">¥</span>
+              <input className="ctrl" inputMode="numeric" placeholder="0"
+                value={edits[field] !== undefined ? edits[field] : value}
+                onChange={e => setField(field, e.target.value)} />
+            </span>;
+        const estRow = (label, sub, field) => (
+          <tr>
+            <td className="lab">{label}<span className="lab-sub">{sub}</span></td>
+            <td className="kb-cell"><Kubun k="estimate" /></td>
+            <td className="val-cell">{estMoney(field, estV(field))}</td>
+          </tr>
+        );
+        const actRow = (label, sub, field, planVal, effVal) => (
+          <tr>
+            <td className="lab">{label}<span className="lab-sub">{sub}</span></td>
+            <td className="plan-cell">{yen(planVal)}</td>
+            <td className="act-cell">{confirmed
+              ? <span className="val-amt">{yen(effVal)}</span>
+              : <span className="input-affix"><span className="pfx">¥</span>
+                  <input className="ctrl" inputMode="numeric" placeholder={String(planVal)}
+                    value={actEdits[field] !== undefined ? actEdits[field] : ""}
+                    onChange={e => setAct(field, e.target.value)} />
+                </span>}
+            </td>
+          </tr>
+        );
+
+        const guideSettleBanner = mode === "estimate"
+          ? (cancelled
+            ? <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">見込み精算（参照用）</span><br />催行回中止のため参照のみの表示です。確定額は「中止確定」タブをご確認ください。</div></div>
+            : <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">見込み精算</span><br />各項目を編集できます。ツアー実施後は「ツアー後（実績）」タブで実績を入力します。</div></div>)
+          : mode === "actual"
+          ? (confirmed
+            ? <div className="gs-banner green"><span className="gb-ic">✓</span><div><span className="gb-title">実績精算を確定しました</span><br />実績ベースの精算額を月次精算へ連携しました。確定後は編集できません。</div></div>
+            : <div className="gs-banner blue"><span className="gb-ic">実</span><div><span className="gb-title">{sessionStatus === "not_operated" ? "Not Operated（不催行） — ガイド実績入力" : sessionStatus === "aborted" ? "Aborted（中断） — ガイド実績入力" : "ツアー後 — 実績入力"}</span><br />{sessionStatus === "not_operated" ? "不催行ですが、ガイドの待機・移動などの実績を入力して精算します。" : sessionStatus === "aborted" ? "中断までの催行時間・経費の実績を入力して精算します。" : "見込みと差異がある項目のみ入力します。空欄の項目は見込み値を使用します。"}通勤交通費は必須です。</div></div>)
+          : (cxConfirmed
+            ? <div className="gs-banner green"><span className="gb-ic">✓</span><div><span className="gb-title">中止精算を確定しました</span><br />確定額を月次精算へ連携しました。確定後は編集できません。</div></div>
+            : <div className="gs-banner coral"><span className="gb-ic">!</span><div><span className="gb-title">催行回中止 — 精算確定</span><br /><a href="booking-cancel.html">キャンセル処理（STEP 5 精算確定）</a>で確定した精算額を登録します。精算区分・支払額を確認して確定してください。</div></div>);
+
+        const guideHeadPill = mode === "estimate"
+          ? (cancelled
+            ? <span className="status-pill muted"><span className="dot"></span>参照（編集不可）</span>
+            : <span className="status-pill amber"><span className="dot"></span>見込み</span>)
+          : mode === "actual"
+          ? (confirmed
+            ? <span className="status-pill green"><span className="dot"></span>実績確定</span>
+            : <span className="status-pill blue"><span className="dot"></span>実績入力</span>)
+          : (cxConfirmed
+            ? <span className="status-pill green"><span className="dot"></span>中止精算確定</span>
+            : <span className="status-pill" style={{ background: "var(--coral-soft)", color: "var(--coral)" }}><span className="dot"></span>中止精算・要確定</span>);
+
+        const guideSettleFoot = (
+          <React.Fragment>
+            <div className="settle-row"><span>精算ステータス</span><span className="badge muted">見込み設定済み</span></div>
+            {mode === "estimate"
+              ? (cancelled
+                ? <React.Fragment>
+                    <div className="settle-row" style={{ marginRight: "auto" }}><span>参照用表示</span><span className="badge muted">編集不可</span></div>
+                    <button className="btn-link" onClick={() => setMode("cancelled")}>中止確定タブを開く →</button>
                   </React.Fragment>
-                );
+                : <React.Fragment>
+                    <div className="settle-row" style={{ marginRight: "auto" }}><span>業務委託支払合計（見込み）</span><span className="badge amber" style={{ fontVariantNumeric: "tabular-nums" }}>{yen(estTotal)}</span></div>
+                    <button className="btn outline" onClick={() => showToast("見込み精算を保存しました")}>見込みを保存</button>
+                  </React.Fragment>)
+              : mode === "actual"
+              ? (confirmed
+                ? <span className="finalized-tag" style={{ marginRight: "auto" }}>✓ 実績精算確定済み（月次精算へ連携）</span>
+                : <React.Fragment>
+                    <div className="settle-row" style={{ marginRight: "auto" }}><span>業務委託支払合計（実績）</span><span className="badge blue" style={{ fontVariantNumeric: "tabular-nums" }}>{yen(actTotal)}</span></div>
+                    {commuteMissing && <span className="req-flag" style={{ marginRight: 8 }}>通勤交通費（実績）は必須です</span>}
+                    <button className="btn primary" disabled={commuteMissing} onClick={() => { setConfirmed(true); showToast("実績精算を確定しました（月次精算へ連携）"); }}>実績を確認して確定する</button>
+                  </React.Fragment>)
+              : (cxConfirmed
+                ? <React.Fragment>
+                    <span className="finalized-tag" style={{ marginRight: "auto" }}>✓ 中止精算確定済み（月次精算へ連携）</span>
+                    <a className="btn-link" href="booking-cancel.html" onClick={e => { e.preventDefault(); showToast("キャンセル処理を開きます"); }}>キャンセル処理を開く</a>
+                  </React.Fragment>
+                : <React.Fragment>
+                    <a className="btn-link" href="booking-cancel.html" style={{ marginRight: "auto" }} onClick={e => { e.preventDefault(); showToast("キャンセル処理を開きます"); }}>キャンセル処理を開く</a>
+                    <button className="btn primary" disabled={!cxCanConfirm} onClick={() => { setCxConfirmed(true); showToast("中止精算を確定しました（月次精算へ連携）"); }}>精算を確定する</button>
+                  </React.Fragment>)}
+          </React.Fragment>
+        );
 
-                const tabs = cancelled
-                  ? [["estimate", "見込み（参照）"], ["cancelled", "中止確定"]]
-                  : [["estimate", "見込み"], ["actual", "ツアー後（実績）"]];
+        const settleTabs = cancelled
+          ? [["estimate", "見込み（参照）"], ["cancelled", "中止確定"]]
+          : [["estimate", "見込み"], ["actual", "ツアー後（実績）"]];
 
-                return (
-                  <Card no="4" title="ガイド精算" hint="業務委託支払の内訳" label="④ ガイド精算"
+        const FAC = FAC_BASE.estimate;
+        const facV = (f) => (facEdits[f] !== undefined ? num(facEdits[f]) : FAC[f]);
+        const facActVal = filled(facActEdits, "postpay") ? num(facActEdits.postpay) : facV("postpay");
+
+        return (
+          <React.Fragment>
+            <div className="scenario-bar">
+              <span className="sb-label">🎛 シナリオ選択</span>
+              <div className="sb-group">
+                <span className="sb-cap">催行回ステータス</span>
+                <span className="sb-seg">
+                  {SESSION_STATUS_KEYS.map(k => (
+                    <button key={k} className={sessionStatus === k ? "on" : ""} title={SESSION_STATUS[k].desc} onClick={() => changeStatus(k)}>{SESSION_STATUS[k].label}</button>
+                  ))}
+                </span>
+              </div>
+              <span className="sb-scenario">ガイド精算タブ：<strong>{cancelled ? "見込み（参照） / 中止確定" : operatedLike ? "見込み / ツアー後（実績入力）" : "見込み / ツアー後（実績）"}</strong></span>
+            </div>
+
+            <div className="app-shell">
+              <Sidebar resource="sessions" counts={{}} />
+
+              <main className="main-area">
+                <div className="workspace">
+                  <div className="crumbs">
+                    <a href="sessions.html">催行回一覧</a>
+                    <span className="sep">›</span>
+                    <span className="current">{SESSION_ID}</span>
+                  </div>
+                  <div className="page-title">
+                    <h1>催行回詳細</h1>
+                    <span className="sub">紐づく予約とガイド手配の状況を確認します</span>
+                  </div>
+
+                  {/* ① 催行回基本情報 */}
+                  <Card no="1" title="催行回基本情報" label="催行回基本情報" action={sessionPill}>
+                    <div className="def-grid">
+                      <div className="dt">催行回ID</div>
+                      <div className="dd span"><span className="code-mono">{SESSION_ID}</span></div>
+
+                      <div className="dt">TourOption</div>
+                      <div className="dd"><span className="code-mono">G-AIC-005-1-GR</span><span className="sub">茶道体験</span></div>
+                      <div className="dt">TourOptionバージョン</div>
+                      <div className="dd"><span style={{fontWeight:650}}>v2（2026-05-01〜・現在のTourOptionバージョン）</span><span className="sub">TourOption ID: TO-2050</span></div>
+
+                      <div className="dt">ツアー日時</div>
+                      <div className="dd"><span style={{fontWeight:650}}>2026/06/02（火）10:00〜12:30</span></div>
+
+                      <div className="dt">定員 / 現在人数</div>
+                      <div className="dd">
+                        <span className="cap-meter">
+                          <span style={{fontWeight:650}}>{CAPACITY}名</span>
+                          <span className="sub">/</span>
+                          <span style={{fontWeight:650,color:"var(--accent-strong)"}}>{pax}名</span>
+                          <span className="cap-bar"><span style={{width:`${(pax/CAPACITY)*100}%`}}></span></span>
+                        </span>
+                      </div>
+                      <div className="dt">催行ステータス</div>
+                      <div className="dd">{sessionPill}<span className="sub" style={{marginLeft:4}}>{ST.desc}</span></div>
+
+                      <div className="dt">催行回紐付け</div>
+                      <div className="dd"><span className="status-pill teal"><span className="dot"></span>確定紐付け</span></div>
+                      <div className="dt">手配状況</div>
+                      <div className="dd"><span className="status-pill tealblue"><span className="dot"></span>一部確定</span></div>
+                    </div>
+                  </Card>
+
+                  {/* ② 紐づく予約一覧 */}
+                  <Card no="2" title="紐づく予約一覧" hint="この催行回に紐づく予約" label="紐づく予約一覧" flush
                     action={
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        {headPill}
-                        <div className="seg" role="tablist" aria-label="精算タブ">
-                          {tabs.map(([m, label]) => (
-                            <button key={m} className={mode === m ? "on" : ""} onClick={() => switchMode(m)}>{label}</button>
+                      <button className="btn outline sm" disabled={!anyChecked} onClick={confirmLinks}>
+                        選択した予約を確定紐付けにする
+                      </button>
+                    }>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th className="col-check"></th>
+                          <th>予約ID</th>
+                          <th>ゲスト名</th>
+                          <th>参加人数</th>
+                          <th>予約ステータス</th>
+                          <th>催行回紐付け</th>
+                          <th className="right">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {BOOKINGS.map(b => (
+                          <tr key={b.id} className={checked[b.id] ? "is-selected" : ""}>
+                            <td className="center">
+                              {b.tentative && <input type="checkbox" className="check" checked={!!checked[b.id]} onChange={() => toggle(b.id)} />}
+                            </td>
+                            <td><span className="code-mono">{b.id}</span></td>
+                            <td><span className="g-name">{b.guest}</span></td>
+                            <td>{b.pax}</td>
+                            <td><span className={`badge ${b.statusCls}`}>{b.status}</span></td>
+                            <td><span className={`badge ${b.linkCls}`}>{b.link}</span></td>
+                            <td className="right">
+                              <a className="btn-link" href={`booking-detail.html?id=${b.id}`}
+                                onClick={e => { e.preventDefault(); showToast(`予約 ${b.id} の詳細を開きます`); }}>
+                                予約詳細を開く
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Card>
+
+                  {/* ③ ガイド手配情報 */}
+                  <Card no="3" title="ガイド手配情報" label="ガイド手配情報"
+                    action={<span className="status-pill tealblue"><span className="dot"></span>一部確定</span>}
+                    flush
+                    foot={<button className="btn primary" onClick={() => showToast("手配操作画面を開きます")}>手配操作を開く</button>}>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>ガイド名</th>
+                          <th>役割</th>
+                          <th>手配ステータス</th>
+                          <th className="center">ガイド確認</th>
+                          <th>確定日時</th>
+                          <th className="right">適用時給</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {GUIDE_ARRANGE.map((g, i) => (
+                          <tr key={i} className={g.name ? "" : "is-empty"}>
+                            <td>
+                              {g.name
+                                ? <span style={{display:"inline-flex",alignItems:"center",gap:7}}>
+                                    <span className="code-mono">{g.id}</span>
+                                    <span className="g-name">{g.name}</span>
+                                  </span>
+                                : <span className="muted-dash">未定</span>}
+                            </td>
+                            <td>{g.role}</td>
+                            <td><span className={`badge ${g.statusCls}`}>{g.status}</span></td>
+                            <td className="center">
+                              {g.confirm ? <span className="confirm-mark">{g.confirm} ✓</span> : <span className="muted-dash">—</span>}
+                            </td>
+                            <td>{g.date ? <span className="code-mono">{g.date}</span> : <span className="muted-dash">—</span>}</td>
+                            <td className="right">{g.rate ? <span style={{fontWeight:650}}>{g.rate}</span> : <span className="muted-dash">—</span>}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Card>
+
+                  {/* ④ ガイド精算 */}
+                  <Card no="4" title="ガイド精算" hint="業務委託支払の内訳" label="ガイド精算"
+                    action={
+                      <div style={{display:"flex",alignItems:"center",gap:12}}>
+                        {guideHeadPill}
+                        <div className="seg" role="tablist">
+                          {settleTabs.map(([m, label]) => (
+                            <button key={m} className={mode === m ? "on" : ""} onClick={() => setMode(m)}>{label}</button>
                           ))}
                         </div>
                       </div>
                     }
-                    foot={foot}>
-                    {banner}
+                    foot={guideSettleFoot}>
+                    {guideSettleBanner}
 
-                    {/* ═══ 見込みタブ ═══ */}
                     {mode === "estimate" && (
                       <React.Fragment>
                         <div className="calc-block">
                           <div className="calc-field">
                             <span className="cf-lab">適用時給{!estReadOnly && "（編集可）"}</span>
                             {estReadOnly
-                              ? <span className="calc-static">{yen(estV("rate"))}<span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--muted)", marginLeft: 2 }}>/h</span></span>
-                              : <span className="input-affix" style={{ width: 132, margin: 0 }}>
+                              ? <span className="calc-static">{yen(estV("rate"))}<span style={{fontSize:12.5,fontWeight:500,color:"var(--muted)",marginLeft:2}}>/h</span></span>
+                              : <span className="input-affix" style={{width:132,margin:0}}>
                                   <span className="pfx">¥</span>
-                                  <input className="ctrl" inputMode="numeric" style={{ paddingRight: 28 }}
+                                  <input className="ctrl" inputMode="numeric" style={{paddingRight:28}}
                                     value={edits.rate !== undefined ? edits.rate : EST.rate}
                                     onChange={e => setField("rate", e.target.value)} />
-                                  <span className="sfx" style={{ position: "absolute", right: 11, color: "var(--muted)", fontSize: 12.5, pointerEvents: "none" }}>/h</span>
+                                  <span style={{position:"absolute",right:11,color:"var(--muted)",fontSize:12.5,pointerEvents:"none"}}>/h</span>
                                 </span>}
                             <span className="cf-sub">参照元：基本時給</span>
                           </div>
@@ -800,7 +759,7 @@
                           <div className="calc-field">
                             <span className="cf-lab">催行時間（見込み）{!estReadOnly && "（編集可）"}</span>
                             {estReadOnly
-                              ? <span className="calc-static">{estV("hours")}<span style={{ fontSize: 12.5, fontWeight: 500, color: "var(--muted)", marginLeft: 2 }}>時間</span></span>
+                              ? <span className="calc-static">{estV("hours")}<span style={{fontSize:12.5,fontWeight:500,color:"var(--muted)",marginLeft:2}}>時間</span></span>
                               : <span className="unit-input">
                                   <input className="ctrl" inputMode="decimal"
                                     value={edits.hours !== undefined ? edits.hours : EST.hours}
@@ -816,7 +775,6 @@
                             <span className="cf-sub">適用時給 × 催行時間（自動計算）</span>
                           </div>
                         </div>
-
                         <table className="fin-table">
                           <thead><tr><th>項目</th><th>区分</th><th className="right">金額</th></tr></thead>
                           <tbody>
@@ -833,12 +791,12 @@
                                 <span className="lab-sub">
                                   {estReadOnly
                                     ? `¥${PER_GUEST.toLocaleString("ja-JP")} × ${pax}名 ＝ ${yen(estGuestAuto)}`
-                                    : <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                    : <span style={{display:"inline-flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                                         <span>¥{PER_GUEST.toLocaleString("ja-JP")} × 参加人数</span>
                                         <span className="pax-step">
-                                          <button onClick={() => changePax(pax - 1)} disabled={pax <= 1} aria-label="減らす">−</button>
+                                          <button onClick={() => changePax(pax-1)} disabled={pax<=1} aria-label="減らす">−</button>
                                           <span className="pax-n">{pax}</span>
-                                          <button onClick={() => changePax(pax + 1)} disabled={pax >= CAPACITY} aria-label="増やす">＋</button>
+                                          <button onClick={() => changePax(pax+1)} disabled={pax>=CAPACITY} aria-label="増やす">＋</button>
                                         </span>
                                         <span>名 ＝ {yen(estGuestAuto)}（人数連動・自動再計算）</span>
                                       </span>}
@@ -848,7 +806,7 @@
                               <td className="val-cell">{estMoney("guest", estGuest)}</td>
                             </tr>
                             <tr className="total-row">
-                              <td className="total-lab">業務委託支払合計<span className="lab-sub" style={{ fontWeight: 500 }}>全項目の合計（自動計算・編集不可）</span></td>
+                              <td className="total-lab">業務委託支払合計<span className="lab-sub" style={{fontWeight:500}}>全項目の合計（自動計算・編集不可）</span></td>
                               <td className="kb-cell"><Kubun k="auto" /></td>
                               <td className="val-cell"><span className="val-total">{yen(estTotal)}</span></td>
                             </tr>
@@ -857,7 +815,6 @@
                       </React.Fragment>
                     )}
 
-                    {/* ═══ ツアー後（実績）タブ ═══ */}
                     {mode === "actual" && (
                       <table className="fin-table">
                         <thead><tr><th>項目</th><th className="cmp-col">見込み</th><th className="cmp-col">実績</th></tr></thead>
@@ -890,7 +847,7 @@
                               : <React.Fragment>
                                   <span className="input-affix"><span className="pfx">¥</span>
                                     <input className="ctrl" inputMode="numeric" placeholder="必須"
-                                      style={commuteMissing ? { borderColor: "var(--coral)" } : undefined}
+                                      style={commuteMissing ? {borderColor:"var(--coral)"} : undefined}
                                       value={actEdits.commute !== undefined ? actEdits.commute : ""}
                                       onChange={e => setAct("commute", e.target.value)} />
                                   </span>
@@ -900,7 +857,7 @@
                           </tr>
                           {actRow("ゲスト立替経費", "空欄は見込み値を使用", "guest", estGuest, actGuest)}
                           <tr className="total-row">
-                            <td className="total-lab">業務委託支払合計<span className="lab-sub" style={{ fontWeight: 500 }}>実績ベースの合計（自動計算・編集不可）</span></td>
+                            <td className="total-lab">業務委託支払合計<span className="lab-sub" style={{fontWeight:500}}>実績ベースの合計（自動計算・編集不可）</span></td>
                             <td className="plan-cell">{yen(estTotal)}</td>
                             <td className="act-cell"><span className="val-total">{yen(actTotal)}</span></td>
                           </tr>
@@ -908,104 +865,80 @@
                       </table>
                     )}
 
-                    {/* ═══ 中止確定タブ ═══ */}
                     {mode === "cancelled" && (
                       <div className="cx-grid">
                         <div className="cx-lab">ガイド精算区分<span className="cx-req">＊</span></div>
                         <div className="cx-field">
-                          <span className="seg" role="group" aria-label="ガイド精算区分">
-                            <button className={cxKind === "zero" ? "on" : ""} disabled={cxConfirmed} onClick={() => setCxKind("zero")}>0精算</button>
-                            <button className={cxKind === "partial" ? "on" : ""} disabled={cxConfirmed} onClick={() => setCxKind("partial")}>一部精算</button>
+                          <span className="seg" role="group">
+                            <button className={cxKind==="zero"?"on":""} disabled={cxConfirmed} onClick={()=>setCxKind("zero")}>0精算</button>
+                            <button className={cxKind==="partial"?"on":""} disabled={cxConfirmed} onClick={()=>setCxKind("partial")}>一部精算</button>
                           </span>
-                          <span className="cx-hint">{cxKind === "zero"
-                            ? "中止に伴い支払なし（¥0）として確定します。"
-                            : "発生済み経費など、一部を精算します。支払額を入力してください。"}</span>
+                          <span className="cx-hint">{cxKind==="zero" ? "中止に伴い支払なし（¥0）として確定します。" : "発生済み経費など、一部を精算します。支払額を入力してください。"}</span>
                         </div>
-
                         <div className="cx-lab">支払額</div>
                         <div className="cx-field">
-                          {cxConfirmed || cxKind === "zero"
+                          {cxConfirmed || cxKind==="zero"
                             ? <span className="cx-static">{yen(cxAmountVal)}</span>
-                            : <span className="input-affix" style={{ margin: 0 }}><span className="pfx">¥</span>
+                            : <span className="input-affix" style={{margin:0}}><span className="pfx">¥</span>
                                 <input className="ctrl" inputMode="numeric" placeholder="0"
-                                  value={cxAmount} onChange={e => setCxAmount(e.target.value)} />
+                                  value={cxAmount} onChange={e=>setCxAmount(e.target.value)} />
                               </span>}
-                          {cxKind === "partial" && !cxConfirmed && <span className="cx-hint">例：発生済みの通勤交通費 {yen(EST.commute)} など</span>}
+                          {cxKind==="partial" && !cxConfirmed && <span className="cx-hint">例：発生済みの通勤交通費 {yen(EST.commute)} など</span>}
                         </div>
-
                         <div className="cx-lab">支払理由・メモ</div>
                         <div className="cx-field">
                           {cxConfirmed
-                            ? <span className="cx-hint" style={{ color: "var(--ink-soft)", fontSize: 13 }}>{cxMemo || "—"}</span>
-                            : <textarea className="ctrl" placeholder="支払理由・経緯などを記録（任意）"
-                                value={cxMemo} onChange={e => setCxMemo(e.target.value)} />}
+                            ? <span className="cx-hint" style={{color:"var(--ink-soft)",fontSize:13}}>{cxMemo||"—"}</span>
+                            : <textarea className="ctrl" placeholder="支払理由・経緯などを記録（任意）" value={cxMemo} onChange={e=>setCxMemo(e.target.value)} />}
                         </div>
-
                         <div className="cx-lab">業務委託支払合計</div>
                         <div className="cx-field">
-                          <span className="cx-static" style={{ color: "var(--accent-strong)" }}>{yen(cxAmountVal)}</span>
+                          <span className="cx-static" style={{color:"var(--accent-strong)"}}>{yen(cxAmountVal)}</span>
                           <span className="cx-hint">中止精算の確定額（自動）</span>
                         </div>
                       </div>
                     )}
                   </Card>
-                );
-              })()}
 
-              {/* ── ⑤ 施設精算 ── */}
-              {(() => {
-                const FAC = FAC_BASE.estimate;
-                const facV = (f) => (facEdits[f] !== undefined ? num(facEdits[f]) : FAC[f]);
-                const facActVal = filled(facActEdits, "postpay") ? num(facActEdits.postpay) : facV("postpay");
-                const setFac = (f, v) => setFacEdits(prev => ({ ...prev, [f]: v }));
-                const setFacAct = (f, v) => setFacActEdits(prev => ({ ...prev, [f]: v }));
-                const filled2 = (obj, f) => obj[f] !== undefined && obj[f] !== "";
-
-                const facBanner = facMode === "estimate"
-                  ? <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">施設精算（見込み）</span><br />施設後払いの見込み額を入力します。ツアー実施後は「ツアー後（実績）」タブで実績を入力します。</div></div>
-                  : (facConfirmed
-                    ? <div className="gs-banner green"><span className="gb-ic">✓</span><div><span className="gb-title">施設精算を確定しました</span><br />実績ベースの精算額を月次精算へ連携しました。確定後は編集できません。</div></div>
-                    : <div className="gs-banner blue"><span className="gb-ic">実</span><div><span className="gb-title">ツアー後 — 実績入力</span><br />見込みと差異がある場合のみ入力します。空欄の場合は見込み値を使用します。</div></div>);
-
-                const facHeadPill = facMode === "estimate"
-                  ? <span className="status-pill amber"><span className="dot"></span>見込み</span>
-                  : (facConfirmed
-                    ? <span className="status-pill green"><span className="dot"></span>実績確定</span>
-                    : <span className="status-pill blue"><span className="dot"></span>実績入力</span>);
-
-                const facFoot = (
-                  <React.Fragment>
-                    <div className="settle-row"><span>精算ステータス</span><span className="badge muted">見込み設定済み</span></div>
-                    {facMode === "estimate"
-                      ? <React.Fragment>
-                          <div className="settle-row" style={{ marginRight: "auto" }}><span>施設精算合計（見込み）</span><span className="badge amber" style={{ fontVariantNumeric: "tabular-nums" }}>{yen(facV("postpay"))}</span></div>
-                          <button className="btn outline" onClick={() => showToast("施設精算（見込み）を保存しました")}>見込みを保存</button>
-                        </React.Fragment>
-                      : (facConfirmed
-                        ? <span className="finalized-tag" style={{ marginRight: "auto" }}>✓ 施設精算確定済み（月次精算へ連携）</span>
-                        : <React.Fragment>
-                            <div className="settle-row" style={{ marginRight: "auto" }}><span>施設精算合計（実績）</span><span className="badge blue" style={{ fontVariantNumeric: "tabular-nums" }}>{yen(facActVal)}</span></div>
-                            <button className="btn primary" onClick={() => { setFacConfirmed(true); showToast("施設精算を確定しました（月次精算へ連携）"); }}>実績を確認して確定する</button>
-                          </React.Fragment>)}
-                  </React.Fragment>
-                );
-
-                return (
-                  <Card no="5" title="施設精算" hint="施設後払い" label="⑤ 施設精算"
+                  {/* ⑤ 施設精算 */}
+                  <Card no="5" title="施設精算" hint="施設後払い" label="施設精算"
                     action={
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        {facHeadPill}
-                        <div className="seg" role="tablist" aria-label="施設精算タブ">
-                          {[["estimate", "見込み"], ["actual", "ツアー後（実績）"]].map(([m, label]) => (
-                            <button key={m} className={facMode === m ? "on" : ""} onClick={() => setFacMode(m)}>{label}</button>
+                      <div style={{display:"flex",alignItems:"center",gap:12}}>
+                        {facMode==="estimate"
+                          ? <span className="status-pill amber"><span className="dot"></span>見込み</span>
+                          : facConfirmed
+                          ? <span className="status-pill green"><span className="dot"></span>実績確定</span>
+                          : <span className="status-pill blue"><span className="dot"></span>実績入力</span>}
+                        <div className="seg" role="tablist">
+                          {[["estimate","見込み"],["actual","ツアー後（実績）"]].map(([m,label])=>(
+                            <button key={m} className={facMode===m?"on":""} onClick={()=>setFacMode(m)}>{label}</button>
                           ))}
                         </div>
                       </div>
                     }
-                    foot={facFoot}>
-                    {facBanner}
+                    foot={
+                      <React.Fragment>
+                        <div className="settle-row"><span>精算ステータス</span><span className="badge muted">見込み設定済み</span></div>
+                        {facMode==="estimate"
+                          ? <React.Fragment>
+                              <div className="settle-row" style={{marginRight:"auto"}}><span>施設精算合計（見込み）</span><span className="badge amber" style={{fontVariantNumeric:"tabular-nums"}}>{yen(facV("postpay"))}</span></div>
+                              <button className="btn outline" onClick={()=>showToast("施設精算（見込み）を保存しました")}>見込みを保存</button>
+                            </React.Fragment>
+                          : facConfirmed
+                          ? <span className="finalized-tag" style={{marginRight:"auto"}}>✓ 施設精算確定済み（月次精算へ連携）</span>
+                          : <React.Fragment>
+                              <div className="settle-row" style={{marginRight:"auto"}}><span>施設精算合計（実績）</span><span className="badge blue" style={{fontVariantNumeric:"tabular-nums"}}>{yen(facActVal)}</span></div>
+                              <button className="btn primary" onClick={()=>{setFacConfirmed(true);showToast("施設精算を確定しました（月次精算へ連携）");}}>実績を確認して確定する</button>
+                            </React.Fragment>}
+                      </React.Fragment>
+                    }>
+                    {facMode==="estimate"
+                      ? <div className="gs-banner info"><span className="gb-ic">i</span><div><span className="gb-title">施設精算（見込み）</span><br />施設後払いの見込み額を入力します。ツアー実施後は「ツアー後（実績）」タブで実績を入力します。</div></div>
+                      : facConfirmed
+                      ? <div className="gs-banner green"><span className="gb-ic">✓</span><div><span className="gb-title">施設精算を確定しました</span><br />実績ベースの精算額を月次精算へ連携しました。確定後は編集できません。</div></div>
+                      : <div className="gs-banner blue"><span className="gb-ic">実</span><div><span className="gb-title">ツアー後 — 実績入力</span><br />見込みと差異がある場合のみ入力します。空欄の場合は見込み値を使用します。</div></div>}
 
-                    {facMode === "estimate" && (
+                    {facMode==="estimate" && (
                       <table className="fin-table">
                         <thead><tr><th>項目</th><th>区分</th><th className="right">金額</th></tr></thead>
                         <tbody>
@@ -1016,13 +949,13 @@
                               <span className="input-affix">
                                 <span className="pfx">¥</span>
                                 <input className="ctrl" inputMode="numeric" placeholder="0"
-                                  value={facEdits.postpay !== undefined ? facEdits.postpay : FAC.postpay}
-                                  onChange={e => setFac("postpay", e.target.value)} />
+                                  value={facEdits.postpay!==undefined?facEdits.postpay:FAC.postpay}
+                                  onChange={e=>setFacEdits(prev=>({...prev,postpay:e.target.value}))} />
                               </span>
                             </td>
                           </tr>
                           <tr className="total-row">
-                            <td className="total-lab">施設精算合計<span className="lab-sub" style={{ fontWeight: 500 }}>自動計算・編集不可</span></td>
+                            <td className="total-lab">施設精算合計<span className="lab-sub" style={{fontWeight:500}}>自動計算・編集不可</span></td>
                             <td className="kb-cell"><Kubun k="auto" /></td>
                             <td className="val-cell"><span className="val-total">{yen(facV("postpay"))}</span></td>
                           </tr>
@@ -1030,7 +963,7 @@
                       </table>
                     )}
 
-                    {facMode === "actual" && (
+                    {facMode==="actual" && (
                       <table className="fin-table">
                         <thead><tr><th>項目</th><th className="cmp-col">見込み</th><th className="cmp-col">実績</th></tr></thead>
                         <tbody>
@@ -1041,13 +974,13 @@
                               ? <span className="val-amt">{yen(facActVal)}</span>
                               : <span className="input-affix"><span className="pfx">¥</span>
                                   <input className="ctrl" inputMode="numeric" placeholder={String(facV("postpay"))}
-                                    value={facActEdits.postpay !== undefined ? facActEdits.postpay : ""}
-                                    onChange={e => setFacAct("postpay", e.target.value)} />
+                                    value={facActEdits.postpay!==undefined?facActEdits.postpay:""}
+                                    onChange={e=>setFacActEdits(prev=>({...prev,postpay:e.target.value}))} />
                                 </span>}
                             </td>
                           </tr>
                           <tr className="total-row">
-                            <td className="total-lab">施設精算合計<span className="lab-sub" style={{ fontWeight: 500 }}>自動計算・編集不可</span></td>
+                            <td className="total-lab">施設精算合計<span className="lab-sub" style={{fontWeight:500}}>自動計算・編集不可</span></td>
                             <td className="plan-cell">{yen(facV("postpay"))}</td>
                             <td className="act-cell"><span className="val-total">{yen(facActVal)}</span></td>
                           </tr>
@@ -1055,19 +988,18 @@
                       </table>
                     )}
                   </Card>
-                );
-              })()}
-            </main>
+                </div>
+              </main>
 
-            <div className={`toast ${toast ? "show" : ""}`}>
-              <span className="t-dot"></span>{toast}
+              <div className={`toast ${toast?"show":""}`}>
+                <span className="t-dot"></span>{toast}
+              </div>
             </div>
-          </div>
-        </React.Fragment>
-      );
-    }
+          </React.Fragment>
+        );
+      }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
-</body>
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
 </html>
