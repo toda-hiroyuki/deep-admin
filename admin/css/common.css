@@ -455,6 +455,7 @@ h4 { font-size: 13px; }
 .btn.sm { height: 28px; padding: 0 9px; font-size: 12px; }
 .btn.icon { width: 32px; padding: 0; }
 .btn:disabled, .btn[disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+a.btn { text-decoration: none; }
 
 /* ─── Content grid ──────────────────────────────────────── */
 
@@ -2437,3 +2438,35 @@ tbody td .row-sub {
   color: var(--ink-soft);
 }
 
+.toast {
+  position: fixed;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--ink);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 550;
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast .t-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5fd0c0;
+}
