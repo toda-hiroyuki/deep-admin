@@ -1,0 +1,1830 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>変更・キャンセル処理 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+      
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1000px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.lg { height: 44px; padding: 0 24px; font-size: 14px; }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+      .card-body { padding: 20px; }
+      .card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .card-foot.split { justify-content: space-between; }
+      .card-foot.end { justify-content: flex-end; }
+
+      /* ── Target summary card (compact) ── */
+      .summary-card { display: flex; align-items: center; gap: 0; flex-wrap: wrap; padding: 12px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+      .summary-card .s-item { display: flex; flex-direction: column; gap: 2px; padding: 0 18px; position: relative; }
+      .summary-card .s-item + .s-item::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px; background: var(--line-soft); }
+      .summary-card .s-item:first-child { padding-left: 0; }
+      .summary-card .s-lab { font-size: 10.5px; font-weight: 600; color: var(--muted-soft); letter-spacing: 0.03em; text-transform: uppercase; }
+      .summary-card .s-val { font-size: 13px; font-weight: 650; color: var(--ink); }
+      .summary-card .s-val.mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; font-weight: 650; }
+      .summary-card .s-val .sub { color: var(--muted); font-weight: 500; }
+
+      /* ── Step indicator ── */
+      .stepper { display: flex; align-items: flex-start; padding: 18px 22px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+      .step { display: flex; align-items: center; flex: 1 1 0; min-width: 0; }
+      .step-node { display: flex; align-items: center; gap: 10px; }
+      .step-dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; flex-shrink: 0; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--muted-soft); transition: all 0.18s; font-variant-numeric: tabular-nums; }
+      .step-meta { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+      .step-kicker { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted-soft); }
+      .step-label { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+      .step-line { flex: 1 1 auto; height: 1.5px; background: var(--line-strong); margin: 0 12px; border-radius: 2px; min-width: 16px; }
+      /* states */
+      .step.is-current .step-dot { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: var(--ring); }
+      .step.is-current .step-label { color: var(--ink); font-weight: 700; }
+      .step.is-current .step-kicker { color: var(--accent-strong); }
+      .step.is-done .step-dot { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+      .step.is-done .step-label { color: var(--ink-soft); }
+      .step.is-done .step-line { background: var(--accent); }
+      .step.is-skipped .step-dot { border-style: dashed; }
+      .step.is-skipped .step-label { text-decoration: line-through; color: var(--muted-soft); }
+
+      /* ── Radio group ── */
+      .radio-row { display: flex; flex-direction: column; gap: 0; }
+      .radio-opt { display: flex; align-items: flex-start; gap: 11px; font-size: 14px; color: var(--ink-soft); user-select: none; cursor: pointer; padding: 11px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); transition: background 0.1s, border-color 0.1s; }
+      .radio-opt + .radio-opt { margin-top: 8px; }
+      .radio-opt:hover { border-color: var(--line-strong); background: var(--surface-tint); }
+      .radio-opt.checked { border-color: var(--accent); background: var(--accent-soft); }
+      .radio-opt input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+      .radio-opt .ro-main { font-weight: 600; }
+      .radio-opt .ro-sub { color: var(--muted); font-size: 12px; font-weight: 500; display: block; margin-top: 2px; }
+      .radio-opt.checked .ro-sub { color: var(--accent-strong); }
+
+      /* ── Change-type cards (STEP 1) ── */
+      .type-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      @media (max-width: 860px) { .type-cards { grid-template-columns: 1fr; } }
+      .type-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; padding: 20px 18px 16px; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); cursor: pointer; transition: border-color .14s, box-shadow .14s, transform .14s, background .14s; font: inherit; }
+      .type-card:hover { border-color: var(--accent); box-shadow: var(--shadow-pop); transform: translateY(-2px); }
+      .type-card:focus-visible { outline: none; box-shadow: var(--ring); }
+      .type-card .tc-badge { font-size: 12px; font-weight: 800; letter-spacing: 0.02em; padding: 5px 12px; border-radius: 999px; margin-bottom: 16px; }
+      .type-card.tc-datetime .tc-badge { background: var(--blue-soft); color: var(--blue); }
+      .type-card.tc-pax .tc-badge { background: var(--green-soft); color: var(--green); }
+      .type-card.tc-cancel { background: color-mix(in srgb, var(--coral-soft) 45%, var(--surface)); border-color: color-mix(in srgb, var(--coral) 28%, var(--line-strong)); }
+      .type-card.tc-cancel .tc-badge { background: var(--coral-soft); color: var(--coral); }
+      .type-card.tc-cancel:hover { border-color: var(--coral); }
+      .type-card .tc-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 7px; }
+      .type-card .tc-desc { font-size: 13px; line-height: 1.6; color: var(--muted); margin-bottom: 18px; }
+      .type-card .tc-action { margin-top: auto; font-size: 13.5px; font-weight: 700; color: var(--accent-strong); display: inline-flex; align-items: center; gap: 5px; }
+      .type-card.tc-cancel .tc-action { color: var(--coral); }
+      .type-card:hover .tc-action { gap: 9px; }
+
+      .field-block { display: flex; flex-direction: column; gap: 18px; }
+      .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      @media (max-width: 720px) { .field-grid { grid-template-columns: 1fr; } }
+      .form-section-title { font-size: 12px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.01em; margin-bottom: 11px; display: flex; align-items: center; gap: 8px; }
+      .form-section-title .req { color: var(--coral); }
+      .form-section + .form-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+
+      .filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; margin-bottom: 6px; display: block; }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      textarea.ctrl { min-height: 88px; padding: 10px 12px; resize: vertical; line-height: 1.5; height: auto; }
+      .input-affix { position: relative; display: flex; align-items: center; width: 100%; }
+      .input-affix .pfx { position: absolute; left: 12px; color: var(--muted); font-size: 13px; pointer-events: none; }
+      .input-affix .ctrl { padding-left: 24px; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+      /* ── Current value callout ── */
+      .now-box { display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); margin-bottom: 20px; }
+      .now-box .nb-lab { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; text-transform: uppercase; }
+      .now-box .nb-val { font-size: 14px; font-weight: 700; color: var(--ink); }
+
+      /* ── Amount table ── */
+      .amt-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-variant-numeric: tabular-nums; }
+      .amt-table th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-tint); }
+      .amt-table th.right { text-align: right; }
+      .amt-table td { padding: 13px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; vertical-align: middle; }
+      .amt-table tr:last-child td { border-bottom: 0; }
+      .amt-table td.lab { color: var(--ink-soft); font-weight: 600; }
+      .amt-table td.lab .lab-sub { display: block; font-size: 11.5px; color: var(--muted-soft); font-weight: 500; margin-top: 2px; }
+      .amt-table td.val { text-align: right; font-weight: 700; font-size: 15px; }
+      .amt-table td.input-cell { text-align: right; }
+      .amt-table tr.diff-row { background: var(--surface-warm); }
+      .amt-table tr.diff-row td { border-top: 1px solid var(--line); }
+      .amt-input-wrap { display: inline-flex; justify-content: flex-end; width: 200px; margin-left: auto; }
+      .diff-amount { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+      .diff-amount.pos { color: var(--coral); }
+      .diff-amount.neg { color: var(--green); }
+      .diff-amount.zero { color: var(--muted); }
+
+      /* ── 区分 badges + legend ── */
+      .kbadge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; letter-spacing: 0.01em; }
+      .kbadge.kb-fixed { background: var(--green-soft); color: var(--green); }
+      .kbadge.kb-estimate { background: var(--amber-soft); color: var(--amber); }
+      .kbadge.kb-pending { background: var(--bg-sunken); color: var(--muted); border: 1px solid var(--line-strong); }
+      .kbadge.kb-record { background: var(--blue-soft); color: var(--blue); }
+      .kubun-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 13px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); margin-bottom: 16px; }
+      .kubun-legend .kl-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+      .auto-detect { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+      .auto-detect .ad-lab { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-soft); }
+      .auto-detect .ad-val { font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); padding: 2px 10px; border-radius: 999px; }
+
+      /* ── Amount table extensions ── */
+      .amt-table td.kb-cell { width: 132px; white-space: nowrap; }
+      .amt-table td.val-cell { text-align: right; }
+      .amt-table .kb-dash { color: var(--muted-soft); }
+      .val-amt { font-weight: 700; font-size: 15px; }
+      .amt-note { font-size: 12.5px; font-weight: 600; }
+      .amt-note.est { color: var(--amber); }
+      .amt-note.pend { color: var(--muted); }
+      .amt-note.rec { color: var(--blue); }
+      /* 販売チャネル 読み取り専用バッジ（サマリー内） */
+      .chan-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); padding: 3px 11px; border-radius: 999px; }
+      /* 反映先：チャネルにより不要な行のグレーアウト */
+      .reflect-table tr.row-muted td { opacity: 0.55; }
+      .reflect-table .r-sub { display: block; font-size: 11.5px; color: var(--muted-soft); font-weight: 500; margin-top: 2px; }
+      /* 催行回の扱い：自動判定インフォメーションバナー（読み取り専用） */
+      .auto-tag { display: inline-flex; align-items: center; margin-left: 8px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--accent-strong); background: var(--accent-soft); padding: 2px 9px; border-radius: 999px; vertical-align: middle; }
+      .info-banner { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid; }
+      .info-banner.warn { background: var(--amber-soft); border-color: color-mix(in srgb, var(--amber) 35%, transparent); }
+      .info-banner.ok { background: var(--green-soft); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+      .info-banner .ib-ic { font-size: 18px; line-height: 1.3; flex: none; }
+      .info-banner .ib-body { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+      .info-banner .ib-main { font-size: 14px; font-weight: 700; color: var(--ink); }
+      .info-banner.warn .ib-main { color: var(--amber); }
+      .info-banner.ok .ib-main { color: var(--green); }
+      .info-banner .ib-sub { font-size: 12px; color: var(--muted); line-height: 1.5; }
+      .info-banner .ib-readonly { flex: none; align-self: center; font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--surface); border: 1px solid var(--line-strong); padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+      .amt-note .an-sub { display: block; font-size: 11px; font-weight: 500; color: var(--muted-soft); margin-top: 2px; }
+      .amt-table tr.memo-row td { padding: 0 16px 14px; border-bottom: 1px solid var(--line-soft); }
+      .amt-table tr.memo-row + tr td { border-top: 0; }
+      .memo-box { background: var(--surface-tint); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 11px 13px; }
+      .memo-box .memo-lab { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 7px; }
+      .memo-box .memo-lab .kbadge { font-size: 10px; padding: 2px 7px; }
+      .memo-box input.ctrl { background: var(--surface); height: 34px; font-size: 12.5px; }
+
+      /* ── Reflection checklist table ── */
+      .reflect-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .reflect-table th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-tint); }
+      .reflect-table td { padding: 14px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: top; }
+      .reflect-table tr:last-child td { border-bottom: 0; }
+      .reflect-table td.r-target { font-weight: 700; color: var(--ink); white-space: nowrap; width: 130px; }
+      .reflect-table td.r-target .r-ic { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--bg-sunken); color: var(--muted); font-size: 10px; font-weight: 800; margin-right: 9px; vertical-align: middle; }
+      .reflect-table td.r-status { white-space: nowrap; width: 130px; }
+      .reflect-table .r-content { color: var(--ink-soft); line-height: 1.5; }
+      .reflect-table .r-content .arrow { color: var(--muted-soft); margin: 0 5px; }
+
+      /* ── Summary review (step 5) ── */
+      .review-grid { display: grid; grid-template-columns: 160px 1fr; gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .review-grid .rv-dt { background: var(--surface-tint); color: var(--muted); font-size: 12px; font-weight: 700; padding: 13px 16px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; letter-spacing: 0.02em; }
+      .review-grid .rv-dd { padding: 13px 16px; border-bottom: 1px solid var(--line-soft); font-size: 14px; font-weight: 650; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .review-grid .rv-dt:nth-last-child(2), .review-grid .rv-dd:last-child { border-bottom: 0; }
+      .review-grid .rv-dd .placeholder { color: var(--muted-soft); font-weight: 500; font-style: italic; }
+      .exec-note { display: flex; gap: 11px; padding: 14px 16px; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); margin-top: 18px; font-size: 12.5px; color: var(--amber); line-height: 1.5; }
+      .exec-note .en-ic { font-weight: 800; flex-shrink: 0; }
+
+      /* ── Completion screen (change flow STEP 5) ── */
+      .done-banner { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: var(--green-soft); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); border-radius: var(--radius-lg); margin-bottom: 22px; }
+      .done-banner .db-ic { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+      .done-banner .db-title { font-size: 16px; font-weight: 800; color: var(--green); }
+      .done-banner .db-sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+      .auto-line { margin-top: 22px; padding: 12px 14px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+      .pend-line { display: flex; align-items: flex-start; gap: 9px; margin-top: 10px; padding: 12px 14px; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+      .pend-line .pl-ic { flex: none; }
+      .pend-line strong { color: var(--amber); }
+
+      /* ── Financial confirm table (cancel flow STEP 5) ── */
+      .fin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+      .fin-table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; color: var(--muted); background: var(--surface-tint); padding: 11px 16px; border-bottom: 1px solid var(--line); }
+      .fin-table th.right { text-align: right; }
+      .fin-table td { padding: 13px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+      .fin-table tr:last-child td { border-bottom: 0; }
+      .fin-table td.lab { font-size: 13.5px; font-weight: 650; color: var(--ink); }
+      .fin-table td.lab .lab-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+      .fin-table td.kb-cell { width: 116px; white-space: nowrap; }
+      .fin-table td.val-cell { width: 210px; text-align: right; }
+      .fin-table td.val-cell .amt-input-wrap { display: inline-block; width: 160px; }
+      .fin-table tr.row-muted td { opacity: 0.62; }
+      .finalized-tag { font-size: 13px; font-weight: 800; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+
+      /* ── 左ボーダーアクセント・バナー（分岐フロー用） ── */
+      .lbanner { padding: 13px 16px; border-radius: var(--radius); border-left: 4px solid var(--line-strong); background: var(--surface-tint); }
+      .lbanner .lb-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; line-height: 1.4; }
+      .lbanner .lb-sub { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+      .lbanner.ok { background: var(--green-soft); border-left-color: var(--green); }
+      .lbanner.ok .lb-title { color: var(--green); }
+      .lbanner.alert { background: var(--coral-soft); border-left-color: var(--coral); }
+      .lbanner.alert .lb-title { color: var(--coral); }
+      .lbanner.note { background: var(--blue-soft); border-left-color: var(--blue); }
+      .lbanner.note .lb-title { color: var(--blue); }
+      .lbanner.warn { background: var(--amber-soft); border-left-color: var(--amber); }
+      .lbanner.warn .lb-title { color: var(--amber); }
+      @keyframes revealIn { from { transform: translateY(-4px); } to { transform: none; } }
+      .reveal { }
+      @media (prefers-reduced-motion: no-preference) { .reveal { animation: revealIn 0.2s ease; } }
+
+      /* 締切確認ゲート（日時変更） */
+      .deadline-facts { display: flex; flex-wrap: wrap; gap: 12px 32px; padding: 13px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); margin-bottom: 16px; }
+      .deadline-facts .df-item { display: flex; flex-direction: column; gap: 3px; }
+      .deadline-facts .df-lab { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-soft); }
+      .deadline-facts .df-val { font-size: 14px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+      /* 追加請求の発行（決済リンク）カード */
+      .charge-card { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; margin-bottom: 22px; background: var(--surface); }
+      .charge-card .cc-head { padding: 13px 18px; border-left: 4px solid var(--amber); background: var(--amber-soft); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .charge-card .cc-title { font-size: 14px; font-weight: 800; color: var(--amber); display: flex; align-items: center; gap: 8px; }
+      .charge-card .cc-amt { font-size: 18px; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; }
+      .charge-card .cc-body { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+
+      /* インライン・リンクボタン */
+      .link-btn { appearance: none; border: 1px solid var(--blue); background: var(--surface); color: var(--blue); font-size: 12.5px; font-weight: 700; height: 32px; padding: 0 13px; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 7px; transition: background 0.1s; }
+      .link-btn:hover { background: color-mix(in srgb, var(--blue-soft) 70%, var(--surface)); }
+
+      /* 減員：返金ポイント注記 */
+      .refund-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; line-height: 1.7; }
+      .refund-note .rn-head { font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+      .refund-note ul { margin: 0; padding-left: 18px; }
+      .refund-note li + li { margin-top: 2px; }
+
+      /* OTA当日増員フラグ・チェック */
+      .flag-check { display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); cursor: pointer; user-select: none; margin-bottom: 14px; transition: border-color 0.1s, background 0.1s; }
+      .flag-check input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+      .flag-check .fc-main { font-weight: 600; font-size: 13.5px; color: var(--ink-soft); }
+      .flag-check.on { border-color: var(--amber); background: var(--amber-bg); }
+
+      @media (max-width: 640px) { .deadline-facts { flex-direction: column; } .charge-card .cc-head { flex-direction: column; align-items: flex-start; } }
+
+      /* ── Scenario bar (dev/QA only) ── */
+      body { padding-top: 42px; }
+      .side-nav { top: 42px; height: calc(100vh - 42px); min-height: 0; }
+      .scenario-bar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+        height: 42px; display: flex; align-items: center; gap: 14px;
+        padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8;
+        font-size: 11.5px; color: #6b6b6b;
+        overflow-x: auto; overflow-y: hidden; white-space: nowrap;
+      }
+      .scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
+      .scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
+      .scenario-bar .sb-cap { color: #8a8a8a; }
+      .sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
+      .sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; }
+      .sb-seg button + button { border-left: 1px solid #e4dfd4; }
+      .sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
+      .sb-seg button.on { background: var(--accent); color: #fff; }
+      .scenario-bar .sb-scenario { margin-left: auto; color: #8a8a8a; white-space: nowrap; }
+      .scenario-bar .sb-scenario strong { color: #555; font-weight: 700; }
+      .scenario-bar .sb-check { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #6b6b6b; white-space: nowrap; cursor: pointer; }
+      .scenario-bar .sb-check input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; }
+      @media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; } }
+
+      /* ── Toast ── */
+      .toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 60; display: flex; align-items: center; gap: 9px; }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+    </style>
+  </head>
+  <body>
+    <template id="__bundler_thumbnail" data-bg-color="#0a5e5a">
+      <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1200" height="800" fill="#0a5e5a" />
+        <g transform="translate(420, 250)" fill="none" stroke="#fbf7f0" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="0" y="0" width="360" height="300" rx="24" fill="#fbf7f0" stroke="none" />
+          <line x1="50" y1="70" x2="310" y2="70" stroke="#0a5e5a" stroke-width="18" />
+          <line x1="50" y1="140" x2="240" y2="140" stroke="#c9b896" stroke-width="18" />
+          <line x1="50" y1="210" x2="280" y2="210" stroke="#c9b896" stroke-width="18" />
+          <circle cx="285" cy="245" r="40" fill="#0a5e5a" stroke="none" />
+          <path d="M 268 245 l 13 13 l 22 -26" stroke="#fbf7f0" stroke-width="14" />
+        </g>
+      </svg>
+    </template>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+      const { useState, useRef, useMemo } = React;
+
+
+
+      // フローごとのステップ定義（変更フローとキャンセルフローで内容が異なる）
+      const STEPS_CHANGE = [
+        { kicker: "Step 1", label: "変更種別" },
+        { kicker: "Step 2", label: "変更内容" },
+        { kicker: "Step 3", label: "金額確認" },
+        { kicker: "Step 4", label: "反映確認" },
+        { kicker: "Step 5", label: "処理完了" },
+      ];
+      const STEPS_CANCEL = [
+        { kicker: "Step 1", label: "変更種別" },
+        { kicker: "Step 2", label: "金額確認" },
+        { kicker: "Step 3", label: "反映確認" },
+        { kicker: "Step 4", label: "実行" },
+        { kicker: "Step 5", label: "処理完了" },
+      ];
+
+      const BEFORE_AMOUNT = 75000;
+      const UNIT_PRICE = { adult: 16000, child: 11000 };  // 例：大人・子供の単価（大人4×16,000＋子供1×11,000＝75,000）
+      const FREE_CANCEL_DEADLINE = "2026/06/13（土）23:59";  // 例：予約のポリシーから取得する無料キャンセル期限（ツアー日2026/06/20の7日前）
+      const CANCEL_POLICY_NAME = "標準キャンセルポリシー（7日前まで無料）";  // 例：予約時点で適用されたポリシー名
+
+      // ──────────────────────────────────────────────
+      // シナリオ定義（開発・確認用。本番ではシナリオ選択パネルごと非表示にする想定）
+      //   予約データ（booking）と催行回データ（session）の組み合わせを切り替えると、
+      //   全STEPの表示・計算（金額項目・反映確認・ガイド精算など）が再レンダリングされる。
+      //   salesChannel : "direct"（自社サイト直販）| "ota"（OTA経由）
+      //   activeBookings : 催行回の有効予約件数（この予約を含む）。1件＝この予約のみ→中止
+      //   fate : "remains"（存続）| "cancelled"（中止）
+      // ──────────────────────────────────────────────
+      const BASE_BOOKING = {
+        bookingId: "BK-260601-00002",
+        guest: "Smith John",
+        tour: "G-WAK-001-2-PR 里山ハイキング",
+        date: "2026/06/20（土）09:00〜12:00",
+        pax: "大人4 子供1",
+      };
+      const SCENARIOS = {
+        direct_active:    { salesChannel: "direct", sessionActiveBookings: 3 },
+        direct_cancelled: { salesChannel: "direct", sessionActiveBookings: 1 },
+        ota_active:       { salesChannel: "ota",    sessionActiveBookings: 3 },
+        ota_cancelled:    { salesChannel: "ota",    sessionActiveBookings: 1 },
+      };
+      const scenarioKey = (channel, fate) => channel + "_" + (fate === "cancelled" ? "cancelled" : "active");
+
+      const yen = (n) => "¥" + Number(n || 0).toLocaleString("ja-JP");
+
+      const KUBUN = {
+        fixed:    { t: "確定", c: "kb-fixed" },
+        estimate: { t: "概算", c: "kb-estimate" },
+        pending:  { t: "要確認後入力", c: "kb-pending" },
+        record:   { t: "記録のみ", c: "kb-record" },
+      };
+      function Kubun({ k }) {
+        const m = KUBUN[k];
+        return <span className={`kbadge ${m.c}`}>{m.t}</span>;
+      }
+
+      // ──────────────────────────────────────────────
+      // 販売チャネル定義（データ駆動・拡張可能な構造）
+      //   販売チャネルは予約データ（BOOKING_DATA）から自動取得し、この
+      //   CHANNEL_CONFIG を参照して金額計算・反映表示を切り替える。
+      //   将来 affiliate / b2b を追加する場合は、同じ形のエントリを
+      //   足すだけで全STEPの表示・計算が拡張される。
+      //
+      //   otaFeeRate     : チャネル手数料率（販売金額に乗じて自動計算。直販は null）
+      //   paymentFeeRate : 決済手数料率（販売金額に乗じて自動計算。OTAは null）
+      //   showRefund     : 返金をDeepが処理するか（false=OTA返金済み（Deep対応不要））
+      //   showPriceDiff  : 販売金額の差額調整をDeepが行うか（false=OTA側の次回精算で調整）
+      // ──────────────────────────────────────────────
+      const CHANNEL_CONFIG = {
+        direct: {
+          label: "自社サイト直販",
+          short: "直販",
+          otaFeeRate: null,
+          paymentFeeRate: 0.036,   // 例: Stripe 3.6%
+          showRefund: true,
+          showPriceDiff: true,
+        },
+        ota: {
+          label: "OTA経由",
+          short: "OTA",
+          otaFeeRate: 0.20,        // 例: 20%
+          paymentFeeRate: null,
+          showRefund: false,
+          showPriceDiff: false,
+        },
+        // 将来拡張：affiliate, b2b をここに追加
+      };
+
+      function Sidebar({ resource, counts = {} }) {
+        const opsItems = [
+          { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+          { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+          { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+          { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+          { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+        ];
+        const payItems = [
+          { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
+          { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+          { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
+        ];
+        const guideItems = [
+          { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
+        ];
+        const facilityItems = [
+          { key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" },
+        ];
+        const masterMainItems = [
+          { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption",  count: counts.to },
+          { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ",    count: counts.pg },
+        ];
+        const masterSubItems = [
+          { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+          { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+          { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+          { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料", count: counts.gd },
+          { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+          { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+        ];
+        return (
+          <aside className="side-nav">
+            <div className="brand-block">
+              <div className="brand-mark">d.</div>
+              <div>
+                <div className="brand-name">deep_Admin</div>
+                <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+              </div>
+            </div>
+            <div className="nav-group" style={{marginBottom:"8px"}}>
+              <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+                <span className="nav-icon">⊞</span>
+                <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+              </a>
+            </div>
+            <div>
+              <div className="nav-section-label">予約オペレーション</div>
+              <div className="nav-group">
+                {opsItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">精算・経営</div>
+              <div className="nav-group">
+                {payItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">ガイド管理</div>
+              <div className="nav-group">
+                {guideItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">施設管理</div>
+              <div className="nav-group">
+                {facilityItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="nav-section-label">商品管理</div>
+              <div className="nav-group">
+                {masterMainItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                    <span className="nav-count">{it.count}</span>
+                  </a>
+                ))}
+                <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+                {masterSubItems.map(it => (
+                  <a key={it.key} href={it.href}
+                    className={`nav-item ${resource === it.key ? "active" : ""}`}
+                    style={{textDecoration:"none"}}>
+                    <span className="nav-icon">{it.icon}</span>
+                    <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                    <span className="nav-count">{it.count}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="sidebar-footer">
+              <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+                <span className="nav-icon">↩</span><span>ログアウト</span>
+              </a>
+            </div>
+          </aside>
+        );
+      }
+
+      function Stepper({ current, steps }) {
+        return (
+          <div className="stepper">
+            {steps.map((s, i) => {
+              let cls = "step";
+              if (i === current) cls += " is-current";
+              else if (i < current) cls += " is-done";
+              const done = i < current;
+              return (
+                <div className={cls} key={i}>
+                  <div className="step-node">
+                    <span className="step-dot">{done ? "✓" : (i + 1)}</span>
+                    <span className="step-meta">
+                      <span className="step-kicker">{s.kicker}</span>
+                      <span className="step-label">{s.label}</span>
+                    </span>
+                  </div>
+                  {i < steps.length - 1 && <span className="step-line"></span>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+
+      function App() {
+        const [toast, setToast] = useState(null);
+        const toastTimer = useRef(null);
+        const [step, setStep] = useState(0);
+
+        // ── シナリオ選択（開発・確認用）──
+        //   予約データ・催行回データの差し替え元。切替時に全STEPがSTEP 1にリセットされ再レンダリングされる。
+        const [scenario, setScenario] = useState("direct_active");
+        const sc = SCENARIOS[scenario];
+        const BOOKING_DATA = { ...BASE_BOOKING, salesChannel: sc.salesChannel };
+        const SESSION_ACTIVE_BOOKINGS = sc.sessionActiveBookings;
+
+        // Step 1
+        const [changeType, setChangeType] = useState("datetime"); // datetime | increase | decrease | cancel
+        const [origin, setOrigin] = useState("guest");            // guest | operator | thirdparty
+        const [reason, setReason] = useState("");
+
+        // Step 2 — datetime
+        const [newDate, setNewDate] = useState("");
+        const [newTime, setNewTime] = useState("");
+        // Step 2 — headcount
+        const [newAdults, setNewAdults] = useState("");
+        const [newChildren, setNewChildren] = useState("");
+
+        // Step 3 — datetime
+        const [newTotal, setNewTotal] = useState("");             // manual total (datetime)
+        const [pricePolicy, setPricePolicy] = useState("none");   // charge | refund | none
+        // Step 3 — increase / decrease
+        const [addCharge, setAddCharge] = useState("");           // manual surcharge (increase)
+        const [refundInput, setRefundInput] = useState("");       // manual refund (decrease)
+        // Step 2 — cancel
+        const [cancelRate, setCancelRate] = useState("");         // manual cancel-fee rate (%)
+
+        // 変更フロー STEP 5（処理完了）
+        const [notifyGuide, setNotifyGuide] = useState(true);     // ガイドへの通知要否
+        const [completionMemo, setCompletionMemo] = useState(""); // メモ
+        const [executed, setExecuted] = useState(false);          // 変更フロー：実行済みフラグ
+
+        // キャンセルフロー STEP 5（全財務項目の一括確認・編集・確定）
+        const [finEdits, setFinEdits] = useState({});             // {key: number} 手動編集値
+        const [finalized, setFinalized] = useState(false);        // 確定済みフラグ（確定後は編集不可）
+        const setFin = (k, v) => setFinEdits((m) => ({ ...m, [k]: v }));
+
+        // 修正1：日時変更のキャンセル期限ゲート
+        const [cancelDeadline, setCancelDeadline] = useState("within"); // within | after（シナリオ）
+        const [dtGatePassed, setDtGatePassed] = useState(false);        // ゲート通過フラグ
+        const [exceptionMode, setExceptionMode] = useState(false);      // 例外承認モード展開
+        const [exceptionReason, setExceptionReason] = useState("");
+        // 修正2：元ガイドのアサイン状態（シナリオ）
+        const [guideAssigned, setGuideAssigned] = useState("assigned"); // assigned | unassigned
+        // UC-05：予約ステータス（確定待ち＝販売未確定はキャンセル料0%・返金不要）（シナリオ）
+        const [bookingStatus, setBookingStatus] = useState("confirmed"); // confirmed | pending
+        // 修正3/4：追加請求の決済リンク
+        const [chargeStatus, setChargeStatus] = useState("unsent");     // unsent | invoiced | paid | expired | cancelled
+        const [payUrl, setPayUrl] = useState("");
+        const [payExpiry, setPayExpiry] = useState("");
+        const [paySentAt, setPaySentAt] = useState("");
+        const [payMethod, setPayMethod] = useState("email");
+        // 修正4：OTA当日現地増員フラグ
+        const [otaSameDay, setOtaSameDay] = useState(false);
+
+        // シナリオ切替：データを差し替え、全STEPの進行状態をリセットしてSTEP 1へ戻す
+        const selectScenario = (key) => {
+          if (key === scenario) return;
+          setScenario(key);
+          setStep(0);
+          setChangeType("datetime");
+          setOrigin("guest");
+          setReason("");
+          setNewDate(""); setNewTime("");
+          setNewAdults(""); setNewChildren("");
+          setNewTotal(""); setPricePolicy("none");
+          setAddCharge(""); setRefundInput(""); setCancelRate("");
+          setNotifyGuide(true); setCompletionMemo("");
+          setExecuted(false);
+          setFinEdits({}); setFinalized(false);
+          setDtGatePassed(false); setExceptionMode(false); setExceptionReason("");
+          setChargeStatus("unsent"); setPayUrl(""); setPayExpiry(""); setPaySentAt(""); setPayMethod("email");
+          setOtaSameDay(false);
+          setBookingStatus("confirmed");
+          const s = SCENARIOS[key];
+          showToast(`シナリオを「${CHANNEL_CONFIG[s.salesChannel].label} × 催行回${s.sessionActiveBookings <= 1 ? "中止" : "存続"}」に切替えました`);
+        };
+
+        // 販売チャネル（予約データから自動取得・読み取り専用。MVPは direct / ota）
+        const salesChannel = BOOKING_DATA.salesChannel; // "direct" | "ota"
+        const channel = CHANNEL_CONFIG[salesChannel];
+
+        // Step 4 — 反映確認：催行回の扱いはシステムが自動判定（読み取り専用）
+        //   有効予約 1件（この予約のみ）→ 中止 / 2件以上 → 存続
+        const otherActiveBookings = Math.max(0, SESSION_ACTIVE_BOOKINGS - 1);
+        const sessionFate = SESSION_ACTIVE_BOOKINGS <= 1 ? "cancelled" : "remains";
+
+        const isCancel = changeType === "cancel";
+        // UC-05：確定待ち予約のキャンセル＝販売未確定。発生元・期限・チャネルに優先する第一分岐。
+        //   キャンセル料率0%・返金不要として扱い、有料ポリシーの期限ゲート／料率提示をスキップする。
+        const isPendingCancel = isCancel && bookingStatus === "pending";
+
+        const showToast = (msg) => {
+          setToast(msg);
+          clearTimeout(toastTimer.current);
+          toastTimer.current = setTimeout(() => setToast(null), 2400);
+        };
+
+        const changeTypeLabel = {
+          datetime: "日時変更",
+          increase: "人数変更（増員）",
+          decrease: "人数変更（減員）",
+          cancel: "キャンセル",
+        }[changeType];
+        const originLabel = { guest: "ゲスト都合", operator: "運営都合", thirdparty: "第三者都合（OTA・旅行代理店など）" }[origin];
+        const policyLabel = { charge: "追加請求", refund: "差額返金", none: "変更なし" }[pricePolicy];
+
+        const num = (v) => {
+          const n = parseInt(String(v).replace(/[^0-9-]/g, ""), 10);
+          return isNaN(n) ? null : n;
+        };
+        // 日時変更：差額 = 変更後合計 − 変更前
+        const diff = useMemo(() => {
+          const t = num(newTotal);
+          return t === null ? null : t - BEFORE_AMOUNT;
+        }, [newTotal]);
+        // 増員：変更後合計 = 変更前 + 追加請求額
+        const increaseTotal = useMemo(() => {
+          const a = num(addCharge);
+          return a === null ? null : BEFORE_AMOUNT + a;
+        }, [addCharge]);
+        // 期限内→0％、期限後→規定料率50％を自動提示（いずれも編集可）
+        const suggestedRate = cancelDeadline === "within" ? 0 : 50;
+        const effectiveCancelRate = (() => {
+          if (origin === "operator") return 0;
+          const r = parseFloat(String(cancelRate).replace(/[^0-9.]/g, ""));
+          return (cancelRate === "" || isNaN(r)) ? suggestedRate : r;
+        })();
+        // 減員：変更後販売金額 = 変更後人数 × 単価（自動計算）
+        const afterAmount = useMemo(() => {
+          const a = num(newAdults); const c = num(newChildren);
+          if (a === null && c === null) return null;
+          return (a || 0) * UNIT_PRICE.adult + (c || 0) * UNIT_PRICE.child;
+        }, [newAdults, newChildren]);
+        // 減員：キャンセル対象金額 = 変更前後の販売金額の差額（自動計算・編集可）
+        const autoCancelTarget = afterAmount === null ? null : Math.max(0, BEFORE_AMOUNT - afterAmount);
+        const cancelTarget = refundInput !== "" ? num(refundInput) : autoCancelTarget;
+        // 減員：キャンセル料 = 対象金額 × 料率／返金額 = 対象金額 − キャンセル料（自動計算）
+        const decCancelFee = cancelTarget === null ? null : Math.round(cancelTarget * effectiveCancelRate / 100);
+        const decRefund = (cancelTarget === null || decCancelFee === null) ? null : cancelTarget - decCancelFee;
+        // 減員：変更後合計 = 変更前 − キャンセル対象金額
+        const decreaseTotal = cancelTarget === null ? null : BEFORE_AMOUNT - cancelTarget;
+        // キャンセル：キャンセル料 = 変更前 × 料率、返金額 = 変更前 − キャンセル料
+        const cancelComputed = useMemo(() => {
+          const fee = Math.round(BEFORE_AMOUNT * effectiveCancelRate / 100);
+          return { fee, refund: BEFORE_AMOUNT - fee };
+        }, [effectiveCancelRate]);
+
+        // 修正3/4：追加請求金額（増員＝追加請求額／日時変更＝プラス差額）
+        const additionalChargeAmount = changeType === "increase"
+          ? (num(addCharge) || 0)
+          : (diff && diff > 0 ? diff : 0);
+        // 修正4：OTA当日現地増員時は差額処理を直販同様に扱う
+        const effectiveShowPriceDiff = channel.showPriceDiff
+          || (changeType === "increase" && salesChannel === "ota" && otaSameDay);
+        // 修正3/4：決済リンク発行セクションの表示条件
+        const showChargeIssue =
+          (!isCancel && changeType === "datetime" && pricePolicy === "charge")
+          || (changeType === "increase" && salesChannel === "ota" && otaSameDay);
+        // 修正2：元ガイド優先再アサイン確認行の表示条件（旧催行回が無効化＆元ガイドがアサイン済み）
+        const showReassignRow = !isCancel && changeType === "datetime"
+          && sessionFate === "cancelled" && guideAssigned === "assigned";
+        // 修正1：締切判定の表示用本日（シナリオ駆動）今日=2026/06/08（月）
+        const todayForCheck = cancelDeadline === "within" ? "2026/06/08（月）" : "2026/06/15（月）";
+        const todayDateTime = todayForCheck + " 10:30";  // キャンセル料判定日時（本日日時・読み取り専用）
+
+        // 「要確認後入力」となる項目（変更種別で決定）→ 反映確認の運営費行に使う
+        const pendingItems = useMemo(() => {
+          if (changeType === "datetime") return ["ガイド精算（通勤交通費）", "施設費"];
+          if (isCancel) return ["施設キャンセル料"];
+          return [];
+        }, [changeType, isCancel, salesChannel]);
+
+        // ── キャンセル精算（STEP 5）の自動計算値 ──
+        //   確定待ち（販売未確定）はキャンセル料0円・返金不要（最優先）。運営都合はキャンセル料0円・全額返金。
+        //   ガイド精算は催行回状況で自動。OTA手数料・決済手数料はチャネル手数料率×販売金額で自動計算。
+        const autoCancelFee = isPendingCancel ? 0 : (origin === "operator" ? 0 : (cancelComputed.fee == null ? 0 : cancelComputed.fee));
+        const autoRefund = isPendingCancel ? 0 : (origin === "operator" ? BEFORE_AMOUNT : (BEFORE_AMOUNT - autoCancelFee));
+        const autoGuide = sessionFate === "cancelled" ? 0 : 8000;   // 中止→0精算 / 存続→通常精算（例）
+        const autoOtaFee = channel.otaFeeRate != null ? Math.round(BEFORE_AMOUNT * channel.otaFeeRate) : null;
+        const autoPaymentFee = channel.paymentFeeRate != null ? Math.round(BEFORE_AMOUNT * channel.paymentFeeRate) : null;
+        // 表示値（編集があれば優先）
+        const finVal = (k, def) => (finEdits[k] !== undefined && finEdits[k] !== "" ? num(finEdits[k]) : def);
+
+        // Navigation（変更フロー・キャンセルフローとも5ステップ。スキップなし）
+        const next = () => setStep((s) => Math.min(s + 1, 4));
+        const prev = () => setStep((s) => Math.max(s - 1, 0));
+        // STEP 1 カード選択：種別を確定して次STEP（変更内容/金額確認）へ
+        const selectAndProceed = (type) => {
+          setChangeType(type);
+          if (type === "datetime") { setDtGatePassed(false); setExceptionMode(false); setExceptionReason(""); }
+          setStep(1);
+        };
+
+        // シナリオトグル（修正1 / 修正3）
+        const setDeadlineScenario = (v) => { setCancelDeadline(v); setDtGatePassed(false); setExceptionMode(false); setExceptionReason(""); setCancelRate(""); };
+        const setChargeScenario = (v) => { setPricePolicy(v === "yes" ? "charge" : "none"); };
+
+        const newDateTimeText = (newDate || newTime)
+          ? `${newDate || "（日付未入力）"} ${newTime || "（時刻未入力）"}`
+          : null;
+        const newHeadcountText = (newAdults || newChildren)
+          ? `大人${newAdults || 0} 子供${newChildren || 0}`
+          : null;
+
+        // ── 反映確認の中身（変更フロー STEP4 / キャンセルフロー STEP3 で共用） ──
+        const reflectInner = (
+          <React.Fragment>
+            {isCancel && (
+              <div className="form-section" style={{ marginTop: 0 }}>
+                <div className="form-section-title">催行回の扱い<span className="auto-tag">自動判定</span></div>
+                <div className={`info-banner ${sessionFate === "cancelled" ? "warn" : "ok"}`} role="status">
+                  <span className="ib-ic">{sessionFate === "cancelled" ? "⚠️" : "✅"}</span>
+                  <div className="ib-body">
+                    <span className="ib-main">{sessionFate === "cancelled"
+                      ? "催行回は中止になります（この予約が最後の1件です）"
+                      : `催行回は存続します（他に${otherActiveBookings}件の予約があります）`}</span>
+                    <span className="ib-sub">
+                      システムが催行回の有効予約件数（キャンセル済みを除く）を参照して自動判定しました。
+                      現在の有効予約：<strong>{SESSION_ACTIVE_BOOKINGS}件</strong>（この予約を含む）
+                    </span>
+                  </div>
+                  <span className="ib-readonly">読み取り専用</span>
+                </div>
+              </div>
+            )}
+            <p style={{ margin: isCancel ? "24px 0 16px" : "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+              この処理を実行すると、以下の各システムに自動で反映されます。状態を確認してください。
+            </p>
+            <table className="reflect-table">
+              <thead>
+                <tr><th>反映先</th><th>内容</th><th>状態</th></tr>
+              </thead>
+              <tbody>
+                {/* ◆ 日時変更 */}
+                {changeType === "datetime" && (
+                  <React.Fragment>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">RS</span>リソース</td>
+                      <td className="r-content">旧日時分を<strong>解放</strong><span className="arrow">→</span>新日時分を<strong>確保</strong></td>
+                      <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ 確保可能</span></td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">TI</span>催行回</td>
+                      <td className="r-content">旧催行回から<strong>解除</strong>（0件なら自動無効化）<span className="arrow">→</span>新催行回に<strong>紐付け</strong></td>
+                      <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ 処理予定</span></td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">GD</span>ガイド手配<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>新催行回</span></td>
+                      <td className="r-content">再手配要否フラグを<strong>ON</strong><br /><span style={{ color: "var(--muted)", fontSize: 12 }}>日時が変わるため当該予約は常にフラグON</span></td>
+                      <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">GD</span>ガイド手配<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>旧催行回</span></td>
+                      <td className="r-content">{sessionFate === "cancelled"
+                        ? <React.Fragment>旧催行回が<strong>無効化</strong>されるため、旧催行回の手配を<strong>キャンセルに変更</strong><span className="arrow">/</span>ガイドへの<strong>通知要否フラグをON</strong><br /><span style={{ color: "var(--muted)", fontSize: 12 }}>{SESSION_ACTIVE_BOOKINGS <= 1 ? "プライベート、またはグループで旧催行回の残存有効予約0件" : "旧催行回の残存有効予約0件"}</span></React.Fragment>
+                        : <React.Fragment>旧催行回は<strong>存続</strong>するため手配を<strong>維持</strong>（確定）<span className="arrow">/</span><strong>再手配要否フラグをON</strong><br /><span style={{ color: "var(--muted)", fontSize: 12 }}>旧催行回に他{otherActiveBookings}件の有効予約が残存</span></React.Fragment>}</td>
+                      <td className="r-status">{sessionFate === "cancelled"
+                        ? <span className="status-pill amber"><span className="dot"></span>⚠️ キャンセル</span>
+                        : <span className="status-pill green"><span className="dot"></span>✅ 維持</span>}</td>
+                    </tr>
+                    {showReassignRow && (
+                      <React.Fragment>
+                        <tr className="reveal">
+                          <td className="r-target"><span className="r-ic">RA</span>元ガイド確認</td>
+                          <td className="r-content">旧催行回アサイン済み：<strong>田中ガイド</strong>（表示名）<br /><span style={{ color: "var(--muted)", fontSize: 12 }}>新日時での空き確認が必要</span></td>
+                          <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
+                        </tr>
+                        <tr>
+                          <td colSpan={3} style={{ paddingTop: 0, borderBottom: "1px solid var(--line-soft)" }}>
+                            <div className="lbanner note">
+                              <div className="lb-sub">新催行回作成後、田中ガイドに新日時（{newDate || "〇月〇日"} {newTime || "〇〇:00"}）の空き状況を確認してください。空きがある場合は優先的に再アサインを行い、空きがない場合は新規ガイド選定フローを開始してください。</div>
+                              <button className="link-btn" style={{ marginTop: 11 }} onClick={() => showToast("ガイド手配画面へ移動します")}>🔗 ガイド手配画面で確認する</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    )}
+                    <tr className={channel.showRefund ? "" : "row-muted"}>
+                      <td className="r-target"><span className="r-ic">PD</span>差額処理<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>{channel.label}</span></td>
+                      <td className="r-content">{channel.showRefund
+                        ? <React.Fragment>{policyLabel === "変更なし" ? <React.Fragment>金額調整<strong>なし</strong></React.Fragment> : <React.Fragment><strong>{policyLabel}</strong>を実施（差額 {diff === null ? "—" : (diff > 0 ? "+" : "") + yen(diff)}）</React.Fragment>}</React.Fragment>
+                        : <React.Fragment><strong>次回振込で調整・Deep対応不要</strong><br /><span className="r-sub">差額はOTAの次回精算で調整されます</span></React.Fragment>}</td>
+                      <td className="r-status">{channel.showRefund
+                        ? (policyLabel === "変更なし"
+                            ? <span className="status-pill muted"><span className="dot"></span>— 調整なし</span>
+                            : <span className="status-pill amber"><span className="dot"></span>⚠️ 未処理</span>)
+                        : <span className="status-pill muted"><span className="dot"></span>— 対応不要</span>}</td>
+                    </tr>
+                  </React.Fragment>
+                )}
+
+                {/* ◆ 人数変更 */}
+                {(changeType === "increase" || changeType === "decrease") && (
+                  <React.Fragment>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">RS</span>リソース</td>
+                      <td className="r-content">{changeType === "increase" ? <React.Fragment>増員分のリソースを<strong>追加確保</strong></React.Fragment> : <React.Fragment>減員分のリソースを<strong>一部解放</strong></React.Fragment>}</td>
+                      <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ {changeType === "increase" ? "確保可能" : "解放予定"}</span></td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">TI</span>催行回</td>
+                      <td className="r-content">催行回の<strong>現在人数を更新</strong>（催行回は存続）</td>
+                      <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ 処理予定</span></td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">GD</span>ガイド手配</td>
+                      <td className="r-content">再手配要否フラグを<strong>ON</strong><br /><span style={{ color: "var(--muted)", fontSize: 12 }}>変更理由：{changeType === "increase" ? "増員" : "減員"}</span></td>
+                      <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
+                    </tr>
+                    {(() => {
+                      const deepHandles = channel.showRefund;
+                      const target = changeType === "increase" ? "追加請求" : "返金処理";
+                      return (
+                        <tr className={deepHandles ? "" : "row-muted"}>
+                          <td className="r-target"><span className="r-ic">{changeType === "increase" ? "AC" : "RF"}</span>{target}<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>{channel.label}</span></td>
+                          <td className="r-content">{deepHandles
+                            ? (changeType === "increase"
+                                ? <React.Fragment>増員分を<strong>追加請求</strong></React.Fragment>
+                                : <React.Fragment>減員分の<strong>返金レコードを作成</strong>（未処理）</React.Fragment>)
+                            : (changeType === "increase"
+                                ? <React.Fragment><strong>次回振込で調整・Deep対応不要</strong><br /><span className="r-sub">追加請求はOTAの次回精算で調整されます</span></React.Fragment>
+                                : <React.Fragment><strong>OTA返金済み（Deep対応不要）</strong><br /><span className="r-sub">返金処理はOTA側で行われます</span></React.Fragment>)}</td>
+                          <td className="r-status">{deepHandles
+                            ? <span className="status-pill amber"><span className="dot"></span>⚠️ 未処理</span>
+                            : <span className="status-pill muted"><span className="dot"></span>— 対応不要</span>}</td>
+                        </tr>
+                      );
+                    })()}
+                  </React.Fragment>
+                )}
+
+                {/* ◆ キャンセル */}
+                {isCancel && (
+                  <React.Fragment>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">RS</span>リソース</td>
+                      <td className="r-content">確保していたリソースを<strong>解放</strong></td>
+                      <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ 解放予定</span></td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">TI</span>催行回</td>
+                      <td className="r-content">{sessionFate === "cancelled"
+                        ? <React.Fragment>この催行回を<strong>中止</strong></React.Fragment>
+                        : <React.Fragment>催行回は<strong>存続</strong>（他の予約が残存）</React.Fragment>}</td>
+                      <td className="r-status">{sessionFate === "cancelled"
+                        ? <span className="status-pill amber"><span className="dot"></span>⚠️ 中止</span>
+                        : <span className="status-pill green"><span className="dot"></span>✅ 存続</span>}</td>
+                    </tr>
+                    <tr>
+                      <td className="r-target"><span className="r-ic">GD</span>ガイド手配</td>
+                      <td className="r-content">{sessionFate === "cancelled"
+                        ? <React.Fragment>手配レコードを<strong>キャンセルに変更</strong><span className="arrow">/</span>ガイドへの<strong>通知要否フラグをON</strong></React.Fragment>
+                        : <React.Fragment>ガイド手配を<strong>維持</strong>（キャンセルしない）<span className="arrow">/</span><strong>再手配要否フラグをON</strong></React.Fragment>}</td>
+                      <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
+                    </tr>
+                    <tr className={channel.showRefund ? "" : "row-muted"}>
+                      <td className="r-target"><span className="r-ic">RF</span>返金処理<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>{channel.label}</span></td>
+                      <td className="r-content">{channel.showRefund
+                        ? <React.Fragment>返金レコードを<strong>作成（未処理）</strong></React.Fragment>
+                        : <React.Fragment><strong>OTA返金済み（Deep対応不要）</strong><br /><span className="r-sub">返金処理はOTA側で行われます</span></React.Fragment>}</td>
+                      <td className="r-status">{channel.showRefund
+                        ? <span className="status-pill amber"><span className="dot"></span>⚠️ 未処理</span>
+                        : <span className="status-pill muted"><span className="dot"></span>— 対応不要</span>}</td>
+                    </tr>
+                  </React.Fragment>
+                )}
+
+                {/* 運営費：金額確認で「要確認後入力」とした項目 */}
+                {pendingItems.length > 0 && (
+                  <tr>
+                    <td className="r-target"><span className="r-ic">PR</span>運営費<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>（要確認後入力あり）</span></td>
+                    <td className="r-content">
+                      {pendingItems.join("・")}を<strong>入力待ちとして登録</strong>
+                      <br /><span style={{ color: "var(--muted)", fontSize: 12 }}>外部確認後に運営が手動入力します。</span>
+                    </td>
+                    <td className="r-status"><span className="status-pill muted"><span className="dot"></span>⏳ ツアー後入力待ち</span></td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </React.Fragment>
+        );
+
+        return (
+          <React.Fragment>
+            <div className="scenario-bar">
+              <span className="sb-label">🎛 シナリオ選択</span>
+              <div className="sb-group">
+                <span className="sb-cap">予約元</span>
+                <span className="sb-seg">
+                  <button className={salesChannel === "direct" ? "on" : ""} onClick={() => selectScenario(scenarioKey("direct", sessionFate))}>自社サイト直販</button>
+                  <button className={salesChannel === "ota" ? "on" : ""} onClick={() => selectScenario(scenarioKey("ota", sessionFate))}>OTA経由</button>
+                </span>
+              </div>
+              <div className="sb-group">
+                <span className="sb-cap">催行回</span>
+                <span className="sb-seg">
+                  <button className={sessionFate === "remains" ? "on" : ""} onClick={() => selectScenario(scenarioKey(salesChannel, "remains"))}>存続（他の予約あり）</button>
+                  <button className={sessionFate === "cancelled" ? "on" : ""} onClick={() => selectScenario(scenarioKey(salesChannel, "cancelled"))}>中止（この予約のみ）</button>
+                </span>
+              </div>
+              <div className="sb-group">
+                <span className="sb-cap">期限</span>
+                <span className="sb-seg">
+                  <button className={cancelDeadline === "within" ? "on" : ""} onClick={() => setDeadlineScenario("within")}>期限内</button>
+                  <button className={cancelDeadline === "after" ? "on" : ""} onClick={() => setDeadlineScenario("after")}>期限後</button>
+                </span>
+              </div>
+              <div className="sb-group">
+                <span className="sb-cap">元ガイド</span>
+                <span className="sb-seg">
+                  <button className={guideAssigned === "assigned" ? "on" : ""} onClick={() => { setGuideAssigned("assigned"); showToast("元ガイド：アサイン済みに設定"); }}>アサイン済</button>
+                  <button className={guideAssigned === "unassigned" ? "on" : ""} onClick={() => { setGuideAssigned("unassigned"); showToast("元ガイド：未アサインに設定"); }}>未アサイン</button>
+                </span>
+              </div>
+              <div className="sb-group">
+                <span className="sb-cap">予約ステータス</span>
+                <span className="sb-seg">
+                  <button className={bookingStatus === "confirmed" ? "on" : ""} onClick={() => { setBookingStatus("confirmed"); showToast("予約ステータス：確定予約に設定"); }}>確定予約</button>
+                  <button className={bookingStatus === "pending" ? "on" : ""} onClick={() => { setBookingStatus("pending"); showToast("予約ステータス：確定待ち（販売未確定）に設定"); }}>確定待ち</button>
+                </span>
+              </div>
+              <div className="sb-group">
+                <span className="sb-cap">追加請求</span>
+                <span className="sb-seg">
+                  <button className={pricePolicy === "charge" ? "on" : ""} onClick={() => setChargeScenario("yes")}>あり</button>
+                  <button className={pricePolicy !== "charge" ? "on" : ""} onClick={() => setChargeScenario("no")}>なし</button>
+                </span>
+              </div>
+              <label className="sb-check"><input type="checkbox" checked={otaSameDay} onChange={e => setOtaSameDay(e.target.checked)} />当日増員(OTA)</label>
+              <span className="sb-scenario">現在のシナリオ：<strong>{channel.label} × 催行回{sessionFate === "cancelled" ? "中止" : "存続"}</strong></span>
+            </div>
+
+            <div className="app-shell">
+              <Sidebar resource="bookings" counts={{}} />
+
+            <main className="main-area"><div className="workspace">
+              <div className="crumbs">
+                <a href="#" onClick={e => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
+                <span className="sep">›</span>
+                <a href="booking-detail.html">予約詳細</a>
+                <span className="sep">›</span>
+                <span className="current">変更・キャンセル処理</span>
+              </div>
+              <div className="page-title">
+                <h1>変更・キャンセル処理</h1>
+                <span className="sub">予約の日時・人数の変更、またはキャンセルを段階的に処理します</span>
+              </div>
+
+              {/* ── 対象予約サマリー ── */}
+              <div className="summary-card" data-screen-label="対象予約サマリー">
+                <div className="s-item">
+                  <span className="s-lab">予約番号</span>
+                  <span className="s-val mono">{BOOKING_DATA.bookingId}</span>
+                </div>
+                <div className="s-item">
+                  <span className="s-lab">ゲスト</span>
+                  <span className="s-val">{BOOKING_DATA.guest}</span>
+                </div>
+                <div className="s-item">
+                  <span className="s-lab">ツアー</span>
+                  <span className="s-val"><span className="mono" style={{ fontFamily: '"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace', fontSize: 12 }}>{BOOKING_DATA.tour.split(" ")[0]}</span> <span className="sub">{BOOKING_DATA.tour.split(" ").slice(1).join(" ")}</span></span>
+                </div>
+                <div className="s-item">
+                  <span className="s-lab">ツアー日時</span>
+                  <span className="s-val">{BOOKING_DATA.date}</span>
+                </div>
+                <div className="s-item">
+                  <span className="s-lab">参加人数</span>
+                  <span className="s-val">{BOOKING_DATA.pax}</span>
+                </div>
+                <div className="s-item">
+                  <span className="s-lab">販売チャネル</span>
+                  <span className="s-val">
+                    <span className="chan-badge">{channel.label}</span>
+                    <span className="sub" style={{ display: "block", marginTop: 4 }}>予約情報から判定（金額・反映表示を自動切替）</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* ── Step indicator ── */}
+              <Stepper current={step} steps={isCancel ? STEPS_CANCEL : STEPS_CHANGE} />
+
+              {/* ════════ STEP 1 ════════ */}
+              {step === 0 && (
+                <React.Fragment>
+                <section className="card" data-screen-label="Step 1 変更種別">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">1</span>発生元と変更理由</div>
+                  </div>
+                  <div className="card-body">
+                    <div className="form-section" style={{ marginTop: 0 }}>
+                      <div className="form-section-title">発生元区分<span className="req">*</span></div>
+                      <div className="radio-row">
+                        {[
+                          { v: "guest", main: "ゲスト都合", sub: "ゲストからの依頼による変更。" },
+                          { v: "operator", main: "運営都合", sub: "運営側の事情による変更（催行中止・ガイド不在など）。" },
+                          { v: "thirdparty", main: "第三者都合（OTA・旅行代理店など）", sub: "OTA・旅行代理店など第三者起因の変更。" },
+                        ].map(o => (
+                          <label key={o.v} className={`radio-opt ${origin === o.v ? "checked" : ""}`}>
+                            <input type="radio" name="origin" checked={origin === o.v}
+                              onChange={() => setOrigin(o.v)} />
+                            <span>
+                              <span className="ro-main">{o.main}</span>
+                              <span className="ro-sub">{o.sub}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="form-section">
+                      <div className="form-section-title">変更理由</div>
+                      <textarea className="ctrl" placeholder="変更理由を入力してください（任意）"
+                        value={reason} onChange={e => setReason(e.target.value)}></textarea>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="card" data-screen-label="Step 1 変更種別を選択" style={{ marginTop: 18 }}>
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">2</span>変更種別を選択</div>
+                  </div>
+                  <div className="card-body">
+                    <div className="type-cards">
+                      <button type="button" className="type-card tc-datetime" onClick={() => selectAndProceed("datetime")}>
+                        <span className="tc-badge">日時</span>
+                        <span className="tc-title">日時変更</span>
+                        <span className="tc-desc">ツアー日時を変更します。リソースの再確保と催行回の再生成が発生します。</span>
+                        <span className="tc-action">処理を開始 →</span>
+                      </button>
+                      <button type="button" className="type-card tc-pax" onClick={() => selectAndProceed("increase")}>
+                        <span className="tc-badge">人数</span>
+                        <span className="tc-title">人数変更</span>
+                        <span className="tc-desc">参加人数を変更します。追加請求または返金が発生する場合があります。</span>
+                        <span className="tc-action">処理を開始 →</span>
+                      </button>
+                      <button type="button" className="type-card tc-cancel" onClick={() => selectAndProceed("cancel")}>
+                        <span className="tc-badge">取消</span>
+                        <span className="tc-title">キャンセル</span>
+                        <span className="tc-desc">予約をキャンセルします。キャンセルポリシーに基づき返金額を計算します。</span>
+                        <span className="tc-action">キャンセル処理へ →</span>
+                      </button>
+                    </div>
+                  </div>
+                </section>
+                </React.Fragment>
+              )}
+
+              {/* ════════ STEP 2 ════════ */}
+              {/* 修正1：日時変更 — キャンセルポリシー期限の確認ゲート（発生元がゲスト都合の場合のみ適用） */}
+              {step === 1 && !isCancel && changeType === "datetime" && origin === "guest" && !dtGatePassed && (
+                <section className="card" data-screen-label="Step 2 キャンセル期限の確認">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">2</span>キャンセルポリシー期限の確認<span className="sec-hint">日時変更</span></div>
+                  </div>
+                  <div className="card-body">
+                    <div className="deadline-facts">
+                      <div className="df-item"><span className="df-lab">キャンセル料判定日（本日）</span><span className="df-val">{todayForCheck}</span></div>
+                      <div className="df-item"><span className="df-lab">無料キャンセル期限</span><span className="df-val">{FREE_CANCEL_DEADLINE}</span></div>
+                      <div className="df-item"><span className="df-lab">適用キャンセルポリシー</span><span className="df-val">{CANCEL_POLICY_NAME}</span></div>
+                    </div>
+                    <p style={{ margin: "0 0 14px", fontSize: 12, color: "var(--muted)" }}>※ゲスト都合の日時変更のみに適用（運営都合は対象外）</p>
+                    {cancelDeadline === "within" ? (
+                      <div className="lbanner ok">
+                        <div className="lb-title">✅ 無料キャンセル期限内です</div>
+                        <div className="lb-sub">日時変更できます。続けて変更内容を入力してください。</div>
+                      </div>
+                    ) : (
+                      <React.Fragment>
+                        <div className="lbanner alert">
+                          <div className="lb-title">🚫 無料キャンセル期限（{FREE_CANCEL_DEADLINE}）を過ぎています</div>
+                          <div className="lb-sub">日時変更は受け付けられません。キャンセル料が発生するキャンセル処理として扱う必要があります。</div>
+                        </div>
+                        {exceptionMode && (
+                          <div className="form-section reveal" style={{ marginTop: 18 }}>
+                            <div className="form-section-title">例外承認の理由<span className="req">*</span></div>
+                            <textarea className="ctrl" placeholder="例外承認とする理由を入力してください（責任者承認が必要）"
+                              value={exceptionReason} onChange={e => setExceptionReason(e.target.value)}></textarea>
+                          </div>
+                        )}
+                      </React.Fragment>
+                    )}
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    {cancelDeadline === "within" ? (
+                      <button className="btn primary" onClick={() => setDtGatePassed(true)}>変更内容を入力する →</button>
+                    ) : !exceptionMode ? (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button className="btn" onClick={() => setExceptionMode(true)}>例外承認として続行する</button>
+                        <button className="btn primary" style={{ background: "var(--coral)", borderColor: "var(--coral)" }}
+                          onClick={() => { setChangeType("cancel"); setStep(0); setExceptionMode(false); showToast("キャンセル処理に切り替えました"); }}>キャンセル処理へ切り替える</button>
+                      </div>
+                    ) : (
+                      <button className="btn primary" disabled={!exceptionReason.trim()}
+                        onClick={() => setDtGatePassed(true)}>例外承認で変更内容を入力する →</button>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* 変更フロー：変更内容の入力 */}
+              {step === 1 && !isCancel && !(changeType === "datetime" && origin === "guest" && !dtGatePassed) && (
+                <section className="card" data-screen-label="Step 2 変更内容">
+                  {changeType === "datetime" && cancelDeadline === "after" && dtGatePassed && (
+                    <div style={{ padding: "12px 20px 0" }}>
+                      <div className="lbanner warn"><div className="lb-sub" style={{ fontWeight: 600, color: "var(--amber)" }}>⚠️ 期限後の例外承認として続行中です。{exceptionReason ? `（理由：${exceptionReason}）` : ""}</div></div>
+                    </div>
+                  )}
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">2</span>変更内容の入力<span className="sec-hint">{changeTypeLabel}</span></div>
+                  </div>
+                  <div className="card-body">
+                    {changeType === "datetime" && (
+                      <React.Fragment>
+                        <div className="now-box">
+                          <span className="nb-lab">現在の日時</span>
+                          <span className="nb-val">2026/06/20（土）09:00〜12:00</span>
+                        </div>
+                        <div className="field-grid">
+                          <div>
+                            <label className="filter-label">変更後ツアー日<span style={{ color: "var(--coral)" }}> *</span></label>
+                            <input type="date" className="ctrl" value={newDate} onChange={e => setNewDate(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="filter-label">変更後開始時間<span style={{ color: "var(--coral)" }}> *</span></label>
+                            <input type="time" className="ctrl" value={newTime} onChange={e => setNewTime(e.target.value)} />
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    )}
+
+                    {(changeType === "increase" || changeType === "decrease") && (
+                      <React.Fragment>
+                        <div className="form-section" style={{ marginTop: 0, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid var(--line-soft)" }}>
+                          <div className="form-section-title">増員 / 減員<span className="req">*</span></div>
+                          <div className="radio-row">
+                            {[
+                              { v: "increase", main: "増員", sub: "参加人数を増やします" },
+                              { v: "decrease", main: "減員・部分キャンセル", sub: "参加人数を減らします" },
+                            ].map(o => (
+                              <label key={o.v} className={`radio-opt ${changeType === o.v ? "checked" : ""}`}>
+                                <input type="radio" name="paxMode" checked={changeType === o.v}
+                                  onChange={() => setChangeType(o.v)} />
+                                <span>
+                                  <span className="ro-main">{o.main}</span>
+                                  <span className="ro-sub">{o.sub}</span>
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="now-box">
+                          <span className="nb-lab">現在の参加人数</span>
+                          <span className="nb-val">大人4 子供1（計5名）</span>
+                        </div>
+                        <div className="field-grid">
+                          <div>
+                            <label className="filter-label">変更後 大人人数<span style={{ color: "var(--coral)" }}> *</span></label>
+                            <input type="number" min="0" className="ctrl" placeholder="例：6"
+                              value={newAdults} onChange={e => setNewAdults(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="filter-label">変更後 子供人数</label>
+                            <input type="number" min="0" className="ctrl" placeholder="例：1"
+                              value={newChildren} onChange={e => setNewChildren(e.target.value)} />
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    )}
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    <button className="btn primary" onClick={next}>次へ →</button>
+                  </div>
+                </section>
+              )}
+
+              {/* キャンセルフロー：キャンセル料・返金額の確認 */}
+              {step === 1 && isCancel && (
+                <section className="card" data-screen-label="Step 2 金額確認">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">2</span>キャンセル料・返金額の確認{isPendingCancel && <span className="sec-hint">確定待ち（販売未確定）</span>}</div>
+                  </div>
+                  <div className="card-body">
+                    {/* UC-05：確定待ち＝販売未確定。発生元・期限・チャネルに優先し、キャンセル料0％・返金不要。期限ゲート／料率提示はスキップ。 */}
+                    {isPendingCancel ? (
+                      <React.Fragment>
+                        <div className="lbanner ok">
+                          <div className="lb-title">✅ 確定待ち（販売未確定）のためキャンセル料はかかりません</div>
+                          <div className="lb-sub">この予約はまだ確定していない（リクエスト予約・確定待ち）ため、キャンセルポリシーは適用しません。キャンセル料率 0％・返金不要として記録します。発生元・キャンセル期限・販売チャネルに関わらず一律です。</div>
+                        </div>
+                        <table className="amt-table" style={{ marginTop: 16 }}>
+                          <thead>
+                            <tr><th>項目</th><th className="right">金額</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className="lab">販売金額<span className="lab-sub">販売未確定（確定待ち）</span></td>
+                              <td className="val-cell"><span className="amt-note pend">未確定</span></td>
+                            </tr>
+                            <tr>
+                              <td className="lab">適用キャンセル料率<span className="lab-sub">確定待ちのためポリシー適用外</span></td>
+                              <td className="val-cell"><span className="val-amt">0％</span></td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">キャンセル料<span className="lab-sub">販売未確定のため発生しません</span></td>
+                              <td className="val-cell"><span className="diff-amount zero">{yen(0)}</span></td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">返金額<span className="lab-sub">入金が確定していないため返金不要</span></td>
+                              <td className="val-cell"><span className="amt-note rec">返金不要（販売未確定）</span></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6 }}>
+                          催行回の仮紐付け解除・リソースの仮確保解放などの反映は、次のSTEP 3でまとめて確認します。
+                        </p>
+                      </React.Fragment>
+                    ) : (
+                    <React.Fragment>
+                    <div className="deadline-facts">
+                      <div className="df-item"><span className="df-lab">キャンセル料判定日時（本日）</span><span className="df-val">{todayDateTime}</span></div>
+                      <div className="df-item"><span className="df-lab">無料キャンセル期限</span><span className="df-val">{FREE_CANCEL_DEADLINE}</span></div>
+                      <div className="df-item"><span className="df-lab">適用キャンセルポリシー</span><span className="df-val">{CANCEL_POLICY_NAME}</span></div>
+                    </div>
+                    <div className="auto-detect">
+                      <span className="ad-lab">キャンセルポリシー参照</span>
+                      <span>{cancelDeadline === "within" ? "無料キャンセル期限内のため、料率0％を自動提示しています（編集可）。" : "無料キャンセル期限後のため、規定料率50％を自動提示しています（編集可）。"}キャンセル料・返金額は自動計算されます。</span>
+                      {origin === "operator" && <span className="ad-val" style={{ marginLeft: 4 }}>運営都合：0円・全額返金</span>}
+                    </div>
+                    <table className="amt-table">
+                      <thead>
+                        <tr><th>項目</th><th className="right">金額 / 入力</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="lab">販売金額<span className="lab-sub">現在の予約金額（表示のみ）</span></td>
+                          <td className="val-cell"><span className="val-amt">{yen(BEFORE_AMOUNT)}</span></td>
+                        </tr>
+                        <tr>
+                          <td className="lab">適用キャンセル料率<span className="lab-sub">{cancelDeadline === "within" ? "無料キャンセル期限内：0％を自動提示（編集可）" : "期限後：規定料率50％を自動提示（編集可）"}{origin === "operator" ? "／運営都合は0％" : ""}</span></td>
+                          <td className="val-cell">
+                            <span className="amt-input-wrap"><span className="input-affix">
+                              <input className="ctrl" inputMode="decimal" placeholder="0"
+                                value={origin === "operator" ? "0" : (cancelRate === "" ? String(suggestedRate) : cancelRate)}
+                                disabled={origin === "operator"}
+                                onChange={e => setCancelRate(e.target.value)}
+                                style={{ textAlign: "right", paddingLeft: 10, paddingRight: 24 }} />
+                              <span className="pfx" style={{ left: "auto", right: 12 }}>％</span>
+                            </span></span>
+                          </td>
+                        </tr>
+                        <tr className="diff-row">
+                          <td className="lab">キャンセル料<span className="lab-sub">販売金額 × 料率（運営都合は0円）</span></td>
+                          <td className="val-cell">
+                            <span className="diff-amount pos">{yen(autoCancelFee)}</span>
+                          </td>
+                        </tr>
+                        <tr className="diff-row">
+                          <td className="lab">返金額<span className="lab-sub">販売金額 − キャンセル料{channel.showRefund ? "" : "（OTA経由：返金処理はOTA側で行われます）"}</span></td>
+                          <td className="val-cell">
+                            {channel.showRefund
+                              ? <span className="diff-amount neg">{yen(autoRefund)}</span>
+                              : <span className="amt-note rec">OTA返金済み（Deep対応不要）</span>}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6 }}>
+                      ガイド精算・チャネル手数料・施設キャンセル料・決済手数料などの全財務項目は、実行後の精算確定画面（STEP 5）でまとめて確認・確定します。
+                    </p>
+                    </React.Fragment>
+                    )}
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    <button className="btn primary" onClick={next}>次へ →</button>
+                  </div>
+                </section>
+              )}
+
+              {/* ════════ STEP 3 ════════ */}
+              {/* 変更フロー：販売金額のみ確認（シンプル） */}
+              {step === 2 && !isCancel && (
+                <section className="card" data-screen-label="Step 3 金額確認">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">3</span>販売金額の確認<span className="sec-hint">{changeTypeLabel}</span></div>
+                  </div>
+                  <div className="card-body">
+                    {salesChannel === "ota" && changeType === "increase" && (
+                      <div style={{ marginBottom: 18 }}>
+                        <label className={`flag-check ${otaSameDay ? "on" : ""}`}>
+                          <input type="checkbox" checked={otaSameDay} onChange={e => setOtaSameDay(e.target.checked)} />
+                          <span className="fc-main">当日現地での増員（キャンセル期限後のため OTA 側での変更不可）</span>
+                        </label>
+                        {otaSameDay
+                          ? <div className="lbanner warn reveal"><div className="lb-title">⚠️ 当日現地での増員</div><div className="lb-sub">当日現地での増員のため、OTA 経由での請求ができません。直販と同じ追加請求フロー（決済リンク発行）で処理します。</div></div>
+                          : <div className="lbanner note"><div className="lb-title">OTA経由の増員</div><div className="lb-sub">OTA 経由の増員は OTA が次回定期振込時に調整します。Deep 側の追加請求処理は不要です。</div></div>}
+                      </div>
+                    )}
+                    <div className="auto-detect">
+                      <span className="ad-lab">この画面では販売金額のみ確認</span>
+                      <span>チャネル手数料・ガイド精算・施設費などは、ツアー後に月次締め確認画面で確定します。</span>
+                    </div>
+                    <table className="amt-table">
+                      <thead>
+                        <tr><th>項目</th><th className="right">金額</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="lab">変更前販売金額<span className="lab-sub">現在の予約金額（表示のみ）</span></td>
+                          <td className="val-cell"><span className="val-amt">{yen(BEFORE_AMOUNT)}</span></td>
+                        </tr>
+
+                        {!effectiveShowPriceDiff && (
+                          <tr>
+                            <td colSpan={2} style={{ color: "var(--muted)", fontWeight: 500, lineHeight: 1.6 }}>
+                              <strong style={{ color: "var(--ink-soft)" }}>販売金額の差額調整はOTA側で処理されます</strong><br />
+                              OTA経由予約のため、追加請求・差額返金はOTAプラットフォームの次回精算で調整されます（Deep対応不要）。
+                            </td>
+                          </tr>
+                        )}
+
+                        {channel.showPriceDiff && changeType === "datetime" && (
+                          <React.Fragment>
+                            <tr>
+                              <td className="lab">変更後販売金額<span className="lab-sub">変更後の予約合計金額（手動入力）</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <span className="pfx">¥</span>
+                                  <input className="ctrl" inputMode="numeric" placeholder="0"
+                                    value={newTotal} onChange={e => setNewTotal(e.target.value)} style={{ textAlign: "right" }} />
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">販売金額差額<span className="lab-sub">変更後 − 変更前</span></td>
+                              <td className="val-cell">
+                                {diff === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className={`diff-amount ${diff > 0 ? "pos" : diff < 0 ? "neg" : "zero"}`}>{diff > 0 ? "+" : ""}{yen(diff)}</span>}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        )}
+
+                        {effectiveShowPriceDiff && changeType === "increase" && (
+                          <React.Fragment>
+                            <tr>
+                              <td className="lab">追加請求額<span className="lab-sub">Tiered Pricing計算。増員＝追加請求（手動入力）</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <span className="pfx">¥</span>
+                                  <input className="ctrl" inputMode="numeric" placeholder="0"
+                                    value={addCharge} onChange={e => setAddCharge(e.target.value)} style={{ textAlign: "right" }} />
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">変更後販売金額<span className="lab-sub">変更前 ＋ 追加請求額（自動計算）</span></td>
+                              <td className="val-cell">
+                                {increaseTotal === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className="diff-amount" style={{ color: "var(--ink)" }}>{yen(increaseTotal)}</span>}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        )}
+
+                        {channel.showPriceDiff && changeType === "decrease" && (
+                          <React.Fragment>
+                            <tr>
+                              <td className="lab">変更後販売金額<span className="lab-sub">変更後人数 × 単価（大人¥16,000・子供¥11,000）で自動計算</span></td>
+                              <td className="val-cell">
+                                {afterAmount === null
+                                  ? <span className="diff-amount zero">—（STEP 2で人数を入力）</span>
+                                  : <span className="diff-amount" style={{ color: "var(--ink)" }}>{yen(afterAmount)}</span>}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="lab">キャンセル対象金額<span className="lab-sub">変更前後の販売金額の差額を自動計算（編集可）</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <span className="pfx">¥</span>
+                                  <input className="ctrl" inputMode="numeric" placeholder="0"
+                                    value={refundInput !== "" ? refundInput : (autoCancelTarget === null ? "" : String(autoCancelTarget))}
+                                    onChange={e => setRefundInput(e.target.value)} style={{ textAlign: "right" }} />
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="lab">キャンセル料判定日時<span className="lab-sub">本日日時（読み取り専用）</span></td>
+                              <td className="val-cell"><span className="val-amt" style={{ fontSize: 13 }}>{todayDateTime}</span></td>
+                            </tr>
+                            <tr>
+                              <td className="lab">適用キャンセルポリシー<span className="lab-sub">予約時点のポリシー（読み取り専用）</span></td>
+                              <td className="val-cell"><span className="val-amt" style={{ fontSize: 13 }}>{CANCEL_POLICY_NAME}</span></td>
+                            </tr>
+                            <tr>
+                              <td className="lab">適用キャンセル料率<span className="lab-sub">{cancelDeadline === "within" ? "無料キャンセル期限内：0％を自動提示（編集可）" : "期限後：規定料率50％を自動提示（編集可）"}{origin === "operator" ? "／運営都合は0％" : ""}</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <input className="ctrl" inputMode="decimal" placeholder="0"
+                                    value={origin === "operator" ? "0" : (cancelRate === "" ? String(suggestedRate) : cancelRate)}
+                                    disabled={origin === "operator"}
+                                    onChange={e => setCancelRate(e.target.value)}
+                                    style={{ textAlign: "right", paddingLeft: 10, paddingRight: 24 }} />
+                                  <span className="pfx" style={{ left: "auto", right: 12 }}>％</span>
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">キャンセル料<span className="lab-sub">キャンセル対象金額 × 料率（自動計算・読み取り専用）</span></td>
+                              <td className="val-cell">
+                                {decCancelFee === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className="diff-amount pos">{yen(decCancelFee)}</span>}
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">返金額<span className="lab-sub">キャンセル対象金額 − キャンセル料（自動計算・読み取り専用）</span></td>
+                              <td className="val-cell">
+                                {decRefund === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+                                      {decRefund > 0
+                                        ? <span className="diff-amount neg">{yen(decRefund)} 返金</span>
+                                        : <span className="diff-amount zero">返金なし</span>}
+                                      <span className="kbadge kb-estimate">返金ステータス：{effectiveCancelRate >= 100 ? "不要" : "未処理"}（自動設定）</span>
+                                    </span>}
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">変更後販売金額（確定）<span className="lab-sub">変更前 − キャンセル対象金額（自動計算）</span></td>
+                              <td className="val-cell">
+                                {decreaseTotal === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className="diff-amount" style={{ color: "var(--ink)" }}>{yen(decreaseTotal)}</span>}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        )}
+                      </tbody>
+                    </table>
+
+                    {changeType === "decrease" && (
+                      <div className="refund-note">
+                        <div className="rn-head">ポイント：「有料キャンセル期限後」でも、料率が100％でなければ返金が発生します。</div>
+                        <ul>
+                          <li>料率 &lt; 100％　→　返金あり（返金額 = キャンセル対象金額 − キャンセル料）</li>
+                          <li>料率 = 100％　→　返金なし（返金ステータスが自動的に「不要」になります）</li>
+                        </ul>
+                      </div>
+                    )}
+                    {changeType === "increase" && salesChannel === "ota" && otaSameDay && (
+                      <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "var(--amber)", fontWeight: 600 }}>追加請求レコードを作成し、完了画面で決済リンクを発行します（直販と同じ処理）。</p>
+                    )}
+
+                    {channel.showPriceDiff && changeType === "datetime" && (
+                      <div className="form-section">
+                        <div className="form-section-title">対応方針<span className="req">*</span></div>
+                        <div className="radio-row">
+                          {[
+                            { v: "charge", main: "追加請求", sub: "差額をゲストへ追加で請求します。" },
+                            { v: "refund", main: "差額返金", sub: "差額をゲストへ返金します。" },
+                            { v: "none", main: "変更なし", sub: "金額の調整を行いません。" },
+                          ].map(o => (
+                            <label key={o.v} className={`radio-opt ${pricePolicy === o.v ? "checked" : ""}`}>
+                              <input type="radio" name="pricePolicy" checked={pricePolicy === o.v}
+                                onChange={() => setPricePolicy(o.v)} />
+                              <span>
+                                <span className="ro-main">{o.main}</span>
+                                <span className="ro-sub">{o.sub}</span>
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    <button className="btn primary" onClick={next}>次へ →</button>
+                  </div>
+                </section>
+              )}
+
+              {/* キャンセルフロー：反映確認 */}
+              {step === 2 && isCancel && (
+                <section className="card" data-screen-label="Step 3 反映確認">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">3</span>各所への反映確認</div>
+                  </div>
+                  <div className="card-body">
+                    {reflectInner}
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    <button className="btn primary" onClick={next}>次へ →</button>
+                  </div>
+                </section>
+              )}
+
+              {/* ════════ STEP 4 ════════ */}
+              {/* 変更フロー：反映確認 → 実行 */}
+              {step === 3 && !isCancel && (
+                <section className="card" data-screen-label="Step 4 反映確認">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">4</span>各所への反映確認</div>
+                  </div>
+                  <div className="card-body">
+                    {reflectInner}
+                    <div className="exec-note">
+                      <span className="en-ic">⚠️</span>
+                      <span>処理を実行すると、リソース・催行回・ガイド手配へ即時反映されます。ガイド手配は「要確認」状態のため、実行後に未手配一覧から再手配の対応を行ってください。</span>
+                    </div>
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    <button className="btn primary lg" onClick={() => { setExecuted(true); next(); showToast(`${changeTypeLabel}の処理を実行しました（変更ログに記録）`); }}>処理を実行する →</button>
+                  </div>
+                </section>
+              )}
+
+              {/* キャンセルフロー：実行 */}
+              {step === 3 && isCancel && (
+                <section className="card" data-screen-label="Step 4 実行">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">4</span>キャンセルの実行</div>
+                  </div>
+                  <div className="card-body">
+                    <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+                      以下の内容でキャンセルを実行します。実行後は変更ログとして記録され、続いて全財務項目の精算確定を行います。
+                    </p>
+                    <div className="review-grid">
+                      <div className="rv-dt">変更種別</div>
+                      <div className="rv-dd">キャンセル</div>
+                      <div className="rv-dt">発生元</div>
+                      <div className="rv-dd">{originLabel}</div>
+                      <div className="rv-dt">適用キャンセル料率</div>
+                      <div className="rv-dd">{origin === "operator" ? "0％（運営都合）" : `${effectiveCancelRate}％${cancelRate === "" ? "（自動提示）" : ""}`}</div>
+                      <div className="rv-dt">キャンセル料</div>
+                      <div className="rv-dd">{yen(autoCancelFee)}</div>
+                      <div className="rv-dt">返金額</div>
+                      <div className="rv-dd">{channel.showRefund ? yen(autoRefund) : "OTA返金済み（Deep対応不要）"}</div>
+                      <div className="rv-dt">催行回の扱い</div>
+                      <div className="rv-dd">{sessionFate === "cancelled" ? "中止（この予約が最後の1件）" : `存続（他に${otherActiveBookings}件）`}</div>
+                      <div className="rv-dt">変更理由</div>
+                      <div className="rv-dd">{reason ? reason : <span className="placeholder">未入力</span>}</div>
+                    </div>
+                    <div className="exec-note">
+                      <span className="en-ic">⚠️</span>
+                      <span>実行すると、リソース・催行回・ガイド手配へ即時反映されます。次の精算確定画面で全財務項目を確定してください。</span>
+                    </div>
+                  </div>
+                  <div className="card-foot split">
+                    <button className="btn" onClick={prev}>← 前へ</button>
+                    <button className="btn primary lg" onClick={() => { setExecuted(true); next(); showToast("キャンセルを実行しました（変更ログに記録）"); }}>キャンセルを実行する →</button>
+                  </div>
+                </section>
+              )}
+
+              {/* ════════ STEP 5 ════════ */}
+              {/* 変更フロー：処理完了 */}
+              {step === 4 && !isCancel && (
+                <section className="card" data-screen-label="Step 5 処理完了">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">5</span>処理完了</div>
+                  </div>
+                  <div className="card-body">
+                    <div className="done-banner">
+                      <span className="db-ic">✓</span>
+                      <div>
+                        <div className="db-title">処理が完了しました</div>
+                        <div className="db-sub">{changeTypeLabel}の処理を実行し、変更ログに記録しました。</div>
+                      </div>
+                    </div>
+
+                    {showChargeIssue && (
+                      <div className="charge-card">
+                        <div className="cc-head">
+                          <div className="cc-title">💳 追加請求の発行</div>
+                          <div className="cc-amt">{yen(additionalChargeAmount)}</div>
+                        </div>
+                        <div className="cc-body">
+                          <div>
+                            <label className="filter-label">追加請求ステータス</label>
+                            <select className="ctrl" value={chargeStatus} onChange={e => setChargeStatus(e.target.value)}>
+                              <option value="unsent">⬜ 未送付</option>
+                              <option value="invoiced">📤 請求済み（未払い）</option>
+                              <option value="paid">✅ 支払い済み</option>
+                              <option value="expired">⏰ 期限切れ</option>
+                              <option value="cancelled">🚫 取消</option>
+                            </select>
+                          </div>
+                          {(chargeStatus === "invoiced" || chargeStatus === "paid") && (
+                            <div className="field-grid reveal">
+                              <div>
+                                <label className="filter-label">決済リンク URL</label>
+                                <input className="ctrl" placeholder="https://buy.stripe.com/..." value={payUrl} onChange={e => setPayUrl(e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="filter-label">リンク有効期限</label>
+                                <input type="date" className="ctrl" value={payExpiry} onChange={e => setPayExpiry(e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="filter-label">送付日時</label>
+                                <input type="datetime-local" className="ctrl" value={paySentAt} onChange={e => setPaySentAt(e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="filter-label">送付手段</label>
+                                <select className="ctrl" value={payMethod} onChange={e => setPayMethod(e.target.value)}>
+                                  <option value="email">メール</option>
+                                  <option value="line">LINE</option>
+                                  <option value="whatsapp">WhatsApp</option>
+                                  <option value="other">その他</option>
+                                </select>
+                              </div>
+                            </div>
+                          )}
+                          {chargeStatus === "expired" && (
+                            <div className="lbanner alert reveal"><div className="lb-sub" style={{ color: "var(--coral)", fontWeight: 600 }}>⚠️ 決済リンクの有効期限が切れています。Stripe 管理画面で新しいリンクを発行し、URLを更新してください。</div></div>
+                          )}
+                          <div className="lbanner note"><div className="lb-sub">決済リンクは Stripe 管理画面で発行し、URL をここに記録してください。ゲストにリンクを送付後、ステータスを「請求済み」に更新してください。</div></div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="form-section" style={{ marginTop: 4 }}>
+                      <div className="form-section-title">ガイドへの通知要否</div>
+                      <div className="radio-row">
+                        {[
+                          { v: true, main: "通知する", sub: "担当ガイドへ変更内容を通知します。" },
+                          { v: false, main: "通知しない", sub: "通知せず、再手配時にまとめて連絡します。" },
+                        ].map(o => (
+                          <label key={String(o.v)} className={`radio-opt ${notifyGuide === o.v ? "checked" : ""}`}>
+                            <input type="radio" name="notifyGuide" checked={notifyGuide === o.v}
+                              onChange={() => setNotifyGuide(o.v)} />
+                            <span>
+                              <span className="ro-main">{o.main}</span>
+                              <span className="ro-sub">{o.sub}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="form-section">
+                      <div className="form-section-title">メモ</div>
+                      <textarea className="ctrl" placeholder="申し送り事項があれば入力してください（任意）"
+                        value={completionMemo} onChange={e => setCompletionMemo(e.target.value)}></textarea>
+                    </div>
+
+                    <div className="auto-line">販売金額・チャネル手数料・ゲスト立替経費・決済手数料は自動更新されました。</div>
+                    <div className="pend-line">
+                      <span className="pl-ic">⏳</span>
+                      施設費など未確定の項目は、<strong>月次締め確認画面で後日確認してください。</strong>
+                    </div>
+                  </div>
+                  <div className="card-foot end">
+                    <button className="btn primary" onClick={() => showToast(notifyGuide ? "ガイドへ通知を送信しました" : "通知なしで記録しました")}>完了して記録する</button>
+                  </div>
+                </section>
+              )}
+
+              {/* キャンセルフロー：処理完了 */}
+              {step === 4 && isCancel && (
+                <section className="card" data-screen-label="Step 5 処理完了">
+                  <div className="card-head">
+                    <div className="card-title"><span className="sec-no">5</span>処理完了</div>
+                  </div>
+                  <div className="card-body">
+                    <div className="done-banner">
+                      <span className="db-ic">✓</span>
+                      <div>
+                        <div className="db-title">キャンセル処理が完了しました</div>
+                        <div className="db-sub">キャンセルを実行し、変更ログに記録しました。</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-foot end">
+                    <button className="btn primary" onClick={() => window.location.href = "booking-detail.html"}>予約詳細に戻る</button>
+                  </div>
+                </section>
+              )}
+            </div></main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+            </div>
+          </React.Fragment>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
