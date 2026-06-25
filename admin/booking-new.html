@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新規予約登録 - deep_Admin</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <link rel="stylesheet" href="css/common.css" />
+  <style>/* page-specific styles */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+::selection { background: var(--accent-soft); color: var(--accent-strong); }
+.mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace; }
+.workspace { padding: 20px 24px 64px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1000px; }
+.crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.crumbs .sep { color: var(--muted-soft); }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--accent); text-decoration: underline; }
+.crumbs .current { color: var(--ink); font-weight: 600; }
+.page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+.page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+.page-title .sub { font-size: 12.5px; color: var(--muted); }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+.status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+.status-pill.green { background: var(--green-soft); color: var(--green); }
+.status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+.status-pill.blue { background: var(--blue-soft); color: var(--blue); }
+.status-pill.muted { background: var(--bg-sunken); color: var(--muted); }
+.btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+.btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn.lg { height: 44px; padding: 0 24px; font-size: 14px; }
+.btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; background: var(--bg-sunken); border-color: var(--line-strong); color: var(--muted); }
+.btn.primary:disabled { background: var(--bg-sunken); border-color: var(--line-strong); color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+.card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+.card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.card-title .sec-hint { font-size: 11.5px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+.card-body { padding: 20px; }
+.card-foot { padding: 14px 20px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.card-foot.split { justify-content: space-between; }
+.card-foot.end { justify-content: flex-end; }
+.card + .card { margin-top: 18px; }
+.stepper { display: flex; align-items: flex-start; padding: 18px 22px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+.step { display: flex; align-items: center; flex: 1 1 0; min-width: 0; }
+.step-node { display: flex; align-items: center; gap: 10px; }
+.step-dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; flex-shrink: 0; border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--muted-soft); transition: all 0.18s; font-variant-numeric: tabular-nums; }
+.step-meta { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.step-kicker { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted-soft); }
+.step-label { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.step-line { flex: 1 1 auto; height: 1.5px; background: var(--line-strong); margin: 0 12px; border-radius: 2px; min-width: 14px; }
+.step.is-current .step-dot { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: var(--ring); }
+.step.is-current .step-label { color: var(--ink); font-weight: 700; }
+.step.is-current .step-kicker { color: var(--accent-strong); }
+.step.is-done .step-dot { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+.step.is-done .step-label { color: var(--ink-soft); }
+.step.is-done .step-line { background: var(--accent); }
+.field-block { display: flex; flex-direction: column; gap: 18px; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.field-grid .fw { grid-column: 1 / -1; }
+@media (max-width: 720px) { .field-grid, .field-grid.three { grid-template-columns: 1fr; } }
+.form-section + .form-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+.form-section-title { font-size: 12px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.01em; margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
+.form-section-title .req { color: var(--coral); }
+.form-section-title .st-hint { font-weight: 500; color: var(--muted); font-size: 11.5px; }
+.filter-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.filter-label .req { color: var(--coral); font-weight: 700; }
+.filter-label .opt { font-size: 10px; color: var(--muted-soft); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+.ctrl::placeholder { color: var(--muted-soft); }
+.ctrl:hover { border-color: var(--ink-soft); }
+.ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+textarea.ctrl { min-height: 88px; padding: 10px 12px; resize: vertical; line-height: 1.5; height: auto; font-family: inherit; }
+select.ctrl { appearance: none; padding-right: 30px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23756d63' stroke-width='1.6' stroke-linecap='round' d='M1.5 1.5 6 6 10.5 1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+.ctrl[readonly] { background: var(--surface-tint); color: var(--ink-soft); border-color: var(--line); }
+.ctrl[readonly]:hover { border-color: var(--line); }
+.ctrl[disabled] { background: var(--surface-tint); color: var(--muted); border-color: var(--line); cursor: not-allowed; }
+.input-affix { position: relative; display: flex; align-items: center; width: 100%; }
+.input-affix .pfx { position: absolute; left: 12px; color: var(--muted); font-size: 13px; pointer-events: none; font-weight: 600; }
+.input-affix .ctrl { padding-left: 24px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.readonly-val { min-height: var(--field-h); display: flex; align-items: center; padding: 0 11px; background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius); font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+.name-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fnote { display: flex; gap: 8px; align-items: flex-start; font-size: 11.5px; line-height: 1.55; margin-top: 9px; padding: 9px 12px; border-radius: var(--radius); border: 1px solid transparent; }
+.fnote .fn-ic { flex-shrink: 0; }
+.fnote.warn { background: var(--amber-soft); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 28%, transparent); }
+.fnote.green { background: var(--green-soft); color: var(--green); border-color: color-mix(in srgb, var(--green) 28%, transparent); }
+.fnote.blue { background: var(--blue-soft); color: var(--blue); border-color: color-mix(in srgb, var(--blue) 25%, transparent); }
+.fnote.teal { background: var(--accent-soft); color: var(--accent-strong); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+.fnote strong { font-weight: 700; }
+.radio-row { display: flex; flex-direction: column; gap: 8px; }
+.radio-opt { display: flex; align-items: flex-start; gap: 11px; font-size: 14px; color: var(--ink-soft); user-select: none; cursor: pointer; padding: 11px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); transition: background 0.1s, border-color 0.1s; }
+.radio-opt:hover { border-color: var(--line-strong); background: var(--surface-tint); }
+.radio-opt.checked { border-color: var(--accent); background: var(--accent-soft); }
+.radio-opt input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+.radio-opt .ro-main { font-weight: 650; }
+.radio-opt .ro-sub { color: var(--muted); font-size: 12px; font-weight: 500; display: block; margin-top: 2px; }
+.radio-opt.checked .ro-sub { color: var(--accent-strong); }
+.origin-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+@media (max-width: 980px) { .origin-cards { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .origin-cards { grid-template-columns: repeat(2, 1fr); } }
+.origin-card { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; padding: 15px 14px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); background: var(--surface); cursor: pointer; transition: all 0.14s; font: inherit; position: relative; }
+.origin-card:hover { border-color: var(--accent); box-shadow: var(--shadow-1); }
+.origin-card.checked { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent) inset; }
+.origin-card .oc-emoji { font-size: 22px; line-height: 1; }
+.origin-card .oc-label { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.origin-card .oc-sub { font-size: 11px; color: var(--muted); line-height: 1.45; }
+.origin-card.checked .oc-sub { color: var(--accent-strong); }
+.origin-card .oc-radio { position: absolute; top: 12px; right: 12px; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-strong); transition: all 0.12s; }
+.origin-card.checked .oc-radio { border-color: var(--accent); background: var(--accent); border-width: 5px; }
+.to-search { position: relative; }
+.to-results { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-pop); max-height: 320px; overflow: auto; padding: 5px; }
+.to-result { display: flex; gap: 10px; align-items: baseline; padding: 9px 11px; border-radius: var(--radius-sm); cursor: pointer; }
+.to-result:hover { background: var(--surface-warm); }
+.to-result .to-code { font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace; font-size: 12px; color: var(--accent-strong); font-weight: 700; flex-shrink: 0; }
+.to-result .to-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.to-empty { padding: 14px; color: var(--muted); font-size: 12.5px; text-align: center; }
+.info-card { background: var(--surface-tint); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+.info-card .ic-head { display: flex; align-items: center; gap: 10px; padding-bottom: 13px; margin-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.info-card .ic-check { width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.info-card .ic-code { font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace; font-weight: 700; font-size: 13px; color: var(--accent-strong); }
+.info-card .ic-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.info-card .ic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 28px; }
+@media (max-width: 640px) { .info-card .ic-grid { grid-template-columns: 1fr; } }
+.info-card .ic-item.full { grid-column: 1 / -1; }
+.info-card .ic-lab { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-soft); font-weight: 700; margin-bottom: 3px; }
+.info-card .ic-val { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.5; }
+.info-card .ic-val .auto-tag { display: inline-flex; align-items: center; margin-left: 7px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: var(--accent-strong); background: var(--accent-soft); padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+.numstep { display: inline-flex; align-items: stretch; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; width: max-content; }
+.numstep button { width: 38px; border: 0; background: var(--surface-tint); color: var(--ink); font-size: 17px; font-weight: 700; line-height: 1; }
+.numstep button:hover { background: var(--accent-soft); color: var(--accent-strong); }
+.numstep button:disabled { color: var(--muted-soft); background: var(--bg-sunken); cursor: not-allowed; }
+.numstep input { width: 60px; border: 0; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; height: var(--field-h); border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.numstep input:focus { outline: none; box-shadow: none; }
+.numstep input::-webkit-outer-spin-button, .numstep input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pax-total { display: flex; align-items: baseline; gap: 8px; }
+.pax-total .pt-num { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.pax-total .pt-unit { font-size: 13px; color: var(--muted); font-weight: 600; }
+.price-preview { margin-top: 14px; padding: 11px 14px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-left: 3px solid var(--accent); border-radius: var(--radius); font-size: 12.5px; color: var(--accent-strong); display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.price-preview strong { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.check-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.check-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: 1px solid var(--line-strong); border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 600; user-select: none; transition: all 0.1s; }
+.check-chip input { width: 15px; height: 15px; accent-color: var(--accent); margin: 0; }
+.check-chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); }
+.flag-check { display: flex; align-items: flex-start; gap: 11px; padding: 11px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); cursor: pointer; user-select: none; transition: border-color 0.1s, background 0.1s; }
+.flag-check input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+.flag-check .fc-main { font-weight: 600; font-size: 13px; color: var(--ink-soft); }
+.flag-check .fc-sub { font-size: 11.5px; color: var(--muted); display: block; margin-top: 2px; }
+.flag-check.on { border-color: var(--accent); background: var(--accent-soft); }
+.memo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .memo-grid { grid-template-columns: 1fr; } }
+.memo-col { border: 1px solid var(--line); border-left-width: 4px; border-radius: var(--radius); padding: 14px 15px; background: var(--surface-warm); }
+.memo-col.guide { border-left-color: var(--green); }
+.memo-col.internal { border-left-color: var(--blue); }
+.memo-col .mc-head { font-size: 13px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+.memo-col.guide .mc-head { color: var(--green); }
+.memo-col.internal .mc-head { color: var(--blue); }
+.memo-col .mc-desc { font-size: 11.5px; color: var(--muted); line-height: 1.55; margin-bottom: 11px; }
+.memo-col textarea.ctrl { background: var(--surface); min-height: 110px; }
+.memo-col .mc-auto { font-size: 10.5px; font-weight: 700; color: var(--green); background: var(--green-soft); padding: 2px 8px; border-radius: 999px; margin-left: auto; }
+.ref-rows { display: grid; gap: 10px; }
+.ref-row { display: grid; grid-template-columns: 220px 1fr 38px; gap: 10px; align-items: center; }
+@media (max-width: 600px) { .ref-row { grid-template-columns: 1fr 38px; } .ref-row .ref-label-in { grid-column: 1 / -1; } }
+.ref-del { height: var(--field-h); width: 38px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--muted); font-size: 16px; display: grid; place-items: center; }
+.ref-del:hover { border-color: var(--coral); color: var(--coral); background: var(--coral-soft); }
+.btn.add-row { border-style: dashed; color: var(--accent); border-color: var(--accent-soft); background: transparent; width: max-content; margin-top: 4px; }
+.btn.add-row:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+.btn.add-row:disabled { color: var(--muted); border-color: var(--line-strong); background: transparent; }
+.pc-list { display: grid; gap: 7px; }
+.pc-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+.pc-row.bad { background: var(--coral-soft); border-color: color-mix(in srgb, var(--coral) 32%, transparent); }
+.pc-ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+.pc-row.ok .pc-ic { background: var(--green-soft); color: var(--green); }
+.pc-row.bad .pc-ic { background: var(--coral); color: #fff; }
+.pc-mid { min-width: 0; display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+.pc-lab { font-size: 13px; font-weight: 650; color: var(--ink); }
+.pc-val { font-size: 12.5px; color: var(--muted); }
+.pc-jump { background: transparent; border: 0; color: var(--coral); font-weight: 700; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.pc-jump:hover { text-decoration: underline; }
+.lbanner { padding: 13px 16px; border-radius: var(--radius); border-left: 4px solid var(--line-strong); background: var(--surface-tint); }
+.lbanner .lb-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; line-height: 1.4; }
+.lbanner .lb-sub { color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.lbanner.ok { background: var(--green-soft); border-left-color: var(--green); }
+.lbanner.ok .lb-title { color: var(--green); }
+.lbanner.warn { background: var(--amber-soft); border-left-color: var(--amber); }
+.lbanner.warn .lb-title { color: var(--amber); }
+.dup-card { margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.dup-card .dc-top { padding: 14px 16px; background: var(--surface-tint); border-bottom: 1px solid var(--line); display: flex; gap: 14px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.dup-card .dc-id { font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace; font-weight: 700; color: var(--ink); font-size: 13px; }
+.dup-card .dc-meta { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+.dup-card .dc-match { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--amber); background: var(--amber-soft); padding: 3px 10px; border-radius: 999px; }
+.dup-card .dc-body { padding: 14px 16px; display: grid; gap: 9px; }
+.dup-card .dc-q { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+.rv-group { margin-bottom: 18px; }
+.rv-group-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.rv-group-head h3 { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink); }
+.rv-edit { margin-left: auto; background: transparent; border: 0; color: var(--accent); font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+.rv-edit:hover { color: var(--accent-strong); text-decoration: underline; }
+.review-grid { display: grid; grid-template-columns: 150px 1fr; gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.review-grid .rv-dt { background: var(--surface-tint); color: var(--muted); font-size: 12px; font-weight: 600; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; }
+.review-grid .rv-dd { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.review-grid .rv-dt:nth-last-child(2), .review-grid .rv-dd:last-child { border-bottom: 0; }
+.review-grid .rv-dd .placeholder { color: var(--muted-soft); font-weight: 500; font-style: italic; }
+.done-banner { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: var(--green-soft); border: 1px solid color-mix(in srgb, var(--green) 30%, transparent); border-radius: var(--radius-lg); margin-bottom: 20px; }
+.done-banner .db-ic { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--green); color: #fff; font-weight: 800; font-size: 19px; display: flex; align-items: center; justify-content: center; }
+.done-banner .db-title { font-size: 16px; font-weight: 800; color: var(--green); }
+.done-banner .db-sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 3px; }
+.done-banner .db-sub .mono { font-weight: 700; color: var(--green); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(20, 15, 8, 0.45); display: flex; align-items: center; justify-content: center; z-index: 400; padding: 20px; }
+.modal { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); width: 100%; max-width: 440px; overflow: hidden; }
+.modal .m-body { padding: 22px 22px 6px; }
+.modal .m-title { font-size: 16px; font-weight: 750; margin: 0 0 9px; }
+.modal .m-text { font-size: 13px; color: var(--muted); line-height: 1.65; margin: 0; }
+.modal .m-text .mono { color: var(--ink); font-weight: 700; }
+.modal .m-foot { padding: 16px 22px 20px; display: flex; justify-content: flex-end; gap: 10px; }
+body { padding-top: 42px; }
+.side-nav { top: 42px; height: calc(100vh - 42px); min-height: 0; }
+.scenario-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 300; height: 42px; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: #ececea; border-bottom: 1px solid #d7d2c8; font-size: 11.5px; color: #6b6b6b; overflow-x: auto; overflow-y: hidden; white-space: nowrap; }
+.scenario-bar .sb-label { font-weight: 700; letter-spacing: 0.01em; color: #4f4f4f; white-space: nowrap; }
+.scenario-bar .sb-group { display: flex; align-items: center; gap: 8px; }
+.scenario-bar .sb-cap { color: #8a8a8a; }
+.sb-seg { display: inline-flex; background: #fff; border: 1px solid #cdc8bd; border-radius: 6px; overflow: hidden; }
+.sb-seg button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; color: #6b6b6b; padding: 4px 11px; white-space: nowrap; transition: background 0.1s, color 0.1s; }
+.sb-seg button + button { border-left: 1px solid #e4dfd4; }
+.sb-seg button:hover { background: #f4f1ea; color: #3d3833; }
+.sb-seg button.on { background: var(--accent); color: #fff; }
+.scenario-bar .sb-check { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #6b6b6b; white-space: nowrap; cursor: pointer; }
+.scenario-bar .sb-check input { width: 14px; height: 14px; accent-color: var(--accent); margin: 0; }
+.scenario-bar .sb-scenario { margin-left: auto; color: #8a8a8a; white-space: nowrap; }
+.scenario-bar .sb-scenario strong { color: #555; font-weight: 700; }
+@media print { .scenario-bar { display: none; } body { padding-top: 0; } .side-nav { top: 0; height: 100vh; } }
+.toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 550; box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 500; display: flex; align-items: center; gap: 9px; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast .t-dot { width: 7px; height: 7px; border-radius: 50%; background: #5fd0c0; }
+@keyframes revealIn { from { transform: translateY(-4px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) { .reveal { animation: revealIn 0.2s ease; } }
+.sidebar-footer { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px; }
+.nav-logout { color: var(--side-ink-soft); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script type="text/babel" data-presets="react">
+    /* ALL JS here */
+
+    const { useState, useRef, useMemo, useEffect } = React;
+
+    function Sidebar({ resource, counts = {} }) {
+      const opsItems = [
+        { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+        { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+        { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+        { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+        { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+      ];
+      const payItems = [
+        { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
+        { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+        { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
+      ];
+      const guideItems = [
+        { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
+      ];
+      const facilityItems = [
+        { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設一覧" },
+      ];
+      const masterMainItems = [
+        { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
+        { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
+      ];
+      const masterSubItems = [
+        { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+        { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+        { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+        { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",         count: counts.gd },
+        { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+        { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+      ];
+      return (
+        <aside className="side-nav">
+          <div className="brand-block">
+            <div className="brand-mark">d.</div>
+            <div>
+              <div className="brand-name">deep_Admin</div>
+              <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+            </div>
+          </div>
+          <div className="nav-group" style={{marginBottom:"8px"}}>
+            <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+              <span className="nav-icon">⊞</span>
+              <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+            </a>
+          </div>
+          <div>
+            <div className="nav-section-label">予約オペレーション</div>
+            <div className="nav-group">
+              {opsItems.map(it => (
+                <a key={it.key} href={it.href}
+                  className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+                  style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="nav-section-label">精算・経営</div>
+            <div className="nav-group">
+              {payItems.map(it => (
+                <a key={it.key} href={it.href}
+                  className={`nav-item ${resource === it.key ? "active" : ""}`}
+                  style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="nav-section-label">ガイド管理</div>
+            <div className="nav-group">
+              {guideItems.map(it => (
+                <a key={it.key} href={it.href}
+                  className={`nav-item ${resource === it.key ? "active" : ""}`}
+                  style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="nav-section-label">施設管理</div>
+            <div className="nav-group">
+              {facilityItems.map(it => (
+                <a key={it.key} href={it.href}
+                  className={`nav-item ${resource === it.key ? "active" : ""}`}
+                  style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="nav-section-label">商品管理</div>
+            <div className="nav-group">
+              {masterMainItems.map(it => (
+                <a key={it.key} href={it.href}
+                  className={`nav-item ${resource === it.key ? "active" : ""}`}
+                  style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  <span className="nav-count">{it.count}</span>
+                </a>
+              ))}
+              <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+              {masterSubItems.map(it => (
+                <a key={it.key} href={it.href}
+                  className={`nav-item ${resource === it.key ? "active" : ""}`}
+                  style={{textDecoration:"none"}}>
+                  <span className="nav-icon">{it.icon}</span>
+                  <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+                  <span className="nav-count">{it.count}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="sidebar-footer">
+            <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+              <span className="nav-icon">↩</span><span>ログアウト</span>
+            </a>
+          </div>
+        </aside>
+      );
+    }
+
+    const STEPS = [
+      { kicker: "Step 1", label: "発生元・チャネル" },
+      { kicker: "Step 2", label: "商品・日程・人数" },
+      { kicker: "Step 3", label: "ゲスト情報" },
+      { kicker: "Step 4", label: "集合・支払い・メモ" },
+      { kicker: "Step 5", label: "確認・登録" },
+    ];
+
+    const ORIGINS = [
+      { v: "inquiry", emoji: "📧", label: "問い合わせ", sub: "メール・WhatsApp・電話などの問い合わせ経由" },
+      { v: "ota", emoji: "🏨", label: "OTA", sub: "Viator・GetYourGuide・Klook などの OTA から通知を受けた" },
+      { v: "agency", emoji: "🤝", label: "旅行会社 / 代理店", sub: "B2B 経由で届いた予約" },
+      { v: "corporate", emoji: "🏢", label: "法人", sub: "法人案件として発生" },
+      { v: "other", emoji: "❓", label: "その他", sub: "上記に当てはまらない場合" },
+    ];
+    const ORIGIN_LABEL = { inquiry: "問い合わせ", ota: "OTA", agency: "旅行会社 / 代理店", corporate: "法人", other: "その他" };
+
+    const FIELD_VIS = {
+      ota:       { salesChannel: "req",  importSystem: "opt", externalNo: "req", importId: "opt", externalUrl: "opt", createdAt: "opt", channelMemo: "opt" },
+      agency:    { salesChannel: null,   importSystem: null,  externalNo: "opt", importId: null,  externalUrl: "opt", createdAt: "opt", channelMemo: "opt" },
+      inquiry:   { salesChannel: null,   importSystem: null,  externalNo: null,  importId: null,  externalUrl: null,  createdAt: "opt", channelMemo: null },
+      corporate: { salesChannel: null,   importSystem: null,  externalNo: "opt", importId: null,  externalUrl: "opt", createdAt: "opt", channelMemo: "opt" },
+      other:     { salesChannel: null,   importSystem: null,  externalNo: "opt", importId: null,  externalUrl: "opt", createdAt: "opt", channelMemo: "opt" },
+    };
+
+    const SALES_CHANNELS = ["Viator", "GetYourGuide", "Klook", "Airbnb", "その他"];
+    const LANGUAGES = ["日本語", "英語", "中国語(簡体)", "中国語(繁体)", "韓国語", "フランス語", "その他"];
+    const NATIONALITIES = ["", "日本", "アメリカ", "イギリス", "オーストラリア", "中国", "台湾", "韓国", "フランス", "ドイツ", "シンガポール", "その他"];
+    const CONTACT_METHODS = ["メール", "WhatsApp", "LINE", "電話"];
+    const PAY_STATUSES = ["未払い", "支払い済み", "支払い不要", "要確認"];
+    const PAY_RECEIVERS = ["Deep", "OTA", "旅行会社", "代理店"];
+    const PAY_SOURCES = ["Stripe", "OTA", "銀行振込", "現金", "その他"];
+
+    const TOURS = [
+      { code: "G-WAK-001-2-GR", name: "里山ハイキング（グループ）", version: "v3", versionRange: "2025/04/01 〜 現在", meetingJa: "白山比咩神社 駐車場", meetingEn: "Hakusan Hime Shrine Parking", min: 1, max: 8, durationMin: 180, price: 10000, cancel: "ツアー7日前まで無料、7日前〜3日前 50%、前日以降 100%" },
+      { code: "G-WAK-001-1-PR", name: "里山ハイキング（プライベート）", version: "v3", versionRange: "2025/04/01 〜 現在", meetingJa: "白山比咩神社 駐車場", meetingEn: "Hakusan Hime Shrine Parking", min: 1, max: 6, durationMin: 180, price: 16000, cancel: "ツアー7日前まで無料、7日前〜3日前 50%、前日以降 100%" },
+      { code: "G-KYO-003-2-GR", name: "京都早朝寺社めぐり（グループ）", version: "v2", versionRange: "2025/03/01 〜 現在", meetingJa: "京都駅中央改札前", meetingEn: "Kyoto Sta. Central Gate", min: 2, max: 10, durationMin: 180, price: 9000, cancel: "ツアー3日前まで無料、前日 50%、当日 100%" },
+      { code: "G-TOK-002-2-GR", name: "東京下町ウォーク（グループ）", version: "v4", versionRange: "2025/05/01 〜 現在", meetingJa: "浅草駅2番出口", meetingEn: "Asakusa Sta. Exit 2", min: 2, max: 12, durationMin: 120, price: 7000, cancel: "ツアー3日前まで無料、前日 50%、当日 100%" },
+      { code: "G-YMN-005-1-PR", name: "富士五湖サイクリング（プライベート）", version: "v1", versionRange: "2025/04/15 〜 現在", meetingJa: "河口湖駅前", meetingEn: "Kawaguchiko Sta.", min: 1, max: 4, durationMin: 300, price: 22000, cancel: "ツアー7日前まで無料、7日前〜3日前 50%、前日以降 100%" },
+      { code: "G-OSK-004-2-GR", name: "大阪食べ歩きナイト（グループ）", version: "v2", versionRange: "2025/02/01 〜 現在", meetingJa: "なんば駅26番出口", meetingEn: "Namba Sta. Exit 26", min: 2, max: 8, durationMin: 150, price: 11000, cancel: "ツアー3日前まで無料、前日 50%、当日 100%" },
+      { code: "G-NAR-006-2-GR", name: "奈良公園と古寺（グループ）", version: "v3", versionRange: "2025/03/20 〜 現在", meetingJa: "近鉄奈良駅前", meetingEn: "Kintetsu-Nara Sta.", min: 2, max: 10, durationMin: 210, price: 8500, cancel: "ツアー3日前まで無料、前日 50%、当日 100%" },
+      { code: "G-KAN-007-1-PR", name: "箱根温泉と自然（プライベート）", version: "v1", versionRange: "2025/05/10 〜 現在", meetingJa: "箱根湯本駅前", meetingEn: "Hakone-Yumoto Sta.", min: 1, max: 5, durationMin: 360, price: 28000, cancel: "ツアー7日前まで無料、7日前〜3日前 50%、前日以降 100%" },
+    ];
+
+    const yen = (n) => "¥" + Number(n || 0).toLocaleString("ja-JP");
+    const num = (v) => {
+      const n = parseInt(String(v).replace(/[^0-9-]/g, ""), 10);
+      return isNaN(n) ? 0 : n;
+    };
+    const addMinutes = (hhmm, mins) => {
+      const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || "");
+      if (!m) return "";
+      const total = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + mins;
+      const h = Math.floor((total % 1440) / 60);
+      const mm = total % 60;
+      return String(h).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+    };
+    const childPrice = (p) => Math.round(p * 0.5);
+
+    function Stepper({ current }) {
+      return (
+        <div className="stepper">
+          {STEPS.map((s, i) => {
+            let cls = "step";
+            if (i === current) cls += " is-current";
+            else if (i < current) cls += " is-done";
+            const done = i < current;
+            return (
+              <div className={cls} key={i}>
+                <div className="step-node">
+                  <span className="step-dot">{done ? "✓" : i + 1}</span>
+                  <span className="step-meta">
+                    <span className="step-kicker">{s.kicker}</span>
+                    <span className="step-label">{s.label}</span>
+                  </span>
+                </div>
+                {i < STEPS.length - 1 && <span className="step-line"></span>}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    function NumStep({ value, onChange, min = 0 }) {
+      return (
+        <div className="numstep">
+          <button type="button" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min}>−</button>
+          <input type="number" value={value} min={min}
+            onChange={(e) => onChange(Math.max(min, num(e.target.value)))} />
+          <button type="button" onClick={() => onChange(value + 1)}>+</button>
+        </div>
+      );
+    }
+
+    function App() {
+      const [toast, setToast] = useState(null);
+      const toastTimer = useRef(null);
+      const [step, setStep] = useState(0);
+      const showToast = (msg) => {
+        setToast(msg);
+        clearTimeout(toastTimer.current);
+        toastTimer.current = setTimeout(() => setToast(null), 2400);
+      };
+
+      const [productVersionOk, setProductVersionOk] = useState(true);
+      const [dupResult, setDupResult] = useState("none");
+
+      const [originType, setOriginType] = useState("ota");
+      const [acceptanceMode, setAcceptanceMode] = useState("immediate");
+      const [salesChannel, setSalesChannel] = useState("Viator");
+      const [salesChannelOther, setSalesChannelOther] = useState("");
+      const [importSystem, setImportSystem] = useState("");
+      const [externalNo, setExternalNo] = useState("VTR-8923401");
+      const [externalNoChecked, setExternalNoChecked] = useState(false);
+      const [importId, setImportId] = useState("");
+      const [externalUrl, setExternalUrl] = useState("");
+      const [guestCreatedAt, setGuestCreatedAt] = useState("");
+      const [channelMemo, setChannelMemo] = useState("");
+
+      const [tour, setTour] = useState(TOURS[0]);
+      const [toQuery, setToQuery] = useState("");
+      const [toOpen, setToOpen] = useState(false);
+      const toBlurTimer = useRef(null);
+      const [tourDate, setTourDate] = useState("2026-06-15");
+      const [startTime, setStartTime] = useState("09:00");
+      const [endTimeOverride, setEndTimeOverride] = useState("");
+      const [adults, setAdults] = useState(2);
+      const [children, setChildren] = useState(1);
+      const [infants, setInfants] = useState(0);
+
+      const [lastEn, setLastEn] = useState("Smith");
+      const [firstEn, setFirstEn] = useState("John");
+      const [nameJa, setNameJa] = useState("");
+      const [email, setEmail] = useState("john@example.com");
+      const [phone, setPhone] = useState("");
+      const [nationality, setNationality] = useState("アメリカ");
+      const [language, setLanguage] = useState("英語");
+      const [contacts, setContacts] = useState(["メール"]);
+      const [dietary, setDietary] = useState("");
+      const [allergy, setAllergy] = useState("");
+      const [wheelchair, setWheelchair] = useState(false);
+      const [specialNeeds, setSpecialNeeds] = useState("");
+      const [guestRequests, setGuestRequests] = useState("");
+
+      const [meetingJa, setMeetingJa] = useState(TOURS[0].meetingJa);
+      const [meetingEn, setMeetingEn] = useState(TOURS[0].meetingEn);
+      const [mapUrl, setMapUrl] = useState("");
+      const [hasPickup, setHasPickup] = useState(false);
+      const [pickupPlace, setPickupPlace] = useState("");
+      const [meetingMemo, setMeetingMemo] = useState("");
+      const [salePrice, setSalePrice] = useState("");
+      const [salePriceTouched, setSalePriceTouched] = useState(false);
+      const [paymentStatus, setPaymentStatus] = useState("未払い");
+      const [paymentReceiver, setPaymentReceiver] = useState("OTA");
+      const [paymentSource, setPaymentSource] = useState("OTA");
+      const [feeMemo, setFeeMemo] = useState("");
+      const [guideMemo, setGuideMemo] = useState("");
+      const [guideMemoTouched, setGuideMemoTouched] = useState(false);
+      const [internalMemo, setInternalMemo] = useState("");
+      const [refUrls, setRefUrls] = useState([]);
+
+      const [dupRelation, setDupRelation] = useState("");
+      const [showConfirm, setShowConfirm] = useState(false);
+      const [registered, setRegistered] = useState(false);
+      const [newBookingId] = useState("BK-260608-00061");
+
+      const vis = FIELD_VIS[originType];
+      const totalPax = adults + children + infants;
+      const endTime = endTimeOverride || addMinutes(startTime, tour ? tour.durationMin : 0);
+      const previewTotal = tour ? adults * tour.price + children * childPrice(tour.price) + 0 : 0;
+      const effectiveSalePrice = salePriceTouched ? num(salePrice) : previewTotal;
+      const channelDisplay = salesChannel === "その他" ? (salesChannelOther || "その他") : salesChannel;
+      const isOta = originType === "ota";
+
+      const meetingChanged = tour && (meetingJa !== tour.meetingJa || meetingEn !== tour.meetingEn);
+      const effectivePayReceiver = isOta ? "OTA" : paymentReceiver;
+
+      const autoGuideText = useMemo(() => {
+        const parts = [];
+        if (allergy.trim()) parts.push("【アレルギー】" + allergy.trim());
+        if (dietary.trim()) parts.push("【食事制限】" + dietary.trim());
+        if (wheelchair) parts.push("【移動補助】車椅子・移動補助あり");
+        if (specialNeeds.trim()) parts.push("【特別配慮】" + specialNeeds.trim());
+        return parts.join("\n");
+      }, [allergy, dietary, wheelchair, specialNeeds]);
+      const hasCareInfo = autoGuideText.length > 0;
+
+      const [meetingTouched, setMeetingTouched] = useState(false);
+      const selectTour = (t) => {
+        setTour(t);
+        setToQuery("");
+        setToOpen(false);
+        if (!meetingTouched) { setMeetingJa(t.meetingJa); setMeetingEn(t.meetingEn); }
+        showToast(`TourOption「${t.code}」を選択しました`);
+      };
+
+      useEffect(() => {
+        if (step === 3 && !guideMemoTouched && hasCareInfo) setGuideMemo(autoGuideText);
+      }, [step, hasCareInfo, autoGuideText, guideMemoTouched]);
+
+      const step1ok = !!originType && !!acceptanceMode && (!isOta || (!!salesChannel && externalNo.trim() !== ""));
+      const step2ok = !!tour && tourDate !== "" && startTime !== "" && totalPax >= 1;
+      const step3ok = lastEn.trim() !== "" && firstEn.trim() !== "" && email.trim() !== "" && !!language;
+      const stepOk = [step1ok, step2ok, step3ok, true, true];
+
+      const checks = [
+        { id: "origin", label: "予約元区分", ok: !!originType, val: ORIGIN_LABEL[originType], jump: 0 },
+        { id: "tour", label: "TourOption", ok: !!tour && productVersionOk, val: tour ? (productVersionOk ? "選択済み（商品条件スナップショット取得OK）" : "商品条件スナップショット未取得") : "未選択", jump: 1 },
+        { id: "datetime", label: "ツアー日・開始時間", ok: tourDate !== "" && startTime !== "", val: tourDate ? `${tourDate.replace(/-/g, "/")} ${startTime}` : "未入力", jump: 1 },
+        { id: "pax", label: "参加人数", ok: totalPax >= 1, val: totalPax >= 1 ? `大人${adults}名${children ? "・子供" + children + "名" : ""}${infants ? "・幼児" + infants + "名" : ""}` : "未入力", jump: 1 },
+        { id: "nameEn", label: "予約者名（英語）", ok: lastEn.trim() !== "" && firstEn.trim() !== "", val: lastEn || firstEn ? `${lastEn} ${firstEn}`.trim() : "未入力", jump: 2 },
+        { id: "email", label: "メールアドレス", ok: email.trim() !== "", val: email.trim() || "未入力", jump: 2 },
+        { id: "lang", label: "使用言語", ok: !!language, val: language || "未入力", jump: 2 },
+      ];
+      if (isOta) checks.push({ id: "extNo", label: "外部予約番号（OTAの場合）", ok: externalNo.trim() !== "", val: externalNo.trim() || "未入力", jump: 0 });
+      const allRequiredOk = checks.every((c) => c.ok);
+      const dupResolved = dupResult === "none" || dupRelation === "separate";
+      const canRegister = allRequiredOk && dupResolved;
+
+      const next = () => { if (stepOk[step]) setStep((s) => Math.min(s + 1, 4)); else showToast("必須項目を入力してください"); };
+      const prev = () => setStep((s) => Math.max(s - 1, 0));
+      const jumpTo = (i) => setStep(i);
+
+      const doRegister = () => {
+        setShowConfirm(false);
+        setRegistered(true);
+        showToast(`予約 ${newBookingId} を登録しました`);
+      };
+
+      const addRef = () => { if (refUrls.length < 5) setRefUrls([...refUrls, { label: "", url: "" }]); };
+      const setRef = (i, k, v) => setRefUrls(refUrls.map((r, idx) => (idx === i ? { ...r, [k]: v } : r)));
+      const delRef = (i) => setRefUrls(refUrls.filter((_, idx) => idx !== i));
+      const toggleContact = (m) => setContacts(contacts.includes(m) ? contacts.filter((x) => x !== m) : [...contacts, m]);
+
+      const toResults = useMemo(() => {
+        const q = toQuery.trim().toLowerCase();
+        const list = q === "" ? TOURS : TOURS.filter((t) => (t.code + " " + t.name).toLowerCase().includes(q));
+        return list.slice(0, 8);
+      }, [toQuery]);
+
+      const dateText = tourDate ? tourDate.replace(/-/g, "/") : "";
+
+      return (
+        <React.Fragment>
+          <div className="scenario-bar">
+            <span className="sb-label">🎛 シナリオ選択</span>
+            <div className="sb-group">
+              <span className="sb-cap">予約元区分</span>
+              <span className="sb-seg">
+                {ORIGINS.map((o) => (
+                  <button key={o.v} className={originType === o.v ? "on" : ""} onClick={() => setOriginType(o.v)}>{o.label}</button>
+                ))}
+              </span>
+            </div>
+            <div className="sb-group">
+              <span className="sb-cap">受付方式</span>
+              <span className="sb-seg">
+                <button className={acceptanceMode === "immediate" ? "on" : ""} onClick={() => setAcceptanceMode("immediate")}>即時確定</button>
+                <button className={acceptanceMode === "request" ? "on" : ""} onClick={() => setAcceptanceMode("request")}>リクエスト</button>
+              </span>
+            </div>
+            <div className="sb-group">
+              <span className="sb-cap">商品条件スナップショット取得</span>
+              <span className="sb-seg">
+                <button className={productVersionOk ? "on" : ""} onClick={() => setProductVersionOk(true)}>取得成功</button>
+                <button className={!productVersionOk ? "on" : ""} onClick={() => setProductVersionOk(false)}>取得失敗</button>
+              </span>
+            </div>
+            <div className="sb-group">
+              <span className="sb-cap">重複チェック</span>
+              <span className="sb-seg">
+                <button className={dupResult === "none" ? "on" : ""} onClick={() => { setDupResult("none"); setDupRelation(""); }}>重複なし</button>
+                <button className={dupResult === "suspect" ? "on" : ""} onClick={() => { setDupResult("suspect"); setDupRelation(""); }}>重複疑いあり</button>
+              </span>
+            </div>
+            <label className="sb-check">
+              <input type="checkbox" checked={allergy.trim() !== ""} onChange={(e) => setAllergy(e.target.checked ? "ピーナッツアレルギー（重度）" : "")} />
+              アレルギー入力
+            </label>
+            <div className="sb-group">
+              <span className="sb-cap">表示STEP</span>
+              <span className="sb-seg">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <button key={i} className={step === i ? "on" : ""} onClick={() => setStep(i)}>{i + 1}</button>
+                ))}
+              </span>
+            </div>
+            <span className="sb-scenario">予約元：<strong>{ORIGIN_LABEL[originType]}</strong></span>
+          </div>
+
+          <div className="app-shell">
+            <Sidebar resource="bookings" counts={{}} />
+            <main className="workspace">
+              <div className="crumbs">
+                <a href="#" onClick={(e) => { e.preventDefault(); showToast("「予約オペレーション」へ移動します"); }}>予約オペレーション</a>
+                <span className="sep">›</span>
+                <a href="bookings.html">予約一覧</a>
+                <span className="sep">›</span>
+                <span className="current">新規予約登録</span>
+              </div>
+              <div className="page-title">
+                <h1>新規予約登録</h1>
+                <span className="sub">システム外で発生した予約を手動で登録します（全5ステップ）</span>
+              </div>
+
+              <Stepper current={step} />
+
+              <StepRouter
+                step={step}
+                ctx={{
+                  showToast, next, prev, jumpTo,
+                  originType, setOriginType, acceptanceMode, setAcceptanceMode,
+                  vis, salesChannel, setSalesChannel, salesChannelOther, setSalesChannelOther,
+                  importSystem, setImportSystem, externalNo, setExternalNo,
+                  externalNoChecked, setExternalNoChecked, importId, setImportId,
+                  externalUrl, setExternalUrl, guestCreatedAt, setGuestCreatedAt, channelMemo, setChannelMemo,
+                  isOta, step1ok,
+                  tour, selectTour, toQuery, setToQuery, toOpen, setToOpen, toBlurTimer, toResults,
+                  tourDate, setTourDate, startTime, setStartTime, endTime, endTimeOverride, setEndTimeOverride,
+                  adults, setAdults, children, setChildren, infants, setInfants, totalPax,
+                  productVersionOk, previewTotal, step2ok,
+                  lastEn, setLastEn, firstEn, setFirstEn, nameJa, setNameJa, email, setEmail, phone, setPhone,
+                  nationality, setNationality, language, setLanguage, contacts, toggleContact,
+                  dietary, setDietary, allergy, setAllergy, wheelchair, setWheelchair,
+                  specialNeeds, setSpecialNeeds, guestRequests, setGuestRequests, hasCareInfo, step3ok,
+                  meetingJa, setMeetingJa, meetingEn, setMeetingEn, setMeetingTouched, meetingChanged,
+                  mapUrl, setMapUrl, hasPickup, setHasPickup, pickupPlace, setPickupPlace, meetingMemo, setMeetingMemo,
+                  salePrice, setSalePrice, salePriceTouched, setSalePriceTouched, effectiveSalePrice,
+                  paymentStatus, setPaymentStatus, paymentReceiver, setPaymentReceiver, effectivePayReceiver,
+                  paymentSource, setPaymentSource, feeMemo, setFeeMemo,
+                  guideMemo, setGuideMemo, setGuideMemoTouched, autoGuideText, internalMemo, setInternalMemo,
+                  refUrls, addRef, setRef, delRef,
+                  checks, allRequiredOk, dupResult, dupRelation, setDupRelation, dupResolved, canRegister,
+                  setShowConfirm, registered, newBookingId,
+                  channelDisplay, dateText, acceptanceModeLabel: acceptanceMode === "immediate" ? "即時確定予約" : "リクエスト予約",
+                }}
+              />
+            </main>
+
+            <div className={`toast ${toast ? "show" : ""}`}>
+              <span className="t-dot"></span>{toast}
+            </div>
+          </div>
+
+          {showConfirm && (
+            <div className="modal-overlay" onClick={() => setShowConfirm(false)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <div className="m-body">
+                  <h2 className="m-title">この予約を登録します</h2>
+                  <p className="m-text">
+                    入力内容で予約を登録します。よろしいですか？<br />
+                    登録後、予約番号が発行され完了バナーが表示されます（予約詳細へはバナーのボタンで移動できます）。
+                  </p>
+                </div>
+                <div className="m-foot">
+                  <button className="btn" onClick={() => setShowConfirm(false)}>キャンセル</button>
+                  <button className="btn primary" onClick={doRegister}>登録する</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </React.Fragment>
+      );
+    }
+
+    function StepRouter({ step, ctx }) {
+      if (step === 0) return <Step1 c={ctx} />;
+      if (step === 1) return <Step2 c={ctx} />;
+      if (step === 2) return <Step3 c={ctx} />;
+      if (step === 3) return <Step4 c={ctx} />;
+      return <Step5 c={ctx} />;
+    }
+
+    function FootNav({ c, last }) {
+      return (
+        <div className="card-foot split">
+          <button className="btn" onClick={c.prev}>← 前へ</button>
+          {!last && <button className="btn primary" onClick={c.next}>次へ →</button>}
+        </div>
+      );
+    }
+
+    function Step1({ c }) {
+      return (
+        <section className="card" data-screen-label="Step 1 発生元・チャネル">
+          <div className="card-head">
+            <div className="card-title"><span className="sec-no">1</span>発生元・チャネル情報</div>
+          </div>
+          <div className="card-body">
+            <div className="form-section" style={{ marginTop: 0 }}>
+              <div className="form-section-title">予約の発生元を選択<span className="req">*</span></div>
+              <div className="origin-cards">
+                {ORIGINS.map((o) => (
+                  <button key={o.v} type="button" className={`origin-card ${c.originType === o.v ? "checked" : ""}`} onClick={() => c.setOriginType(o.v)}>
+                    <span className="oc-radio"></span>
+                    <span className="oc-emoji">{o.emoji}</span>
+                    <span className="oc-label">{o.label}</span>
+                    <span className="oc-sub">{o.sub}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="form-section-title" style={{ marginTop: 22 }}>予約受付方式<span className="req">*</span></div>
+              <div className="radio-row">
+                {[
+                  { v: "immediate", main: "即時確定予約", sub: "予約として確定します。ステータス「確定予約」で登録されます。" },
+                  { v: "request", main: "リクエスト予約", sub: "内容確認が必要です。ステータス「確定待ち」で登録されます。" },
+                ].map((o) => (
+                  <label key={o.v} className={`radio-opt ${c.acceptanceMode === o.v ? "checked" : ""}`}>
+                    <input type="radio" name="accmode" checked={c.acceptanceMode === o.v} onChange={() => c.setAcceptanceMode(o.v)} />
+                    <span>
+                      <span className="ro-main">{o.main}</span>
+                      <span className="ro-sub">{o.sub}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">
+                チャネル・外部参照情報
+                <span className="st-hint">予約元区分「{ORIGIN_LABEL[c.originType]}」に応じて項目が変わります</span>
+              </div>
+
+              {c.originType === "inquiry" ? (
+                <div className="fnote teal" style={{ marginTop: 0 }}>
+                  <span className="fn-ic">ℹ️</span>
+                  <span>問い合わせ経由の予約では外部参照情報は不要です。予約作成日時のみ任意で入力できます。</span>
+                </div>
+              ) : null}
+
+              <div className="field-grid" style={{ marginTop: c.originType === "inquiry" ? 16 : 0 }}>
+                {c.vis.salesChannel && (
+                  <div>
+                    <label className="filter-label">販売チャネル（OTA名）{c.vis.salesChannel === "req" ? <span className="req">*</span> : <span className="opt">任意</span>}</label>
+                    <select className="ctrl" value={c.salesChannel} onChange={(e) => c.setSalesChannel(e.target.value)}>
+                      {SALES_CHANNELS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    {c.salesChannel === "その他" && (
+                      <input className="ctrl" style={{ marginTop: 8 }} placeholder="チャネル名を入力" value={c.salesChannelOther} onChange={(e) => c.setSalesChannelOther(e.target.value)} />
+                    )}
+                  </div>
+                )}
+                {c.vis.importSystem && (
+                  <div>
+                    <label className="filter-label">取込元システム<span className="opt">任意</span></label>
+                    <input className="ctrl" placeholder="例：Bokun" value={c.importSystem} onChange={(e) => c.setImportSystem(e.target.value)} />
+                  </div>
+                )}
+                {c.vis.externalNo && (
+                  <div>
+                    <label className="filter-label">外部予約番号{c.vis.externalNo === "req" ? <span className="req">*</span> : <span className="opt">任意</span>}</label>
+                    <input className="ctrl mono" placeholder="例：VTR-8923401" value={c.externalNo}
+                      onChange={(e) => { c.setExternalNo(e.target.value); c.setExternalNoChecked(false); }}
+                      onBlur={() => c.externalNo.trim() !== "" && c.setExternalNoChecked(true)} />
+                    {c.externalNoChecked && c.externalNo.trim() !== "" && (
+                      <div className="fnote warn">
+                        <span className="fn-ic">⚠️</span>
+                        <span>同じ外部予約番号の予約がすでに存在します（<strong className="mono">BK-260601-00002</strong>）。外部予約番号が一致する予約は重複として扱います。STEP5で関係を確認してください。</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {c.vis.importId && (
+                  <div>
+                    <label className="filter-label">取込元システム予約ID<span className="opt">任意</span></label>
+                    <input className="ctrl mono" placeholder="例：VTR-8923415" value={c.importId} onChange={(e) => c.setImportId(e.target.value)} />
+                  </div>
+                )}
+                {c.vis.externalUrl && (
+                  <div className="fw">
+                    <label className="filter-label">外部管理画面URL<span className="opt">任意</span></label>
+                    <input className="ctrl" type="url" placeholder="https://" value={c.externalUrl} onChange={(e) => c.setExternalUrl(e.target.value)} />
+                  </div>
+                )}
+                {c.vis.createdAt && (
+                  <div>
+                    <label className="filter-label">予約作成日時（ゲスト側）<span className="opt">任意</span></label>
+                    <input className="ctrl" type="datetime-local" value={c.guestCreatedAt} onChange={(e) => c.setGuestCreatedAt(e.target.value)} />
+                  </div>
+                )}
+                {c.vis.channelMemo && (
+                  <div className="fw">
+                    <label className="filter-label">チャネル別メモ<span className="opt">任意</span></label>
+                    <textarea className="ctrl" placeholder="OTA・代理店ごとの補足情報など" value={c.channelMemo} onChange={(e) => c.setChannelMemo(e.target.value)}></textarea>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="card-foot split">
+            <a className="btn" href="bookings.html">← 予約一覧へ戻る</a>
+            <button className="btn primary" onClick={c.next} disabled={!c.step1ok}>次へ →</button>
+          </div>
+        </section>
+      );
+    }
+
+    function Step2({ c }) {
+      return (
+        <section className="card" data-screen-label="Step 2 商品・日程・人数">
+          <div className="card-head">
+            <div className="card-title"><span className="sec-no">2</span>商品・日程・人数</div>
+          </div>
+          <div className="card-body">
+            <div className="form-section" style={{ marginTop: 0 }}>
+              <div className="form-section-title">TourOption の選択<span className="req">*</span></div>
+              <div className="to-search">
+                <input className="ctrl" placeholder="TourOptionコードまたは名称で検索（例：G-WAK-001）"
+                  value={c.toQuery}
+                  onFocus={() => c.setToOpen(true)}
+                  onChange={(e) => { c.setToQuery(e.target.value); c.setToOpen(true); }}
+                  onBlur={() => { c.toBlurTimer.current = setTimeout(() => c.setToOpen(false), 150); }} />
+                {c.toOpen && (
+                  <div className="to-results" onMouseDown={(e) => e.preventDefault()}>
+                    {c.toResults.length === 0 ? (
+                      <div className="to-empty">該当する TourOption が見つかりません</div>
+                    ) : c.toResults.map((t) => (
+                      <div key={t.code} className="to-result" onClick={() => c.selectTour(t)}>
+                        <span className="to-code">{t.code}</span>
+                        <span className="to-name">{t.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {c.tour && (
+                <div className="info-card" style={{ marginTop: 14 }}>
+                  <div className="ic-head">
+                    <span className="ic-check">✓</span>
+                    <span className="ic-code">{c.tour.code}</span>
+                    <span className="ic-name">{c.tour.name}</span>
+                    <button className="rv-edit" style={{ marginLeft: "auto" }} onClick={() => { c.setToQuery(""); c.setToOpen(true); }}>別の TourOption を選択</button>
+                  </div>
+                  <div className="ic-grid">
+                    <div className="ic-item">
+                      <div className="ic-lab">TourOptionバージョン</div>
+                      <div className="ic-val">{c.productVersionOk ? <React.Fragment>{c.tour.version}（{c.tour.versionRange}）<span className="auto-tag">自動取得済み</span></React.Fragment> : <span style={{ color: "var(--amber)" }}>取得できませんでした</span>}</div>
+                    </div>
+                    <div className="ic-item">
+                      <div className="ic-lab">集合場所</div>
+                      <div className="ic-val">{c.tour.meetingJa}<span className="auto-tag">自動入力 → STEP 4 で上書き可</span></div>
+                    </div>
+                    <div className="ic-item">
+                      <div className="ic-lab">最小 / 最大人数</div>
+                      <div className="ic-val">{c.tour.min}名 / {c.tour.max}名</div>
+                    </div>
+                    <div className="ic-item">
+                      <div className="ic-lab">所要時間</div>
+                      <div className="ic-val">{Math.floor(c.tour.durationMin / 60)}時間{c.tour.durationMin % 60 ? (c.tour.durationMin % 60) + "分" : ""}</div>
+                    </div>
+                    <div className="ic-item full">
+                      <div className="ic-lab">キャンセルポリシー</div>
+                      <div className="ic-val">{c.tour.cancel}</div>
+                    </div>
+                  </div>
+                  {!c.productVersionOk && (
+                    <div className="fnote warn">
+                      <span className="fn-ic">⚠️</span>
+                      <span>商品条件スナップショットを取得できませんでした。TourOption の公開状態を確認してください。登録は続行できますが、<strong>データ不備フラグ</strong>が立ちます。</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">ツアー日時<span className="req">*</span></div>
+              <div className="field-grid three">
+                <div>
+                  <label className="filter-label">ツアー日<span className="req">*</span></label>
+                  <input className="ctrl" type="date" value={c.tourDate} onChange={(e) => c.setTourDate(e.target.value)} />
+                </div>
+                <div>
+                  <label className="filter-label">開始時間<span className="req">*</span></label>
+                  <input className="ctrl" type="time" value={c.startTime} onChange={(e) => c.setStartTime(e.target.value)} />
+                </div>
+                <div>
+                  <label className="filter-label">終了予定時間<span className="opt">自動計算・上書き可</span></label>
+                  <input className="ctrl" type="time" value={c.endTime} onChange={(e) => c.setEndTimeOverride(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">参加人数<span className="req">*</span></div>
+              <div className="field-grid three">
+                <div>
+                  <label className="filter-label">大人<span className="req">*</span></label>
+                  <NumStep value={c.adults} onChange={c.setAdults} min={0} />
+                </div>
+                <div>
+                  <label className="filter-label">子供</label>
+                  <NumStep value={c.children} onChange={c.setChildren} min={0} />
+                </div>
+                <div>
+                  <label className="filter-label">幼児</label>
+                  <NumStep value={c.infants} onChange={c.setInfants} min={0} />
+                </div>
+              </div>
+              <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10 }}>
+                <span className="filter-label" style={{ margin: 0 }}>合計人数</span>
+                <span className="pax-total"><span className="pt-num">{c.totalPax}</span><span className="pt-unit">名</span></span>
+              </div>
+              {c.tour && c.totalPax > c.tour.max && (
+                <div className="fnote warn">
+                  <span className="fn-ic">⚠️</span>
+                  <span>TourOption の最大人数（{c.tour.max}名）を超えています。継続する場合は理由をメモに残してください。</span>
+                </div>
+              )}
+              {c.tour && c.totalPax >= 1 && (
+                <div className="price-preview">
+                  <span>Tiered Pricing 参考価格：大人{c.adults}名 → {yen(c.tour.price)}/名{c.children ? `・子供${c.children}名 → ${yen(childPrice(c.tour.price))}/名` : ""} =</span>
+                  <strong>{yen(c.previewTotal)}</strong>
+                </div>
+              )}
+            </div>
+          </div>
+          <FootNav c={c} />
+        </section>
+      );
+    }
+
+    function Step3({ c }) {
+      return (
+        <section className="card" data-screen-label="Step 3 ゲスト情報">
+          <div className="card-head">
+            <div className="card-title"><span className="sec-no">3</span>ゲスト情報</div>
+          </div>
+          <div className="card-body">
+            <div className="form-section" style={{ marginTop: 0 }}>
+              <div className="form-section-title">予約者情報<span className="req">*</span></div>
+              <div className="field-grid">
+                <div>
+                  <label className="filter-label">予約者名（英語）<span className="req">*</span></label>
+                  <div className="name-pair">
+                    <input className="ctrl" placeholder="姓 / Last name" value={c.lastEn} onChange={(e) => c.setLastEn(e.target.value)} />
+                    <input className="ctrl" placeholder="名 / First name" value={c.firstEn} onChange={(e) => c.setFirstEn(e.target.value)} />
+                  </div>
+                </div>
+                <div>
+                  <label className="filter-label">予約者名（日本語）<span className="opt">任意</span></label>
+                  <input className="ctrl" placeholder="例：スミス ジョン" value={c.nameJa} onChange={(e) => c.setNameJa(e.target.value)} />
+                </div>
+                <div>
+                  <label className="filter-label">メールアドレス<span className="req">*</span></label>
+                  <input className="ctrl" type="email" placeholder="guest@example.com" value={c.email} onChange={(e) => c.setEmail(e.target.value)} />
+                </div>
+                <div>
+                  <label className="filter-label">電話番号<span className="opt">任意</span></label>
+                  <input className="ctrl" type="tel" placeholder="+81 90-0000-0000" value={c.phone} onChange={(e) => c.setPhone(e.target.value)} />
+                </div>
+                <div>
+                  <label className="filter-label">国籍<span className="opt">任意</span></label>
+                  <select className="ctrl" value={c.nationality} onChange={(e) => c.setNationality(e.target.value)}>
+                    {NATIONALITIES.map((n) => <option key={n} value={n}>{n === "" ? "選択してください" : n}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="filter-label">使用言語<span className="req">*</span></label>
+                  <select className="ctrl" value={c.language} onChange={(e) => c.setLanguage(e.target.value)}>
+                    {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div className="fw">
+                  <label className="filter-label">連絡可能手段<span className="opt">任意</span></label>
+                  <div className="check-chips">
+                    {CONTACT_METHODS.map((m) => (
+                      <label key={m} className={`check-chip ${c.contacts.includes(m) ? "on" : ""}`}>
+                        <input type="checkbox" checked={c.contacts.includes(m)} onChange={() => c.toggleContact(m)} />{m}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">参加者情報（配慮事項）<span className="st-hint">任意</span></div>
+              <div className="field-grid">
+                <div>
+                  <label className="filter-label">食事制限<span className="opt">任意</span></label>
+                  <input className="ctrl" placeholder="例：ベジタリアン、ハラール" value={c.dietary} onChange={(e) => c.setDietary(e.target.value)} />
+                </div>
+                <div>
+                  <label className="filter-label">アレルギー<span className="opt">任意</span></label>
+                  <input className="ctrl" placeholder="例：ピーナッツ、甲殻類" value={c.allergy} onChange={(e) => c.setAllergy(e.target.value)} />
+                </div>
+                <div className="fw">
+                  <label className={`flag-check ${c.wheelchair ? "on" : ""}`}>
+                    <input type="checkbox" checked={c.wheelchair} onChange={(e) => c.setWheelchair(e.target.checked)} />
+                    <span className="fc-main">車椅子・移動補助の有無<span className="fc-sub">車椅子・移動補助が必要な参加者がいる場合はチェック</span></span>
+                  </label>
+                </div>
+                <div className="fw">
+                  <label className="filter-label">その他の特別配慮事項<span className="opt">任意</span></label>
+                  <textarea className="ctrl" placeholder="妊娠中の方、高齢の方、お子様連れなど" value={c.specialNeeds} onChange={(e) => c.setSpecialNeeds(e.target.value)}></textarea>
+                </div>
+                <div className="fw">
+                  <label className="filter-label">ゲストからの要望<span className="opt">任意</span></label>
+                  <textarea className="ctrl" placeholder="記念日のサプライズ、写真撮影の希望など" value={c.guestRequests} onChange={(e) => c.setGuestRequests(e.target.value)}></textarea>
+                </div>
+              </div>
+              {c.hasCareInfo && (
+                <div className="fnote warn">
+                  <span className="fn-ic">↪</span>
+                  <span>アレルギー・移動補助・配慮事項の情報は、STEP 4 の<strong>ガイド共有メモ</strong>に自動コピーされます。</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <FootNav c={c} />
+        </section>
+      );
+    }
+
+    function Step4({ c }) {
+      return (
+        <section className="card" data-screen-label="Step 4 集合・支払い・メモ">
+          <div className="card-head">
+            <div className="card-title"><span className="sec-no">4</span>集合・支払い・メモ</div>
+          </div>
+          <div className="card-body">
+            <div className="form-section" style={{ marginTop: 0 }}>
+              <div className="form-section-title">集合・ピックアップ情報</div>
+              <div className="field-grid">
+                <div>
+                  <label className="filter-label">集合場所（日本語）<span className="opt">商品から自動入力</span></label>
+                  <input className="ctrl" value={c.meetingJa} onChange={(e) => { c.setMeetingJa(e.target.value); c.setMeetingTouched(true); }} />
+                </div>
+                <div>
+                  <label className="filter-label">集合場所（英語）<span className="opt">商品から自動入力</span></label>
+                  <input className="ctrl" value={c.meetingEn} onChange={(e) => { c.setMeetingEn(e.target.value); c.setMeetingTouched(true); }} />
+                </div>
+                <div className="fw">
+                  <label className="filter-label">Google Map URL<span className="opt">任意</span></label>
+                  <input className="ctrl" type="url" placeholder="https://maps.app.goo.gl/..." value={c.mapUrl} onChange={(e) => c.setMapUrl(e.target.value)} />
+                </div>
+                <div className="fw">
+                  <label className={`flag-check ${c.hasPickup ? "on" : ""}`}>
+                    <input type="checkbox" checked={c.hasPickup} onChange={(e) => c.setHasPickup(e.target.checked)} />
+                    <span className="fc-main">ピックアップあり<span className="fc-sub">宿泊先などへの送迎がある場合はチェック</span></span>
+                  </label>
+                </div>
+                {c.hasPickup && (
+                  <div className="fw reveal">
+                    <label className="filter-label">ピックアップ場所</label>
+                    <input className="ctrl" placeholder="例：ホテル名・住所" value={c.pickupPlace} onChange={(e) => c.setPickupPlace(e.target.value)} />
+                  </div>
+                )}
+                <div className="fw">
+                  <label className="filter-label">集合方法メモ<span className="opt">任意</span></label>
+                  <textarea className="ctrl" placeholder="目印・合流方法・遅刻時の連絡先など" value={c.meetingMemo} onChange={(e) => c.setMeetingMemo(e.target.value)}></textarea>
+                </div>
+              </div>
+              {c.meetingChanged && (
+                <div className="fnote warn">
+                  <span className="fn-ic">⚠️</span>
+                  <span>商品条件スナップショットの集合場所と異なります。変更理由を社内メモに残してください。</span>
+                </div>
+              )}
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">支払い情報</div>
+              <div className="field-grid">
+                <div>
+                  <label className="filter-label">販売金額<span className="opt">参考価格を初期表示・上書き可</span></label>
+                  <div className="input-affix">
+                    <span className="pfx">¥</span>
+                    <input className="ctrl" inputMode="numeric" value={c.salePriceTouched ? c.salePrice : c.effectiveSalePrice}
+                      onChange={(e) => { c.setSalePrice(e.target.value); c.setSalePriceTouched(true); }} />
+                  </div>
+                  {c.salePriceTouched && (
+                    <button className="rv-edit" style={{ marginTop: 6 }} onClick={() => { c.setSalePriceTouched(false); c.setSalePrice(""); }}>参考価格 {yen(c.effectiveSalePrice)} を再適用</button>
+                  )}
+                </div>
+                <div>
+                  <label className="filter-label">支払いステータス</label>
+                  <select className="ctrl" value={c.paymentStatus} onChange={(e) => c.setPaymentStatus(e.target.value)}>
+                    {PAY_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="filter-label">決済受領者{c.effectivePayReceiver === "OTA" && c.paymentReceiver !== "OTA" ? <span className="opt">OTAで自動設定</span> : null}</label>
+                  {c.isOta ? (
+                    <div className="readonly-val">OTA<span style={{ marginLeft: 8, fontWeight: 500, color: "var(--muted)", fontSize: 11.5 }}>OTA選択時は自動設定</span></div>
+                  ) : (
+                    <select className="ctrl" value={c.paymentReceiver} onChange={(e) => c.setPaymentReceiver(e.target.value)}>
+                      {PAY_RECEIVERS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  )}
+                </div>
+                <div>
+                  <label className="filter-label">決済元</label>
+                  <select className="ctrl" value={c.paymentSource} onChange={(e) => c.setPaymentSource(e.target.value)}>
+                    {PAY_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div className="fw">
+                  <label className="filter-label">料金メモ<span className="opt">任意</span></label>
+                  <input className="ctrl" placeholder="分割払い・請求書番号など" value={c.feeMemo} onChange={(e) => c.setFeeMemo(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">メモ（社内・ガイド共有）</div>
+              <div className="memo-grid">
+                <div className="memo-col guide">
+                  <div className="mc-head">
+                    <span>ガイド共有メモ</span>
+                    {c.autoGuideText && <span className="mc-auto">自動コピー済み</span>}
+                  </div>
+                  <div className="mc-desc">ガイドに共有します。アレルギー・配慮事項・集合方法の詳細など、催行に必要な情報を記入してください。</div>
+                  <textarea className="ctrl" value={c.guideMemo} onChange={(e) => { c.setGuideMemo(e.target.value); c.setGuideMemoTouched(true); }}></textarea>
+                </div>
+                <div className="memo-col internal">
+                  <div className="mc-head"><span>社内限定メモ</span></div>
+                  <div className="mc-desc">ガイドには共有しません。対応経緯・特記事項・内部確認事項などを記入してください。</div>
+                  <textarea className="ctrl" value={c.internalMemo} onChange={(e) => c.setInternalMemo(e.target.value)}></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">参照 URL<span className="st-hint">任意・最大5件</span></div>
+              {c.refUrls.length === 0 && (
+                <div className="fnote teal" style={{ marginTop: 0, marginBottom: 12 }}>
+                  <span className="fn-ic">🔗</span>
+                  <span>問い合わせメールURL・施設予約確認書URL・Google Drive資料URL など、関連リンクを追加できます。</span>
+                </div>
+              )}
+              <div className="ref-rows">
+                {c.refUrls.map((r, i) => (
+                  <div className="ref-row" key={i}>
+                    <input className="ctrl ref-label-in" placeholder="ラベル（例：問い合わせメール）" value={r.label} onChange={(e) => c.setRef(i, "label", e.target.value)} />
+                    <input className="ctrl" type="url" placeholder="https://" value={r.url} onChange={(e) => c.setRef(i, "url", e.target.value)} />
+                    <button className="ref-del" type="button" onClick={() => c.delRef(i)} title="削除">×</button>
+                  </div>
+                ))}
+              </div>
+              <button className="btn add-row" type="button" onClick={c.addRef} disabled={c.refUrls.length >= 5}>＋ 参照URLを追加{c.refUrls.length >= 5 ? "（上限5件）" : ""}</button>
+            </div>
+          </div>
+          <FootNav c={c} />
+        </section>
+      );
+    }
+
+    function Step5({ c }) {
+      if (c.registered) {
+        return (
+          <section className="card" data-screen-label="Step 5 登録完了">
+            <div className="card-head">
+              <div className="card-title"><span className="sec-no">5</span>登録完了</div>
+            </div>
+            <div className="card-body">
+              <div className="done-banner">
+                <span className="db-ic">✓</span>
+                <div>
+                  <div className="db-title">予約を登録しました</div>
+                  <div className="db-sub">予約番号 <span className="mono">{c.newBookingId}</span> を発行しました。予約詳細画面で内容を確認できます。</div>
+                </div>
+              </div>
+              <ReviewSummary c={c} readOnly />
+            </div>
+            <div className="card-foot end">
+              <a className="btn" href="bookings.html">予約一覧へ</a>
+              <a className="btn primary" href="booking-detail.html">予約詳細を開く →</a>
+            </div>
+          </section>
+        );
+      }
+
+      return (
+        <section className="card" data-screen-label="Step 5 確認・登録">
+          <div className="card-head">
+            <div className="card-title"><span className="sec-no">5</span>登録前チェック・確認・登録実行</div>
+          </div>
+          <div className="card-body">
+            <div className="form-section" style={{ marginTop: 0 }}>
+              <div className="form-section-title">登録前チェック結果</div>
+              <div className="pc-list">
+                {c.checks.map((ck) => (
+                  <div key={ck.id} className={`pc-row ${ck.ok ? "ok" : "bad"}`}>
+                    <span className="pc-ic">{ck.ok ? "✓" : "!"}</span>
+                    <span className="pc-mid">
+                      <span className="pc-lab">{ck.label}</span>
+                      <span className="pc-val">{ck.ok ? "✅ " : ""}{ck.val}</span>
+                    </span>
+                    {!ck.ok && <button className="pc-jump" onClick={() => c.jumpTo(ck.jump)}>⬅ 入力する</button>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">重複チェック結果</div>
+              {c.dupResult === "none" ? (
+                <div className="lbanner ok">
+                  <div className="lb-title">✅ 重複予約は検出されませんでした。</div>
+                  <div className="lb-sub">外部予約番号・ゲスト名・ツアー日時を照合しましたが、類似する予約は見つかりませんでした。</div>
+                </div>
+              ) : (
+                <React.Fragment>
+                  <div className="lbanner warn">
+                    <div className="lb-title">⚠️ 類似する予約が 1件 見つかりました。確認してください。</div>
+                    <div className="lb-sub">外部予約番号が一致する予約は重複として扱います。重複でない（入力誤り等）と確認できた場合のみ「別の予約として登録する」を選べます。</div>
+                  </div>
+                  <div className="dup-card">
+                    <div className="dc-top">
+                      <div>
+                        <span className="dc-id">BK-260601-00002</span>
+                        <div className="dc-meta">Smith John ／ G-WAK-001-2-GR ／ 2026/06/15 09:00<br />外部予約番号：<span className="mono">VTR-8923401</span></div>
+                        <span className="dc-match">外部予約番号が一致</span>
+                      </div>
+                      <a className="btn sm" href="booking-detail.html" target="_blank" rel="noreferrer">予約詳細を別タブで開く ↗</a>
+                    </div>
+                    <div className="dc-body">
+                      <div className="dc-q">この予約との関係：</div>
+                      <label className={`radio-opt ${c.dupRelation === "separate" ? "checked" : ""}`}>
+                        <input type="radio" name="duprel" checked={c.dupRelation === "separate"} onChange={() => c.setDupRelation("separate")} />
+                        <span><span className="ro-main">別の予約として登録する（外部予約番号の入力誤り等、重複でない場合のみ）</span></span>
+                      </label>
+                      <label className={`radio-opt ${c.dupRelation === "same" ? "checked" : ""}`}>
+                        <input type="radio" name="duprel" checked={c.dupRelation === "same"} onChange={() => c.setDupRelation("same")} />
+                        <span><span className="ro-main">この予約と同一（重複）。新規登録せず既存予約で対応する</span></span>
+                      </label>
+                    </div>
+                  </div>
+                </React.Fragment>
+              )}
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">登録内容サマリー</div>
+              <ReviewSummary c={c} />
+            </div>
+          </div>
+
+          <div className="card-foot split">
+            <button className="btn" onClick={c.prev}>← 戻って修正する</button>
+            <button className="btn primary lg" disabled={!c.canRegister} onClick={() => c.setShowConfirm(true)}>
+              この内容で予約を登録する →
+            </button>
+          </div>
+        </section>
+      );
+    }
+
+    function ReviewSummary({ c, readOnly }) {
+      const Row = ({ label, children }) => (
+        <React.Fragment>
+          <div className="rv-dt">{label}</div>
+          <div className="rv-dd">{children}</div>
+        </React.Fragment>
+      );
+      const ph = <span className="placeholder">未入力</span>;
+      return (
+        <React.Fragment>
+          <div className="rv-group">
+            <div className="rv-group-head">
+              <h3>発生元・チャネル</h3>
+              {!readOnly && <button className="rv-edit" onClick={() => c.jumpTo(0)}>編集</button>}
+            </div>
+            <div className="review-grid">
+              <Row label="予約元区分">{ORIGIN_LABEL[c.originType]}{c.isOta ? `（${c.channelDisplay}）` : ""}</Row>
+              {c.isOta && <Row label="外部予約番号"><span className="mono">{c.externalNo || ph}</span></Row>}
+              <Row label="受付方式">{c.acceptanceModeLabel}</Row>
+            </div>
+          </div>
+
+          <div className="rv-group">
+            <div className="rv-group-head">
+              <h3>商品・日程・人数</h3>
+              {!readOnly && <button className="rv-edit" onClick={() => c.jumpTo(1)}>編集</button>}
+            </div>
+            <div className="review-grid">
+              <Row label="TourOption">{c.tour ? <React.Fragment><span className="mono">{c.tour.code}</span> {c.tour.name}</React.Fragment> : ph}</Row>
+              <Row label="ツアー日時">{c.dateText ? `${c.dateText} ${c.startTime}〜${c.endTime}` : ph}</Row>
+              <Row label="参加人数">大人{c.adults}名{c.children ? `・子供${c.children}名` : ""}{c.infants ? `・幼児${c.infants}名` : ""}</Row>
+            </div>
+          </div>
+
+          <div className="rv-group">
+            <div className="rv-group-head">
+              <h3>ゲスト情報</h3>
+              {!readOnly && <button className="rv-edit" onClick={() => c.jumpTo(2)}>編集</button>}
+            </div>
+            <div className="review-grid">
+              <Row label="予約者">{(c.lastEn || c.firstEn) ? `${c.lastEn} ${c.firstEn}`.trim() : ph}</Row>
+              <Row label="連絡先">{c.email || ph}</Row>
+              <Row label="使用言語">{c.language || ph}</Row>
+              <Row label="アレルギー">{c.allergy.trim() ? c.allergy : <span className="placeholder">なし</span>}</Row>
+            </div>
+          </div>
+
+          <div className="rv-group" style={{ marginBottom: 0 }}>
+            <div className="rv-group-head">
+              <h3>集合・支払い</h3>
+              {!readOnly && <button className="rv-edit" onClick={() => c.jumpTo(3)}>編集</button>}
+            </div>
+            <div className="review-grid">
+              <Row label="集合場所">{c.meetingJa || ph}</Row>
+              <Row label="販売金額">{yen(c.effectiveSalePrice)}</Row>
+              <Row label="支払いステータス">{c.paymentStatus}</Row>
+            </div>
+          </div>
+        </React.Fragment>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
