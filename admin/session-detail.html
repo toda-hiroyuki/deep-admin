@@ -597,6 +597,7 @@
                     action={
                       <div style={{display:"flex",alignItems:"center",gap:12}}>
                         {guideHeadPill}
+                        <a className="btn sm outline" href="settlement-confirmation.html">精算確認を開く</a>
                         <div className="seg" role="tablist">
                           {settleTabs.map(([m, label]) => (
                             <button key={m} className={mode === m ? "on" : ""} onClick={() => setMode(m)}>{label}</button>

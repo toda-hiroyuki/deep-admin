@@ -397,12 +397,12 @@
                                     <div className="cost-row">
                                       <div className="cost-label">ガイド報酬<span className="badge" style={{borderRadius:4,background:"var(--bg-sunken)",color:"var(--ink-soft)"}}>催行回1回</span><span className={`badge ${GUIDE_META[s.guideStatus].cls}`}><span className="dot"></span>{GUIDE_META[s.guideStatus].label}</span></div>
                                       <div className="cost-val"><span className="money">{yen(s.guideReward.total)}</span></div>
-                                      <div className="cost-breakdown">{s.guideReward.total>0?`ツアー報酬 ${yen(s.guideReward.wage)} ＋ 交通費 ${yen(s.guideReward.transport)}${s.guideReward.other?` ＋ その他 ${yen(s.guideReward.other)}`:""}` :"このツアーはガイド報酬の発生なし"}</div>
+                                      <div className="cost-breakdown">{s.guideReward.total>0?`ツアー報酬 ${yen(s.guideReward.wage)} ＋ 交通費 ${yen(s.guideReward.transport)}${s.guideReward.other?` ＋ その他 ${yen(s.guideReward.other)}`:""}` :"このツアーはガイド報酬の発生なし"}<span className="bd-note">ガイドには立替含め全額を「報酬」表示／内部原価では分離（§11・§14-9）</span><a className="lnk" href="settlement-confirmation.html">{guidePending(s)?"ガイド精算で確定する":"精算明細を見る"}</a></div>
                                     </div>
                                     <div className="cost-row">
                                       <div className="cost-label">施設費<span className="badge" style={{borderRadius:4,background:"var(--bg-sunken)",color:"var(--ink-soft)"}}>実績</span><span className={`badge ${FACILITY_META[s.facilityStatus].cls}`}><span className="dot"></span>{FACILITY_META[s.facilityStatus].label}</span></div>
                                       <div className="cost-val">{facilityPending(s)?<span className="muted-dash">未入力</span>:<span className="money">{yen(s.facility)}</span>}</div>
-                                      <div className="cost-breakdown">施設の固定費・変動費・変更時のキャンセル料を含む実績額<span className="bd-note">別画面で確定した金額が反映されます</span></div>
+                                      <div className="cost-breakdown">施設の固定費・変動費・変更時のキャンセル料を含む実績額<span className="bd-note">別画面で確定した金額が反映されます</span><button className="lnk" onClick={()=>showToast("施設費の入力・確認画面は準備中です")}>{facilityPending(s)?"施設費を入力（準備中）":"施設費を確認（準備中）"}</button></div>
                                     </div>
                                   </div>
                                   <div className="sess-formula">

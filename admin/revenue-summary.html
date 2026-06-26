@@ -707,7 +707,7 @@
                   const pending = r.imp === "pending";
                   return (
                     <tr key={r.id} className={pending ? "pending-row" : ""}>
-                      <td className="stick"><a className="id-link code-mono" href="予約詳細.html">{r.id}</a></td>
+                      <td className="stick"><a className="id-link code-mono" href="booking-detail.html">{r.id}</a></td>
                       <td><span className="col-date">{r.date.replace(/-/g, "/")}</span></td>
                       <td>
                         <span className="tour-cell">
@@ -726,7 +726,7 @@
                       <td>{pending
                         ? <span className="badge amber"><span className="dot"></span>金額確認待ち</span>
                         : <span className={`badge ${sm.cls}`}><span className="dot"></span>{sm.label}</span>}</td>
-                      <td className="right"><a className="lnk" href="予約詳細.html">詳細</a></td>
+                      <td className="right"><a className="lnk" href="booking-detail.html">詳細</a></td>
                     </tr>
                   );
                 })}
