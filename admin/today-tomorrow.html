@@ -59,6 +59,10 @@
       .note-text.alergy { color: var(--coral); font-weight: 600; }
       .note-text.warn { color: var(--amber); font-weight: 600; }
       .muted-dash { color: var(--muted-soft); }
+      .tour-status { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+      .tour-status.muted { background: var(--bg-sunken); color: var(--muted); }
+      .tour-status.amber { background: var(--amber-soft); color: var(--amber); }
+      .tour-status.green { background: var(--green-soft); color: var(--green); }
       .row-urgent td { background: #fdeee9 !important; }
       .row-urgent td:first-child { box-shadow: inset 3px 0 0 var(--coral); }
       .row-warn td { background: #fdf4dd !important; }
@@ -83,19 +87,19 @@
         { time: "09:00", code: "G-GIF-017-1-PR", tour: "城下町ウォーキング", pax: "大人2 子供1",
           guides: { main: { name: "田中 誠", id: "G-003" }, subs: [] },
           arrange: { label: "確定済み", cls: "green" }, meet: "金沢駅東口",
-          pickup: null, contact: "done", note: "アレルギー：えび・かに", noteKind: "alergy" },
+          pickup: null, contact: "done", note: "アレルギー：えび・かに", noteKind: "alergy", tourStatus: "完了" },
         { time: "10:30", code: "G-WAK-001-2-PR", tour: "里山ハイキング", pax: "大人4",
           guides: { main: null, subs: [] },
           arrange: { label: "未手配", cls: "red" }, meet: "白山比咩神社 駐車場",
-          pickup: null, contact: "pending", note: null, noteKind: null, row: "urgent" },
+          pickup: null, contact: "pending", note: null, noteKind: null, row: "urgent", tourStatus: "未" },
         { time: "13:00", code: "G-AIC-005-1-GR", tour: "茶道体験", pax: "大人3",
           guides: { main: { name: "吉田 健太", id: "G-007" }, subs: [] },
           arrange: { label: "要確認", cls: "amber" }, meet: "裏千家茶道教室",
-          pickup: "金沢駅", contact: "done", note: "日時変更あり・要確認", noteKind: "warn", row: "warn" },
+          pickup: "金沢駅", contact: "done", note: "日時変更あり・要確認", noteKind: "warn", row: "warn", tourStatus: "開始" },
         { time: "15:00", code: "G-MIE-005-1-PR", tour: "漁村体験", pax: "大人2 子供2",
           guides: { main: { name: "佐々木 美咲", id: "G-012" }, subs: [] },
           arrange: { label: "確定済み", cls: "green" }, meet: "輪島港 漁協前",
-          pickup: "のと里山空港", contact: "done", note: null, noteKind: null },
+          pickup: "のと里山空港", contact: "done", note: null, noteKind: null, tourStatus: "未" },
       ];
 
       const TOMORROW = [
@@ -220,6 +224,7 @@
                     <thead>
                       <tr>
                         <th>開始時間</th>
+                        {!isTomorrow && <th style={{textAlign:"center"}}>ツアー開始/完了</th>}
                         <th>TourOption</th>
                         <th>参加人数</th>
                         <th>担当ガイド名</th>
@@ -234,6 +239,13 @@
                       {rows.map((r, i) => (
                         <tr key={i} className={r.row === "urgent" ? "row-urgent" : r.row === "warn" ? "row-warn" : ""} style={{cursor:"pointer"}} onClick={() => { window.location.href = "session-detail.html"; }}>
                           <td><span className="start-time">{r.time}</span></td>
+                          {!isTomorrow && (
+                            <td style={{textAlign:"center"}}>
+                              <span className={`tour-status ${r.tourStatus === "完了" ? "green" : r.tourStatus === "開始" ? "amber" : "muted"}`}>
+                                {r.tourStatus}
+                              </span>
+                            </td>
+                          )}
                           <td>
                             <div className="code-mono">{r.code}</div>
                             <div className="cell-sub">{r.tour}</div>
