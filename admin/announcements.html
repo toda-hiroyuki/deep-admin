@@ -1,3 +1,21 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>お知らせ管理 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+</head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
 window.Sidebar = function Sidebar({ resource, counts = {} }) {
   const opsItems = [
     { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
@@ -10,7 +28,6 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
     { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
     { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
-
     { key: "guidePay",  href: "guide-payments.html",     icon: "GP", label: "ガイド支払一覧" },
   ];
   const guideItems = [
@@ -20,11 +37,11 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     { key: "customers", href: "customers.html", icon: "CU", label: "顧客一覧" },
   ];
   const facilityItems = [
-    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設一覧" },
+    { key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" },
   ];
   const masterMainItems = [
-    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
-    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
+    { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption",  count: counts.to },
+    { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ",    count: counts.pg },
   ];
   const masterSubItems = [
     { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
@@ -171,3 +188,102 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     </aside>
   );
 };
+    </script>
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+// 表示用：システム現在日時（モック）
+const NOW = "2026-06-26T00:00";
+
+const SEED_ANNOUNCEMENTS = [
+  { id: "anc-1", title: "【重要】夏季繁忙期の予約対応について", body: "7月〜8月の繁忙期に向けて、予約対応フローを一部変更します。詳細は本文をご確認ください。", publishAt: "2026-07-01T09:00" },
+  { id: "anc-2", title: "システムメンテナンスのお知らせ", body: "6月30日 0:00〜3:00の間、システムメンテナンスを実施します。該当時間帯は管理画面をご利用いただけません。", publishAt: "2026-06-24T10:00" },
+  { id: "anc-3", title: "キャンセルポリシー改定のご案内", body: "2026年6月1日より、一部ツアーのキャンセルポリシーを改定しました。マスター＞キャンセルポリシーよりご確認ください。", publishAt: "2026-06-01T12:00" },
+];
+
+// "2026-07-01T09:00" → "2026/07/01 09:00"
+const fmtDateTime = (s) => {
+  if (!s) return "—";
+  const [d, t] = s.split("T");
+  return `${d.replace(/-/g, "/")} ${t || ""}`.trim();
+};
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [items] = useState(SEED_ANNOUNCEMENTS);
+
+  return (
+    <div className="app-shell">
+      <Sidebar resource="announcement" />
+      <div style={{flex:1,padding:'var(--sp-5)',display:'flex',flexDirection:'column',gap:14,minWidth:0,overflowY:'auto'}}>
+      <div className="list-shell">
+        <div className="topbar list-topbar">
+          <div>
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <span className="current">お知らせ管理</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="list-view">
+          <div className="list-header">
+            <div>
+              <h1>お知らせ管理</h1>
+              <p className="list-desc">ガイド向けのお知らせを管理します。公開を開始する日時を指定して掲載できます。</p>
+            </div>
+            <div style={{alignSelf:'flex-start'}}>
+              <a href="announcement-detail.html?mode=create" className="btn primary">＋ 新規作成</a>
+            </div>
+          </div>
+
+          <div className="list-table-wrap">
+            <table className="list-table">
+              <thead>
+                <tr>
+                  <th style={{width:60}}>No.</th>
+                  <th>タイトル</th>
+                  <th style={{width:180}}>公開開始日時</th>
+                  <th style={{width:110}}>状態</th>
+                  <th className="actions" style={{width:80}}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((it, idx) => {
+                  const published = it.publishAt <= NOW;
+                  return (
+                    <tr key={it.id} className="list-row" onClick={() => { window.location.href = `announcement-detail.html?id=${it.id}`; }}>
+                      <td style={{textAlign:'center',color:'var(--muted)',fontSize:12}}>{idx + 1}</td>
+                      <td><strong>{it.title}</strong></td>
+                      <td style={{color:'var(--muted)',fontFamily:'monospace',fontSize:12}}>{fmtDateTime(it.publishAt)}</td>
+                      <td>
+                        {published
+                          ? <span className="badge green">公開中</span>
+                          : <span className="badge blue">公開予約</span>}
+                      </td>
+                      <td className="actions">
+                        <a href={`announcement-detail.html?id=${it.id}`} className="btn sm" onClick={e => e.stopPropagation()}>編集</a>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {items.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="list-empty">お知らせが登録されていません</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

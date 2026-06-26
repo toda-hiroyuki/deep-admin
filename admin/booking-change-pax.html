@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>キャンセル処理 | deep_Admin</title>
+    <title>人数変更処理 | deep_Admin</title>
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css" />
@@ -142,6 +142,11 @@
       .input-affix .pfx { position: absolute; left: 12px; color: var(--muted); font-size: 13px; pointer-events: none; }
       .input-affix .ctrl { padding-left: 24px; font-variant-numeric: tabular-nums; font-weight: 600; }
 
+      /* ── Current value callout ── */
+      .now-box { display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); margin-bottom: 20px; }
+      .now-box .nb-lab { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; text-transform: uppercase; }
+      .now-box .nb-val { font-size: 14px; font-weight: 700; color: var(--ink); }
+
       /* ── Amount table ── */
       .amt-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-variant-numeric: tabular-nums; }
       .amt-table th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-tint); }
@@ -166,6 +171,8 @@
       .kbadge.kb-estimate { background: var(--amber-soft); color: var(--amber); }
       .kbadge.kb-pending { background: var(--bg-sunken); color: var(--muted); border: 1px solid var(--line-strong); }
       .kbadge.kb-record { background: var(--blue-soft); color: var(--blue); }
+      .kubun-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 13px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); margin-bottom: 16px; }
+      .kubun-legend .kl-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); line-height: 1.4; }
       .auto-detect { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
       .auto-detect .ad-lab { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-soft); }
       .auto-detect .ad-val { font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); padding: 2px 10px; border-radius: 999px; }
@@ -196,6 +203,13 @@
       .info-banner.ok .ib-main { color: var(--green); }
       .info-banner .ib-sub { font-size: 12px; color: var(--muted); line-height: 1.5; }
       .info-banner .ib-readonly { flex: none; align-self: center; font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--surface); border: 1px solid var(--line-strong); padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+      .amt-note .an-sub { display: block; font-size: 11px; font-weight: 500; color: var(--muted-soft); margin-top: 2px; }
+      .amt-table tr.memo-row td { padding: 0 16px 14px; border-bottom: 1px solid var(--line-soft); }
+      .amt-table tr.memo-row + tr td { border-top: 0; }
+      .memo-box { background: var(--surface-tint); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 11px 13px; }
+      .memo-box .memo-lab { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 7px; }
+      .memo-box .memo-lab .kbadge { font-size: 10px; padding: 2px 7px; }
+      .memo-box input.ctrl { background: var(--surface); height: 34px; font-size: 12.5px; }
 
       /* ── Reflection checklist table ── */
       .reflect-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
@@ -222,6 +236,10 @@
       .done-banner .db-ic { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
       .done-banner .db-title { font-size: 16px; font-weight: 800; color: var(--green); }
       .done-banner .db-sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+      .auto-line { margin-top: 22px; padding: 12px 14px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+      .pend-line { display: flex; align-items: flex-start; gap: 9px; margin-top: 10px; padding: 12px 14px; background: var(--amber-bg); border: 1px solid var(--amber-soft); border-radius: var(--radius); font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+      .pend-line .pl-ic { flex: none; }
+      .pend-line strong { color: var(--amber); }
 
       /* ── 左ボーダーアクセント・バナー（分岐フロー用） ── */
       .lbanner { padding: 13px 16px; border-radius: var(--radius); border-left: 4px solid var(--line-strong); background: var(--surface-tint); }
@@ -239,27 +257,36 @@
       .reveal { }
       @media (prefers-reduced-motion: no-preference) { .reveal { animation: revealIn 0.2s ease; } }
 
-      /* 締切確認ゲート */
+      /* 締切確認（減員キャンセル料） */
       .deadline-facts { display: flex; flex-wrap: wrap; gap: 12px 32px; padding: 13px 16px; background: var(--surface-tint); border: 1px solid var(--line-soft); border-radius: var(--radius); margin-bottom: 16px; }
       .deadline-facts .df-item { display: flex; flex-direction: column; gap: 3px; }
       .deadline-facts .df-lab { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-soft); }
       .deadline-facts .df-val { font-size: 14px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 
-      /* ── Financial confirm table (cancel flow) ── */
-      .fin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-      .fin-table th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; color: var(--muted); background: var(--surface-tint); padding: 11px 16px; border-bottom: 1px solid var(--line); }
-      .fin-table th.right { text-align: right; }
-      .fin-table td { padding: 13px 16px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
-      .fin-table tr:last-child td { border-bottom: 0; }
-      .fin-table td.lab { font-size: 13.5px; font-weight: 650; color: var(--ink); }
-      .fin-table td.lab .lab-sub { display: block; font-size: 11.5px; font-weight: 500; color: var(--muted); margin-top: 3px; line-height: 1.45; }
-      .fin-table td.kb-cell { width: 116px; white-space: nowrap; }
-      .fin-table td.val-cell { width: 210px; text-align: right; }
-      .fin-table td.val-cell .amt-input-wrap { display: inline-block; width: 160px; }
-      .fin-table tr.row-muted td { opacity: 0.62; }
-      .finalized-tag { font-size: 13px; font-weight: 800; color: var(--green); display: inline-flex; align-items: center; gap: 6px; }
+      /* 追加請求の発行（決済リンク）カード */
+      .charge-card { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; margin-bottom: 22px; background: var(--surface); }
+      .charge-card .cc-head { padding: 13px 18px; border-left: 4px solid var(--amber); background: var(--amber-soft); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .charge-card .cc-title { font-size: 14px; font-weight: 800; color: var(--amber); display: flex; align-items: center; gap: 8px; }
+      .charge-card .cc-amt { font-size: 18px; font-weight: 800; color: var(--amber); font-variant-numeric: tabular-nums; }
+      .charge-card .cc-body { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
 
-      @media (max-width: 640px) { .deadline-facts { flex-direction: column; } }
+      /* インライン・リンクボタン */
+      .link-btn { appearance: none; border: 1px solid var(--blue); background: var(--surface); color: var(--blue); font-size: 12.5px; font-weight: 700; height: 32px; padding: 0 13px; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 7px; transition: background 0.1s; }
+      .link-btn:hover { background: color-mix(in srgb, var(--blue-soft) 70%, var(--surface)); }
+
+      /* 減員：返金ポイント注記 */
+      .refund-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; line-height: 1.7; }
+      .refund-note .rn-head { font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+      .refund-note ul { margin: 0; padding-left: 18px; }
+      .refund-note li + li { margin-top: 2px; }
+
+      /* OTA当日増員フラグ・チェック */
+      .flag-check { display: flex; align-items: flex-start; gap: 11px; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: var(--radius); cursor: pointer; user-select: none; margin-bottom: 14px; transition: border-color 0.1s, background 0.1s; }
+      .flag-check input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+      .flag-check .fc-main { font-weight: 600; font-size: 13.5px; color: var(--ink-soft); }
+      .flag-check.on { border-color: var(--amber); background: var(--amber-bg); }
+
+      @media (max-width: 640px) { .deadline-facts { flex-direction: column; } .charge-card .cc-head { flex-direction: column; align-items: flex-start; } }
 
     </style>
   </head>
@@ -460,8 +487,8 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     <script type="text/babel" data-presets="react">
       const { useState, useRef, useMemo } = React;
 
-      const STEPS_CANCEL = [
-        { kicker: "Step 1", label: "金額確認" },
+      const STEPS_CHANGE = [
+        { kicker: "Step 1", label: "変更内容" },
         { kicker: "Step 2", label: "実行確認" },
         { kicker: "Step 3", label: "処理完了" },
       ];
@@ -555,25 +582,48 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
 
         // 種別選択画面（booking-change.html）から引き継ぐ発生元・変更理由
         const qp = new URLSearchParams(window.location.search);
-        const [changeType, setChangeType] = useState("cancel");
+        const [changeType, setChangeType] = useState("increase"); // increase | decrease
         const [origin, setOrigin] = useState(qp.get("origin") || "guest");
         const [reason, setReason] = useState(qp.get("reason") || "");
 
-        // Step 2 — cancel
+        // Step 2 — headcount
+        const [newAdults, setNewAdults] = useState("");
+        const [newChildren, setNewChildren] = useState("");
+
+        // Step 3 — increase / decrease
+        const [addCharge, setAddCharge] = useState("");
+        const [refundInput, setRefundInput] = useState("");
         const [cancelRate, setCancelRate] = useState("");
 
-        // UC-05：予約ステータス（確定待ち＝販売未確定はキャンセル料0%・返金不要）（シナリオ）
-        const [bookingStatus, setBookingStatus] = useState("confirmed");
-        // 修正1：日時変更のキャンセル期限ゲート（キャンセルフローでも期限判定に使用）
+        // 変更フロー STEP 4（処理完了）
+        const [notifyGuide, setNotifyGuide] = useState(true);
+        const [completionMemo, setCompletionMemo] = useState("");
+        const [executed, setExecuted] = useState(false);
+
+        // キャンセル期限（減員のキャンセル料計算に使用）
         const [cancelDeadline, setCancelDeadline] = useState("within");
+        // 修正3/4：追加請求の決済リンク
+        const [chargeStatus, setChargeStatus] = useState("unsent");
+        const [payUrl, setPayUrl] = useState("");
+        const [payExpiry, setPayExpiry] = useState("");
+        const [paySentAt, setPaySentAt] = useState("");
+        const [payMethod, setPayMethod] = useState("email");
+        // 修正4：OTA当日現地増員フラグ
+        const [otaSameDay, setOtaSameDay] = useState(false);
 
         const selectScenario = (key) => {
           if (key === scenario) return;
           setScenario(key);
           setStep(0);
+          setChangeType("increase");
           setOrigin(qp.get("origin") || "guest");
           setReason(qp.get("reason") || "");
-          setCancelRate("");
+          setNewAdults(""); setNewChildren("");
+          setAddCharge(""); setRefundInput(""); setCancelRate("");
+          setNotifyGuide(true); setCompletionMemo("");
+          setExecuted(false);
+          setChargeStatus("unsent"); setPayUrl(""); setPayExpiry(""); setPaySentAt(""); setPayMethod("email");
+          setOtaSameDay(false);
           const s = SCENARIOS[key];
           showToast(`シナリオを「${CHANNEL_CONFIG[s.salesChannel].label} × 催行回${s.sessionActiveBookings <= 1 ? "中止" : "存続"}」に切替えました`);
         };
@@ -584,14 +634,13 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
         const otherActiveBookings = Math.max(0, SESSION_ACTIVE_BOOKINGS - 1);
         const sessionFate = SESSION_ACTIVE_BOOKINGS <= 1 ? "cancelled" : "remains";
 
-        const isPendingCancel = bookingStatus === "pending";
-
         const showToast = (msg) => {
           setToast(msg);
           clearTimeout(toastTimer.current);
           toastTimer.current = setTimeout(() => setToast(null), 2400);
         };
 
+        const changeTypeLabel = changeType === "increase" ? "人数変更（増員）" : "人数変更（減員）";
         const originLabel = { guest: "ゲスト都合", operator: "運営都合", thirdparty: "第三者都合（OTA・旅行代理店など）" }[origin];
 
         const num = (v) => {
@@ -599,7 +648,12 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
           return isNaN(n) ? null : n;
         };
 
-        // 期限内→0％、期限後→規定料率50％を自動提示（いずれも編集可）
+        // 増員：変更後合計 = 変更前 + 追加請求額
+        const increaseTotal = useMemo(() => {
+          const a = num(addCharge);
+          return a === null ? null : BEFORE_AMOUNT + a;
+        }, [addCharge]);
+
         const suggestedRate = cancelDeadline === "within" ? 0 : 50;
         const effectiveCancelRate = (() => {
           if (origin === "operator") return 0;
@@ -607,35 +661,93 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
           return (cancelRate === "" || isNaN(r)) ? suggestedRate : r;
         })();
 
-        // キャンセル：キャンセル料 = 変更前 × 料率、返金額 = 変更前 − キャンセル料
-        const cancelComputed = useMemo(() => {
-          const fee = Math.round(BEFORE_AMOUNT * effectiveCancelRate / 100);
-          return { fee, refund: BEFORE_AMOUNT - fee };
-        }, [effectiveCancelRate]);
+        // 減員：変更後販売金額 = 変更後人数 × 単価（自動計算）
+        const afterAmount = useMemo(() => {
+          const a = num(newAdults); const c = num(newChildren);
+          if (a === null && c === null) return null;
+          return (a || 0) * UNIT_PRICE.adult + (c || 0) * UNIT_PRICE.child;
+        }, [newAdults, newChildren]);
+        // 減員：キャンセル対象金額 = 変更前後の販売金額の差額（自動計算・編集可）
+        const autoCancelTarget = afterAmount === null ? null : Math.max(0, BEFORE_AMOUNT - afterAmount);
+        const cancelTarget = refundInput !== "" ? num(refundInput) : autoCancelTarget;
+        // 減員：キャンセル料 = 対象金額 × 料率／返金額 = 対象金額 − キャンセル料（自動計算）
+        const decCancelFee = cancelTarget === null ? null : Math.round(cancelTarget * effectiveCancelRate / 100);
+        const decRefund = (cancelTarget === null || decCancelFee === null) ? null : cancelTarget - decCancelFee;
+        // 減員：変更後合計 = 変更前 − キャンセル対象金額
+        const decreaseTotal = cancelTarget === null ? null : BEFORE_AMOUNT - cancelTarget;
 
-        // キャンセル精算の自動計算値
-        const autoCancelFee = isPendingCancel ? 0 : (origin === "operator" ? 0 : (cancelComputed.fee == null ? 0 : cancelComputed.fee));
-        const autoRefund = isPendingCancel ? 0 : (origin === "operator" ? BEFORE_AMOUNT : (BEFORE_AMOUNT - autoCancelFee));
-        const autoGuide = sessionFate === "cancelled" ? 0 : 8000;
-        const autoOtaFee = channel.otaFeeRate != null ? Math.round(BEFORE_AMOUNT * channel.otaFeeRate) : null;
-        const autoPaymentFee = channel.paymentFeeRate != null ? Math.round(BEFORE_AMOUNT * channel.paymentFeeRate) : null;
-
-        const todayDateTime = (cancelDeadline === "within" ? "2026/06/08（月）" : "2026/06/15（月）") + " 10:30";
-
-        const pendingItems = ["施設キャンセル料"];
-
-        // ガイド通知
-        const [notifyGuide, setNotifyGuide] = useState(true);
-        const [completionMemo, setCompletionMemo] = useState("");
+        // 修正3/4：追加請求金額（増員＝追加請求額）
+        const additionalChargeAmount = num(addCharge) || 0;
+        // 変更後の参加人数テキスト（確認サマリー用）
+        const newHeadcountText = (() => {
+          const a = num(newAdults), c = num(newChildren);
+          if (a === null && c === null) return null;
+          return `大人${a || 0} 子供${c || 0}（計${(a || 0) + (c || 0)}名）`;
+        })();
+        // 修正4：OTA当日現地増員時は差額処理を直販同様に扱う
+        const effectiveShowPriceDiff = channel.showPriceDiff
+          || (changeType === "increase" && salesChannel === "ota" && otaSameDay);
+        // 修正3/4：決済リンク発行セクションの表示条件
+        const showChargeIssue = changeType === "increase" && salesChannel === "ota" && otaSameDay;
 
         // シナリオトグル
-        const setDeadlineScenario = (v) => { setCancelDeadline(v); setCancelRate(""); };
+        const todayDateTime = (cancelDeadline === "within" ? "2026/06/08（月）" : "2026/06/15（月）") + " 10:30";
 
         const next = () => setStep((s) => Math.min(s + 1, 2));
         const prev = () => setStep((s) => {
           if (s === 0) { window.location.href = "booking-change.html"; return s; }
           return Math.max(s - 1, 0);
         });
+
+        // ── 反映確認の中身 ──
+        const reflectInner = (
+          <React.Fragment>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
+              この処理を実行すると、以下の各システムに自動で反映されます。状態を確認してください。
+            </p>
+            <table className="reflect-table">
+              <thead>
+                <tr><th>反映先</th><th>内容</th><th>状態</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="r-target"><span className="r-ic">RS</span>リソース</td>
+                  <td className="r-content">{changeType === "increase" ? <React.Fragment>増員分のリソースを<strong>追加確保</strong></React.Fragment> : <React.Fragment>減員分のリソースを<strong>一部解放</strong></React.Fragment>}</td>
+                  <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ {changeType === "increase" ? "確保可能" : "解放予定"}</span></td>
+                </tr>
+                <tr>
+                  <td className="r-target"><span className="r-ic">TI</span>催行回</td>
+                  <td className="r-content">催行回の<strong>現在人数を更新</strong>（催行回は存続）</td>
+                  <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ 処理予定</span></td>
+                </tr>
+                <tr>
+                  <td className="r-target"><span className="r-ic">GD</span>ガイド手配</td>
+                  <td className="r-content">再手配要否フラグを<strong>ON</strong><br /><span style={{ color: "var(--muted)", fontSize: 12 }}>変更理由：{changeType === "increase" ? "増員" : "減員"}</span></td>
+                  <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
+                </tr>
+                {(() => {
+                  const deepHandles = channel.showRefund;
+                  const target = changeType === "increase" ? "追加請求" : "返金処理";
+                  return (
+                    <tr className={deepHandles ? "" : "row-muted"}>
+                      <td className="r-target"><span className="r-ic">{changeType === "increase" ? "AC" : "RF"}</span>{target}<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>{channel.label}</span></td>
+                      <td className="r-content">{deepHandles
+                        ? (changeType === "increase"
+                            ? <React.Fragment>増員分を<strong>追加請求</strong></React.Fragment>
+                            : <React.Fragment>減員分の<strong>返金レコードを作成</strong>（未処理）</React.Fragment>)
+                        : (changeType === "increase"
+                            ? <React.Fragment><strong>次回振込で調整・Deep対応不要</strong><br /><span className="r-sub">追加請求はOTAの次回精算で調整されます</span></React.Fragment>
+                            : <React.Fragment><strong>OTA返金済み（Deep対応不要）</strong><br /><span className="r-sub">返金処理はOTA側で行われます</span></React.Fragment>)}</td>
+                      <td className="r-status">{deepHandles
+                        ? <span className="status-pill amber"><span className="dot"></span>⚠️ 未処理</span>
+                        : <span className="status-pill muted"><span className="dot"></span>— 対応不要</span>}</td>
+                    </tr>
+                  );
+                })()}
+              </tbody>
+            </table>
+          </React.Fragment>
+        );
 
         // ── ガイドへの通知要否（変更内容の一部）──
         const notifyGuideSection = (
@@ -644,8 +756,8 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
               <div className="form-section-title">ガイドへの通知要否</div>
               <div className="radio-row">
                 {[
-                  { v: true, main: "通知する", sub: "担当ガイドへキャンセル内容を通知します。" },
-                  { v: false, main: "通知しない", sub: "通知せず、手配キャンセル時にまとめて連絡します。" },
+                  { v: true, main: "通知する", sub: "担当ガイドへ変更内容を通知します。" },
+                  { v: false, main: "通知しない", sub: "通知せず、再手配時にまとめて連絡します。" },
                 ].map(o => (
                   <label key={String(o.v)} className={`radio-opt ${notifyGuide === o.v ? "checked" : ""}`}>
                     <input type="radio" name="notifyGuide" checked={notifyGuide === o.v}
@@ -668,60 +780,6 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
           </div>
         );
 
-        // ── 反映確認テーブル ──
-        const reflectInner = (
-          <React.Fragment>
-            <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
-              この処理を実行すると、以下の各システムに自動で反映されます。状態を確認してください。
-            </p>
-            <table className="reflect-table">
-              <thead>
-                <tr><th>反映先</th><th>内容</th><th>状態</th></tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="r-target"><span className="r-ic">RS</span>リソース</td>
-                  <td className="r-content">予約分のリソースを<strong>解放</strong></td>
-                  <td className="r-status"><span className="status-pill green"><span className="dot"></span>✅ 解放予定</span></td>
-                </tr>
-                <tr>
-                  <td className="r-target"><span className="r-ic">TI</span>催行回</td>
-                  <td className="r-content">{sessionFate === "cancelled"
-                    ? <React.Fragment>この予約が最後の1件のため、旧催行回を<strong>無効化</strong></React.Fragment>
-                    : <React.Fragment>他{otherActiveBookings}件の予約が残存するため、催行回は<strong>存続</strong>（人数のみ更新）</React.Fragment>}</td>
-                  <td className="r-status">{sessionFate === "cancelled"
-                    ? <span className="status-pill amber"><span className="dot"></span>⚠️ 無効化</span>
-                    : <span className="status-pill green"><span className="dot"></span>✅ 存続</span>}</td>
-                </tr>
-                <tr>
-                  <td className="r-target"><span className="r-ic">GD</span>ガイド手配</td>
-                  <td className="r-content">{sessionFate === "cancelled"
-                    ? <React.Fragment>手配レコードを<strong>キャンセルに変更</strong>し、ガイドへの通知要否フラグを<strong>ON</strong></React.Fragment>
-                    : <React.Fragment>ガイド手配を<strong>維持</strong>（催行回存続のため）。再手配要否フラグを確認してください</React.Fragment>}</td>
-                  <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
-                </tr>
-                {channel.showRefund && (
-                  <tr>
-                    <td className="r-target"><span className="r-ic">RF</span>返金処理</td>
-                    <td className="r-content">返金レコードを<strong>作成</strong>（未処理）。実行後に返金操作が必要です</td>
-                    <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 未処理</span></td>
-                  </tr>
-                )}
-                {pendingItems.length > 0 && (
-                  <tr>
-                    <td className="r-target"><span className="r-ic">PR</span>運営費<br /><span style={{ fontWeight: 600, fontSize: 11, color: "var(--muted-soft)" }}>（要確認後入力あり）</span></td>
-                    <td className="r-content">
-                      {pendingItems.join("・")}を<strong>入力待ちとして登録</strong>
-                      <br /><span style={{ color: "var(--muted)", fontSize: 12 }}>外部確認後に運営が手動入力します。</span>
-                    </td>
-                    <td className="r-status"><span className="status-pill muted"><span className="dot"></span>⏳ ツアー後入力待ち</span></td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </React.Fragment>
-        );
-
         return (
           <React.Fragment>
             <div className="app-shell">
@@ -733,11 +791,11 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
                 <span className="sep">›</span>
                 <a href="booking-detail.html">予約詳細</a>
                 <span className="sep">›</span>
-                <span className="current">キャンセル処理</span>
+                <span className="current">人数変更処理</span>
               </div>
               <div className="page-title">
-                <h1>キャンセル処理</h1>
-                <span className="sub">予約をキャンセルします。キャンセルポリシーに基づき返金額を計算します</span>
+                <h1>人数変更処理</h1>
+                <span className="sub">予約の参加人数を変更します（増員・減員）</span>
               </div>
 
               {/* ── 対象予約サマリー ── */}
@@ -772,104 +830,196 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
               </div>
 
               {/* ── Step indicator ── */}
-              <Stepper current={step} steps={STEPS_CANCEL} />
+              <Stepper current={step} steps={STEPS_CHANGE} />
 
               {/* ════════ STEP 1 ════════ */}
-              {/* キャンセルフロー：キャンセル料・返金額の確認 */}
               {step === 0 && (
-                <section className="card" data-screen-label="Step 1 金額確認">
+                <section className="card" data-screen-label="Step 1 変更内容">
                   <div className="card-head">
-                    <div className="card-title"><span className="sec-no">1</span>キャンセル料・返金額の確認{isPendingCancel && <span className="sec-hint">確定待ち（販売未確定）</span>}</div>
+                    <div className="card-title"><span className="sec-no">1</span>変更内容の入力<span className="sec-hint">{changeTypeLabel}</span></div>
                   </div>
                   <div className="card-body">
-                    {/* UC-05：確定待ち＝販売未確定。発生元・期限・チャネルに優先し、キャンセル料0％・返金不要。 */}
-                    {isPendingCancel ? (
-                      <React.Fragment>
-                        <div className="lbanner ok">
-                          <div className="lb-title">✅ 確定待ち（販売未確定）のためキャンセル料はかかりません</div>
-                          <div className="lb-sub">この予約はまだ確定していない（リクエスト予約・確定待ち）ため、キャンセルポリシーは適用しません。キャンセル料率 0％・返金不要として記録します。発生元・キャンセル期限・販売チャネルに関わらず一律です。</div>
-                        </div>
-                        <table className="amt-table" style={{ marginTop: 16 }}>
-                          <thead>
-                            <tr><th>項目</th><th className="right">金額</th></tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td className="lab">販売金額<span className="lab-sub">販売未確定（確定待ち）</span></td>
-                              <td className="val-cell"><span className="amt-note pend">未確定</span></td>
-                            </tr>
-                            <tr>
-                              <td className="lab">適用キャンセル料率<span className="lab-sub">確定待ちのためポリシー適用外</span></td>
-                              <td className="val-cell"><span className="val-amt">0％</span></td>
-                            </tr>
-                            <tr className="diff-row">
-                              <td className="lab">キャンセル料<span className="lab-sub">販売未確定のため発生しません</span></td>
-                              <td className="val-cell"><span className="diff-amount zero">{yen(0)}</span></td>
-                            </tr>
-                            <tr className="diff-row">
-                              <td className="lab">返金額<span className="lab-sub">入金が確定していないため返金不要</span></td>
-                              <td className="val-cell"><span className="amt-note rec">返金不要（販売未確定）</span></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                        <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6 }}>
-                          催行回の仮紐付け解除・リソースの仮確保解放などの反映は、次のSTEP 3でまとめて確認します。
-                        </p>
-                      </React.Fragment>
-                    ) : (
-                    <React.Fragment>
-                    <div className="deadline-facts">
-                      <div className="df-item"><span className="df-lab">キャンセル料判定日時（本日）</span><span className="df-val">{todayDateTime}</span></div>
-                      <div className="df-item"><span className="df-lab">無料キャンセル期限</span><span className="df-val">{FREE_CANCEL_DEADLINE}</span></div>
-                      <div className="df-item"><span className="df-lab">適用キャンセルポリシー</span><span className="df-val">{CANCEL_POLICY_NAME}</span></div>
+                    <div className="form-section" style={{ marginTop: 0, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid var(--line-soft)" }}>
+                      <div className="form-section-title">増員 / 減員<span className="req">*</span></div>
+                      <div className="radio-row">
+                        {[
+                          { v: "increase", main: "増員", sub: "参加人数を増やします" },
+                          { v: "decrease", main: "減員・部分キャンセル", sub: "参加人数を減らします" },
+                        ].map(o => (
+                          <label key={o.v} className={`radio-opt ${changeType === o.v ? "checked" : ""}`}>
+                            <input type="radio" name="paxMode" checked={changeType === o.v}
+                              onChange={() => setChangeType(o.v)} />
+                            <span>
+                              <span className="ro-main">{o.main}</span>
+                              <span className="ro-sub">{o.sub}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
+                    <div className="now-box">
+                      <span className="nb-lab">現在の参加人数</span>
+                      <span className="nb-val">大人4 子供1（計5名）</span>
+                    </div>
+                    <div className="field-grid">
+                      <div>
+                        <label className="filter-label">変更後 大人人数<span style={{ color: "var(--coral)" }}> *</span></label>
+                        <input type="number" min="0" className="ctrl" placeholder="例：6"
+                          value={newAdults} onChange={e => setNewAdults(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="filter-label">変更後 子供人数</label>
+                        <input type="number" min="0" className="ctrl" placeholder="例：1"
+                          value={newChildren} onChange={e => setNewChildren(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                  {/* 販売金額の入力・確認（変更内容の一部） */}
+                  <div className="card-body" style={{ borderTop: "1px solid var(--line-soft)" }}>
+                    {salesChannel === "ota" && changeType === "increase" && (
+                      <div style={{ marginBottom: 18 }}>
+                        <label className={`flag-check ${otaSameDay ? "on" : ""}`}>
+                          <input type="checkbox" checked={otaSameDay} onChange={e => setOtaSameDay(e.target.checked)} />
+                          <span className="fc-main">当日現地での増員（キャンセル期限後のため OTA 側での変更不可）</span>
+                        </label>
+                        {otaSameDay
+                          ? <div className="lbanner warn reveal"><div className="lb-title">⚠️ 当日現地での増員</div><div className="lb-sub">当日現地での増員のため、OTA 経由での請求ができません。直販と同じ追加請求フロー（決済リンク発行）で処理します。</div></div>
+                          : <div className="lbanner note"><div className="lb-title">OTA経由の増員</div><div className="lb-sub">OTA 経由の増員は OTA が次回定期振込時に調整します。Deep 側の追加請求処理は不要です。</div></div>}
+                      </div>
+                    )}
                     <div className="auto-detect">
-                      <span className="ad-lab">キャンセルポリシー参照</span>
-                      <span>{cancelDeadline === "within" ? "無料キャンセル期限内のため、料率0％を自動提示しています（編集可）。" : "無料キャンセル期限後のため、規定料率50％を自動提示しています（編集可）。"}キャンセル料・返金額は自動計算されます。</span>
-                      {origin === "operator" && <span className="ad-val" style={{ marginLeft: 4 }}>運営都合：0円・全額返金</span>}
+                      <span className="ad-lab">販売金額の入力・確認</span>
+                      <span>チャネル手数料・ガイド精算・施設費などは、ツアー後に月次締め確認画面で確定します。</span>
                     </div>
                     <table className="amt-table">
                       <thead>
-                        <tr><th>項目</th><th className="right">金額 / 入力</th></tr>
+                        <tr><th>項目</th><th className="right">金額</th></tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="lab">販売金額<span className="lab-sub">現在の予約金額（表示のみ）</span></td>
+                          <td className="lab">変更前販売金額<span className="lab-sub">現在の予約金額（表示のみ）</span></td>
                           <td className="val-cell"><span className="val-amt">{yen(BEFORE_AMOUNT)}</span></td>
                         </tr>
-                        <tr>
-                          <td className="lab">適用キャンセル料率<span className="lab-sub">{cancelDeadline === "within" ? "無料キャンセル期限内：0％を自動提示（編集可）" : "期限後：規定料率50％を自動提示（編集可）"}{origin === "operator" ? "／運営都合は0％" : ""}</span></td>
-                          <td className="val-cell">
-                            <span className="amt-input-wrap"><span className="input-affix">
-                              <input className="ctrl" inputMode="decimal" placeholder="0"
-                                value={origin === "operator" ? "0" : (cancelRate === "" ? String(suggestedRate) : cancelRate)}
-                                disabled={origin === "operator"}
-                                onChange={e => setCancelRate(e.target.value)}
-                                style={{ textAlign: "right", paddingLeft: 10, paddingRight: 24 }} />
-                              <span className="pfx" style={{ left: "auto", right: 12 }}>％</span>
-                            </span></span>
-                          </td>
-                        </tr>
-                        <tr className="diff-row">
-                          <td className="lab">キャンセル料<span className="lab-sub">販売金額 × 料率（運営都合は0円）</span></td>
-                          <td className="val-cell">
-                            <span className="diff-amount pos">{yen(autoCancelFee)}</span>
-                          </td>
-                        </tr>
-                        <tr className="diff-row">
-                          <td className="lab">返金額<span className="lab-sub">販売金額 − キャンセル料{channel.showRefund ? "" : "（OTA経由：返金処理はOTA側で行われます）"}</span></td>
-                          <td className="val-cell">
-                            {channel.showRefund
-                              ? <span className="diff-amount neg">{yen(autoRefund)}</span>
-                              : <span className="amt-note rec">OTA返金済み（Deep対応不要）</span>}
-                          </td>
-                        </tr>
+
+                        {!effectiveShowPriceDiff && (
+                          <tr>
+                            <td colSpan={2} style={{ color: "var(--muted)", fontWeight: 500, lineHeight: 1.6 }}>
+                              <strong style={{ color: "var(--ink-soft)" }}>販売金額の差額調整はOTA側で処理されます</strong><br />
+                              OTA経由予約のため、追加請求・差額返金はOTAプラットフォームの次回精算で調整されます（Deep対応不要）。
+                            </td>
+                          </tr>
+                        )}
+
+                        {effectiveShowPriceDiff && changeType === "increase" && (
+                          <React.Fragment>
+                            <tr>
+                              <td className="lab">追加請求額<span className="lab-sub">Tiered Pricing計算。増員＝追加請求（手動入力）</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <span className="pfx">¥</span>
+                                  <input className="ctrl" inputMode="numeric" placeholder="0"
+                                    value={addCharge} onChange={e => setAddCharge(e.target.value)} style={{ textAlign: "right" }} />
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">変更後販売金額<span className="lab-sub">変更前 ＋ 追加請求額（自動計算）</span></td>
+                              <td className="val-cell">
+                                {increaseTotal === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className="diff-amount" style={{ color: "var(--ink)" }}>{yen(increaseTotal)}</span>}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        )}
+
+                        {channel.showPriceDiff && changeType === "decrease" && (
+                          <React.Fragment>
+                            <tr>
+                              <td className="lab">変更後販売金額<span className="lab-sub">変更後人数 × 単価（大人¥16,000・子供¥11,000）で自動計算</span></td>
+                              <td className="val-cell">
+                                {afterAmount === null
+                                  ? <span className="diff-amount zero">—（人数を入力）</span>
+                                  : <span className="diff-amount" style={{ color: "var(--ink)" }}>{yen(afterAmount)}</span>}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="lab">キャンセル対象金額<span className="lab-sub">変更前後の販売金額の差額を自動計算（編集可）</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <span className="pfx">¥</span>
+                                  <input className="ctrl" inputMode="numeric" placeholder="0"
+                                    value={refundInput !== "" ? refundInput : (autoCancelTarget === null ? "" : String(autoCancelTarget))}
+                                    onChange={e => setRefundInput(e.target.value)} style={{ textAlign: "right" }} />
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="lab">キャンセル料判定日時<span className="lab-sub">本日日時（読み取り専用）</span></td>
+                              <td className="val-cell"><span className="val-amt" style={{ fontSize: 13 }}>{todayDateTime}</span></td>
+                            </tr>
+                            <tr>
+                              <td className="lab">適用キャンセルポリシー<span className="lab-sub">予約時点のポリシー（読み取り専用）</span></td>
+                              <td className="val-cell"><span className="val-amt" style={{ fontSize: 13 }}>{CANCEL_POLICY_NAME}</span></td>
+                            </tr>
+                            <tr>
+                              <td className="lab">適用キャンセル料率<span className="lab-sub">{cancelDeadline === "within" ? "無料キャンセル期限内：0％を自動提示（編集可）" : "期限後：規定料率50％を自動提示（編集可）"}{origin === "operator" ? "／運営都合は0％" : ""}</span></td>
+                              <td className="val-cell">
+                                <span className="amt-input-wrap"><span className="input-affix">
+                                  <input className="ctrl" inputMode="decimal" placeholder="0"
+                                    value={origin === "operator" ? "0" : (cancelRate === "" ? String(suggestedRate) : cancelRate)}
+                                    disabled={origin === "operator"}
+                                    onChange={e => setCancelRate(e.target.value)}
+                                    style={{ textAlign: "right", paddingLeft: 10, paddingRight: 24 }} />
+                                  <span className="pfx" style={{ left: "auto", right: 12 }}>％</span>
+                                </span></span>
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">キャンセル料<span className="lab-sub">キャンセル対象金額 × 料率（自動計算・読み取り専用）</span></td>
+                              <td className="val-cell">
+                                {decCancelFee === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className="diff-amount pos">{yen(decCancelFee)}</span>}
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">返金額<span className="lab-sub">キャンセル対象金額 − キャンセル料（自動計算・読み取り専用）</span></td>
+                              <td className="val-cell">
+                                {decRefund === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+                                      {decRefund > 0
+                                        ? <span className="diff-amount neg">{yen(decRefund)} 返金</span>
+                                        : <span className="diff-amount zero">返金なし</span>}
+                                      <span className="kbadge kb-estimate">返金ステータス：{effectiveCancelRate >= 100 ? "不要" : "未処理"}（自動設定）</span>
+                                    </span>}
+                              </td>
+                            </tr>
+                            <tr className="diff-row">
+                              <td className="lab">変更後販売金額（確定）<span className="lab-sub">変更前 − キャンセル対象金額（自動計算）</span></td>
+                              <td className="val-cell">
+                                {decreaseTotal === null
+                                  ? <span className="diff-amount zero">—</span>
+                                  : <span className="diff-amount" style={{ color: "var(--ink)" }}>{yen(decreaseTotal)}</span>}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        )}
                       </tbody>
                     </table>
-                    <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6 }}>
-                      ガイド精算・チャネル手数料・施設キャンセル料・決済手数料などの全財務項目は、実行後の精算確定画面（STEP 5）でまとめて確認・確定します。
-                    </p>
-                    </React.Fragment>
+
+                    {changeType === "decrease" && (
+                      <div className="refund-note">
+                        <div className="rn-head">ポイント：「有料キャンセル期限後」でも、料率が100％でなければ返金が発生します。</div>
+                        <ul>
+                          <li>料率 &lt; 100％　→　返金あり（返金額 = キャンセル対象金額 − キャンセル料）</li>
+                          <li>料率 = 100％　→　返金なし（返金ステータスが自動的に「不要」になります）</li>
+                        </ul>
+                      </div>
+                    )}
+                    {changeType === "increase" && salesChannel === "ota" && otaSameDay && (
+                      <p style={{ margin: "14px 0 0", fontSize: 12.5, color: "var(--amber)", fontWeight: 600 }}>追加請求レコードを作成し、完了画面で決済リンクを発行します（直販と同じ処理）。</p>
                     )}
                   </div>
                   {notifyGuideSection}
@@ -880,66 +1030,73 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
                 </section>
               )}
 
-              {/* ════════ STEP 3 ════════ */}
-              {/* キャンセルフロー：実行確認（催行回自動判定バナー統合） */}
+              {/* ════════ STEP 2 実行確認 ════════ */}
               {step === 1 && (
                 <section className="card" data-screen-label="Step 2 実行確認">
                   <div className="card-head">
-                    <div className="card-title"><span className="sec-no">2</span>実行確認</div>
+                    <div className="card-title"><span className="sec-no">2</span>実行確認<span className="sec-hint">{changeTypeLabel}</span></div>
                   </div>
                   <div className="card-body">
-                    <div className="form-section" style={{ marginTop: 0, marginBottom: 20 }}>
-                      <div className="form-section-title">催行回の扱い<span className="auto-tag">自動判定</span></div>
-                      <div className={`info-banner ${sessionFate === "cancelled" ? "warn" : "ok"}`} role="status">
-                        <span className="ib-ic">{sessionFate === "cancelled" ? "⚠️" : "✅"}</span>
-                        <div className="ib-body">
-                          <span className="ib-main">{sessionFate === "cancelled"
-                            ? "催行回は中止になります（この予約が最後の1件です）"
-                            : `催行回は存続します（他に${otherActiveBookings}件の予約があります）`}</span>
-                          <span className="ib-sub">
-                            システムが催行回の有効予約件数（キャンセル済みを除く）を参照して自動判定しました。
-                            現在の有効予約：<strong>{SESSION_ACTIVE_BOOKINGS}件</strong>（この予約を含む）
-                          </span>
+                    {/* 変更内容の確認（Step 1 の入力内容のサマリー） */}
+                    <div className="form-section" style={{ marginTop: 0, marginBottom: 22 }}>
+                      <div className="form-section-title">変更内容の確認</div>
+                      <div className="review-grid">
+                        <div className="rv-dt">発生元区分</div>
+                        <div className="rv-dd">{originLabel}</div>
+                        <div className="rv-dt">変更理由</div>
+                        <div className="rv-dd">{reason.trim() ? reason : <span className="placeholder">（入力なし）</span>}</div>
+                        <div className="rv-dt">変更種別</div>
+                        <div className="rv-dd">{changeType === "increase" ? "増員" : "減員・部分キャンセル"}</div>
+                        <div className="rv-dt">参加人数</div>
+                        <div className="rv-dd">
+                          <span style={{ color: "var(--muted)" }}>大人4 子供1（計5名）</span>
+                          <span style={{ color: "var(--muted-soft)" }}>→</span>
+                          {newHeadcountText
+                            ? <strong>{newHeadcountText}</strong>
+                            : <span className="placeholder">未入力</span>}
                         </div>
-                        <span className="ib-readonly">読み取り専用</span>
+                        {!effectiveShowPriceDiff ? (
+                          <React.Fragment>
+                            <div className="rv-dt">販売金額</div>
+                            <div className="rv-dd"><span style={{ color: "var(--muted)" }}>差額調整はOTA側で処理（Deep対応不要）</span></div>
+                          </React.Fragment>
+                        ) : changeType === "increase" ? (
+                          <React.Fragment>
+                            <div className="rv-dt">追加請求額</div>
+                            <div className="rv-dd">{num(addCharge) === null ? <span className="placeholder">未入力</span> : <strong>{yen(num(addCharge))}</strong>}</div>
+                            <div className="rv-dt">変更後販売金額</div>
+                            <div className="rv-dd">{increaseTotal === null ? <span className="placeholder">未入力</span> : <strong>{yen(increaseTotal)}</strong>}</div>
+                          </React.Fragment>
+                        ) : (
+                          <React.Fragment>
+                            <div className="rv-dt">返金額</div>
+                            <div className="rv-dd">
+                              {decRefund === null ? <span className="placeholder">未入力</span>
+                                : decRefund > 0 ? <strong className="diff-amount neg" style={{ fontSize: 14 }}>{yen(decRefund)} 返金</strong>
+                                : <span>返金なし</span>}
+                            </div>
+                            <div className="rv-dt">変更後販売金額</div>
+                            <div className="rv-dd">{decreaseTotal === null ? <span className="placeholder">未入力</span> : <strong>{yen(decreaseTotal)}</strong>}</div>
+                          </React.Fragment>
+                        )}
+                        <div className="rv-dt">ガイド通知</div>
+                        <div className="rv-dd">{notifyGuide ? "通知する" : "通知しない"}</div>
                       </div>
-                    </div>
-                    <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--muted)" }}>
-                      以下の内容でキャンセルを実行します。実行後は変更ログとして記録されます。
-                    </p>
-                    <div className="review-grid">
-                      <div className="rv-dt">変更種別</div>
-                      <div className="rv-dd">キャンセル</div>
-                      <div className="rv-dt">発生元</div>
-                      <div className="rv-dd">{originLabel}</div>
-                      <div className="rv-dt">適用キャンセル料率</div>
-                      <div className="rv-dd">{origin === "operator" ? "0％（運営都合）" : `${effectiveCancelRate}％${cancelRate === "" ? "（自動提示）" : ""}`}</div>
-                      <div className="rv-dt">キャンセル料</div>
-                      <div className="rv-dd">{yen(autoCancelFee)}</div>
-                      <div className="rv-dt">返金額</div>
-                      <div className="rv-dd">{channel.showRefund ? yen(autoRefund) : "OTA返金済み（Deep対応不要）"}</div>
-                      <div className="rv-dt">催行回の扱い</div>
-                      <div className="rv-dd">{sessionFate === "cancelled" ? "中止（この予約が最後の1件）" : `存続（他に${otherActiveBookings}件）`}</div>
-                      <div className="rv-dt">変更理由</div>
-                      <div className="rv-dd">{reason ? reason : <span className="placeholder">未入力</span>}</div>
-                      <div className="rv-dt">ガイド通知</div>
-                      <div className="rv-dd">{notifyGuide ? "通知する" : "通知しない"}</div>
                     </div>
                     {reflectInner}
                     <div className="exec-note">
                       <span className="en-ic">⚠️</span>
-                      <span>実行すると取り消せません。リソース・催行回・ガイド手配へ即時反映されます。</span>
+                      <span>処理を実行すると取り消せません。リソース・催行回・ガイド手配へ即時反映されます。</span>
                     </div>
                   </div>
                   <div className="card-foot split">
                     <button className="btn" onClick={prev}>← 前へ</button>
-                    <button className="btn primary lg" onClick={() => { next(); showToast("キャンセルを実行しました（変更ログに記録）"); }}>キャンセルを実行する →</button>
+                    <button className="btn primary lg" onClick={() => { setExecuted(true); next(); showToast(`${changeTypeLabel}の処理を実行しました（変更ログに記録）`); }}>処理を実行する →</button>
                   </div>
                 </section>
               )}
 
               {/* ════════ STEP 4 ════════ */}
-              {/* キャンセルフロー：処理完了 */}
               {step === 2 && (
                 <section className="card" data-screen-label="Step 3 処理完了">
                   <div className="card-head">
@@ -949,10 +1106,61 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
                     <div className="done-banner">
                       <span className="db-ic">✓</span>
                       <div>
-                        <div className="db-title">キャンセル処理が完了しました</div>
-                        <div className="db-sub">キャンセルを実行し、変更ログに記録しました。</div>
+                        <div className="db-title">処理が完了しました</div>
+                        <div className="db-sub">{changeTypeLabel}の処理を実行し、変更ログに記録しました。</div>
                       </div>
                     </div>
+
+                    {showChargeIssue && (
+                      <div className="charge-card">
+                        <div className="cc-head">
+                          <div className="cc-title">💳 追加請求の発行</div>
+                          <div className="cc-amt">{yen(additionalChargeAmount)}</div>
+                        </div>
+                        <div className="cc-body">
+                          <div>
+                            <label className="filter-label">追加請求ステータス</label>
+                            <select className="ctrl" value={chargeStatus} onChange={e => setChargeStatus(e.target.value)}>
+                              <option value="unsent">⬜ 未送付</option>
+                              <option value="invoiced">📤 請求済み（未払い）</option>
+                              <option value="paid">✅ 支払い済み</option>
+                              <option value="expired">⏰ 期限切れ</option>
+                              <option value="cancelled">🚫 取消</option>
+                            </select>
+                          </div>
+                          {(chargeStatus === "invoiced" || chargeStatus === "paid") && (
+                            <div className="field-grid reveal">
+                              <div>
+                                <label className="filter-label">決済リンク URL</label>
+                                <input className="ctrl" placeholder="https://buy.stripe.com/..." value={payUrl} onChange={e => setPayUrl(e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="filter-label">リンク有効期限</label>
+                                <input type="date" className="ctrl" value={payExpiry} onChange={e => setPayExpiry(e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="filter-label">送付日時</label>
+                                <input type="datetime-local" className="ctrl" value={paySentAt} onChange={e => setPaySentAt(e.target.value)} />
+                              </div>
+                              <div>
+                                <label className="filter-label">送付手段</label>
+                                <select className="ctrl" value={payMethod} onChange={e => setPayMethod(e.target.value)}>
+                                  <option value="email">メール</option>
+                                  <option value="line">LINE</option>
+                                  <option value="whatsapp">WhatsApp</option>
+                                  <option value="other">その他</option>
+                                </select>
+                              </div>
+                            </div>
+                          )}
+                          {chargeStatus === "expired" && (
+                            <div className="lbanner alert reveal"><div className="lb-sub" style={{ color: "var(--coral)", fontWeight: 600 }}>⚠️ 決済リンクの有効期限が切れています。Stripe 管理画面で新しいリンクを発行し、URLを更新してください。</div></div>
+                          )}
+                          <div className="lbanner note"><div className="lb-sub">決済リンクは Stripe 管理画面で発行し、URL をここに記録してください。ゲストにリンクを送付後、ステータスを「請求済み」に更新してください。</div></div>
+                        </div>
+                      </div>
+                    )}
+
                     <p style={{ margin: "20px 0 12px", fontSize: 13, fontWeight: 700, color: "var(--ink-soft)" }}>以下の対応を行ってください</p>
                     <table className="reflect-table">
                       <thead>
@@ -961,30 +1169,26 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
                       <tbody>
                         <tr>
                           <td className="r-target"><span className="r-ic">GD</span>ガイド手配</td>
-                          <td className="r-content">{sessionFate === "cancelled"
-                            ? <React.Fragment>手配レコードを<strong>キャンセルに変更</strong>し、ガイドへ<strong>通知</strong>してください</React.Fragment>
-                            : <React.Fragment>ガイド手配を<strong>維持</strong>（キャンセルしない）。<strong>再手配要否フラグ</strong>を確認してください</React.Fragment>}</td>
-                          <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要対応</span></td>
+                          <td className="r-content">再手配要否フラグが<strong>ON</strong>になっています。{changeType === "increase" ? "増員後の" : "減員後の"}ガイドアサインを確認してください</td>
+                          <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 要確認</span></td>
                         </tr>
-                        {channel.showRefund && (
+                        {channel.showRefund && changeType === "decrease" && (
                           <tr>
                             <td className="r-target"><span className="r-ic">RF</span>返金処理</td>
                             <td className="r-content">返金レコードが<strong>作成されました（未処理）</strong>。返金操作を実施してください</td>
                             <td className="r-status"><span className="status-pill amber"><span className="dot"></span>⚠️ 未処理</span></td>
                           </tr>
                         )}
-                        {pendingItems.length > 0 && (
-                          <tr>
-                            <td className="r-target"><span className="r-ic">PR</span>運営費</td>
-                            <td className="r-content">{pendingItems.join("・")}を<strong>確認後に入力</strong>してください</td>
-                            <td className="r-status"><span className="status-pill muted"><span className="dot"></span>⏳ 入力待ち</span></td>
-                          </tr>
-                        )}
                       </tbody>
                     </table>
+                    <div className="auto-line">販売金額・チャネル手数料・ゲスト立替経費・決済手数料は自動更新されました。</div>
+                    <div className="pend-line">
+                      <span className="pl-ic">⏳</span>
+                      施設費など未確定の項目は、<strong>月次締め確認画面で後日確認してください。</strong>
+                    </div>
                   </div>
                   <div className="card-foot end">
-                    <button className="btn primary" onClick={() => window.location.href = "booking-detail.html"}>予約詳細に戻る</button>
+                    <button className="btn primary" onClick={() => { window.location.href = "booking-detail.html"; }}>予約詳細に戻る</button>
                   </div>
                 </section>
               )}

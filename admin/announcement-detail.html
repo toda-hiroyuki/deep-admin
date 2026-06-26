@@ -1,3 +1,21 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>お知らせ編集 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css">
+</head>
+  <body data-density="regular" data-side="default">
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
 window.Sidebar = function Sidebar({ resource, counts = {} }) {
   const opsItems = [
     { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
@@ -10,7 +28,6 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
     { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
     { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
-
     { key: "guidePay",  href: "guide-payments.html",     icon: "GP", label: "ガイド支払一覧" },
   ];
   const guideItems = [
@@ -20,11 +37,11 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     { key: "customers", href: "customers.html", icon: "CU", label: "顧客一覧" },
   ];
   const facilityItems = [
-    { key: "facility",       href: "facilities.html",      icon: "FC", label: "施設一覧" },
+    { key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" },
   ];
   const masterMainItems = [
-    { key: "tourOption",     href: "tour-options.html",    icon: "TO", label: "TourOption",       count: counts.to },
-    { key: "productPage",    href: "products.html",        icon: "PG", label: "商品ページ",          count: counts.pg },
+    { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption",  count: counts.to },
+    { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ",    count: counts.pg },
   ];
   const masterSubItems = [
     { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
@@ -171,3 +188,104 @@ window.Sidebar = function Sidebar({ resource, counts = {} }) {
     </aside>
   );
 };
+    </script>
+    <script type="text/babel" data-presets="react">
+const { useState } = React;
+
+const SEED_ANNOUNCEMENTS = [
+  { id: "anc-1", title: "【重要】夏季繁忙期の予約対応について", body: "7月〜8月の繁忙期に向けて、予約対応フローを一部変更します。詳細は本文をご確認ください。", publishAt: "2026-07-01T09:00" },
+  { id: "anc-2", title: "システムメンテナンスのお知らせ", body: "6月30日 0:00〜3:00の間、システムメンテナンスを実施します。該当時間帯は管理画面をご利用いただけません。", publishAt: "2026-06-24T10:00" },
+  { id: "anc-3", title: "キャンセルポリシー改定のご案内", body: "2026年6月1日より、一部ツアーのキャンセルポリシーを改定しました。マスター＞キャンセルポリシーよりご確認ください。", publishAt: "2026-06-01T12:00" },
+];
+
+const params = new URLSearchParams(window.location.search);
+const targetId = params.get("id");
+const isCreate = params.get("mode") === "create" || !targetId;
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const seed = SEED_ANNOUNCEMENTS.find(a => a.id === targetId);
+  const [form, setForm] = useState(seed ? { ...seed } : { id: "", title: "", body: "", publishAt: "" });
+
+  const update = patch => setForm(s => ({ ...s, ...patch }));
+  const pageTitle = isCreate ? "新規作成" : (form.title || "お知らせ");
+
+  return (
+    <div className="app-shell">
+      <Sidebar resource="announcement" />
+      <main className="workspace">
+        <div className="topbar">
+          <div className="topbar-left">
+            <div className="crumbs">
+              <a href="index.html" className="crumb-link">deep_Admin</a>
+              <span className="sep">/</span>
+              <a href="announcements.html" className="crumb-link">お知らせ管理</a>
+              <span className="sep">/</span>
+              <span className="current">{pageTitle}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="status-strip">
+          <div className="status-cell fill">
+            <span className="status-label">タイトル</span>
+            <strong>{form.title || "—"}</strong>
+          </div>
+          <div className="status-actions">
+            <a href="announcements.html" className="btn">キャンセル</a>
+            <button className="btn primary" onClick={() => window.location.href = "announcements.html"}>
+              {isCreate ? "保存" : "更新保存"}
+            </button>
+          </div>
+        </div>
+
+        <div className="content-grid" data-no-preview="true">
+          <section className="editor-pane">
+            <div className="editor-content">
+
+          <div className="form-section">
+            <div style={{background:'var(--surface)',border:'1px solid var(--line)',borderRadius:6,padding:'16px',display:'flex',flexDirection:'column',gap:16}}>
+              <div className="field-wide">
+                <label className="field-label">
+                  <span>タイトル</span>
+                  <span className="req" aria-label="required" />
+                </label>
+                <input type="text" value={form.title} onChange={e => update({ title: e.target.value })}
+                  placeholder="例：【重要】夏季繁忙期の予約対応について"
+                  style={{width:'100%',padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+              </div>
+
+              <div className="field-wide">
+                <label className="field-label">
+                  <span>内容</span>
+                  <span className="req" aria-label="required" />
+                </label>
+                <textarea value={form.body} onChange={e => update({ body: e.target.value })}
+                  rows={8} placeholder="お知らせの本文を入力してください。"
+                  style={{width:'100%',padding:'9px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13,lineHeight:1.6,resize:'vertical',fontFamily:'inherit'}} />
+              </div>
+
+              <div className="field-wide">
+                <label className="field-label">
+                  <span>公開を開始する日時</span>
+                  <span className="req" aria-label="required" />
+                </label>
+                <input type="datetime-local" value={form.publishAt} onChange={e => update({ publishAt: e.target.value })}
+                  style={{padding:'7px 10px',border:'1px solid var(--line)',borderRadius:4,fontSize:13}} />
+                <div className="field-help">※指定した日時になると、ガイド向けのお知らせ一覧に公開されます。</div>
+              </div>
+            </div>
+          </div>
+
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

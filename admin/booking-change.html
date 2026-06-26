@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>変更・キャンセル処理 | deep_Admin</title>
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <style>
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      ::selection { background: var(--accent-soft); color: var(--accent-strong); }
+
+      /* ── Shell ── */
+      .app-shell { display: grid; grid-template-columns: 244px minmax(0, 1fr); min-height: 100vh; }
+      .side-nav {
+        background: var(--side-bg); color: var(--side-ink); padding: 20px 16px;
+        display: flex; flex-direction: column; gap: 20px;
+        position: sticky; top: 0; height: 100vh; min-height: 0; overflow-y: auto; border-right: 1px solid var(--side-line);
+      }
+      .brand-block { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--side-line); }
+      .brand-mark { width: 32px; height: 32px; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; border-radius: 8px; letter-spacing: -0.02em; }
+      .brand-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+      .brand-caption { font-size: 11px; color: var(--side-ink-soft); margin-top: 2px; }
+      .nav-group { display: flex; flex-direction: column; gap: 2px; }
+      .nav-section-label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink-soft); padding: 0 8px 6px; }
+      .nav-item { appearance: none; border: 0; background: transparent; color: var(--side-ink); display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 6px 10px; border-radius: 7px; text-align: left; font-size: 13.5px; font-weight: 500; position: relative; transition: background 0.12s; width: 100%; }
+      .nav-item:hover { background: rgba(255, 255, 255, 0.06); }
+      .nav-item.active { background: rgba(255, 255, 255, 0.10); font-weight: 650; }
+      .nav-child { padding-left: 30px !important; }
+      .nav-child .nav-icon { font-size: 11px !important; opacity: 0.55; width: 18px; }
+      .nav-item.active::before { content: ""; position: absolute; left: -16px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+      .nav-icon { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 5px; background: rgba(255, 255, 255, 0.08); font-size: 10px; font-weight: 700; letter-spacing: 0.02em; color: var(--side-ink-soft); flex-shrink: 0; }
+      .nav-item.active .nav-icon { background: var(--accent); color: #fff; }
+      .nav-count { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--side-ink-soft); background: rgba(255, 255, 255, 0.06); padding: 1px 6px; border-radius: 4px; }
+      .nav-count.alert { background: var(--amber); color: #fff; font-weight: 700; }
+      .side-note { margin-top: auto; border-top: 1px solid var(--side-line); padding-top: 16px; color: var(--side-ink-soft); font-size: 11.5px; line-height: 1.55; }
+      .side-note strong { display: block; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--side-ink); margin-bottom: 6px; font-weight: 700; }
+
+      /* ── Workspace ── */
+      .workspace { padding: 20px 24px 56px; display: flex; flex-direction: column; gap: 16px; min-width: 0; max-width: 1000px; }
+      .crumbs { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .crumbs .sep { color: var(--muted-soft); }
+      .crumbs a { color: var(--muted); text-decoration: none; }
+      .crumbs a:hover { color: var(--accent); text-decoration: underline; }
+      .crumbs .current { color: var(--ink); font-weight: 600; }
+      .page-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 2px; }
+      .page-title h1 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.01em; }
+      .page-title .sub { font-size: 12.5px; color: var(--muted); }
+
+      /* ── Badges & pills ── */
+      .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 11px 4px 9px; border-radius: 999px; background: var(--bg-sunken); color: var(--muted); white-space: nowrap; }
+      .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .status-pill.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .status-pill.green { background: var(--green-soft); color: var(--green); }
+      .status-pill.amber { background: var(--amber-soft); color: var(--amber); }
+      .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--bg-sunken); color: var(--ink-soft); white-space: nowrap; }
+      .badge.blue { background: var(--blue-soft); color: var(--blue); }
+      .badge.teal { background: var(--accent-soft); color: var(--accent-strong); }
+      .badge.coral { background: var(--coral-soft); color: var(--coral); }
+
+      /* ── Buttons ── */
+      .btn { height: var(--field-h); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border-radius: var(--radius); border: 1px solid var(--line-strong); background: var(--surface); font-size: 13px; font-weight: 600; transition: background 0.1s, border-color 0.1s; white-space: nowrap; }
+      .btn:hover { background: var(--surface-tint); border-color: var(--ink-soft); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.lg { height: 44px; padding: 0 24px; font-size: 14px; }
+      .btn.sm { height: 32px; padding: 0 14px; font-size: 12.5px; }
+
+      /* ── Cards ── */
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line-soft); background: var(--surface-warm); }
+      .card-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+      .card-title .sec-no { width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+      .card-body { padding: 20px; }
+
+      /* ── Target summary card (compact) ── */
+      .summary-card { display: flex; align-items: center; gap: 0; flex-wrap: wrap; padding: 12px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+      .summary-card .s-item { display: flex; flex-direction: column; gap: 2px; padding: 0 18px; position: relative; }
+      .summary-card .s-item + .s-item::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 1px; background: var(--line-soft); }
+      .summary-card .s-item:first-child { padding-left: 0; }
+      .summary-card .s-lab { font-size: 10.5px; font-weight: 600; color: var(--muted-soft); letter-spacing: 0.03em; text-transform: uppercase; }
+      .summary-card .s-val { font-size: 13px; font-weight: 650; color: var(--ink); }
+      .summary-card .s-val .sub { color: var(--muted); font-weight: 500; }
+
+      /* ── Type selection cards ── */
+      .type-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      @media (max-width: 720px) { .type-cards { grid-template-columns: 1fr; } }
+      .type-card {
+        display: flex; flex-direction: column;
+        padding: 20px 18px 16px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        cursor: pointer;
+        text-align: left;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        text-decoration: none;
+        color: inherit;
+        font: inherit;
+      }
+      .type-card:hover { border-color: var(--accent); box-shadow: var(--ring); }
+      .type-card .tc-badge {
+        display: inline-flex; align-items: center; font-size: 11px; font-weight: 700;
+        padding: 3px 10px; border-radius: 999px; margin-bottom: 14px; align-self: flex-start;
+      }
+      .type-card.tc-datetime .tc-badge { background: var(--blue-soft); color: var(--blue); }
+      .type-card.tc-pax .tc-badge { background: var(--green-soft); color: var(--green); }
+      .type-card.tc-cancel {
+        background: color-mix(in srgb, var(--coral-soft) 45%, var(--surface));
+        border-color: color-mix(in srgb, var(--coral) 28%, var(--line-strong));
+      }
+      .type-card.tc-cancel:hover { border-color: var(--coral); box-shadow: 0 0 0 3px color-mix(in srgb, var(--coral) 15%, transparent); }
+      .type-card.tc-cancel .tc-badge { background: var(--coral-soft); color: var(--coral); }
+      .type-card .tc-title { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 7px; }
+      .type-card .tc-desc { font-size: 13px; line-height: 1.6; color: var(--muted); margin-bottom: 18px; flex: 1; }
+      .type-card .tc-action { margin-top: auto; font-size: 13.5px; font-weight: 700; color: var(--accent-strong); display: flex; align-items: center; gap: 5px; }
+      .type-card.tc-cancel .tc-action { color: var(--coral); }
+
+      /* ── Radio group ── */
+      .radio-row { display: flex; flex-direction: column; gap: 0; }
+      .radio-opt { display: flex; align-items: flex-start; gap: 11px; font-size: 14px; color: var(--ink-soft); user-select: none; cursor: pointer; padding: 11px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); transition: background 0.1s, border-color 0.1s; }
+      .radio-opt + .radio-opt { margin-top: 8px; }
+      .radio-opt:hover { border-color: var(--line-strong); background: var(--surface-tint); }
+      .radio-opt.checked { border-color: var(--accent); background: var(--accent-soft); }
+      .radio-opt input { width: 17px; height: 17px; accent-color: var(--accent); margin-top: 1px; flex-shrink: 0; }
+      .radio-opt .ro-main { font-weight: 600; }
+      .radio-opt .ro-sub { color: var(--muted); font-size: 12px; font-weight: 500; display: block; margin-top: 2px; }
+      .radio-opt.checked .ro-sub { color: var(--accent-strong); }
+
+      /* ── Form sections & controls ── */
+      .form-section-title { font-size: 12px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.01em; margin-bottom: 11px; display: flex; align-items: center; gap: 8px; }
+      .form-section-title .req { color: var(--coral); }
+      .form-section + .form-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+      .ctrl { height: var(--field-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); padding: 0 10px; font-size: 13px; transition: border-color 0.1s, box-shadow 0.1s; width: 100%; }
+      .ctrl::placeholder { color: var(--muted-soft); }
+      .ctrl:hover { border-color: var(--ink-soft); }
+      .ctrl:focus, .ctrl:focus-visible { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+      textarea.ctrl { min-height: 88px; padding: 10px 12px; resize: vertical; line-height: 1.5; height: auto; }
+
+    </style>
+  </head>
+  <body>
+    <template id="__bundler_thumbnail" data-bg-color="#0a5e5a">
+      <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1200" height="800" fill="#0a5e5a" />
+        <g transform="translate(420, 250)" fill="none" stroke="#fbf7f0" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="0" y="0" width="360" height="300" rx="24" fill="#fbf7f0" stroke="none" />
+          <line x1="50" y1="70" x2="310" y2="70" stroke="#0a5e5a" stroke-width="18" />
+          <line x1="50" y1="140" x2="240" y2="140" stroke="#c9b896" stroke-width="18" />
+          <line x1="50" y1="210" x2="280" y2="210" stroke="#c9b896" stroke-width="18" />
+          <circle cx="285" cy="245" r="40" fill="#0a5e5a" stroke="none" />
+          <path d="M 268 245 l 13 13 l 22 -26" stroke="#fbf7f0" stroke-width="14" />
+        </g>
+      </svg>
+    </template>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+    <script type="text/babel" data-presets="react">
+window.Sidebar = function Sidebar({ resource, counts = {} }) {
+  const opsItems = [
+    { key: "bookings",      href: "bookings.html",       icon: "BK", label: "予約一覧" },
+    { key: "unassigned",    href: "unassigned.html",     icon: "↳",  label: "未割り当て一覧", child: true },
+    { key: "sessions",      href: "sessions.html",       icon: "SS", label: "催行回一覧" },
+    { key: "unarranged",    href: "unarranged.html",     icon: "↳",  label: "未手配一覧", child: true },
+    { key: "todayTomorrow", href: "today-tomorrow.html", icon: "↳",  label: "当日/翌日案件", child: true },
+  ];
+  const payItems = [
+    { key: "settlement", href: "monthly-settlement.html", icon: "ST", label: "月次締め確認" },
+    { key: "ota",      href: "ota-payment-matching.html", icon: "OT", label: "OTA入金照合" },
+    { key: "revenue",  href: "revenue-summary.html",      icon: "RV", label: "収支一覧" },
+    { key: "guidePay",  href: "guide-payments.html",     icon: "GP", label: "ガイド支払一覧" },
+  ];
+  const guideItems = [
+    { key: "guides", href: "guides.html", icon: "GM", label: "ガイド一覧" },
+  ];
+  const customerItems = [
+    { key: "customers", href: "customers.html", icon: "CU", label: "顧客一覧" },
+  ];
+  const facilityItems = [
+    { key: "facility", href: "facilities.html", icon: "FC", label: "施設一覧" },
+  ];
+  const masterMainItems = [
+    { key: "tourOption",  href: "tour-options.html", icon: "TO", label: "TourOption",  count: counts.to },
+    { key: "productPage", href: "products.html",     icon: "PG", label: "商品ページ",    count: counts.pg },
+  ];
+  const masterSubItems = [
+    { key: "resource",       href: "resources.html",       icon: "RS", label: "リソース管理" },
+    { key: "area",           href: "areas.html",           icon: "AR", label: "エリア管理" },
+    { key: "language",       href: "languages.html",       icon: "LG", label: "言語マスター管理" },
+    { key: "guideDoc",       href: "guide-materials.html", icon: "GD", label: "ガイド資料",         count: counts.gd },
+    { key: "cancelTemplate", href: "cancel-policies.html", icon: "CP", label: "キャンセルポリシー" },
+    { key: "channelFee",     href: "channel-fees.html",    icon: "FE", label: "チャネル・手数料設定" },
+  ];
+  const systemItems = [
+    { key: "operationLog", href: "operation-log.html", icon: "HL", label: "操作履歴" },
+  ];
+  return (
+    <aside className="side-nav">
+      <div className="brand-block">
+        <div className="brand-mark">d.</div>
+        <div>
+          <div className="brand-name">deep_Admin</div>
+          <div className="brand-caption">Product &amp; Sales · Phase 1</div>
+        </div>
+      </div>
+      <div className="nav-group" style={{marginBottom:"8px"}}>
+        <a href="index.html" className={`nav-item ${resource === "dashboard" ? "active" : ""}`} style={{textDecoration:"none"}}>
+          <span className="nav-icon">⊞</span>
+          <span style={{flex:1,minWidth:0}}><div>ダッシュボード</div></span>
+        </a>
+      </div>
+      <div>
+        <div className="nav-section-label">予約オペレーション</div>
+        <div className="nav-group">
+          {opsItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}${it.child ? " nav-child" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">精算・経営</div>
+        <div className="nav-group">
+          {payItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">ガイド管理</div>
+        <div className="nav-group">
+          {guideItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">顧客管理</div>
+        <div className="nav-group">
+          {customerItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">施設管理</div>
+        <div className="nav-group">
+          {facilityItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">お知らせ</div>
+        <div className="nav-group">
+          <a href="announcements.html" className={`nav-item ${resource === "announcement" ? "active" : ""}`} style={{textDecoration:"none"}}>
+            <span className="nav-icon">AN</span>
+            <span style={{flex:1,minWidth:0}}><div>お知らせ</div></span>
+          </a>
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">商品管理</div>
+        <div className="nav-group">
+          {masterMainItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+              <span className="nav-count">{it.count}</span>
+            </a>
+          ))}
+          <div className="nav-section-label" style={{fontSize:"10px",color:"#999",padding:"8px 12px 4px",marginTop:"4px"}}>マスター</div>
+          {masterSubItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+              <span className="nav-count">{it.count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="nav-section-label">システム管理</div>
+        <div className="nav-group">
+          {systemItems.map(it => (
+            <a key={it.key} href={it.href}
+              className={`nav-item ${resource === it.key ? "active" : ""}`}
+              style={{textDecoration:"none"}}>
+              <span className="nav-icon">{it.icon}</span>
+              <span style={{flex:1,minWidth:0}}><div>{it.label}</div></span>
+            </a>
+          ))}
+        </div>
+      </div>
+      <div className="sidebar-footer">
+        <a href="login.html" className="nav-item nav-logout" style={{textDecoration:"none"}}>
+          <span className="nav-icon">↩</span><span>ログアウト</span>
+        </a>
+      </div>
+    </aside>
+  );
+};
+
+function App() {
+  const { useState } = React;
+  const [origin, setOrigin] = useState("guest");  // guest | operator | thirdparty
+  const [reason, setReason] = useState("");
+
+  // 選択した発生元・理由を引き継いで各フローへ遷移
+  const goToFlow = (file) => {
+    const params = new URLSearchParams();
+    params.set("origin", origin);
+    if (reason.trim()) params.set("reason", reason.trim());
+    window.location.href = `${file}?${params.toString()}`;
+  };
+
+  return (
+    <div className="app-shell">
+      <Sidebar resource="bookings" />
+
+      <main className="workspace">
+        <nav className="crumbs">
+          <a href="bookings.html">予約一覧</a>
+          <span className="sep">›</span>
+          <a href="bookings.html">#BK-2024-0831</a>
+          <span className="sep">›</span>
+          <span className="current">変更・キャンセル処理</span>
+        </nav>
+
+        <div className="page-title">
+          <h1>変更・キャンセル処理</h1>
+          <span className="sub">対象予約の変更種別を選択してください</span>
+        </div>
+
+        {/* 対象予約サマリー */}
+        <div className="summary-card">
+          <div className="s-item">
+            <div className="s-lab">予約ID</div>
+            <div className="s-val mono">#BK-2024-0831</div>
+          </div>
+          <div className="s-item">
+            <div className="s-lab">ツアー</div>
+            <div className="s-val">富士山ハイキング（半日）</div>
+          </div>
+          <div className="s-item">
+            <div className="s-lab">催行日</div>
+            <div className="s-val">2024-09-14 <span className="sub">08:00</span></div>
+          </div>
+          <div className="s-item">
+            <div className="s-lab">人数</div>
+            <div className="s-val">大人 2 <span className="sub">/ 子供 1</span></div>
+          </div>
+          <div className="s-item">
+            <div className="s-lab">販売チャネル</div>
+            <div className="s-val">Viator</div>
+          </div>
+          <div className="s-item">
+            <div className="s-lab">ステータス</div>
+            <div className="s-val">確定</div>
+          </div>
+        </div>
+
+        {/* 発生元と変更理由 */}
+        <div className="card">
+          <div className="card-head">
+            <div className="card-title">
+              <span className="sec-no">1</span>
+              発生元と変更理由
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="form-section" style={{ marginTop: 0 }}>
+              <div className="form-section-title">発生元区分<span className="req">*</span></div>
+              <div className="radio-row">
+                {[
+                  { v: "guest", main: "ゲスト都合", sub: "ゲストからの依頼による変更。" },
+                  { v: "operator", main: "運営都合", sub: "運営側の事情による変更（催行中止・ガイド不在など）。" },
+                  { v: "thirdparty", main: "第三者都合（OTA・旅行代理店など）", sub: "OTA・旅行代理店など第三者起因の変更。" },
+                ].map(o => (
+                  <label key={o.v} className={`radio-opt ${origin === o.v ? "checked" : ""}`}>
+                    <input type="radio" name="origin" checked={origin === o.v}
+                      onChange={() => setOrigin(o.v)} />
+                    <span>
+                      <span className="ro-main">{o.main}</span>
+                      <span className="ro-sub">{o.sub}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="form-section-title">変更理由</div>
+              <textarea className="ctrl" placeholder="変更理由を入力してください（任意）"
+                value={reason} onChange={e => setReason(e.target.value)}></textarea>
+            </div>
+          </div>
+        </div>
+
+        {/* 変更種別を選択 */}
+        <div className="card">
+          <div className="card-head">
+            <div className="card-title">
+              <span className="sec-no">2</span>
+              変更種別を選択
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="type-cards">
+              <button type="button" className="type-card tc-datetime" onClick={() => goToFlow("booking-change-datetime.html")}>
+                <span className="tc-badge">日時</span>
+                <span className="tc-title">日時変更</span>
+                <span className="tc-desc">ツアー日時を変更します。リソースの再確保と催行回の再生成が発生します。</span>
+                <span className="tc-action">処理を開始 →</span>
+              </button>
+              <button type="button" className="type-card tc-pax" onClick={() => goToFlow("booking-change-pax.html")}>
+                <span className="tc-badge">人数</span>
+                <span className="tc-title">人数変更</span>
+                <span className="tc-desc">参加人数を変更します。追加請求または返金が発生する場合があります。</span>
+                <span className="tc-action">処理を開始 →</span>
+              </button>
+              <button type="button" className="type-card tc-cancel" onClick={() => goToFlow("booking-cancel.html")}>
+                <span className="tc-badge">取消</span>
+                <span className="tc-title">キャンセル</span>
+                <span className="tc-desc">予約をキャンセルします。キャンセルポリシーに基づき返金額を計算します。</span>
+                <span className="tc-action">キャンセル処理へ →</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+    </script>
+  </body>
+</html>
