@@ -188,7 +188,6 @@
         // assign form
         const [role, setRole] = useState("メインガイド");
         const [rate, setRate] = useState("3,500");
-        const [assignMemo, setAssignMemo] = useState("");
         const [assigned, setAssigned] = useState(null);  // アサイン済み(ガイド確認待ち): {name, code, role, rate} | null
         const [reassignReason, setReassignReason] = useState("日時変更");  // 再手配の変更理由区分
         // search filters
@@ -202,7 +201,6 @@
         const [rRole, setRRole] = useState("メインのみ");        // メインのみ | サブのみ | メイン＋サブ同時
         const [deadline, setDeadline] = useState("none");        // none | set
         const [deadlineAt, setDeadlineAt] = useState("");
-        const [recruitMemo, setRecruitMemo] = useState("");
 
         const showToast = (msg) => {
           setToast(msg);
@@ -456,14 +454,6 @@
                           <span className="ref-note"><span className="ref-tag">基本時給</span>を初期表示。アサイン時に記録し、ガイド確認で確定します</span>
                         </div>
                       </div>
-
-                      <hr className="assign-divider" />
-
-                      <div className="memo-block" style={{ marginTop: 0 }}>
-                        <label className="filter-label">手配メモ</label>
-                        <textarea className="ctrl" placeholder="ガイドへの申し送り事項など"
-                          value={assignMemo} onChange={e => setAssignMemo(e.target.value)}></textarea>
-                      </div>
                     </Card>
                   )}
                 </React.Fragment>
@@ -527,14 +517,6 @@
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  <hr className="assign-divider" />
-
-                  <div className="memo-block" style={{ marginTop: 0 }}>
-                    <label className="filter-label">手配メモ</label>
-                    <textarea className="ctrl" placeholder="募集ガイドへの申し送り事項・集合場所の補足など"
-                      value={recruitMemo} onChange={e => setRecruitMemo(e.target.value)}></textarea>
                   </div>
                 </Card>
               )}
