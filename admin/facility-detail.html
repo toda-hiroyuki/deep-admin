@@ -59,6 +59,10 @@ const SEED = {
     paymentType: "A：施設へ月末一括（会社払い）",
     notes: "竹林内の体験エリアは雨天中止。要事前確認。",
     status: "有効",
+    linkedTourOptions: [
+      { id: "G-KYT-001-1-PR", name: "嵐山 竹林さんぽ & 竹細工体験" },
+      { id: "G-KYT-004-2-GR", name: "着物で巡る嵯峨野ウォーク" },
+    ],
     costs: [
       { id: "c1", name: "入場料（大人）", costType: "per-person", unitPrice: 1500, paymentType: "A" },
       { id: "c2", name: "竹細工体験料",  costType: "per-person", unitPrice: 2000, paymentType: "A" },
@@ -280,13 +284,27 @@ function App() {
     phone: "", email: "", contact: "",
     loginId: "", loginNote: "",
     paymentType: PAYMENT_TYPES[0],
-    notes: "", status: "有効",
+    notes: "", status: "有効", linkedTourOptions: [],
   });
   const [costs, setCosts] = useState(seed ? seed.costs : []);
   const [tab,   setTab]   = useState(params.get("tab") || "basic");
   const [saved, setSaved] = useState(false);
 
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleStatusChange = (v) => {
+    const linked = form.linkedTourOptions || [];
+    if (v === "無効" && linked.length > 0) {
+      const list = linked.map(t => `・${t.name}（${t.id}）`).join("\n");
+      window.alert(
+        `この施設には紐づくTourOptionが${linked.length}件あるため、無効にできません。\n\n` +
+        `${list}\n\n` +
+        `対象TourOptionの施設紐付けを解除してから、再度操作してください。`
+      );
+      return;
+    }
+    upd("status", v);
+  };
 
   const handleSave = () => {
     setSaved(true);
@@ -334,7 +352,7 @@ function App() {
               <select
                 style={{width:"auto",height:"var(--field-h)",paddingLeft:8,paddingRight:28,border:"1px solid var(--line-strong)",borderRadius:"var(--radius)",background:"var(--surface)",fontSize:13,appearance:"none",WebkitAppearance:"none",cursor:"pointer"}}
                 value={form.status}
-                onChange={e => upd("status", e.target.value)}
+                onChange={e => handleStatusChange(e.target.value)}
               >
                 <option value="有効">有効</option>
                 <option value="無効">無効</option>
