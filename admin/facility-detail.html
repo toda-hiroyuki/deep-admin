@@ -7,6 +7,12 @@
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <link rel="stylesheet" href="css/common.css">
+    <style>
+      @keyframes modalPop {
+        from { opacity: 0; transform: translateY(8px) scale(0.98); }
+        to   { opacity: 1; transform: translateY(0)    scale(1); }
+      }
+    </style>
 </head>
   <body data-density="regular" data-side="default">
     <div id="root"></div>
@@ -270,6 +276,60 @@ function CostItemsTab({ costs, facilityId }) {
   );
 }
 
+// ── AlertModal ────────────────────────────────────────────────────────────────
+function AlertModal({ data, onClose }) {
+  if (!data) return null;
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position:"fixed", inset:0, zIndex:1000,
+        background:"rgba(15,23,42,0.45)",
+        backdropFilter:"blur(2px)", WebkitBackdropFilter:"blur(2px)",
+        display:"flex", alignItems:"center", justifyContent:"center", padding:20,
+      }}
+    >
+      <div
+        role="alertdialog" aria-modal="true"
+        onClick={e => e.stopPropagation()}
+        style={{
+          width:"min(440px, 100%)", background:"var(--surface)",
+          borderRadius:"var(--radius-lg)", boxShadow:"0 24px 60px rgba(15,23,42,0.28)",
+          overflow:"hidden", animation:"modalPop .14s ease-out",
+        }}
+      >
+        <div style={{display:"flex",alignItems:"flex-start",gap:14,padding:"22px 24px 16px"}}>
+          <div style={{
+            flexShrink:0, width:40, height:40, borderRadius:"50%",
+            background:"var(--coral-tint, #fef2f2)", color:"var(--coral, #dc2626)",
+            display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:20, fontWeight:700,
+          }}>!</div>
+          <div style={{minWidth:0}}>
+            <h3 style={{margin:"2px 0 6px",fontSize:16,fontWeight:700,color:"var(--ink)"}}>{data.title}</h3>
+            <p style={{margin:0,fontSize:13,lineHeight:1.6,color:"var(--muted)"}}>{data.message}</p>
+          </div>
+        </div>
+
+        {data.items && data.items.length > 0 && (
+          <div style={{margin:"0 24px 4px",padding:"10px 14px",background:"var(--bg-sunken)",border:"1px solid var(--line)",borderRadius:"var(--radius)"}}>
+            {data.items.map(t => (
+              <div key={t.id} style={{display:"flex",gap:8,alignItems:"baseline",padding:"4px 0",fontSize:12.5}}>
+                <span style={{fontFamily:"var(--font-mono, monospace)",fontSize:11.5,color:"var(--muted)",flexShrink:0}}>{t.id}</span>
+                <span style={{fontWeight:600,color:"var(--ink)"}}>{t.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{display:"flex",justifyContent:"flex-end",gap:8,padding:"16px 24px 20px"}}>
+          <button className="btn primary" onClick={onClose}>閉じる</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const params     = new URLSearchParams(window.location.search);
@@ -289,18 +349,18 @@ function App() {
   const [costs, setCosts] = useState(seed ? seed.costs : []);
   const [tab,   setTab]   = useState(params.get("tab") || "basic");
   const [saved, setSaved] = useState(false);
+  const [alertModal, setAlertModal] = useState(null);
 
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleStatusChange = (v) => {
     const linked = form.linkedTourOptions || [];
     if (v === "無効" && linked.length > 0) {
-      const list = linked.map(t => `・${t.name}（${t.id}）`).join("\n");
-      window.alert(
-        `この施設には紐づくTourOptionが${linked.length}件あるため、無効にできません。\n\n` +
-        `${list}\n\n` +
-        `対象TourOptionの施設紐付けを解除してから、再度操作してください。`
-      );
+      setAlertModal({
+        title: "無効に変更できません",
+        message: `この施設には紐づくTourOptionが${linked.length}件あります。対象TourOptionの施設紐付けを解除してから、再度操作してください。`,
+        items: linked,
+      });
       return;
     }
     upd("status", v);
@@ -383,6 +443,8 @@ function App() {
         </div>
 
       </main>
+
+      <AlertModal data={alertModal} onClose={() => setAlertModal(null)} />
     </div>
   );
 }
