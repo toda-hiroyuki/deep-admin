@@ -27,13 +27,6 @@
 
     /* Tabs */
     .tab-shell { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg, 10px); box-shadow: var(--shadow-1); overflow: hidden; }
-    .tab-bar { display: flex; gap: 2px; padding: 0 8px; border-bottom: 1px solid var(--line); background: var(--surface-warm, #fffdf8); overflow-x: auto; }
-    .tab-bar::-webkit-scrollbar { height: 0; }
-    .tab { appearance: none; border: 0; background: transparent; color: var(--muted); padding: 13px 15px 11px; font-size: 13.5px; font-weight: 600; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; transition: color 0.1s; }
-    .tab:hover { color: var(--ink-soft); }
-    .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent); font-weight: 700; }
-    .tab-count { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted-soft); margin-left: 5px; background: var(--bg-sunken); padding: 0 6px; border-radius: 999px; font-weight: 600; }
-    .tab.active .tab-count { background: var(--accent-soft); color: var(--accent-strong); }
     .tab-panel { padding: 20px 22px 24px; }
     .panel-title { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 0 0 2px; }
     .panel-sub { font-size: 12px; color: var(--muted); margin: 0 0 14px; }
@@ -144,7 +137,6 @@
     const Dash = () => <span className="muted-dash">—</span>;
 
     function App() {
-      const [tab, setTab] = useState("basic");
       const [revealPay, setRevealPay] = useState(false);
       const [toast, setToast] = useState(null);
       const toastTimer = useRef(null);
@@ -179,8 +171,8 @@
         showToast("時給を更新しました");
       };
 
-      const renderTab = () => {
-        switch (tab) {
+      const renderSection = (key) => {
+        switch (key) {
           case "basic":
             return (
               <>
@@ -478,21 +470,13 @@
               </div>
             </div>
 
-            <section className="tab-shell">
-              <div className="tab-bar" role="tablist">
-                {TABS.map(t => (
-                  <button key={t.key} role="tab" aria-selected={tab === t.key}
-                    className={`tab${tab === t.key ? " active" : ""}`}
-                    onClick={() => setTab(t.key)}>
-                    {t.label}
-                    {t.count != null && <span className="tab-count">{t.count}</span>}
-                  </button>
-                ))}
-              </div>
-              <div className="tab-panel" role="tabpanel">
-                {renderTab()}
-              </div>
-            </section>
+            {TABS.map(t => (
+              <section key={t.key} className="tab-shell">
+                <div className="tab-panel">
+                  {renderSection(t.key)}
+                </div>
+              </section>
+            ))}
           </main>
 
           {toast && (
